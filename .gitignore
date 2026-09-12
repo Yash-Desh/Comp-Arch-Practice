@@ -1,0 +1,5 @@
+# Lecture audio is kept locally only; transcripts in 4_lecture_transcripts/ are what gets tracked.
+*.zip
+*.mp3
+*.m4a
+*.wav

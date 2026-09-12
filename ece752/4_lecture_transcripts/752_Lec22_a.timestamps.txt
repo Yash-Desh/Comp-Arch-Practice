@@ -1,0 +1,59 @@
+Title: 752_Lec22_a
+Source file: 752_Lec22_a.mp3
+Detected language: en
+------------------------------------------------------------
+
+[00:00:00 -> 00:00:09] Also, further execute, you know, other, because the loop controller and all of that stuff is just done by a hardware counter.
+[00:00:09 -> 00:00:15] And further, now, this is massive parallelism, lots and lots of parallelism, okay?
+[00:00:15 -> 00:00:21] So I can have one vector pipeline, if I want to do more, I can have two vector pipelines, okay?
+[00:00:21 -> 00:00:27] And I don't, I can trade off the frequency for the parallelism over there.
+[00:00:27 -> 00:00:32] And frequency was what is burning energy, if you will.
+[00:00:32 -> 00:00:41] So, you know, I expect these vectors will generate even more interest going forward,
+[00:00:41 -> 00:00:49] especially since now many, you know, many of these things that you do, applications drive how hardware goes.
+[00:00:49 -> 00:00:55] Okay, it's the killer applications that drive how hardware goes, if you will, okay?
+[00:00:55 -> 00:01:02] There is a killer application these days that is matrix multiplication, okay?
+[00:01:02 -> 00:01:10] And that matrix multiplication, as long as that matrix multiplication continues to be another killer application,
+[00:01:10 -> 00:01:18] efficient hardware techniques to carry out matrix multiplication will continue to, in a sense, increase in performance.
+[00:01:18 -> 00:01:24] That is not only doing the actual multiply, but perhaps even getting the accesses to memory
+[00:01:24 -> 00:01:28] and fetching the data to, again, the processing it.
+[00:01:28 -> 00:01:32] So, anyway, questions about the number of the vectors?
+[00:01:32 -> 00:01:55] Let's move on to a different concept, and the concept of multi-threading.
+[00:01:55 -> 00:02:01] And, you know, again, this is in the design of the CPU.
+[00:02:01 -> 00:02:07] We talk about, you know, why do we want to have multi-threading, talk about utilization performance,
+[00:02:07 -> 00:02:13] then three implementations of multi-threading, which are, you know, commonly used.
+[00:02:13 -> 00:02:18] And I won't talk much about some of the others, so.
+[00:02:18 -> 00:02:28] Okay, how did, you know, what is multi-threading, why is it relevant, why is it interesting, okay?
+[00:02:28 -> 00:02:36] So, so far, we've talked about performance, okay, increasing the number of instructions per cycle, okay?
+[00:02:36 -> 00:02:47] But right from day one, right from day one, okay, the CPU, the central processing unit,
+[00:02:47 -> 00:02:53] it was supposed to be, you know, basically the most important thing in processing.
+[00:02:53 -> 00:02:58] So if you had something that was, you know, putting a lot of money in, building,
+[00:02:58 -> 00:03:02] and taking a lot of effort to build, and if you take a look at, you know,
+[00:03:02 -> 00:03:07] the design of the CPU versus the memory, et cetera, et cetera, you know,
+[00:03:07 -> 00:03:12] CPU has just taken much more overall, if you will, okay?
+[00:03:12 -> 00:03:18] And so if you are having something that you can deem very important,
+[00:03:18 -> 00:03:21] then you want it to be utilized a lot fully.
+[00:03:21 -> 00:03:29] You don't want to design something that is, you know, utilized at a very low level, okay?
+[00:03:29 -> 00:03:35] So right from day one, people considered the importance
+[00:03:35 -> 00:03:43] of making the utilization of the CPU high, all right?
+[00:03:43 -> 00:03:47] And, you know, these days, even a very basic processor,
+[00:03:47 -> 00:03:52] your cell phone processor, whatever it is, okay, server processor,
+[00:03:52 -> 00:03:59] even if it's four-way, it's not even close to fully being utilized,
+[00:03:59 -> 00:04:05] running a single program or a single thread, if you will, okay?
+[00:04:05 -> 00:04:09] You get, you know, IPC that is typically less than, why?
+[00:04:09 -> 00:04:12] So because you have mis-predicted branches.
+[00:04:12 -> 00:04:16] You have cache misses. You have data dependencies, okay?
+[00:04:16 -> 00:04:20] These all create latencies, and we've tried to come up with techniques
+[00:04:20 -> 00:04:29] to deal with those latencies by overlapping those latencies with other work, okay?
+[00:04:29 -> 00:04:32] But you still have that.
+[00:04:32 -> 00:04:40] So multi-threading is basically saying, look, you know, if I have one thread
+[00:04:40 -> 00:04:47] that cannot utilize the hardware resource fully, in this case the CPU,
+[00:04:48 -> 00:04:52] maybe I can have two threads or three threads or four threads.
+[00:04:52 -> 00:04:58] If I can somehow figure out how they could execute on the same piece of hardware, okay,
+[00:04:58 -> 00:05:04] then the parts of the hardware that one thread is unable to be utilized,
+[00:05:04 -> 00:05:11] I can use them for a second thread, in a sense, effectively for free, if you will,
+[00:05:11 -> 00:05:13] as far as utilization is concerned.
+[00:05:13 -> 00:05:16] That's what it means, the utilization.
+[00:05:16 -> 00:05:23] Okay? So, you know, why not have more than one thread, okay?
+[00:05:23 -> 00:05:36] And so, again, stepping back is that, you know, you think you're running your one thing on a CPU, okay?
+[00:05:36 -> 00:05:38] And that's what you care about when you're running your one application.
+[00:05:38 -> 00:05:41] That's what you care about, running fast.

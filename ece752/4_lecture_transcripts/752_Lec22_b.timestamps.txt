@@ -1,0 +1,1028 @@
+Title: 752_Lec22_b
+Source file: 752_Lec22_b.mp3
+Detected language: en
+------------------------------------------------------------
+
+[00:00:00 -> 00:00:06] the same time and we'll see what we mean by the same time on the hardware.
+[00:00:06 -> 00:00:09] What multi-threading does is in a sense it
+[00:00:09 -> 00:00:15] trades off the latency of a single thread for more improved throughput.
+[00:00:15 -> 00:00:22] And because sharing the processor hardware potentially degrades the latency of individual threads,
+[00:00:22 -> 00:00:28] it's not potentially, it always does, it depends on how much.
+[00:00:28 -> 00:00:32] If you are running more threads, or you have to run in your workload,
+[00:00:32 -> 00:00:37] you're going to improve the aggregate latency of executing the multiple threads,
+[00:00:37 -> 00:00:42] and that's in our example too, and it's going to improve the utilization.
+[00:00:42 -> 00:00:48] So, you know, if I had a thread A with an individual latency of 10 seconds
+[00:00:48 -> 00:00:51] and it ran by itself alone on the hardware,
+[00:00:51 -> 00:00:57] but if it ran alongside thread B, it took 15 seconds.
+[00:00:57 -> 00:01:01] Thread B, the individual latency, would be 20 seconds by itself,
+[00:01:01 -> 00:01:06] but if it ran alongside with thread A, it took 25 seconds.
+[00:01:06 -> 00:01:10] Now, if you were to execute both threads sequentially,
+[00:01:10 -> 00:01:13] then it would take 10 plus 20, 30 seconds,
+[00:01:13 -> 00:01:17] but in parallel, if you're executing both of them simultaneously,
+[00:01:17 -> 00:01:20] it will take 25 seconds.
+[00:01:20 -> 00:01:25] So, while the multi-threading is slowing down each thread by 5 seconds,
+[00:01:25 -> 00:01:31] from 10 to 15, 20, 25, overall latency is getting improved.
+[00:01:31 -> 00:01:33] Okay? That is the rationale.
+[00:01:33 -> 00:01:36] And, you know, again, further the rationale is,
+[00:01:36 -> 00:01:39] when you have different workloads that you are running,
+[00:01:39 -> 00:01:43] you just don't, you know, you don't typically design a machine
+[00:01:43 -> 00:01:46] to allow only one workload.
+[00:01:46 -> 00:01:48] That's not the case.
+[00:01:48 -> 00:01:52] When you have multiple workloads you're running, then, you know,
+[00:01:52 -> 00:01:57] some workloads have, different workloads have different types of parallelism.
+[00:01:57 -> 00:02:00] If I have running a floating point workload,
+[00:02:00 -> 00:02:04] maybe I can keep the machine busy with just that one thread,
+[00:02:04 -> 00:02:06] my small matrix, small flyer, whatever.
+[00:02:06 -> 00:02:07] Okay?
+[00:02:07 -> 00:02:11] But if I'm running more than one workload,
+[00:02:11 -> 00:02:14] and if I have, you know, a server situation
+[00:02:14 -> 00:02:20] that I have lots of threads, then multi-threading through the rescue.
+[00:02:20 -> 00:02:38] Okay. What happens if you put them the wrong way?
+[00:02:38 -> 00:02:47] Oh, well.
+[00:02:47 -> 00:02:56] So, we're going to talk about now, basically,
+[00:02:56 -> 00:03:00] how are we going to share hardware, the process of hardware,
+[00:03:00 -> 00:03:02] amongst different threads.
+[00:03:02 -> 00:03:03] Okay?
+[00:03:03 -> 00:03:07] What does it take, and, you know, what needs to be shared and not shared, et cetera.
+[00:03:07 -> 00:03:08] Okay?
+[00:03:08 -> 00:03:12] So we talk about different implementations of multi-threading.
+[00:03:12 -> 00:03:13] Okay?
+[00:03:13 -> 00:03:16] But regardless of the different implementations,
+[00:03:16 -> 00:03:19] they have several similarities, basically,
+[00:03:19 -> 00:03:28] in how the different threads share the different hardware structures.
+[00:03:28 -> 00:03:30] Okay?
+[00:03:30 -> 00:03:38] And when you are running, when you are running a thread on a piece of hardware,
+[00:03:38 -> 00:03:40] what is important?
+[00:03:40 -> 00:03:45] The important is the sequential state, the sequential hardware,
+[00:03:45 -> 00:03:48] where the state of the thread is maintained.
+[00:03:48 -> 00:03:54] You know, registers, you know, memory, et cetera.
+[00:03:54 -> 00:03:56] Okay?
+[00:03:56 -> 00:04:01] ALU, which is, you know, combinational logic, doesn't matter.
+[00:04:01 -> 00:04:04] If you're giving inputs and producing outputs,
+[00:04:04 -> 00:04:07] it doesn't remember anything.
+[00:04:07 -> 00:04:08] Okay?
+[00:04:08 -> 00:04:14] So any piece of hardware which does not maintain any state,
+[00:04:14 -> 00:04:19] such as the ALUs, those are going to be dynamically shared.
+[00:04:19 -> 00:04:20] Okay?
+[00:04:20 -> 00:04:22] Floating point units, et cetera.
+[00:04:22 -> 00:04:23] Okay?
+[00:04:23 -> 00:04:25] Those are purely combinational logic.
+[00:04:25 -> 00:04:28] Those are going to be shared amongst the different threads somehow.
+[00:04:28 -> 00:04:30] We'll see how.
+[00:04:30 -> 00:04:31] Okay?
+[00:04:31 -> 00:04:42] Which is persistent hard state, which is the context of the thread.
+[00:04:42 -> 00:04:43] Okay?
+[00:04:43 -> 00:04:48] Which are all the register values, program counter, et cetera.
+[00:04:48 -> 00:04:53] Each thread needs its own program counter.
+[00:04:53 -> 00:04:56] Each thread needs its own set of registers.
+[00:04:56 -> 00:04:58] Okay?
+[00:04:58 -> 00:05:02] That is the context of the thread that you're going to replicate,
+[00:05:02 -> 00:05:04] so each thread has its own.
+[00:05:04 -> 00:05:08] You're not going to share that.
+[00:05:08 -> 00:05:09] Okay?
+[00:05:09 -> 00:05:11] And we'll see, you know, examples as we go along.
+[00:05:11 -> 00:05:13] Okay?
+[00:05:13 -> 00:05:20] There is also sequential logic which maintains persistent state,
+[00:05:20 -> 00:05:29] but it's really, you know, not in a sense part of the context of the thread.
+[00:05:29 -> 00:05:35] You know, caches are just a replica of the memory locations.
+[00:05:35 -> 00:05:36] Okay?
+[00:05:36 -> 00:05:40] So I can share the caches amongst different threads,
+[00:05:40 -> 00:05:44] just like I'm sharing them between different, you know, processes
+[00:05:44 -> 00:05:48] in a multi-programmed uniprocessor.
+[00:05:48 -> 00:05:49] Okay?
+[00:05:49 -> 00:05:53] So, you know, very similarly, a branch predictor.
+[00:05:53 -> 00:05:55] You know, what is a branch predictor for?
+[00:05:55 -> 00:05:58] You know, a branch predictor is learning, you know,
+[00:05:58 -> 00:06:06] from history of branches for one thread to give the prediction about a branch.
+[00:06:06 -> 00:06:10] But after all, it's essentially a little coin toss.
+[00:06:10 -> 00:06:13] Very, very biased coin toss.
+[00:06:13 -> 00:06:14] Okay?
+[00:06:14 -> 00:06:19] But, you know, whether you give the prediction for branch A or branch B
+[00:06:19 -> 00:06:25] or branch C in thread one or branch D in thread two,
+[00:06:25 -> 00:06:28] it isn't that important.
+[00:06:28 -> 00:06:29] Okay?
+[00:06:29 -> 00:06:33] There is no correctness issue involved with that.
+[00:06:33 -> 00:06:35] Okay?
+[00:06:35 -> 00:06:40] So the soft state typically ends up being dynamically partitioned
+[00:06:40 -> 00:06:44] just like it would be on a multi-programmed uniprocessor
+[00:06:44 -> 00:06:48] based on how the threads run.
+[00:06:48 -> 00:06:50] Okay?
+[00:06:50 -> 00:06:56] However, you know, when we talk about TLBs, okay,
+[00:06:56 -> 00:07:02] we talked about, you know, accessing the TLB with a, you know,
+[00:07:02 -> 00:07:06] virtual address, if you were, to get a physical address over there.
+[00:07:06 -> 00:07:07] Okay?
+[00:07:07 -> 00:07:14] Now what we need to do is if we allow sharing in the TLB entries
+[00:07:14 -> 00:07:18] to be shared amongst different threads or different processes,
+[00:07:18 -> 00:07:22] then you're going to have to give an indication for which virtual,
+[00:07:22 -> 00:07:26] for which process they're given virtual addresses.
+[00:07:26 -> 00:07:27] Okay?
+[00:07:27 -> 00:07:29] So typically what you'd have to do is along with the virtual address,
+[00:07:29 -> 00:07:35] you'd also need the address space identifiers or process IDs
+[00:07:35 -> 00:07:39] that will allow then multiple different processes of threads
+[00:07:39 -> 00:07:42] to share entries of a TLB.
+[00:07:42 -> 00:07:43] Okay?
+[00:07:43 -> 00:07:44] Are you with me on this?
+[00:07:44 -> 00:07:46] Yeah?
+[00:07:46 -> 00:07:48] I didn't answer my question.
+[00:07:48 -> 00:07:49] Sorry.
+[00:07:49 -> 00:07:50] Yeah.
+[00:07:50 -> 00:07:55] Now caches typically are, you know, copies, replicas of memory,
+[00:07:55 -> 00:07:57] of your main memory.
+[00:07:57 -> 00:07:59] And we saw how you're going to access the caches
+[00:07:59 -> 00:08:03] maybe with a virtually indexed physically tagged cache,
+[00:08:03 -> 00:08:05] but the virtual index was, in a sense,
+[00:08:05 -> 00:08:08] effectively it was a physically indexed, physically tagged cache
+[00:08:08 -> 00:08:14] because the part of the address that you're using to access the cache,
+[00:08:14 -> 00:08:15] indexing the cache,
+[00:08:15 -> 00:08:21] is the same between the virtual and physical addresses.
+[00:08:21 -> 00:08:23] All right?
+[00:08:23 -> 00:08:29] So you don't need any address space IDs for, you know, things for the caches.
+[00:08:29 -> 00:08:32] Now you could say, hey, maybe I have address space IDs
+[00:08:32 -> 00:08:35] along with the branch predictor so I can distinguish
+[00:08:35 -> 00:08:39] branch predictor entries for the different threads.
+[00:08:39 -> 00:08:41] And you could do that.
+[00:08:41 -> 00:08:42] Okay?
+[00:08:42 -> 00:08:45] But it sort of really doesn't matter in some sense.
+[00:08:45 -> 00:08:47] All right?
+[00:08:47 -> 00:08:49] Your branch predictor is like, you know,
+[00:08:49 -> 00:08:53] doing something this way, that way, and gives you zero or one.
+[00:08:53 -> 00:09:03] What you do want to do is remember a return address tag.
+[00:09:03 -> 00:09:04] Okay?
+[00:09:04 -> 00:09:11] A return address tag you better keep for that particular thread.
+[00:09:11 -> 00:09:13] Otherwise it's going to get corrupted.
+[00:09:13 -> 00:09:15] Not going to work very well.
+[00:09:15 -> 00:09:16] All right?
+[00:09:16 -> 00:09:20] So, you know, you keep, and very similarly,
+[00:09:20 -> 00:09:23] the branch history register, this is actually a small,
+[00:09:23 -> 00:09:26] you know, it's almost nothing, a branch history register,
+[00:09:26 -> 00:09:29] you know, 10, 12, 14 bits per thread.
+[00:09:29 -> 00:09:30] Okay?
+[00:09:30 -> 00:09:34] So you typically would replicate those,
+[00:09:34 -> 00:09:36] but not this other soft state.
+[00:09:36 -> 00:09:39] These are, again, not part of the architecture,
+[00:09:39 -> 00:09:42] the context of the thread.
+[00:09:42 -> 00:09:44] So you don't actually need to replicate them,
+[00:09:44 -> 00:09:48] but, you know, a return address tag, you know,
+[00:09:48 -> 00:09:53] if you do not replicate it, it really is not going to work.
+[00:09:53 -> 00:09:56] It's in the stack frame, right?
+[00:09:56 -> 00:09:58] No.
+[00:09:58 -> 00:10:01] No, the return address tag is not in the stack frame.
+[00:10:01 -> 00:10:02] Okay?
+[00:10:02 -> 00:10:05] The information in the return address tag
+[00:10:05 -> 00:10:08] is in the stack frame.
+[00:10:08 -> 00:10:11] But the way we are using the return address tag
+[00:10:11 -> 00:10:15] is dynamically to remember the calls and returns
+[00:10:15 -> 00:10:20] to predict the target address of a return.
+[00:10:20 -> 00:10:24] Yes, the target address of the return
+[00:10:24 -> 00:10:26] is there on the stack frame,
+[00:10:26 -> 00:10:29] but we want to fetch the instruction.
+[00:10:29 -> 00:10:31] But, I mean, in this case,
+[00:10:31 -> 00:10:34] couldn't we just say, okay, we swapped out,
+[00:10:34 -> 00:10:41] and, like, the return address tag may not be right,
+[00:10:41 -> 00:10:43] or we just can't use it?
+[00:10:43 -> 00:10:44] You can do that.
+[00:10:44 -> 00:10:45] You can do that.
+[00:10:45 -> 00:10:47] I guess because these are threads,
+[00:10:47 -> 00:10:50] they're context switching, like, super fast, aren't they?
+[00:10:50 -> 00:10:52] We'll see.
+[00:10:52 -> 00:10:55] We'll see how fast they are context switching.
+[00:10:55 -> 00:10:56] Okay?
+[00:10:56 -> 00:10:59] And, you know, we talk about different schemes
+[00:10:59 -> 00:11:01] that we're not referring.
+[00:11:01 -> 00:11:05] You know, one scheme, they may switch every tens of cycles.
+[00:11:05 -> 00:11:06] Okay?
+[00:11:06 -> 00:11:09] In another scheme, they switch every cycle.
+[00:11:09 -> 00:11:13] In a third scheme, they are resident simultaneously.
+[00:11:13 -> 00:11:16] They are switching zero cycles.
+[00:11:16 -> 00:11:17] Okay?
+[00:11:17 -> 00:11:20] So if you have two threads running simultaneously,
+[00:11:20 -> 00:11:23] you replicate the return address tag.
+[00:11:23 -> 00:11:30] When we put multiple threads in our own program thread,
+[00:11:30 -> 00:11:34] then how would we effectively communicate the same information
+[00:11:34 -> 00:11:36] between the same threads
+[00:11:36 -> 00:11:39] if we are replicating the entire register thread?
+[00:11:39 -> 00:11:44] When you write a different...
+[00:11:44 -> 00:11:46] If you write a multi-threaded program,
+[00:11:46 -> 00:11:51] the different threads aren't sharing registers.
+[00:11:51 -> 00:11:53] They share memory.
+[00:11:53 -> 00:11:55] Yeah, they communicate from memory,
+[00:11:55 -> 00:11:58] but we'll see when we talk about multi-processors.
+[00:11:58 -> 00:12:01] You know, the shared memory model,
+[00:12:01 -> 00:12:03] they're going to be communicating from memory
+[00:12:03 -> 00:12:05] by doing loads and stores on memory,
+[00:12:05 -> 00:12:08] and that is going to result in cache coherence problems,
+[00:12:08 -> 00:12:10] et cetera, and we'll see that in the next year.
+[00:12:10 -> 00:12:14] But then the register threads are in a way very powerful
+[00:12:14 -> 00:12:18] and very large, and so we are talking, like...
+[00:12:18 -> 00:12:20] Hold on to that.
+[00:12:20 -> 00:12:22] Hold on to that question.
+[00:12:22 -> 00:12:24] We haven't gotten there yet.
+[00:12:25 -> 00:12:31] So, you know, we want to maybe replicate the state,
+[00:12:31 -> 00:12:34] and this return address tag isn't that big a deal.
+[00:12:34 -> 00:12:36] You know, four entries, eight entries,
+[00:12:36 -> 00:12:39] nothing much over there compared to this.
+[00:12:39 -> 00:12:42] And then there is all the transient state,
+[00:12:42 -> 00:12:44] like the pipeline latches,
+[00:12:44 -> 00:12:46] the yard buffer, reservation stations,
+[00:12:46 -> 00:12:50] and they get partitioned amongst the different threads somehow,
+[00:12:50 -> 00:12:57] and we'll see what that somehow means.
+[00:12:57 -> 00:12:59] So what are the main differences?
+[00:12:59 -> 00:13:01] The main difference is really,
+[00:13:01 -> 00:13:05] main question is what is the thread scheduling policy?
+[00:13:05 -> 00:13:09] When to switch from one thread to another?
+[00:13:09 -> 00:13:13] And related to that really is how do the threads
+[00:13:13 -> 00:13:16] actually share the pipeline?
+[00:13:16 -> 00:13:18] Okay?
+[00:13:18 -> 00:13:23] And, you know, what we decide over here depends upon
+[00:13:23 -> 00:13:26] what kind of latencies you want to tolerate,
+[00:13:26 -> 00:13:28] how much is the latency,
+[00:13:28 -> 00:13:31] and how much single thread performance
+[00:13:31 -> 00:13:34] are you willing to sacrifice.
+[00:13:34 -> 00:13:35] Okay?
+[00:13:35 -> 00:13:37] And if these are not obvious,
+[00:13:37 -> 00:13:39] and they are likely not,
+[00:13:39 -> 00:13:41] we will see in the next few slides
+[00:13:41 -> 00:13:43] what we mean by that, clarify that.
+[00:13:43 -> 00:13:44] Okay?
+[00:13:44 -> 00:13:46] And there are three designs we're going to talk about.
+[00:13:46 -> 00:13:48] Coarse-grade multi-threading,
+[00:13:48 -> 00:13:49] fine-grade multi-threading,
+[00:13:49 -> 00:13:55] and simultaneous multi-threading.
+[00:13:55 -> 00:13:59] So, pictorially, this is sort of what they look like.
+[00:13:59 -> 00:14:01] Here I have a machine
+[00:14:01 -> 00:14:05] that is doing four instructions per cycle.
+[00:14:05 -> 00:14:06] Okay?
+[00:14:06 -> 00:14:09] And, you know, I have a red thread,
+[00:14:09 -> 00:14:11] a blue thread, a green thread,
+[00:14:11 -> 00:14:13] and a yellow thread.
+[00:14:13 -> 00:14:14] Okay?
+[00:14:14 -> 00:14:17] And, you know, in fine-grade,
+[00:14:17 -> 00:14:19] in coarse-grade multi-threading,
+[00:14:19 -> 00:14:22] basically the hardware is going to be used
+[00:14:22 -> 00:14:24] by one thread at a time.
+[00:14:24 -> 00:14:26] So the red thread followed by a blue thread.
+[00:14:26 -> 00:14:28] So here the red thread is using all four slots.
+[00:14:28 -> 00:14:31] Here it's only using three, and there's one idle.
+[00:14:31 -> 00:14:34] Here, because of the ILP in the thread,
+[00:14:34 -> 00:14:36] you know, you're only using one slot,
+[00:14:36 -> 00:14:39] and three are idle, et cetera.
+[00:14:39 -> 00:14:40] Okay?
+[00:14:40 -> 00:14:42] And the white are the idle.
+[00:14:42 -> 00:14:44] In fine-grade multi-threading,
+[00:14:44 -> 00:14:46] what you're doing is you're basically,
+[00:14:46 -> 00:14:49] you know, switching between the different threads
+[00:14:49 -> 00:14:50] every cycle.
+[00:14:50 -> 00:14:53] So first cycle, the red thread uses all four slots.
+[00:14:53 -> 00:14:56] Second cycle, the blue uses three and one idle.
+[00:14:57 -> 00:14:59] Third cycle, the green's using all slots.
+[00:14:59 -> 00:15:02] Fourth cycle, the yellow's using two and two are idle,
+[00:15:02 -> 00:15:03] et cetera.
+[00:15:04 -> 00:15:05] Okay?
+[00:15:06 -> 00:15:09] And in simultaneous multi-threading,
+[00:15:09 -> 00:15:11] or hyper-threading, as it is known,
+[00:15:11 -> 00:15:14] is in each cycle,
+[00:15:14 -> 00:15:16] what you have is the different slots
+[00:15:16 -> 00:15:21] are being used by different threads at the same time.
+[00:15:21 -> 00:15:23] So here, two of these slots are from the red thread,
+[00:15:23 -> 00:15:25] one from the red thread, one from the blue thread,
+[00:15:25 -> 00:15:27] one from the green thread.
+[00:15:27 -> 00:15:30] In this cycle, two slots are being used by blue thread,
+[00:15:30 -> 00:15:34] one by red, and one is idle, for example.
+[00:15:34 -> 00:15:35] Okay?
+[00:15:35 -> 00:15:39] And the whole point of multi-threading is going to be
+[00:15:39 -> 00:15:43] to try and reduce the number of white slots,
+[00:15:43 -> 00:15:45] if you will.
+[00:15:45 -> 00:15:49] Okay?
+[00:15:49 -> 00:15:52] So let's go through these one by one.
+[00:15:52 -> 00:15:55] Let's talk about coarse-grained multi-threading.
+[00:15:55 -> 00:16:00] The rationale for coarse-grained multi-threading is,
+[00:16:00 -> 00:16:05] look, my performance of a single thread is paramount,
+[00:16:05 -> 00:16:08] so I'm going to keep doing that thread
+[00:16:08 -> 00:16:11] until I get to a point where it may make sense for me
+[00:16:11 -> 00:16:12] to do something else.
+[00:16:12 -> 00:16:15] Okay?
+[00:16:15 -> 00:16:17] So we all know that, hey,
+[00:16:17 -> 00:16:22] if I'm executing a program and I have a page fault,
+[00:16:22 -> 00:16:26] it's going to take me a million clock cycles.
+[00:16:26 -> 00:16:30] Rather than sitting idle for a million clock cycles,
+[00:16:30 -> 00:16:34] I might as well swap this program out
+[00:16:34 -> 00:16:37] and let some other program run
+[00:16:37 -> 00:16:41] and come back when the data comes back from memory.
+[00:16:41 -> 00:16:42] Okay?
+[00:16:42 -> 00:16:46] Now, take that down a little bit.
+[00:16:46 -> 00:16:50] If I have a cache miss and I go to memory,
+[00:16:50 -> 00:16:54] and it's taking a hundred clock cycles, you know,
+[00:16:54 -> 00:16:58] now what we have seen so far is,
+[00:16:58 -> 00:17:02] okay, I have a miss that takes a hundred clock cycles,
+[00:17:02 -> 00:17:04] but maybe I can go and get to a,
+[00:17:04 -> 00:17:06] with my ILB branch prediction,
+[00:17:06 -> 00:17:08] fetch this, execute that.
+[00:17:08 -> 00:17:11] I can issue another load instruction
+[00:17:11 -> 00:17:14] that may hit, may miss,
+[00:17:14 -> 00:17:18] and now I have two misses going on simultaneously.
+[00:17:18 -> 00:17:20] Or we saw, you know, the non-bonding caches
+[00:17:21 -> 00:17:23] I had like in approximately eight misses
+[00:17:23 -> 00:17:25] going on simultaneously,
+[00:17:25 -> 00:17:27] or misses coming from, you know,
+[00:17:27 -> 00:17:29] that same thread if you would.
+[00:17:29 -> 00:17:30] Okay?
+[00:17:30 -> 00:17:32] But the memory latency keeps getting bigger
+[00:17:32 -> 00:17:34] and bigger in some sense.
+[00:17:34 -> 00:17:35] Okay?
+[00:17:35 -> 00:17:40] So, you know, maybe rather than trying
+[00:17:40 -> 00:17:43] to find things to do with these white slots
+[00:17:43 -> 00:17:45] from the same thread,
+[00:17:45 -> 00:17:49] maybe what I can do is I can stop doing this
+[00:17:49 -> 00:17:52] red thread, okay, when I see that long cache miss,
+[00:17:52 -> 00:17:55] and then it takes me some time to switch over
+[00:17:55 -> 00:17:57] to the next thread,
+[00:17:57 -> 00:17:59] then execute this blue thread,
+[00:17:59 -> 00:18:02] and when that memory operation comes back,
+[00:18:02 -> 00:18:04] for example, then I start
+[00:18:04 -> 00:18:06] executing the red thread again.
+[00:18:06 -> 00:18:09] All right?
+[00:18:09 -> 00:18:14] So, you know, I want to sacrifice
+[00:18:14 -> 00:18:18] very little single thread latency, okay?
+[00:18:18 -> 00:18:22] And I'm basically going to switch to another thread
+[00:18:22 -> 00:18:25] when I have a long latency operation
+[00:18:25 -> 00:18:28] for this single thread.
+[00:18:28 -> 00:18:30] All right?
+[00:18:30 -> 00:18:34] So, basically, you have a preferred thread
+[00:18:34 -> 00:18:38] that you don't want to sacrifice the latency for.
+[00:18:38 -> 00:18:42] You switch to thread B on an L2 miss, for example,
+[00:18:42 -> 00:18:46] switch back to A when the L2 miss returns.
+[00:18:46 -> 00:18:50] And so the latency of A hasn't really been sacrificed
+[00:18:50 -> 00:18:53] except for, you know, how long there is a take
+[00:18:53 -> 00:18:57] to switch between the threads.
+[00:18:57 -> 00:18:59] All right?
+[00:18:59 -> 00:19:03] So, that's the thread scheduling policy.
+[00:19:03 -> 00:19:05] The pipeline partitioning policy,
+[00:19:05 -> 00:19:08] how does the thread actually share the pipeline?
+[00:19:08 -> 00:19:10] Okay?
+[00:19:10 -> 00:19:12] Really, you aren't sharing the pipeline
+[00:19:12 -> 00:19:14] because at any, you know,
+[00:19:14 -> 00:19:15] you're having the red thread,
+[00:19:15 -> 00:19:17] then you switch over to the blue thread,
+[00:19:17 -> 00:19:20] and then you switch back to the red thread.
+[00:19:20 -> 00:19:21] Okay?
+[00:19:21 -> 00:19:28] So in a sense, only one thread is executing at one time.
+[00:19:28 -> 00:19:31] And so what you do over here is, you know,
+[00:19:31 -> 00:19:34] you wait for the pipeline to flush,
+[00:19:34 -> 00:19:38] and the pipeline flush is sort of the latency overhead you have.
+[00:19:38 -> 00:19:42] So, you know, if you have latencies that are shorter
+[00:19:42 -> 00:19:44] than twice the pipeline depth, you know,
+[00:19:44 -> 00:19:48] it takes one pipeline depth to basically flush the pipeline
+[00:19:48 -> 00:19:51] and another to restart it,
+[00:19:51 -> 00:19:57] then if you have latency that are smaller than that,
+[00:19:57 -> 00:20:00] then really this doesn't work very well.
+[00:20:00 -> 00:20:05] So you have machines that are designed for, you know,
+[00:20:05 -> 00:20:09] just as you use for, you know, short hit-over pipelines,
+[00:20:09 -> 00:20:12] because they don't have big depths,
+[00:20:12 -> 00:20:14] and there's reasonably latency.
+[00:20:14 -> 00:20:17] So if you have, you know, reasonably small latencies,
+[00:20:17 -> 00:20:18] you can tolerate it.
+[00:20:18 -> 00:20:20] Okay.
+[00:20:20 -> 00:20:23] So an exemplar, a commercial exemplar of this,
+[00:20:23 -> 00:20:26] which actually not many people know about,
+[00:20:26 -> 00:20:32] was the IBM North Star Pulsar machines, okay?
+[00:20:32 -> 00:20:36] So these are machines that are built out of...
+[00:20:36 -> 00:20:40] Anybody ever heard of Rochester, Minnesota?
+[00:20:40 -> 00:20:44] Mayo Clinic, it's a big thing over there.
+[00:20:44 -> 00:20:49] And the other, even bigger thing for a long time was IBM Rochester.
+[00:20:49 -> 00:20:51] IBM Rochester, the one unit over there,
+[00:20:51 -> 00:20:57] well, you know, generated I think 40% of IBM's revenues, okay?
+[00:20:57 -> 00:21:00] And, you know, why did they go to multi-threading,
+[00:21:00 -> 00:21:04] whereas the East Coast people that were selling the big servers
+[00:21:04 -> 00:21:08] of CSMT CDs not feel multi-threading necessarily,
+[00:21:08 -> 00:21:11] you know, was that important, okay?
+[00:21:11 -> 00:21:15] So what the East Coast IBM people,
+[00:21:15 -> 00:21:17] they were selling to financial institutions
+[00:21:17 -> 00:21:20] that were using for, you know, whatever, payroll,
+[00:21:20 -> 00:21:23] whatever it is, you know, databases, et cetera.
+[00:21:23 -> 00:21:26] That's what you wanted to improve the performance of.
+[00:21:26 -> 00:21:33] Okay, you didn't have hundreds or thousands of threads run, okay?
+[00:21:33 -> 00:21:36] Who do you think the biggest customer of IBM Rochester was?
+[00:21:36 -> 00:21:38] When I found out, it blew my mind.
+[00:21:38 -> 00:21:41] I don't think any of you have a guess, but take a guess anyway.
+[00:21:41 -> 00:21:44] Huh?
+[00:21:44 -> 00:21:45] Army?
+[00:21:45 -> 00:21:46] See that?
+[00:21:46 -> 00:21:47] Army uses.
+[00:21:47 -> 00:21:49] Army? No.
+[00:21:49 -> 00:21:51] Army has money.
+[00:21:51 -> 00:21:53] Casinos have a lot more.
+[00:21:53 -> 00:21:56] It was casinos, okay?
+[00:21:56 -> 00:21:57] It was casinos.
+[00:21:57 -> 00:22:04] They had all these transactions going on over there as multiple threads, okay?
+[00:22:04 -> 00:22:09] And, you know, and so, yeah, each one of those transactions, okay,
+[00:22:09 -> 00:22:12] missing in the cash, whatever, switch to another thread,
+[00:22:12 -> 00:22:19] keep those multiple threads, people addition out their money to you, go.
+[00:22:19 -> 00:22:20] Okay?
+[00:22:20 -> 00:22:26] So, you know, this was, in a sense, a successful,
+[00:22:26 -> 00:22:31] a early successful commercial use of multi-threading.
+[00:22:31 -> 00:22:40] And so what you do in coarse-grained multi-threading is basically,
+[00:22:40 -> 00:22:49] here's your pipeline for one thread, okay, running one program.
+[00:22:49 -> 00:22:54] So now each thread gets its own program counter.
+[00:22:54 -> 00:22:58] Each thread gets its own register file, okay?
+[00:22:58 -> 00:23:01] The instruction cache and the branch predictor,
+[00:23:01 -> 00:23:08] somehow they get shared based on each thread's need or demand for those.
+[00:23:08 -> 00:23:09] Okay?
+[00:23:09 -> 00:23:14] And the data cache gets shared, but in a sense, you know,
+[00:23:14 -> 00:23:21] when you have a L2 miss, you switch over to the next other thread,
+[00:23:21 -> 00:23:23] and then when the L2 miss gets serviced,
+[00:23:23 -> 00:23:31] you switch back to this simply by flipping the program counter, okay?
+[00:23:31 -> 00:23:40] The next multi-threading technique, and by the way, by the way, okay,
+[00:23:40 -> 00:23:49] okay, so the one this way is, you know, one of the early techniques,
+[00:23:49 -> 00:23:57] early commercial applications of multi-threading.
+[00:23:57 -> 00:24:07] Then what happened then, again, in the early 2000s, okay?
+[00:24:07 -> 00:24:12] That's when companies like Facebook came up, all right?
+[00:24:12 -> 00:24:17] And they had huge data structures, graphs,
+[00:24:17 -> 00:24:21] you go from here to your friend there and load something there, you know,
+[00:24:21 -> 00:24:22] pointers, all of that.
+[00:24:22 -> 00:24:27] Very big data structures that are all, you know, linked in some kind.
+[00:24:27 -> 00:24:32] No arrays, none of your fancy matrix multiplication, you know,
+[00:24:32 -> 00:24:35] chasing pointers all over the place.
+[00:24:35 -> 00:24:43] Cache misses, okay, and multiple things happening at the same time.
+[00:24:43 -> 00:24:48] So the push for multi-threading then sort of came up, again,
+[00:24:48 -> 00:24:54] for, you know, when applications like Facebook came up.
+[00:24:54 -> 00:24:58] All right, another multi-threading technique that has been around
+[00:24:58 -> 00:25:02] for a very long time is basically fine-grained multi-threading,
+[00:25:02 -> 00:25:05] which is effectively switching every clock cycle.
+[00:25:05 -> 00:25:13] So what you do in fine-grained multi-threading is, you know,
+[00:25:13 -> 00:25:16] you sacrifice single-thread performance because what's happening?
+[00:25:16 -> 00:25:19] You can just take a look at this, okay?
+[00:25:19 -> 00:25:23] The red thread, if there are n threads, okay,
+[00:25:23 -> 00:25:30] then the red thread gets a turn to execute after n cycles, okay?
+[00:25:30 -> 00:25:34] So it's basically, you know, the latency of execution
+[00:25:34 -> 00:25:41] for each thread is increased significantly.
+[00:25:41 -> 00:25:44] However, okay, so the thread switching policy
+[00:25:44 -> 00:25:47] is you switch threads every cycle.
+[00:25:47 -> 00:25:51] Whether you have even an L1 hit doesn't matter, okay?
+[00:25:51 -> 00:25:54] You're switching a thread every cycle.
+[00:25:54 -> 00:25:57] And the pipeline gets partitioned dynamically.
+[00:25:57 -> 00:26:04] Basically, every stage of the pipeline is a different thread, okay?
+[00:26:04 -> 00:26:09] And, you know, so that allows you to tolerate all the latencies,
+[00:26:09 -> 00:26:11] whether the latency is one cycle, two cycles,
+[00:26:11 -> 00:26:13] whatever it is, it doesn't matter.
+[00:26:13 -> 00:26:16] Rather than finding some other instruction from my,
+[00:26:16 -> 00:26:19] if I have a three-cycle latency, load-use latency,
+[00:26:19 -> 00:26:23] rather than finding three instructions from my own thread,
+[00:26:23 -> 00:26:26] I'm finding them from some other thread, if you will.
+[00:26:26 -> 00:26:35] So the, you know, length of the pipeline really doesn't matter.
+[00:26:35 -> 00:26:39] And, you know, but on the negative side,
+[00:26:39 -> 00:26:44] if I now go and miss in the cache and it takes me 300 cycles,
+[00:26:44 -> 00:26:46] then I want to keep things fully busy,
+[00:26:46 -> 00:26:50] I need 300 threads if you're switching every cycle.
+[00:26:50 -> 00:26:58] And one of the extreme examples was
+[00:26:58 -> 00:27:02] Horton Smith built a machine called the Denelcor app,
+[00:27:02 -> 00:27:05] again, sold to, you know, the government.
+[00:27:05 -> 00:27:07] It had so many threads.
+[00:27:07 -> 00:27:13] And, you know, it didn't even feel the need for caches, okay?
+[00:27:13 -> 00:27:15] You don't, you know, because, okay,
+[00:27:15 -> 00:27:19] if you can tolerate 300-cycle latency,
+[00:27:19 -> 00:27:22] then why do you need to have a cache to reduce the latency
+[00:27:22 -> 00:27:24] if you can tolerate it, okay?
+[00:27:24 -> 00:27:28] Now, this is sort of, in a sense, more, you know,
+[00:27:28 -> 00:27:30] one way of looking at it that, hey,
+[00:27:30 -> 00:27:33] you can get by without caches.
+[00:27:33 -> 00:27:38] But these are, you know, these are machines that are designed
+[00:27:38 -> 00:27:41] for workloads that even if you had a cache,
+[00:27:41 -> 00:27:45] it won't work that well because they'll be missing all the time.
+[00:27:45 -> 00:27:49] You know, say I have a 64 kilobyte cache
+[00:27:49 -> 00:27:53] and I have a megabyte matrix that I'm, you know,
+[00:27:53 -> 00:27:55] multiplying and getting through there,
+[00:27:55 -> 00:27:57] unless I play off my blocking tricks
+[00:27:57 -> 00:27:59] and all the other kind of tricks and so on like that,
+[00:27:59 -> 00:28:04] you're going to get misses pretty much all the time, okay?
+[00:28:04 -> 00:28:07] And in fact, the vector machines,
+[00:28:07 -> 00:28:09] remember we talked about the vector machines
+[00:28:09 -> 00:28:14] when they were streaming vectors from memory, okay?
+[00:28:14 -> 00:28:16] They didn't have vector registers.
+[00:28:16 -> 00:28:20] Those vector machines were designed before they had caches
+[00:28:20 -> 00:28:22] and they worked very well, okay?
+[00:28:22 -> 00:28:27] The Cray vector machines, the vector registers were designed
+[00:28:27 -> 00:28:31] after people knew about caches, okay?
+[00:28:31 -> 00:28:36] But they were working with, you know,
+[00:28:36 -> 00:28:39] big data, big matrices.
+[00:28:39 -> 00:28:40] Caches weren't going to work,
+[00:28:40 -> 00:28:44] so they did not expend the resources on adding caches,
+[00:28:44 -> 00:28:46] just working with, you know,
+[00:28:46 -> 00:28:50] getting data from memory to those vector load instructions.
+[00:28:50 -> 00:28:55] What they did have is they had an enormous number of banks
+[00:28:55 -> 00:29:00] in the memory to get that bandwidth, okay?
+[00:29:00 -> 00:29:04] 32 banks, or 64 banks, the Cray XMPs
+[00:29:04 -> 00:29:06] that had four vector processors
+[00:29:06 -> 00:29:10] had like 256 banks of memory, okay?
+[00:29:10 -> 00:29:12] They didn't have caches, all right?
+[00:29:12 -> 00:29:17] So in this more definite, you know, world is that,
+[00:29:17 -> 00:29:20] you know, you in a sense can say,
+[00:29:20 -> 00:29:23] look, you know, I don't need caches.
+[00:29:23 -> 00:29:28] So now, you know, again,
+[00:29:28 -> 00:29:31] going back to, you know, emergence of applications
+[00:29:31 -> 00:29:33] like Facebook, huge data structures,
+[00:29:33 -> 00:29:36] caches are not going to work, okay?
+[00:29:36 -> 00:29:40] And so people even contemplated building
+[00:29:40 -> 00:29:42] fine-grained multi-threading machines
+[00:29:42 -> 00:29:47] that are switched on every cycle.
+[00:29:47 -> 00:29:50] And I know some of the Sun Niagara machines
+[00:29:50 -> 00:29:52] actually came around at the right time
+[00:29:52 -> 00:29:54] where they were available
+[00:29:54 -> 00:29:56] and things like Facebook were just, you know,
+[00:29:56 -> 00:29:59] taken off or, you know, coming into fruition.
+[00:29:59 -> 00:30:01] So, you know, but, you know,
+[00:30:01 -> 00:30:05] they had lots of register,
+[00:30:05 -> 00:30:07] they had register windows and lots of register
+[00:30:07 -> 00:30:08] so they didn't quite succeed.
+[00:30:08 -> 00:30:11] But, you know, there were many, many people saying,
+[00:30:11 -> 00:30:14] hey, you know, we're building multi-threading machines
+[00:30:14 -> 00:30:18] in some sense for those applications
+[00:30:18 -> 00:30:23] because the little agency caches just don't work.
+[00:30:23 -> 00:30:25] Okay, so in fine-grained multi-threading,
+[00:30:25 -> 00:30:28] basically the pipeline looks like here now.
+[00:30:28 -> 00:30:30] So I have many register files,
+[00:30:30 -> 00:30:34] I have many program counters, one per thread, okay?
+[00:30:34 -> 00:30:37] And so I'm switching between these every cycle,
+[00:30:37 -> 00:30:40] switching between the register files every cycle.
+[00:30:40 -> 00:30:43] And now in the pipeline I have, you know,
+[00:30:43 -> 00:30:47] red thread, yellow thread, green thread, you know,
+[00:30:47 -> 00:30:51] different threads all living in the pipeline
+[00:30:51 -> 00:30:52] at the same time.
+[00:30:52 -> 00:30:55] That's not, that wasn't the case in this fine-grained
+[00:30:55 -> 00:30:58] multi-threading, if you will.
+[00:30:58 -> 00:31:00] Of course in multi-threading.
+[00:31:00 -> 00:31:06] Question so far?
+[00:31:06 -> 00:31:07] Yeah.
+[00:31:07 -> 00:31:10] When we talk about this threading,
+[00:31:10 -> 00:31:12] is this like the classic idea of threading
+[00:31:12 -> 00:31:15] like you would have in a P thread?
+[00:31:15 -> 00:31:19] Or like the OS can't run multiple processes
+[00:31:19 -> 00:31:21] because they're sharing the memory space,
+[00:31:21 -> 00:31:23] the memory address space?
+[00:31:23 -> 00:31:25] I'm not sure which way this is going.
+[00:31:26 -> 00:31:29] That's a very good and very timely question
+[00:31:29 -> 00:31:33] because I had forgotten one thing I wanted to say
+[00:31:33 -> 00:31:35] which is related to this.
+[00:31:35 -> 00:31:39] And now that brings it back up, okay?
+[00:31:39 -> 00:31:41] We'll get to that one, okay?
+[00:31:41 -> 00:31:45] So, what are the threads?
+[00:31:45 -> 00:31:47] What are threads?
+[00:31:47 -> 00:31:52] You know, what are threads, you know?
+[00:31:52 -> 00:31:55] They could be anything you want them to be, okay?
+[00:31:55 -> 00:31:58] In the Danelcore app, the different threads
+[00:31:58 -> 00:32:03] are different iterations of independent iterations,
+[00:32:03 -> 00:32:07] okay?
+[00:32:07 -> 00:32:11] Again, you know, you're doing those flame simulations,
+[00:32:11 -> 00:32:16] is, you know, I don't have caches, okay?
+[00:32:16 -> 00:32:18] One iteration of the loop, one thread,
+[00:32:18 -> 00:32:21] another iteration of the loop, another thread.
+[00:32:21 -> 00:32:24] Okay.
+[00:32:24 -> 00:32:28] Just like how GPUs and so on
+[00:32:28 -> 00:32:31] are supposedly the grandfather of GPUs.
+[00:32:31 -> 00:32:33] Burton Smith actually, you know,
+[00:32:33 -> 00:32:35] he was a very wonderful man.
+[00:32:35 -> 00:32:38] He also then influenced this.
+[00:32:38 -> 00:32:40] Next thing we're going to be talking about
+[00:32:40 -> 00:32:41] simultaneous multi-threading.
+[00:32:41 -> 00:32:43] There's a person who did it
+[00:32:43 -> 00:32:44] went to and learned with Burton
+[00:32:44 -> 00:32:45] and to learn about multi-threading,
+[00:32:45 -> 00:32:47] but yeah, no, this...
+[00:32:47 -> 00:32:49] And Burton also, you know,
+[00:32:49 -> 00:32:52] worked a lot with the government,
+[00:32:52 -> 00:32:55] so he knew all the agencies,
+[00:32:55 -> 00:32:58] even though they didn't exist.
+[00:32:58 -> 00:33:00] So yeah, okay.
+[00:33:00 -> 00:33:03] Now, when you are getting to,
+[00:33:03 -> 00:33:05] when you are getting to,
+[00:33:05 -> 00:33:08] for this courseware multi-threading over here,
+[00:33:08 -> 00:33:12] it was just basically another one of those transactions
+[00:33:12 -> 00:33:15] coming in from the casino, okay?
+[00:33:15 -> 00:33:20] Now, let's get to this simultaneous multi-threading.
+[00:33:21 -> 00:33:23] We'll talk about what simultaneous multi-threading is
+[00:33:23 -> 00:33:26] a little bit, see the, you know,
+[00:33:26 -> 00:33:29] what are the issues that come up,
+[00:33:29 -> 00:33:31] and then we'll talk a little bit more
+[00:33:31 -> 00:33:35] about the type of threads over there.
+[00:33:35 -> 00:33:37] What a thread, you know, in a sense,
+[00:33:37 -> 00:33:40] could be anything that, you know,
+[00:33:40 -> 00:33:42] any program of some kind
+[00:33:42 -> 00:33:46] or parts of a program or a process
+[00:33:46 -> 00:33:48] or sharing this or not,
+[00:33:48 -> 00:33:53] whatever it is, et cetera, okay?
+[00:33:53 -> 00:33:57] So what happened with the, you know,
+[00:33:57 -> 00:34:00] simultaneous multi-threading is, you know,
+[00:34:00 -> 00:34:02] people started building these
+[00:34:02 -> 00:34:04] out of order issue machines, okay?
+[00:34:04 -> 00:34:06] So, you know, I'm doing this
+[00:34:06 -> 00:34:08] four-wide out of order issue machine,
+[00:34:08 -> 00:34:10] but it's not getting that,
+[00:34:10 -> 00:34:12] because I do not want to get
+[00:34:12 -> 00:34:16] the performance benefits of that, okay?
+[00:34:16 -> 00:34:18] Also, what we now know is,
+[00:34:18 -> 00:34:22] hey, L1 miss, I can tolerate it,
+[00:34:22 -> 00:34:25] 10 cycle latency, I can tolerate it
+[00:34:25 -> 00:34:27] with my out of order issue machine.
+[00:34:27 -> 00:34:31] So I don't want to do multi-threading for that.
+[00:34:31 -> 00:34:33] Okay, all right.
+[00:34:33 -> 00:34:35] Then, should I do multi-threading
+[00:34:35 -> 00:34:37] and switch out somehow
+[00:34:37 -> 00:34:40] from a different whatever, okay?
+[00:34:40 -> 00:34:43] But instead, what I could do is,
+[00:34:43 -> 00:34:46] now, you know, the out of order processor,
+[00:34:46 -> 00:34:48] we talked at the back end
+[00:34:48 -> 00:34:50] of the out of order processor, okay?
+[00:34:50 -> 00:34:52] There are the functional units.
+[00:34:52 -> 00:34:54] There is the reorder buffer.
+[00:34:54 -> 00:34:56] There is the load store queue.
+[00:34:56 -> 00:34:58] There is the data caches, okay?
+[00:34:58 -> 00:35:00] Et cetera, et cetera.
+[00:35:00 -> 00:35:03] And all those structures
+[00:35:03 -> 00:35:08] are just working with sets of bits.
+[00:35:08 -> 00:35:12] You don't care where those sets of bits came from.
+[00:35:12 -> 00:35:15] Okay, I don't care if I have this,
+[00:35:15 -> 00:35:17] you know, I don't know this
+[00:35:17 -> 00:35:19] floating point multiply came from the red side
+[00:35:19 -> 00:35:22] or this second other floating point multiply
+[00:35:22 -> 00:35:23] came from the blue, right?
+[00:35:23 -> 00:35:25] Which of them is ready, I can use
+[00:35:25 -> 00:35:29] my floating point multiplier form.
+[00:35:29 -> 00:35:32] Okay, so, you know,
+[00:35:32 -> 00:35:37] what you do in this simultaneous multi-threading,
+[00:35:37 -> 00:35:39] and you'll see a little bit more of the detail over there,
+[00:35:39 -> 00:35:42] okay, is you are going to try
+[00:35:42 -> 00:35:43] and tolerate all the latencies
+[00:35:43 -> 00:35:45] by just overlapping things
+[00:35:45 -> 00:35:47] from multiple threads at the same time.
+[00:35:47 -> 00:35:49] And sacrifice maybe only a little
+[00:35:49 -> 00:35:52] single thread performance, okay?
+[00:35:52 -> 00:35:55] And what you're basically doing is, in a sense,
+[00:35:55 -> 00:36:01] you're trying to issue threads in a round robin fashion,
+[00:36:01 -> 00:36:02] but not quite.
+[00:36:02 -> 00:36:04] You're actually going to try
+[00:36:04 -> 00:36:07] and even fetch instructions
+[00:36:07 -> 00:36:10] from multiple threads at the same time.
+[00:36:10 -> 00:36:12] And once you fetch instructions
+[00:36:12 -> 00:36:14] from multiple threads,
+[00:36:14 -> 00:36:15] and you dump them into the backend,
+[00:36:15 -> 00:36:17] the backend doesn't care.
+[00:36:17 -> 00:36:18] And then when you're done with them,
+[00:36:18 -> 00:36:20] you can put them back into the right thread,
+[00:36:20 -> 00:36:21] if you would.
+[00:36:21 -> 00:36:24] Okay?
+[00:36:24 -> 00:36:32] So, the thread scheduling policy is,
+[00:36:32 -> 00:36:33] in a sense, it's like right robin,
+[00:36:33 -> 00:36:34] but this is, you know,
+[00:36:34 -> 00:36:37] that paper that talks about the iCount,
+[00:36:37 -> 00:36:39] the exporting choice paper
+[00:36:39 -> 00:36:42] that you have on your assigned reading.
+[00:36:42 -> 00:36:47] And the pipeline partitioning is dynamic somehow, okay?
+[00:36:47 -> 00:36:51] And so, this has been used very widely.
+[00:36:51 -> 00:36:53] The Intel processor uses it,
+[00:36:53 -> 00:36:55] processor uses it, IBM uses it.
+[00:36:55 -> 00:36:58] AMD, for a while, shied away from it,
+[00:36:58 -> 00:36:59] and then they went to it,
+[00:36:59 -> 00:37:01] and then they went back again out of it,
+[00:37:01 -> 00:37:02] and I think they went back
+[00:37:02 -> 00:37:05] to having something like this again.
+[00:37:05 -> 00:37:07] So, what do you do now?
+[00:37:07 -> 00:37:09] Here was your out of order processor,
+[00:37:09 -> 00:37:12] map table, reorder buffer, okay?
+[00:37:12 -> 00:37:14] Writer's file, you know,
+[00:37:14 -> 00:37:16] physical writer's proof, if you would,
+[00:37:16 -> 00:37:19] instruction cache branch predictor.
+[00:37:19 -> 00:37:22] You replicate the map tables,
+[00:37:22 -> 00:37:26] but you share the physical register file,
+[00:37:26 -> 00:37:28] and then, let's see,
+[00:37:28 -> 00:37:30] we'll see what happens to the reorder buffer
+[00:37:30 -> 00:37:31] and the node store queue,
+[00:37:31 -> 00:37:34] somehow they get shared.
+[00:37:34 -> 00:37:36] Okay, so the thread scheduler
+[00:37:36 -> 00:37:40] would select between the different threads,
+[00:37:40 -> 00:37:42] and actually, we would actually,
+[00:37:42 -> 00:37:45] maybe even fetch from multiple threads,
+[00:37:45 -> 00:37:47] at the same time.
+[00:37:47 -> 00:37:49] The cache then gets somehow shared,
+[00:37:49 -> 00:37:53] branch predictor, okay, map table,
+[00:37:53 -> 00:37:55] separate map tables,
+[00:37:55 -> 00:37:58] and then, based on how the instructions are fed,
+[00:37:58 -> 00:37:59] the reorder buffer,
+[00:37:59 -> 00:38:01] these are not contiguous, by the way,
+[00:38:01 -> 00:38:04] sorry, you know,
+[00:38:04 -> 00:38:08] somehow the reorder buffer gets shared, okay,
+[00:38:08 -> 00:38:09] and it could be contiguous,
+[00:38:09 -> 00:38:10] it's not contiguous,
+[00:38:10 -> 00:38:11] conceptually it's contiguous,
+[00:38:11 -> 00:38:14] physically it may not be, okay?
+[00:38:14 -> 00:38:16] The physical register file
+[00:38:16 -> 00:38:18] somehow gets shared,
+[00:38:18 -> 00:38:22] the data cache somehow gets shared.
+[00:38:22 -> 00:38:24] Okay, so, you know,
+[00:38:24 -> 00:38:28] and again, what happens here now is,
+[00:38:28 -> 00:38:30] it depends, you know,
+[00:38:30 -> 00:38:33] if I fetch now,
+[00:38:33 -> 00:38:34] I could be fetching
+[00:38:34 -> 00:38:36] two instructions from the red thread,
+[00:38:36 -> 00:38:37] one from the blue thread,
+[00:38:37 -> 00:38:39] and one from the green thread,
+[00:38:39 -> 00:38:41] and they'll get sent to the backend,
+[00:38:41 -> 00:38:43] and somehow they'll execute over there.
+[00:38:43 -> 00:38:45] Next cycle, I'd be fetching two from the blue thread,
+[00:38:45 -> 00:38:46] one from the red,
+[00:38:46 -> 00:38:48] and I may not be able to fetch any,
+[00:38:48 -> 00:38:50] I may be trying to fetch two from the red,
+[00:38:50 -> 00:38:52] but I could only fetch one.
+[00:38:52 -> 00:38:57] Are you with me on this?
+[00:38:57 -> 00:38:58] All right.
+[00:38:58 -> 00:39:03] So, now, you're saying,
+[00:39:03 -> 00:39:06] hey, all the stuff that we learned,
+[00:39:06 -> 00:39:08] I need caches
+[00:39:08 -> 00:39:10] to get low latency instruction access,
+[00:39:10 -> 00:39:11] instruction cache.
+[00:39:11 -> 00:39:13] I need data caches
+[00:39:13 -> 00:39:17] to get low latency data access.
+[00:39:17 -> 00:39:19] If I'm sharing the instruction cache,
+[00:39:19 -> 00:39:22] with another thread,
+[00:39:22 -> 00:39:23] am I not going to have
+[00:39:23 -> 00:39:26] more instruction cache misses?
+[00:39:26 -> 00:39:28] Why is that not sacrificing
+[00:39:28 -> 00:39:30] my single thread latency a lot?
+[00:39:30 -> 00:39:33] If I'm sharing the data cache,
+[00:39:33 -> 00:39:34] am I not going to have
+[00:39:34 -> 00:39:37] more data cache misses?
+[00:39:37 -> 00:39:38] Isn't that going to hurt
+[00:39:38 -> 00:39:40] my single thread latency?
+[00:39:40 -> 00:39:49] Cache interference is a general concern
+[00:39:49 -> 00:39:52] for all the multi-threading variants.
+[00:39:52 -> 00:39:57] So, the question that people ask is,
+[00:39:57 -> 00:40:00] can the cache working sets
+[00:40:00 -> 00:40:02] of multiple threads
+[00:40:02 -> 00:40:05] fit in the caches?
+[00:40:05 -> 00:40:08] And then, and now,
+[00:40:08 -> 00:40:12] comes the applications
+[00:40:12 -> 00:40:14] where what do you have,
+[00:40:14 -> 00:40:15] you know, many times
+[00:40:15 -> 00:40:18] what you have is a web server.
+[00:40:18 -> 00:40:20] Say you have a web server.
+[00:40:20 -> 00:40:21] Okay.
+[00:40:21 -> 00:40:23] What's a web server doing?
+[00:40:23 -> 00:40:24] It's, you know,
+[00:40:24 -> 00:40:26] getting something at the end part
+[00:40:26 -> 00:40:28] going through some piece of code,
+[00:40:28 -> 00:40:30] figuring out what to do.
+[00:40:30 -> 00:40:33] Another request comes in,
+[00:40:33 -> 00:40:36] going through perhaps
+[00:40:36 -> 00:40:37] the same piece of code.
+[00:40:37 -> 00:40:39] Of course, maybe different branches
+[00:40:39 -> 00:40:41] through the different pieces of code.
+[00:40:41 -> 00:40:43] But a lot, same functions,
+[00:40:43 -> 00:40:45] a lot of commonality.
+[00:40:45 -> 00:40:46] Another thread comes in,
+[00:40:46 -> 00:40:48] very similar thing.
+[00:40:48 -> 00:40:49] Okay.
+[00:40:49 -> 00:40:53] So, whereas what we've talked about
+[00:40:53 -> 00:40:55] in general, a little bit about,
+[00:40:56 -> 00:40:59] hey, if I'm doing multiple programs,
+[00:40:59 -> 00:41:01] you know, and running on the hardware
+[00:41:01 -> 00:41:02] at the same time,
+[00:41:02 -> 00:41:04] I have multiple instructions,
+[00:41:04 -> 00:41:07] multiple data, M, I, and D.
+[00:41:07 -> 00:41:08] Okay.
+[00:41:08 -> 00:41:12] And if I now share the multiple instructions
+[00:41:12 -> 00:41:14] from different programs
+[00:41:14 -> 00:41:15] in the same instruction cache,
+[00:41:15 -> 00:41:17] I'm going to get interference.
+[00:41:17 -> 00:41:19] If I share the completely different sets of data
+[00:41:19 -> 00:41:20] in the same data cache,
+[00:41:20 -> 00:41:23] I'm going to get interference.
+[00:41:23 -> 00:41:24] Okay.
+[00:41:24 -> 00:41:28] But if I had some of these server kind of applications
+[00:41:28 -> 00:41:30] that I have streams of requests coming in
+[00:41:30 -> 00:41:32] and I'm serving those requests,
+[00:41:32 -> 00:41:34] that is what people call,
+[00:41:34 -> 00:41:38] you start calling single program multiple data.
+[00:41:38 -> 00:41:42] All right.
+[00:41:42 -> 00:41:48] So they have the similar set of instructions,
+[00:41:48 -> 00:41:49] if you will.
+[00:41:49 -> 00:41:52] So they can share the I cache.
+[00:41:52 -> 00:41:54] Okay.
+[00:41:54 -> 00:42:00] And they also have a fair amount of data in common.
+[00:42:00 -> 00:42:05] And so there is less data cache contention.
+[00:42:05 -> 00:42:09] All right.
+[00:42:09 -> 00:42:11] Further, some of the arguments they use is,
+[00:42:11 -> 00:42:13] look, hey, you know,
+[00:42:13 -> 00:42:17] does the working set of one of those threads
+[00:42:17 -> 00:42:19] fit in the cache?
+[00:42:19 -> 00:42:22] If it doesn't, then I already,
+[00:42:22 -> 00:42:27] the cache is not going to, you know,
+[00:42:27 -> 00:42:30] give me lots and lots of heads.
+[00:42:30 -> 00:42:34] So if I create more interference,
+[00:42:34 -> 00:42:37] it's going to give me fewer heads.
+[00:42:37 -> 00:42:39] But how much fewer?
+[00:42:39 -> 00:42:41] Okay.
+[00:42:41 -> 00:42:44] Now, I mean,
+[00:42:44 -> 00:42:47] clever people can come up with all sorts of arguments
+[00:42:47 -> 00:42:50] that actually sound reasonable
+[00:42:50 -> 00:42:52] until you actually do the analysis
+[00:42:52 -> 00:42:54] to figure out what's going on.
+[00:42:54 -> 00:42:55] Okay.
+[00:42:55 -> 00:42:59] So the cache interference does not, you know,
+[00:42:59 -> 00:43:01] claim that, in many cases,
+[00:43:01 -> 00:43:03] cache interference does not hurt.
+[00:43:03 -> 00:43:08] Now, what you do want, okay,
+[00:43:08 -> 00:43:11] so we talked about instruction-level parallelism.
+[00:43:11 -> 00:43:13] We have latencies.
+[00:43:13 -> 00:43:16] We are overlapping, hiding those latencies
+[00:43:16 -> 00:43:19] by overlapping with the execution
+[00:43:19 -> 00:43:21] of other instructions.
+[00:43:21 -> 00:43:23] Okay.
+[00:43:23 -> 00:43:27] Now, we also talked about non-blocking caches,
+[00:43:27 -> 00:43:30] and, you know, what was going on over there?
+[00:43:30 -> 00:43:32] I had a miss.
+[00:43:32 -> 00:43:34] I had a miss, cache miss.
+[00:43:34 -> 00:43:37] Rather than wait for something to come back,
+[00:43:37 -> 00:43:40] I tried to overlap, tolerate that cache miss
+[00:43:40 -> 00:43:44] with some other execution of other instructions,
+[00:43:44 -> 00:43:47] which include cache hits.
+[00:43:47 -> 00:43:49] You know, through arithmetic instruction
+[00:43:49 -> 00:43:52] but other loads that were cache hits,
+[00:43:52 -> 00:43:55] you know, but then also including loads
+[00:43:55 -> 00:43:58] from the same program that were ending up in cache misses.
+[00:43:58 -> 00:44:02] So just like when I have, you know,
+[00:44:02 -> 00:44:04] instruction execution latencies,
+[00:44:04 -> 00:44:07] I'm overlapping with the execution of other instructions.
+[00:44:07 -> 00:44:10] When I have a miss latency,
+[00:44:10 -> 00:44:12] a memory access latency,
+[00:44:12 -> 00:44:16] I want to have more parallelism to tolerate
+[00:44:16 -> 00:44:19] that long latency memory operation.
+[00:44:19 -> 00:44:22] And I want to tolerate that with more
+[00:44:22 -> 00:44:25] long latency memory operations.
+[00:44:25 -> 00:44:26] Okay.
+[00:44:26 -> 00:44:28] So in a sense, what I want to do is
+[00:44:28 -> 00:44:30] I want to have a situation where I have
+[00:44:30 -> 00:44:32] memory-level parallelism,
+[00:44:32 -> 00:44:35] where I have multiple memory access operations
+[00:44:35 -> 00:44:37] going on in parallel.
+[00:44:37 -> 00:44:41] You know, I can do that to a limited fashion
+[00:44:41 -> 00:44:43] from the misses of one thread,
+[00:44:43 -> 00:44:47] but I can now get those additional misses
+[00:44:47 -> 00:44:49] from another thread,
+[00:44:49 -> 00:44:51] which is also missing a lot,
+[00:44:51 -> 00:44:54] which is what's happening for most of these
+[00:44:54 -> 00:44:57] big server protocols.
+[00:44:57 -> 00:44:58] Okay.
+[00:44:58 -> 00:45:00] So now getting to your friends' questions.
+[00:45:00 -> 00:45:01] All right.
+[00:45:01 -> 00:45:04] So this is your typical server
+[00:45:04 -> 00:45:07] friends handling user requests.
+[00:45:07 -> 00:45:08] Okay.
+[00:45:08 -> 00:45:11] If I have this, and so they're all
+[00:45:11 -> 00:45:13] accessing the same memory.
+[00:45:13 -> 00:45:14] Okay.
+[00:45:14 -> 00:45:16] So anything that we have to do with
+[00:45:16 -> 00:45:17] making sure of the access,
+[00:45:17 -> 00:45:18] we see that when we talk about
+[00:45:18 -> 00:45:20] multi-process or blocks, et cetera,
+[00:45:20 -> 00:45:23] all that shared memory stuff, et cetera.
+[00:45:23 -> 00:45:24] Okay.
+[00:45:24 -> 00:45:26] But, you know, once you have that,
+[00:45:26 -> 00:45:28] then it just becomes a question of
+[00:45:28 -> 00:45:33] what the operating system decides to
+[00:45:33 -> 00:45:37] use and then schedule at the same time.
+[00:45:37 -> 00:45:39] Make sense?
+[00:45:39 -> 00:45:41] So just so I'm clear on this.
+[00:45:41 -> 00:45:44] If the operating system has to know
+[00:45:44 -> 00:45:47] scheduling these two threads, right?
+[00:45:47 -> 00:45:51] Meaning like today in a Linux machine,
+[00:45:51 -> 00:45:53] those two hyperthreads could be
+[00:45:53 -> 00:45:55] completely isolated processes.
+[00:45:55 -> 00:45:59] So this is a different architecture from that.
+[00:45:59 -> 00:46:03] Those could be isolated processes,
+[00:46:03 -> 00:46:05] but typically not,
+[00:46:05 -> 00:46:06] because they're going to interfere
+[00:46:06 -> 00:46:08] in these structures and really
+[00:46:08 -> 00:46:11] do instruction and data caches
+[00:46:11 -> 00:46:13] and really degrade the performance
+[00:46:13 -> 00:46:15] significantly.
+[00:46:15 -> 00:46:17] That's why we always dream about hyperthreading.
+[00:46:17 -> 00:46:19] That's why.
+[00:46:19 -> 00:46:20] No, no, no.
+[00:46:20 -> 00:46:24] So the way I like to, you know,
+[00:46:24 -> 00:46:25] we had come up with these ideas
+[00:46:25 -> 00:46:27] a long time ago when we were doing this stuff,
+[00:46:27 -> 00:46:29] and I never liked it that much.
+[00:46:29 -> 00:46:31] Because the way I sort of like to do it is,
+[00:46:31 -> 00:46:34] you know, at that time,
+[00:46:34 -> 00:46:37] sort of the big vehicle that
+[00:46:37 -> 00:46:39] everyone loved to hate,
+[00:46:39 -> 00:46:41] because it was a big gas cathode
+[00:46:41 -> 00:46:43] of a Hummer.
+[00:46:43 -> 00:46:45] Okay, so it was one of these, you know,
+[00:46:45 -> 00:46:47] army Humvees, civilian version of that,
+[00:46:47 -> 00:46:49] burnt a lot of gas, and I say,
+[00:46:49 -> 00:46:51] hey, it's like, okay, you got a Hummer
+[00:46:51 -> 00:46:52] and now you're a single man,
+[00:46:52 -> 00:46:54] and my Hummer is, you know,
+[00:46:54 -> 00:46:57] taking too much gas, maybe I should carpool.
+[00:46:57 -> 00:46:59] Okay.
+[00:46:59 -> 00:47:01] That has issues.
+[00:47:01 -> 00:47:03] So you don't carpool.
+[00:47:03 -> 00:47:05] Okay, yeah.
+[00:47:05 -> 00:47:08] So generally just across this hardware threads
+[00:47:08 -> 00:47:10] are usually just sort of seen
+[00:47:10 -> 00:47:13] as like separate CPUs, right?
+[00:47:13 -> 00:47:16] Yeah, separate virtual CPUs
+[00:47:16 -> 00:47:19] as far as the operating system is concerned.
+[00:47:19 -> 00:47:20] Okay.
+[00:47:20 -> 00:47:22] They're CPUs, yeah.
+[00:47:22 -> 00:47:25] How does the operating system
+[00:47:25 -> 00:47:27] itself to the CPU's perspective
+[00:47:27 -> 00:47:29] is just another process?
+[00:47:29 -> 00:47:32] So under cases where you really need to go
+[00:47:32 -> 00:47:35] and modify those, you know,
+[00:47:35 -> 00:47:37] supervisor level registers
+[00:47:37 -> 00:47:39] and those accesses,
+[00:47:39 -> 00:47:42] what does, what happens then?
+[00:47:42 -> 00:47:46] Do you like report back to a single gridded mode
+[00:47:46 -> 00:47:48] for the duration of this OS?
+[00:47:48 -> 00:47:50] Say that again, say that again.
+[00:47:50 -> 00:47:53] We have some registers which are
+[00:47:53 -> 00:47:56] locked away to supervisor level, right?
+[00:47:56 -> 00:47:58] Not just the internal.
+[00:47:58 -> 00:48:01] And to the CPU, it doesn't matter,
+[00:48:01 -> 00:48:04] like the OS is just another process.
+[00:48:04 -> 00:48:07] So if the OS wants to come in
+[00:48:07 -> 00:48:09] and do a lot of, you know,
+[00:48:09 -> 00:48:11] kind of critical stuff,
+[00:48:11 -> 00:48:13] the report that that's being back
+[00:48:13 -> 00:48:15] into a single gridded machine now.
+[00:48:15 -> 00:48:19] Does everybody hear that question?
+[00:48:19 -> 00:48:21] Someone want to help me?
+[00:48:21 -> 00:48:22] I'll help.
+[00:48:22 -> 00:48:24] The OS isn't really a process, right?
+[00:48:24 -> 00:48:26] You make a system call.
+[00:48:26 -> 00:48:28] The machine that's running
+[00:48:28 -> 00:48:30] jumps into supervisor mode
+[00:48:30 -> 00:48:32] and that core starts doing
+[00:48:32 -> 00:48:34] whatever the heck you want it to do.
+[00:48:34 -> 00:48:36] You do the system, the read or whatever it is.
+[00:48:36 -> 00:48:38] You turn from that system call
+[00:48:38 -> 00:48:39] in your thread,
+[00:48:39 -> 00:48:41] then leave supervisor mode and goes on.
+[00:48:41 -> 00:48:44] There are no, well, there are kernel threads
+[00:48:44 -> 00:48:46] doing some background stuff.
+[00:48:46 -> 00:48:50] But in general, the OS has not got anything running.
+[00:48:50 -> 00:48:53] And that is like, you know,
+[00:48:53 -> 00:48:56] whenever you have a call of some kind,
+[00:48:56 -> 00:48:58] there are certain calls,
+[00:48:58 -> 00:49:00] there are certain, you know,
+[00:49:00 -> 00:49:03] OS activities that, you know,
+[00:49:03 -> 00:49:05] say you're running,
+[00:49:05 -> 00:49:07] I have 600 instructions running
+[00:49:07 -> 00:49:09] from three different threads
+[00:49:09 -> 00:49:11] and, you know, one of them makes
+[00:49:11 -> 00:49:13] a call of some kind.
+[00:49:13 -> 00:49:15] It bothers the OS a little bit.
+[00:49:15 -> 00:49:17] Okay? What happens?
+[00:49:17 -> 00:49:19] Okay?
+[00:49:19 -> 00:49:21] In some cases, for some of them,
+[00:49:21 -> 00:49:23] the others can keep running.
+[00:49:23 -> 00:49:25] And this one gets Angela.
+[00:49:25 -> 00:49:27] For others, you have to clean everything off.
+[00:49:27 -> 00:49:29] Everything.
+[00:49:29 -> 00:49:31] Who yeses before you can handle any of that stuff.
+[00:49:31 -> 00:49:33] Okay?
+[00:49:33 -> 00:49:35] Because, especially because
+[00:49:35 -> 00:49:37] there are several, you know,
+[00:49:37 -> 00:49:39] we talked about sharing,
+[00:49:39 -> 00:49:41] you know, some of the state
+[00:49:41 -> 00:49:43] registers, et cetera, and so on like that.
+[00:49:43 -> 00:49:45] They are control registers.
+[00:49:45 -> 00:49:47] And they're trying to bypass
+[00:49:47 -> 00:49:49] values from control registers,
+[00:49:49 -> 00:49:51] et cetera, I guess, to be used nicely.
+[00:49:51 -> 00:49:53] Okay?
+[00:49:53 -> 00:49:55] So you just basically,
+[00:49:55 -> 00:49:57] you do that so rarely.
+[00:49:57 -> 00:49:59] OS, I'm currently using the machine.
+[00:49:59 -> 00:50:01] Okay, OS, I'm leaving.
+[00:50:01 -> 00:50:03] Okay?
+[00:50:03 -> 00:50:05] What you need to do, and
+[00:50:05 -> 00:50:07] move things along.
+[00:50:07 -> 00:50:09] And then we have multiple threads
+[00:50:09 -> 00:50:11] within the same, let's say,
+[00:50:11 -> 00:50:13] ROB, right? And we get multiple
+[00:50:13 -> 00:50:15] styles of exceptions.
+[00:50:15 -> 00:50:17] How do we only
+[00:50:17 -> 00:50:19] parse the ROB entries that we know
+[00:50:19 -> 00:50:21] by this L?
+[00:50:21 -> 00:50:23] Like, let's say you get a div
+[00:50:23 -> 00:50:25] divided by zero on thread B.
+[00:50:25 -> 00:50:27] Now, we only want to
+[00:50:27 -> 00:50:29] parse the ROB entries
+[00:50:29 -> 00:50:33] for thread B.
+[00:50:33 -> 00:50:35] Okay, we are out of time.
+[00:50:35 -> 00:50:37] But,
+[00:50:37 -> 00:50:39] we'll
+[00:50:39 -> 00:50:41] get back to, get there next time.
+[00:50:41 -> 00:50:43] What happens to these?
+[00:50:43 -> 00:50:45] ROB looks for Q, et cetera, et cetera.
