@@ -1,0 +1,1133 @@
+Title: 752_Lec15
+Source file: 752_Lec15.m4a
+Detected language: en
+------------------------------------------------------------
+
+[00:00:00 -> 00:00:07] ...projectors. I remember, you know, we were cleaning up the office building and there was this old
+[00:00:07 -> 00:00:15] in-focus projector which we would all share and I remember we paid $8,000 for it at that time.
+[00:00:19 -> 00:00:21] You know, and now I don't know how much you can get for it.
+[00:00:21 -> 00:00:35] Okay, so for today's office hour, I will be leaving a little early if you show up. Okay, so
+[00:00:37 -> 00:00:45] any questions? In regards to the exam, just because sometimes this is not fully obvious,
+[00:00:45 -> 00:00:50] should we always assume the leftmost register is the destination if it's in the free operand form
+[00:00:50 -> 00:00:57] or the rightmost register? Oh, I mean, that would be, you would be told that, right?
+[00:00:58 -> 00:01:07] You shouldn't, no? Okay, typically the right is the destination. Okay. So the other two are
+[00:01:07 -> 00:01:10] so
+[00:01:18 -> 00:01:25] when we get too long, you can, but that's not for a while. So whenever you
+[00:01:28 -> 00:01:32] basically have to clear out all the operations,
+[00:01:32 -> 00:01:55] which have, you know, okay, so where we left off last time was an opportunistic memory scheduling
+[00:01:56 -> 00:02:07] and then, you know, so these days what you actually do is you actually use techniques
+[00:02:07 -> 00:02:23] to predict. So let me sketch that piece up again. So we had storm A, load B,
+[00:02:24 -> 00:02:34] load C, load D, load D, something like this. Okay, so you know, what you would like to do is
+[00:02:34 -> 00:02:42] you would like to have these loads, you know, all the loads try and execute before prior storm
+[00:02:42 -> 00:02:52] between, with unknown addresses. So you can allow this speculative execution where if the
+[00:02:52 -> 00:02:57] load actually executes, so this could execute before A, B could execute before C and before
+[00:02:58 -> 00:03:04] A and then you detect a misspeculation and you recover from that misspeculation.
+[00:03:05 -> 00:03:13] Okay, but then you can go further and actually do a prediction on whether a load is going
+[00:03:13 -> 00:03:20] to be dependent on the previous store. Okay, so you know, if this load, you know,
+[00:03:21 -> 00:03:27] is not, doesn't misspeculate, if it's not dependent on a previous store, it's going to
+[00:03:27 -> 00:03:34] misspeculate. Okay, so take a look at this load B. If this load is executed before stores A and B
+[00:03:34 -> 00:03:41] and there's a misspeculation, then what you can, then that's an exact instance of where this
+[00:03:41 -> 00:03:48] load was dependent on the previous store. Okay, so you can actually develop a predictor,
+[00:03:48 -> 00:03:55] just like the rank predictor, okay, as to whether this load is going to misspeculate
+[00:03:55 -> 00:04:04] or not and if the load is going to misspeculate, just do not execute the load before a prior store.
+[00:04:04 -> 00:04:11] Okay, so that was some of the early store-planned prediction and so if this load,
+[00:04:11 -> 00:04:18] you know, misspeculated with A, all right, and because it was having the same address,
+[00:04:18 -> 00:04:25] then you just don't let this load execute before any previous store even before the store
+[00:04:25 -> 00:04:34] to see. And one other complication that happens then is again, you know, you need to know these
+[00:04:34 -> 00:04:42] addresses so that, you know, the load can wait a long time for all these addresses to be known,
+[00:04:42 -> 00:04:46] especially if you have only one store queue and not the separate load address and load
+[00:04:46 -> 00:04:55] data queues where you actually execute the store when both the address and data are known.
+[00:04:57 -> 00:05:04] Okay, so what you can further do, and this is what, you know, pretty much everyone does these days,
+[00:05:05 -> 00:05:13] is you can predict the load store pair and wait only for that one store to execute.
+[00:05:15 -> 00:05:23] Okay, so if this load happened to misspeculate with the store A, okay, then I'm going to
+[00:05:23 -> 00:05:28] predict that, I'll learn, of course, it'll maybe take me a couple of tries, a few bits
+[00:05:28 -> 00:05:34] to implement this way, that way, to make that prediction that this load is now dependent on this store.
+[00:05:35 -> 00:05:42] Okay, so I have to only wait for this store's address, this store to execute,
+[00:05:43 -> 00:05:49] to be able to execute this load. This load could execute before this store, for example.
+[00:05:49 -> 00:05:58] Okay, so the predictors that I use with just for every process of these days, they have these load
+[00:05:58 -> 00:06:05] store pair predictors where they wait for only one store to execute, and the other loads, this
+[00:06:05 -> 00:06:10] load is going to wait for this store, and, you know, the other loads can go ahead and execute
+[00:06:10 -> 00:06:16] at any time, and this load now, when the store executes, this loading gets woken up,
+[00:06:16 -> 00:06:25] and it can execute before I misspeculate. Okay, it actually turns out, you know, these predictors are
+[00:06:25 -> 00:06:29] very highly accurate, you know, whether an excess of 99 percent you can get them,
+[00:06:29 -> 00:06:35] because the patterns of loads and stores are such that, hey, a load is writing something,
+[00:06:35 -> 00:06:39] a store is writing something to memory, and the load is reading from that memory location,
+[00:06:39 -> 00:06:45] those dependence relationships are quite stable, and I showed you the example of the calls,
+[00:06:45 -> 00:06:48] you know, what happens on a call, you're passing parameters, and then you're
+[00:06:50 -> 00:06:53] pushing them on a stack, those are stores, and then you're reading parameters of the stack,
+[00:06:53 -> 00:07:01] those are the loads, so those, you know, those load store relationships are very, very stable.
+[00:07:03 -> 00:07:08] Okay, quick question, John. So the predictor then for that is essentially you can track
+[00:07:08 -> 00:07:13] to the PC or where the store was, is that, and the PC of the load, and the PC of the store.
+[00:07:13 -> 00:07:23] Okay, I know that more than the POKE-2. Yeah, no, I mean the APPL process was that 4K in these,
+[00:07:23 -> 00:07:31] so POKE entries go with the PC of the store and the PC of the load, so yeah.
+[00:07:31 -> 00:07:36] I remember that, I forget if it was a meltdown or specter that had to do with like predicting
+[00:07:36 -> 00:07:43] loads. Oh, oh, say that again. Meltdown or specter, the vulnerability that do with predicting
+[00:07:43 -> 00:07:49] loads or rather how loads were in order, you can tell it based on caches.
+[00:07:49 -> 00:07:55] So, okay, the specter and meltdown were, here's what they were, here's what they were
+[00:07:57 -> 00:08:09] exploiting. So, you know, timing hits and misses was sort of vulnerability known for a
+[00:08:09 -> 00:08:16] long time, okay. But what they were exploiting is that, hey, you know, you're actually executing
+[00:08:16 -> 00:08:23] loads speculatively, which have side effects of bringing something into the cache, which is what
+[00:08:23 -> 00:08:32] they were exploiting to actually extract the bits, the keys, okay. And once that vulnerability
+[00:08:32 -> 00:08:37] came around, then they're like, oh, and behold, you know, step back and see, you know,
+[00:08:38 -> 00:08:43] what is sort of the vulnerabilities that are being, what is the so-called vulnerabilities
+[00:08:43 -> 00:08:51] that are being exploited. It is that your execution is making some change to some state
+[00:08:52 -> 00:09:00] that is not visible architecturally, but it's there. And knowing that's what the execution is
+[00:09:00 -> 00:09:07] doing, you can go and try and maybe create, you know, some conflict or whatever it is in that
+[00:09:08 -> 00:09:15] state that is not visible and figure out what may be going on, okay. So, they, initially,
+[00:09:15 -> 00:09:22] they just exploited the, you know, raw control speculation. And then they realized, hey,
+[00:09:22 -> 00:09:27] there are lots of other forms of speculation going on in Processor. So, the academics,
+[00:09:27 -> 00:09:31] one after the other, hey, I can exploit it this way, I can exploit it this way,
+[00:09:31 -> 00:09:40] I can exploit it this way, makes good papers, it makes good PR, whether it is relevant in
+[00:09:40 -> 00:09:50] the real world or not, you know. And the way I like to put a lot, and so, you know,
+[00:09:50 -> 00:09:56] to exploit those vulnerabilities, the attacker and the
+[00:09:57 -> 00:10:06] attackee have to coexist in the same piece of hardware at about the same time, okay.
+[00:10:07 -> 00:10:15] And the easy way to do it is to solve it is to not let that happen, you know. So,
+[00:10:15 -> 00:10:22] it's like, hey, you know, you're in your house, if you invite random people into your house,
+[00:10:22 -> 00:10:29] then you better make sure your stuff is locked up, okay. If you don't invite people into your
+[00:10:29 -> 00:10:35] house, then you don't have to leave your stuff locked up. Yeah, so, you know, there are also
+[00:10:35 -> 00:10:39] some different speculations, people try to exploit, I can do this, but, you know,
+[00:10:39 -> 00:10:47] whatever goes on. I don't think I have been doing successful attacks that are done, so.
+[00:10:47 -> 00:10:56] But then they did the company and the OS people did get a new patch which reduced performance.
+[00:10:57 -> 00:11:04] Yeah, because initially, it's the, you know, once something's out there, the press is saying,
+[00:11:04 -> 00:11:08] hey, you have a problem, they have a problem, and stock price is going down, then you
+[00:11:08 -> 00:11:12] basically say, hey, we have a solution, and then once you're out of the press, then you just
+[00:11:13 -> 00:11:17] go back to, you know, like doing things how they are. They should be, so.
+[00:11:17 -> 00:11:25] If, like, if the problem is so specific and so niche that targeting it becomes
+[00:11:26 -> 00:11:33] much more an academic venture rather than an actual perspective, then why even bother
+[00:11:33 -> 00:11:37] with it? And most people don't.
+[00:11:37 -> 00:11:40] You just think, okay, you guys did.
+[00:11:40 -> 00:11:47] Yeah, I mean, you know, security is a different issue altogether. It's like,
+[00:11:47 -> 00:11:51] you know, there have been all sorts of, you know, exploits that people have. I mean,
+[00:11:51 -> 00:11:56] you know, people talk about the speculative execution attacks as to, you know, listening
+[00:11:56 -> 00:12:02] to what keystrokes you're typing in, monitoring the radiation from stuff that is going
+[00:12:03 -> 00:12:03] on.
+[00:12:03 -> 00:12:05] Many other things you can do.
+[00:12:07 -> 00:12:10] Anyway, that's a completely separate subject over there.
+[00:12:12 -> 00:12:19] One thing I do want to, you know, point out is, you know, we talk about, we talk
+[00:12:19 -> 00:12:23] about, hey, the wider you go, that, you know, the more complicated it is to have
+[00:12:23 -> 00:12:25] a faster talk speed, if you will.
+[00:12:25 -> 00:12:33] Okay. And so, you know, how does this frequency versus trade-off work? Okay.
+[00:12:33 -> 00:12:39] So in the front end of the pipeline, where, which is not bothered by dependencies
+[00:12:39 -> 00:12:45] between instructions, okay, you actually try and do wide and wide, or you have
+[00:12:45 -> 00:12:51] to do wide and wide, okay. In the back end of the pipeline, you try and have,
+[00:12:51 -> 00:12:55] you know, as fast a block as you can because it's the, you know, some, you know,
+[00:12:55 -> 00:12:59] the dependency is going to take two cycles to execute because one instruction
+[00:12:59 -> 00:13:04] depends on the other, then your cycles better be fast. Okay. And in a sense,
+[00:13:04 -> 00:13:22] how do you achieve that? The way, you know, if you take a look at, you know,
+[00:13:24 -> 00:13:30] the front end part of the pipeline, okay, you go and do, you know, the front end
+[00:13:30 -> 00:13:34] part of the pipeline, you go wide, as wide as you can. Once you get to the
+[00:13:34 -> 00:13:42] back end, you basically can do stuff in parallel. Okay. And you can then,
+[00:13:43 -> 00:14:00] you know, you know, so these independent things, they can be running in parallel,
+[00:14:00 -> 00:14:04] so you actually can add, you know, faster blocks, portals in the back end.
+[00:14:04 -> 00:14:13] So, you know, your designs, like, I don't know, you can't necessarily find out
+[00:14:13 -> 00:14:16] what, you know, some of the newer processors are doing, but they're using
+[00:14:16 -> 00:14:20] different frequencies in the back end, but at least, you know, in the
+[00:14:21 -> 00:14:25] income machines, they did talk about that they would run the in-order stages
+[00:14:25 -> 00:14:29] at one frequency, and then the out-of-orders stages at even a double
+[00:14:30 -> 00:14:47] frequency. One thing, that issue that does come up, is a problem. So you've seen
+[00:14:47 -> 00:14:50] how we go about building one of these, you know, out-of-order processor
+[00:14:50 -> 00:14:56] precise interrupts. There's a lot of searching, you know, you know, cam
+[00:14:56 -> 00:15:04] searches, matches, SRAMs, okay, so they consume a lot of power, okay.
+[00:15:05 -> 00:15:09] You have, you know, SRAMs all over the place, cams all over the place,
+[00:15:09 -> 00:15:13] and so the question comes as, you know, is the out-of-order a low power
+[00:15:13 -> 00:15:18] technique? No, it's not necessarily a low power technique by any means.
+[00:15:18 -> 00:15:25] However, however, okay, the more important question is, is it a low
+[00:15:25 -> 00:15:30] energy technique? You know, if you are, if you are energy limited in a
+[00:15:30 -> 00:15:35] battery device, upper device, a low energy technique, and it actually could
+[00:15:35 -> 00:15:40] be because the out-of-order execution will let you get done faster.
+[00:15:42 -> 00:15:47] And then the question is, hey, do you actually have other components that
+[00:15:47 -> 00:15:50] you can put in deep sleep modes? And we'll see a little bit when we talk
+[00:15:50 -> 00:15:57] about caches to actually cut down on the power consumption when those
+[00:15:57 -> 00:15:59] pieces of hardware are sitting idle. We'll talk a little bit about
+[00:15:59 -> 00:16:07] that. Okay, and so it seems to be the case because every mobile device,
+[00:16:07 -> 00:16:10] you know, every smartphone these days has processes that do
+[00:16:10 -> 00:16:18] out-of-order execution. I won't talk about this, so, okay,
+[00:16:18 -> 00:16:22] these summary slides you can read. I guess I don't need to go through
+[00:16:22 -> 00:16:28] those. You can just read these. Questions about the out-of-order
+[00:16:28 -> 00:16:31] execution? So you take, you know, you take a look at the
+[00:16:32 -> 00:16:37] processor that I gave you the slides for, okay, that I just pulled
+[00:16:37 -> 00:16:41] from Harsha Flash here, the Volcom and the, you know, one from
+[00:16:41 -> 00:16:46] Ampere and another one from AMD. Pretty much the stuff that you
+[00:16:46 -> 00:16:49] have learned, and that's what they have. They have a lot of it.
+[00:16:49 -> 00:16:52] You mix, they can kind of mix, you know, different techniques in
+[00:16:52 -> 00:16:59] different places, and this stuff is still very wide. This is
+[00:16:59 -> 00:17:07] what's defining all the processes. Maybe someday some
+[00:17:07 -> 00:17:11] clever person will come up with a different model, but up
+[00:17:11 -> 00:17:15] until that point, this is what's going to be there.
+[00:17:18 -> 00:17:24] Okay, so now I want to move a little bit into storage
+[00:17:24 -> 00:17:29] hierarchies. We'll talk about caches for a few lectures, and
+[00:17:29 -> 00:17:33] then we'll talk about, you know, some of the memory stuff,
+[00:17:33 -> 00:17:37] and you've all seen caches before, but, you know, we
+[00:17:37 -> 00:17:42] will actually, we'll review some of that stuff, but
+[00:17:42 -> 00:17:44] mainly we'll spend a fair amount of time on high
+[00:17:44 -> 00:17:48] performance cache techniques. Okay, what are the different
+[00:17:48 -> 00:17:50] tricks we can play to get high performance cache
+[00:17:50 -> 00:17:55] techniques, maybe some low power techniques to what we can
+[00:17:55 -> 00:18:01] do, since the cache is the biggest consumer of power and
+[00:18:01 -> 00:18:05] energy. I'm going to check what we can do to try and save
+[00:18:05 -> 00:18:13] some of that. Okay, so, you know, memory hierarchies have
+[00:18:13 -> 00:18:17] been done right from the first day of the year. So,
+[00:18:18 -> 00:18:22] you know, this was from the paper that described the first
+[00:18:22 -> 00:18:26] computer is, you know, ideally we'd have an infinitely large
+[00:18:26 -> 00:18:29] memory capacity such that any particular word could be
+[00:18:29 -> 00:18:32] immediately available. We are forced to recognize the
+[00:18:32 -> 00:18:34] possibility of constructing a hierarchy of memories, each of
+[00:18:34 -> 00:18:38] which has greater capacity than the preceding, but which
+[00:18:38 -> 00:18:43] is less quickly accessible. Okay, so this was before
+[00:18:43 -> 00:18:49] you even had semiconductors or anything like that. Okay,
+[00:18:49 -> 00:18:55] that was very well known even then. Okay, so these days,
+[00:18:55 -> 00:18:58] you know, the hierarchies are much, much more important.
+[00:18:58 -> 00:19:01] If you have a 3 gigahertz processor and you can do an
+[00:19:01 -> 00:19:04] add in, you know, a third of a nanosecond, the main
+[00:19:04 -> 00:19:07] memory latency, say, is 50 to 100 nanoseconds. In a
+[00:19:07 -> 00:19:11] night implementation, if you're just reading data from
+[00:19:11 -> 00:19:15] DRAM, you're going to basically be 300 times slower,
+[00:19:15 -> 00:19:17] so every load operation that you're going to do is going
+[00:19:17 -> 00:19:21] to take 300 cycles. The CPF load is going to be 300.
+[00:19:21 -> 00:19:28] Everything else is not going to matter. Interestingly,
+[00:19:28 -> 00:19:33] you know, when the first microprocessor I was working
+[00:19:33 -> 00:19:38] with, it lowered, they had a wait state, a single cycle
+[00:19:38 -> 00:19:43] to get 11 cycles. Accessing memory took only one cycle.
+[00:19:44 -> 00:19:47] Okay, so what you cannot achieve is memory that
+[00:19:47 -> 00:19:51] operates at processor speeds, memory as large as need for
+[00:19:51 -> 00:19:55] all running programs, and memory that's cost effective.
+[00:19:55 -> 00:19:58] You cannot achieve all three at the same time.
+[00:19:58 -> 00:20:01] So you have hierarchies and, you know, what are the
+[00:20:01 -> 00:20:05] different components you can have? You can have static
+[00:20:05 -> 00:20:08] RAM, which is typically going to be built with your
+[00:20:08 -> 00:20:12] standard processor on your processor logic, semiconductor
+[00:20:12 -> 00:20:15] technology, processor semiconductor technology.
+[00:20:17 -> 00:20:20] And typically it's taking six transistors to store one bit.
+[00:20:21 -> 00:20:24] It's going to be optimized for speed first and then
+[00:20:24 -> 00:20:28] density, and it's going to be fast and the speed is
+[00:20:28 -> 00:20:32] proportional to its area. Dynamic RAM is going to be
+[00:20:32 -> 00:20:37] optimized for density, so you take the minimum amount of
+[00:20:38 -> 00:20:42] hardware to store a single bit, and that's typically
+[00:20:42 -> 00:20:44] going to be one transistor plus one capacitor.
+[00:20:46 -> 00:20:49] And it's going to be slow because the internal access
+[00:20:49 -> 00:20:54] to this is slow, okay, but then also you have to
+[00:20:54 -> 00:20:59] move it in and out of the chip and that transfer
+[00:20:59 -> 00:21:04] across the pins of that chip to the processor is also
+[00:21:04 -> 00:21:09] take some time. Okay, and what people have tried to
+[00:21:09 -> 00:21:12] do is they've tried to, and this is a completely
+[00:21:12 -> 00:21:15] different fabrication technology. The number of the
+[00:21:15 -> 00:21:19] steps you do are different and it doesn't mix well
+[00:21:19 -> 00:21:21] with this logic. From time to time people have
+[00:21:21 -> 00:21:27] talked about, hey, can we have D-RAM and processor
+[00:21:27 -> 00:21:30] logic technology and, you know, they come out with
+[00:21:30 -> 00:21:33] something D-D-RAM, whatever it is, it generally
+[00:21:33 -> 00:21:37] doesn't quite necessarily work out. Now there has
+[00:21:37 -> 00:21:41] been talk and there are actually products which
+[00:21:41 -> 00:21:45] actually say can we do the opposite, and we see
+[00:21:45 -> 00:21:48] one of those a little bit, okay, is can we actually
+[00:21:48 -> 00:21:53] put processing in this D-RAM technology. The
+[00:21:53 -> 00:21:55] processing that you could do would be very
+[00:21:55 -> 00:21:58] rudimentary, simple stuff, nothing like the
+[00:21:58 -> 00:22:04] complex logic that we built in the last unit.
+[00:22:04 -> 00:22:07] Then there is also a whole bunch of non-volatile
+[00:22:07 -> 00:22:10] storage. So these are all electronic, so the power
+[00:22:10 -> 00:22:15] goes away, it's gone, okay, but to be able to
+[00:22:15 -> 00:22:20] store data even when the power is off, you need
+[00:22:20 -> 00:22:22] non-volatile storage and that has typically
+[00:22:22 -> 00:22:27] been magnetic disk and, you know, the last few
+[00:22:27 -> 00:22:30] years it's also been flash RAM, but, you know,
+[00:22:33 -> 00:22:35] yeah, these are sort of the two technologies
+[00:22:35 -> 00:22:38] that this is electronic, but it retains the data
+[00:22:38 -> 00:22:44] when the power goes off. Okay, so it all comes
+[00:22:44 -> 00:22:46] down to, you know, how can I achieve my
+[00:22:46 -> 00:22:49] performance objective and goal within my cost.
+[00:22:51 -> 00:22:54] So first let us take a look at the cost
+[00:22:54 -> 00:22:56] differential of those different memory
+[00:22:56 -> 00:22:59] technologies. So these days with a hundred
+[00:22:59 -> 00:23:02] dollars, maybe I could get 16 megabytes of
+[00:23:02 -> 00:23:05] RAM, four gigabytes of D-RAM, and a
+[00:23:05 -> 00:23:11] terabyte of disk. Okay, so a factor of 250
+[00:23:11 -> 00:23:14] difference between the different technologies.
+[00:23:16 -> 00:23:19] What is the latency? You know, the latency
+[00:23:19 -> 00:23:23] to access SRAM typically is going to be
+[00:23:23 -> 00:23:25] less, you know, less than a nanosecond or
+[00:23:25 -> 00:23:28] few nanoseconds of the order of maybe,
+[00:23:28 -> 00:23:32] you know, one, two, four, eight, ten clock
+[00:23:32 -> 00:23:37] cycles, depending upon, you know, the speed
+[00:23:37 -> 00:23:39] that I have built the RAM. Okay, so maybe
+[00:23:39 -> 00:23:43] I'll have, I'll use, you know, SRAM with
+[00:23:43 -> 00:23:46] a certain speed to build my level one
+[00:23:46 -> 00:23:48] cache that's going to take maybe three
+[00:23:48 -> 00:23:52] clock cycles. But a different one for a
+[00:23:52 -> 00:23:53] different speed for level two cache and
+[00:23:53 -> 00:23:55] a different speed for level three cache
+[00:23:55 -> 00:23:57] that's going to level three cache maybe
+[00:23:57 -> 00:23:59] take, you know, 20 clock cycle, 30, 40
+[00:23:59 -> 00:24:05] clock cycles, but whatever. Okay, D-RAM
+[00:24:05 -> 00:24:07] is 100x more slower than that and
+[00:24:07 -> 00:24:11] disk is, you know, several orders of
+[00:24:11 -> 00:24:14] magnitude even slower than that.
+[00:24:14 -> 00:24:18] Okay, as concerns how much data, what is
+[00:24:18 -> 00:24:20] the bandwidth you can get from the SRAM?
+[00:24:20 -> 00:24:22] You can get, you know, tens of
+[00:24:22 -> 00:24:24] gigabytes per second because
+[00:24:24 -> 00:24:26] everything's on chip and fast access.
+[00:24:26 -> 00:24:28] It just depends on what the clock cycle
+[00:24:28 -> 00:24:34] is and how wide you are. D-RAM is, you
+[00:24:34 -> 00:24:39] know, much slower than that and disk is
+[00:24:39 -> 00:24:44] even much slower than that. Okay, and the
+[00:24:44 -> 00:24:48] clash, you know, is sort of another side.
+[00:24:48 -> 00:24:50] But this is a little data graph, but
+[00:24:50 -> 00:24:52] what it shows you is,
+[00:24:52 -> 00:24:56] you know, the rate of change in speed,
+[00:24:56 -> 00:25:00] the cost and the access time for SRAM,
+[00:25:00 -> 00:25:05] D-RAM and disk. Okay, so the cost of SRAM
+[00:25:05 -> 00:25:07] has been going down, but the speed has
+[00:25:07 -> 00:25:08] also been going down
+[00:25:08 -> 00:25:11] because this is a logic technology.
+[00:25:11 -> 00:25:13] That's what made our transistors
+[00:25:13 -> 00:25:15] faster and, you know,
+[00:25:15 -> 00:25:18] allowed the processor to have faster clock.
+[00:25:18 -> 00:25:21] D-RAM, the cost for it has been going
+[00:25:21 -> 00:25:26] down significantly, okay, but the
+[00:25:26 -> 00:25:30] speed has been, not been going down
+[00:25:30 -> 00:25:32] at the same rate, and for disk,
+[00:25:32 -> 00:25:34] you know, the cost for bet has dropped
+[00:25:34 -> 00:25:37] dramatically, but the speed, because it's
+[00:25:37 -> 00:25:39] a mechanical device, you know,
+[00:25:39 -> 00:25:41] okay, you went from spinning at,
+[00:25:41 -> 00:25:45] you know, 3600 RPM to 1700 RPM or
+[00:25:45 -> 00:25:46] whatever it is,
+[00:25:46 -> 00:25:48] okay, you're only accessing, you're
+[00:25:48 -> 00:25:49] increasing the speed by a factor of
+[00:25:49 -> 00:25:51] two.
+[00:25:51 -> 00:25:53] And then what that results in, if you
+[00:25:53 -> 00:25:55] can see these different slopes, this
+[00:25:55 -> 00:25:57] is sort of tracking more the
+[00:25:57 -> 00:26:00] process of technology slope, which is
+[00:26:00 -> 00:26:03] the clock side speed.
+[00:26:03 -> 00:26:05] So the performance difference is that
+[00:26:05 -> 00:26:07] the processors,
+[00:26:07 -> 00:26:09] you know, are getting much faster
+[00:26:09 -> 00:26:12] because the clock speed
+[00:26:12 -> 00:26:14] has increased and the IPC has
+[00:26:14 -> 00:26:15] increased
+[00:26:15 -> 00:26:17] and the memory at a much lower rate.
+[00:26:17 -> 00:26:20] And what this means now, the gap is
+[00:26:20 -> 00:26:22] previously, hey, it only took one
+[00:26:22 -> 00:26:23] cycle to get to
+[00:26:23 -> 00:26:27] memory, okay, now it's taken.
+[00:26:28 -> 00:26:30] These days, you know, 300 cycles or
+[00:26:30 -> 00:26:32] something like that to get to memory.
+[00:26:32 -> 00:26:37] Okay, so
+[00:26:37 -> 00:26:38] what we're going to do is we are going
+[00:26:38 -> 00:26:41] to exploit locality. You have seen
+[00:26:41 -> 00:26:42] this before,
+[00:26:42 -> 00:26:46] okay, locality of memory references
+[00:26:46 -> 00:26:47] and it is
+[00:26:47 -> 00:26:49] property of just what every program
+[00:26:49 -> 00:26:50] has,
+[00:26:50 -> 00:26:52] locality of the program with very few
+[00:26:52 -> 00:26:54] exceptions.
+[00:26:55 -> 00:27:00] And why is that, you know, just let's
+[00:27:00 -> 00:27:02] talk through some of the, you know, why
+[00:27:02 -> 00:27:05] locality exists because
+[00:27:05 -> 00:27:07] this will become important as we try
+[00:27:07 -> 00:27:08] and exploit,
+[00:27:08 -> 00:27:10] you know, come up with more level
+[00:27:10 -> 00:27:11] caching techniques to
+[00:27:11 -> 00:27:13] go back to, hey, you know, why this
+[00:27:13 -> 00:27:16] works or doesn't work, okay.
+[00:27:16 -> 00:27:21] So instructions, okay, instructions
+[00:27:21 -> 00:27:23] repeatedly, typically I'm going to be
+[00:27:23 -> 00:27:24] accessing
+[00:27:24 -> 00:27:27] a similar set of instructions, okay, the
+[00:27:27 -> 00:27:30] same instructions again and again.
+[00:27:30 -> 00:27:34] Okay, so if I don't execute the same
+[00:27:34 -> 00:27:36] instructions again and again,
+[00:27:36 -> 00:27:40] then either my program runs
+[00:27:40 -> 00:27:42] and is done very quickly, I don't have
+[00:27:42 -> 00:27:44] any instructions to execute,
+[00:27:44 -> 00:27:47] or I have a huge program where the
+[00:27:47 -> 00:27:48] instructions are
+[00:27:48 -> 00:27:51] not executed, you know, repeatedly executed.
+[00:27:51 -> 00:27:54] Okay, well typically you don't have a
+[00:27:54 -> 00:27:56] huge program that you repeatedly don't
+[00:27:56 -> 00:27:57] execute the instructions.
+[00:27:57 -> 00:28:00] So there ends up being locality where
+[00:28:00 -> 00:28:01] I'm like doing the same thing
+[00:28:01 -> 00:28:04] instructions, you know, at least in your
+[00:28:04 -> 00:28:04] temporal
+[00:28:04 -> 00:28:08] windows repeatedly. And so, you know,
+[00:28:08 -> 00:28:10] just like, you know, you go to,
+[00:28:10 -> 00:28:13] if you take a look at the,
+[00:28:13 -> 00:28:16] you want something from UW Madison
+[00:28:16 -> 00:28:17] Library,
+[00:28:17 -> 00:28:19] they likely show up there, hey, but,
+[00:28:19 -> 00:28:23] you know, it may be on, when you go to
+[00:28:23 -> 00:28:24] the library, the shelves are easily
+[00:28:24 -> 00:28:26] accessible,
+[00:28:26 -> 00:28:29] it may be somewhere back in the stacks,
+[00:28:29 -> 00:28:30] but I think these days may actually be
+[00:28:30 -> 00:28:31] in Verona,
+[00:28:31 -> 00:28:35] or, you know, somewhere else, okay, that
+[00:28:35 -> 00:28:37] there's a rain on a space over here,
+[00:28:37 -> 00:28:39] so that's where your
+[00:28:39 -> 00:28:41] disk is effectively. If I ever need to
+[00:28:41 -> 00:28:42] go to disk,
+[00:28:42 -> 00:28:44] then, you know, I'll get it from desk,
+[00:28:44 -> 00:28:48] but it'll take much longer.
+[00:28:48 -> 00:28:52] Okay, what about data accesses?
+[00:28:52 -> 00:28:54] You know, why is there locality in some
+[00:28:54 -> 00:28:55] data accesses?
+[00:28:55 -> 00:29:04] Okay, so, well, one of the biggest
+[00:29:04 -> 00:29:05] sources of locality
+[00:29:05 -> 00:29:08] is, hey, you know, we are writing, we
+[00:29:08 -> 00:29:09] are telling people,
+[00:29:09 -> 00:29:12] write stuff with functions, then, you
+[00:29:12 -> 00:29:12] know,
+[00:29:12 -> 00:29:15] small functions, etc., and you have
+[00:29:15 -> 00:29:16] these
+[00:29:16 -> 00:29:19] stack frames where you put stuff on,
+[00:29:19 -> 00:29:20] etc.
+[00:29:20 -> 00:29:22] So you're repeatedly making access
+[00:29:22 -> 00:29:24] to the top of the stack,
+[00:29:24 -> 00:29:28] which is a very small area, okay, the
+[00:29:28 -> 00:29:30] repeated locality is there.
+[00:29:30 -> 00:29:34] Okay, you know,
+[00:29:34 -> 00:29:36] I say I'm walking through some,
+[00:29:36 -> 00:29:41] you know, structure, you know, big
+[00:29:41 -> 00:29:44] database of some kind, okay,
+[00:29:44 -> 00:29:47] I, you know, chasing some list,
+[00:29:47 -> 00:29:50] and I go and get to some record in
+[00:29:50 -> 00:29:51] the list,
+[00:29:51 -> 00:29:54] and what, you know, I'm repeatedly
+[00:29:54 -> 00:29:55] accessing
+[00:29:55 -> 00:29:57] the fields of the structure, as you
+[00:29:57 -> 00:29:58] will,
+[00:29:58 -> 00:29:59] not repeatedly, I'm accessing different
+[00:29:59 -> 00:30:01] fields of structure,
+[00:30:01 -> 00:30:03] that also is sort of the locality,
+[00:30:03 -> 00:30:04] hey,
+[00:30:04 -> 00:30:06] once I get to this data point, this
+[00:30:06 -> 00:30:08] address, I'm going to be accessing
+[00:30:08 -> 00:30:10] the other addresses.
+[00:30:10 -> 00:30:14] Okay, you know, just the way you,
+[00:30:14 -> 00:30:17] the right programs, you end up having
+[00:30:17 -> 00:30:19] locality.
+[00:30:19 -> 00:30:21] Now, is it possible that you can write
+[00:30:21 -> 00:30:22] programs
+[00:30:22 -> 00:30:25] that don't have a lot of locality of
+[00:30:25 -> 00:30:26] memory references?
+[00:30:26 -> 00:30:37] Yes, you can. Most programs will be
+[00:30:37 -> 00:30:38] naturally written,
+[00:30:38 -> 00:30:43] end up having locality of reference.
+[00:30:43 -> 00:30:46] So, there is the notion of temporal
+[00:30:46 -> 00:30:47] locality,
+[00:30:47 -> 00:30:50] where recently referenced data or
+[00:30:50 -> 00:30:51] instructions
+[00:30:51 -> 00:30:52] is likely to be referenced again
+[00:30:52 -> 00:30:54] soon,
+[00:30:54 -> 00:30:56] and if you, to exploit temporal
+[00:30:56 -> 00:30:57] locality, what you want to do is
+[00:30:57 -> 00:30:59] you want to cache that recently used
+[00:30:59 -> 00:31:03] data in small, fast memory.
+[00:31:03 -> 00:31:07] Okay, a spatial locality
+[00:31:07 -> 00:31:09] suggests that, hey, you know, if I
+[00:31:09 -> 00:31:11] reference some data item, then I'm very
+[00:31:11 -> 00:31:13] likely to reference other data items
+[00:31:13 -> 00:31:13] that are
+[00:31:13 -> 00:31:17] nearby memory addresses. Okay, so then
+[00:31:17 -> 00:31:18] what I want to do is,
+[00:31:18 -> 00:31:20] I want to try and break my memory
+[00:31:20 -> 00:31:22] addresses
+[00:31:22 -> 00:31:25] and proactively fetch
+[00:31:25 -> 00:31:27] other memory addresses that are close
+[00:31:27 -> 00:31:28] by.
+[00:31:28 -> 00:31:29] Okay, so I'm going to fetch data in
+[00:31:29 -> 00:31:31] large chunks
+[00:31:31 -> 00:31:34] to also include nearby
+[00:31:34 -> 00:31:39] data at nearby memory addresses.
+[00:31:39 -> 00:31:41] And that solves, you know, room for data
+[00:31:41 -> 00:31:43] instructions. Of course, I could write a
+[00:31:43 -> 00:31:45] program when it doesn't, but
+[00:31:45 -> 00:31:50] generally it does. So,
+[00:31:50 -> 00:31:52] what you end up doing is you have a
+[00:31:52 -> 00:31:55] hierarchy of memory components.
+[00:31:55 -> 00:31:57] The upper components are the ones that
+[00:31:57 -> 00:31:59] are closer to the CPU.
+[00:31:59 -> 00:32:00] Sometimes people draw this picture
+[00:32:00 -> 00:32:02] upside down,
+[00:32:02 -> 00:32:04] and then it's the lower components, but
+[00:32:04 -> 00:32:06] you know,
+[00:32:06 -> 00:32:08] you know, the lower components are closer
+[00:32:08 -> 00:32:11] to the CPU, but that's just sort of a
+[00:32:11 -> 00:32:13] semantic thing. So, we have the
+[00:32:13 -> 00:32:15] components that are closer to the CPU
+[00:32:15 -> 00:32:18] are fast, they are small,
+[00:32:18 -> 00:32:22] but they're, and they're expensive.
+[00:32:22 -> 00:32:24] Okay, the lower components you can
+[00:32:24 -> 00:32:26] have big and cheap,
+[00:32:26 -> 00:32:30] and therefore they must be small. And
+[00:32:30 -> 00:32:31] these components, you're also going to
+[00:32:31 -> 00:32:33] connect by sets of wires,
+[00:32:33 -> 00:32:37] which are buses. There is also a latency
+[00:32:37 -> 00:32:38] and bandwidth
+[00:32:38 -> 00:32:43] issues of these sets of wires.
+[00:32:43 -> 00:32:45] What we would like to do is try and
+[00:32:45 -> 00:32:48] keep the most frequently accessed data
+[00:32:48 -> 00:32:50] in the uppermost component of the
+[00:32:50 -> 00:32:51] hierarchy,
+[00:32:51 -> 00:32:53] and then move data from the next
+[00:32:53 -> 00:32:54] level
+[00:32:54 -> 00:32:57] up as it is needed, and move data that
+[00:32:57 -> 00:32:58] I don't need
+[00:32:58 -> 00:33:01] in the faster component down to the
+[00:33:01 -> 00:33:08] slower component. The objective is to
+[00:33:08 -> 00:33:11] minimize the latency of access
+[00:33:11 -> 00:33:14] of the memory, and the latency of access
+[00:33:14 -> 00:33:15] is going to be the latency of finding
+[00:33:15 -> 00:33:17] something in the
+[00:33:17 -> 00:33:19] component, which is the hit, latency
+[00:33:19 -> 00:33:21] of the hit,
+[00:33:21 -> 00:33:24] plus the percentage of references that
+[00:33:24 -> 00:33:26] actually best here
+[00:33:26 -> 00:33:28] times the latency that it would take
+[00:33:28 -> 00:33:29] to
+[00:33:29 -> 00:33:33] service that missed request.
+[00:33:33 -> 00:33:37] Okay, so if we want to now
+[00:33:37 -> 00:33:40] objective to reduce this overall, to
+[00:33:40 -> 00:33:43] optimize the average access time,
+[00:33:43 -> 00:33:45] we're going to want to not do just one
+[00:33:45 -> 00:33:46] of these,
+[00:33:46 -> 00:33:48] we're going to want to try and do all
+[00:33:48 -> 00:33:49] of them
+[00:33:49 -> 00:33:51] roughly at the same time. Sometimes
+[00:33:51 -> 00:33:52] they,
+[00:33:52 -> 00:33:54] you know, go against each other, but we
+[00:33:54 -> 00:33:55] want to
+[00:33:55 -> 00:33:58] try and improve all of them.
+[00:33:58 -> 00:34:01] Okay, you mean the hit rate of all the
+[00:34:01 -> 00:34:02] caches,
+[00:34:02 -> 00:34:04] the layers of the cache? I want, no, I want to
+[00:34:04 -> 00:34:05] improve the
+[00:34:05 -> 00:34:08] latency of the hit, wherever the hit is.
+[00:34:08 -> 00:34:09] I see the three turns.
+[00:34:09 -> 00:34:12] Plus the percentage of misses, plus the
+[00:34:12 -> 00:34:15] latency of the miss.
+[00:34:15 -> 00:34:22] Okay, yeah.
+[00:34:26 -> 00:34:28] Yes, we will. That's, we're going to do
+[00:34:28 -> 00:34:30] that in the next couple of lectures
+[00:34:30 -> 00:34:34] in in gory detail. We'll do that.
+[00:34:34 -> 00:34:38] Okay, so all right.
+[00:34:38 -> 00:34:41] So here is a sort of a concrete memory
+[00:34:41 -> 00:34:43] hierarchy. Here's the CPU
+[00:34:43 -> 00:34:46] and the first level are primary caches
+[00:34:46 -> 00:34:49] and typically these days I would have
+[00:34:49 -> 00:34:52] separate instruction and data caches.
+[00:34:52 -> 00:34:53] Why so? Because we have pipeline
+[00:34:53 -> 00:34:55] processors and every cycle I'm doing
+[00:34:55 -> 00:34:56] a fetch and
+[00:34:56 -> 00:34:58] I have to be able to also do data
+[00:34:58 -> 00:34:59] accesses.
+[00:35:00 -> 00:35:02] Right now I'm going to have that structural hazard
+[00:35:02 -> 00:35:04] conflict and
+[00:35:04 -> 00:35:09] you know things break down and these
+[00:35:09 -> 00:35:10] are typically
+[00:35:10 -> 00:35:13] 8 to 64 kilobytes each. People are
+[00:35:13 -> 00:35:15] trying to build bigger and bigger
+[00:35:15 -> 00:35:17] instruction caches so
+[00:35:17 -> 00:35:20] you know they have the processor I
+[00:35:20 -> 00:35:21] showed you have
+[00:35:21 -> 00:35:23] 192 kilobytes which is three times
+[00:35:23 -> 00:35:25] 64
+[00:35:25 -> 00:35:27] and we'll talk about that a little
+[00:35:27 -> 00:35:28] bit later on.
+[00:35:28 -> 00:35:30] But you know you aren't going to get
+[00:35:30 -> 00:35:37] that much larger and still be fast.
+[00:35:37 -> 00:35:39] Then these days typically on a chip
+[00:35:39 -> 00:35:41] you also have a level two or even a
+[00:35:41 -> 00:35:43] level three cache.
+[00:35:43 -> 00:35:46] Okay, this is also made out of SRAM.
+[00:35:46 -> 00:35:49] Okay, just like the level one caches
+[00:35:49 -> 00:35:51] are primary cache are made out of SRAM
+[00:35:51 -> 00:35:54] but these are slower SRAM as you
+[00:35:54 -> 00:35:54] will
+[00:35:54 -> 00:35:57] and they are much larger and they
+[00:35:57 -> 00:36:00] take up more area of course.
+[00:36:00 -> 00:36:02] These days you also have typically a
+[00:36:02 -> 00:36:03] level three
+[00:36:03 -> 00:36:06] on chip. Then there is the main memory
+[00:36:06 -> 00:36:08] which is going to be made up of SRAM
+[00:36:08 -> 00:36:11] and you know for your typical pc
+[00:36:11 -> 00:36:13] that's 4 to 16 gigabytes.
+[00:36:13 -> 00:36:15] You have servers that have many
+[00:36:15 -> 00:36:17] hundreds of gigabytes or
+[00:36:17 -> 00:36:19] you know even terabytes.
+[00:36:19 -> 00:36:23] So yeah and then the fourth
+[00:36:23 -> 00:36:23] desk is
+[00:36:23 -> 00:36:29] you know fourth level is desk.
+[00:36:29 -> 00:36:32] Now the movement of data
+[00:36:32 -> 00:36:36] between the primary caches
+[00:36:36 -> 00:36:41] and the CPU that's loads and stores.
+[00:36:41 -> 00:36:44] That's what's doing okay and that
+[00:36:44 -> 00:36:48] movement has been created
+[00:36:48 -> 00:36:51] or managed or even orchestrated by
+[00:36:51 -> 00:36:52] the compiler.
+[00:36:52 -> 00:36:54] The compiler that's saying hey move
+[00:36:54 -> 00:36:57] this data from this memory location
+[00:36:57 -> 00:36:58] which is in the cache and moving the
+[00:36:58 -> 00:37:00] cache to the rest.
+[00:37:00 -> 00:37:06] Movement between the main memory to the
+[00:37:06 -> 00:37:09] L2 from the L2 to the L1
+[00:37:09 -> 00:37:12] and reverse is what's going to be
+[00:37:12 -> 00:37:16] managed by hardware.
+[00:37:16 -> 00:37:19] Okay and the movement between the main
+[00:37:19 -> 00:37:21] memory and desk
+[00:37:21 -> 00:37:26] is managed by the operating system. We
+[00:37:26 -> 00:37:29] are mostly going to be concerned about
+[00:37:29 -> 00:37:31] these you know the organizations of
+[00:37:31 -> 00:37:33] these caches in this part
+[00:37:33 -> 00:37:36] and then you know how we manage them
+[00:37:36 -> 00:37:38] hardware.
+[00:37:38 -> 00:37:39] When we talk about memory you talk a
+[00:37:39 -> 00:37:41] little bit about you know dmbs and
+[00:37:41 -> 00:37:49] page tables and so on. For this unit we
+[00:37:49 -> 00:37:51] are mainly going to be
+[00:37:51 -> 00:37:54] dealing with this part and we will
+[00:37:54 -> 00:37:56] start off by talking about the ABCs
+[00:37:56 -> 00:37:59] of cache organization.
+[00:37:59 -> 00:38:01] Then we move on to classifying
+[00:38:01 -> 00:38:03] different misses to figure out
+[00:38:03 -> 00:38:04] how we're going to get improvement.
+[00:38:04 -> 00:38:05] We're going to first have to
+[00:38:05 -> 00:38:06] understand
+[00:38:06 -> 00:38:08] what's causing the misses, why are
+[00:38:08 -> 00:38:10] the misses happening
+[00:38:10 -> 00:38:12] and then we can figure out how to come
+[00:38:12 -> 00:38:14] up with techniques to attack those
+[00:38:14 -> 00:38:19] misses.
+[00:38:19 -> 00:38:22] We'll come up with high performance
+[00:38:22 -> 00:38:24] techniques to
+[00:38:24 -> 00:38:29] go after the three components. Okay
+[00:38:29 -> 00:38:34] miss rate, miss latency, hit latency.
+[00:38:34 -> 00:38:36] Okay so we'll talk about reducing
+[00:38:36 -> 00:38:38] misses,
+[00:38:38 -> 00:38:40] improving miss penalty and improving
+[00:38:40 -> 00:38:43] hit latency.
+[00:38:43 -> 00:38:44] And then we'll also talk about some
+[00:38:44 -> 00:38:46] low power techniques because again
+[00:38:46 -> 00:38:49] because the you know caches are taken
+[00:38:49 -> 00:38:51] up a lot of the area a lot of the
+[00:38:51 -> 00:38:53] transistors
+[00:38:53 -> 00:38:56] so savings and power for
+[00:38:56 -> 00:39:01] when you have so many transistors
+[00:39:01 -> 00:39:08] adds up quite a bit. And then
+[00:39:08 -> 00:39:10] next lecture unit nine we'll take a
+[00:39:10 -> 00:39:16] look at this part.
+[00:39:16 -> 00:39:21] Any questions so far? So let's start
+[00:39:21 -> 00:39:22] off with
+[00:39:22 -> 00:39:26] a basic cache memory array structure
+[00:39:26 -> 00:39:28] and you know stuff that you've seen
+[00:39:28 -> 00:39:29] before but we
+[00:39:29 -> 00:39:31] you know go through it and then to
+[00:39:31 -> 00:39:32] understand hey what is it we're going
+[00:39:32 -> 00:39:34] to have to do.
+[00:39:34 -> 00:39:37] So basically any memory is organized as
+[00:39:37 -> 00:39:39] an array
+[00:39:39 -> 00:39:42] where you have some number of
+[00:39:42 -> 00:39:46] entries in the array and each
+[00:39:46 -> 00:39:52] entry has some number of bits in it.
+[00:39:52 -> 00:39:55] So here I have a array which has
+[00:39:55 -> 00:39:59] 1k entries each entry has 256
+[00:39:59 -> 00:40:04] bits in it. And the way I will read
+[00:40:04 -> 00:40:06] something from this memory I will give
+[00:40:06 -> 00:40:08] it an address
+[00:40:08 -> 00:40:10] and that address is going to select
+[00:40:10 -> 00:40:11] one entry
+[00:40:11 -> 00:40:16] over here okay. So I have 1k entries
+[00:40:16 -> 00:40:18] that is two to the tenth so I have
+[00:40:18 -> 00:40:20] 10 bits of address.
+[00:40:20 -> 00:40:22] So these 10 bits of address go to a
+[00:40:22 -> 00:40:23] decoder
+[00:40:23 -> 00:40:25] and the decoder is so these are
+[00:40:25 -> 00:40:27] what are called words
+[00:40:27 -> 00:40:31] okay and the decoder is going to
+[00:40:31 -> 00:40:35] select one of these word lines
+[00:40:35 -> 00:40:39] and then the entire set of bits
+[00:40:39 -> 00:40:42] in that entry is going to be read out
+[00:40:42 -> 00:40:46] on different bit lines 256 in this
+[00:40:46 -> 00:40:47] case
+[00:40:47 -> 00:40:49] and from there it'll go on to some
+[00:40:49 -> 00:40:52] multiplexer and sense and multiplexer
+[00:40:52 -> 00:40:54] and so on like that.
+[00:40:54 -> 00:40:59] Okay so
+[00:40:59 -> 00:41:01] data travels on the bit lines here we
+[00:41:01 -> 00:41:04] have you know 32 bytes.
+[00:41:04 -> 00:41:07] Now this is a picture that you will
+[00:41:07 -> 00:41:09] see logically
+[00:41:09 -> 00:41:15] okay in reality that's not what it is.
+[00:41:15 -> 00:41:18] What we do is that you know 1k
+[00:41:18 -> 00:41:22] entries really you break it down
+[00:41:22 -> 00:41:25] and try and arrange it so that you
+[00:41:25 -> 00:41:26] have a
+[00:41:26 -> 00:41:30] physical layout is roughly square
+[00:41:30 -> 00:41:33] okay and you do that to basically
+[00:41:33 -> 00:41:37] rather than having you know big
+[00:41:37 -> 00:41:39] you know lines going over here you
+[00:41:39 -> 00:41:40] try and
+[00:41:40 -> 00:41:44] have a do a vertical partitioning to
+[00:41:44 -> 00:41:47] minimize the violence over here.
+[00:41:47 -> 00:41:50] Okay so what I've done now is here
+[00:41:50 -> 00:41:53] I've taken that you know I've taken
+[00:41:53 -> 00:41:54] that
+[00:41:54 -> 00:41:57] you know 1k array and broken it down to
+[00:41:57 -> 00:41:58] 256 here
+[00:41:58 -> 00:42:02] and then 256 here 256 here 256 here
+[00:42:02 -> 00:42:05] and now what I will do is you know
+[00:42:05 -> 00:42:08] I will instead of having one bit
+[00:42:08 -> 00:42:12] big decoder I'll have four separate decoders.
+[00:42:12 -> 00:42:16] Okay and then first using the
+[00:42:16 -> 00:42:18] upper two bits of the address I will
+[00:42:18 -> 00:42:19] select
+[00:42:19 -> 00:42:23] one of these sub arrays and then for
+[00:42:23 -> 00:42:25] each sub array I can give the
+[00:42:25 -> 00:42:28] other 10 bits remaining 8 bits or 10 bits of
+[00:42:28 -> 00:42:30] address.
+[00:42:30 -> 00:42:35] Okay nothing says that I have to do
+[00:42:35 -> 00:42:37] this only once.
+[00:42:37 -> 00:42:41] I can further take this 256
+[00:42:41 -> 00:42:45] and make it into four sub
+[00:42:45 -> 00:42:48] parts of 64 each.
+[00:42:48 -> 00:42:51] Okay so I can recursively apply this
+[00:42:51 -> 00:42:53] recursively
+[00:42:53 -> 00:42:56] so that will minimize the over wire length so
+[00:42:56 -> 00:42:58] each node in a sense if you take a look
+[00:42:58 -> 00:42:59] at it
+[00:42:59 -> 00:43:02] physically looks more like an edge
+[00:43:02 -> 00:43:05] and so when you actually now go and
+[00:43:05 -> 00:43:07] take a look at a die plot
+[00:43:07 -> 00:43:11] of a array of cache of memory
+[00:43:11 -> 00:43:13] so those things are easy to see over
+[00:43:13 -> 00:43:14] here.
+[00:43:14 -> 00:43:15] You know these arrays are divided up
+[00:43:15 -> 00:43:18] into chunks if you will
+[00:43:18 -> 00:43:20] and you know roughly square you know
+[00:43:20 -> 00:43:21] roughly square.
+[00:43:21 -> 00:43:23] This is hey I couldn't quite get it to be
+[00:43:23 -> 00:43:25] roughly square but whatever
+[00:43:25 -> 00:43:29] oh you know I had this much stuff left
+[00:43:29 -> 00:43:31] out and that's what I did.
+[00:43:31 -> 00:43:33] Why so much space between those squares?
+[00:43:33 -> 00:43:36] Why do we actually get to see that?
+[00:43:36 -> 00:43:37] Why do you actually get to see this
+[00:43:37 -> 00:43:38] and not this?
+[00:43:38 -> 00:43:40] No no no in like in the lower right
+[00:43:40 -> 00:43:42] corner you get this cache right
+[00:43:42 -> 00:43:44] you get you're showing these H blocks
+[00:43:44 -> 00:43:45] or whatever
+[00:43:45 -> 00:43:48] right but why why are there these big
+[00:43:48 -> 00:43:50] yeah those lanes there what's going
+[00:43:50 -> 00:43:52] on there
+[00:43:52 -> 00:43:55] I think those are just basically the
+[00:43:55 -> 00:43:59] wires
+[00:43:59 -> 00:44:01] just getting the wires of the decoders
+[00:44:01 -> 00:44:11] now those are probably the
+[00:44:11 -> 00:44:12] big lines
+[00:44:12 -> 00:44:19] those may be the multiplexers and the
+[00:44:19 -> 00:44:23] you know decoder multiplexer sentence
+[00:44:23 -> 00:44:30] okay okay all right
+[00:44:30 -> 00:44:33] so now let's talk about a basic
+[00:44:33 -> 00:44:35] basic cache structure
+[00:44:35 -> 00:44:40] so say I have a 32 kilobyte cache
+[00:44:40 -> 00:44:43] and this 32 kilobyte cache has 1k
+[00:44:43 -> 00:44:46] frames and 32 byte blocks if you will
+[00:44:46 -> 00:44:49] okay so I have 1k and what is a
+[00:44:49 -> 00:44:50] frame?
+[00:44:50 -> 00:44:52] A frame is a place in the cache
+[00:44:52 -> 00:44:53] where the block
+[00:44:53 -> 00:44:59] is going to be sitting so
+[00:44:59 -> 00:45:03] I have you know like this 1k array
+[00:45:03 -> 00:45:04] over here
+[00:45:04 -> 00:45:07] and now
+[00:45:07 -> 00:45:11] you know so I'm going to access
+[00:45:11 -> 00:45:14] I have an address and using this
+[00:45:14 -> 00:45:16] address I'm going to go and
+[00:45:16 -> 00:45:20] get a particular block from this cache
+[00:45:20 -> 00:45:22] okay and in a sense I'm doing some
+[00:45:22 -> 00:45:24] sort of a very simple hash
+[00:45:24 -> 00:45:27] table over here so I have my 32 bit
+[00:45:27 -> 00:45:29] address
+[00:45:29 -> 00:45:32] over here some number of bits of the
+[00:45:32 -> 00:45:33] address
+[00:45:33 -> 00:45:35] depending on the block size and this is
+[00:45:35 -> 00:45:36] the byte address
+[00:45:36 -> 00:45:40] okay is going to determine which byte
+[00:45:40 -> 00:45:46] in a block that I'm going to beat
+[00:45:46 -> 00:45:54] okay and then some number of bits
+[00:45:54 -> 00:45:57] of the address are going to be
+[00:45:57 -> 00:46:00] presented to this address decoder to
+[00:46:00 -> 00:46:01] select
+[00:46:01 -> 00:46:04] one of the frames of the cache
+[00:46:04 -> 00:46:06] and that's going to be the index
+[00:46:06 -> 00:46:09] into that those are going to be
+[00:46:09 -> 00:46:11] considered the index bits of the
+[00:46:11 -> 00:46:15] address okay so the low five bits are
+[00:46:15 -> 00:46:15] what I call the
+[00:46:15 -> 00:46:19] byte offset bits the bits that I use
+[00:46:19 -> 00:46:22] to select one of the 10 bits that I
+[00:46:22 -> 00:46:23] use to select
+[00:46:23 -> 00:46:25] one of these 1k frames is going to
+[00:46:25 -> 00:46:26] be called the
+[00:46:26 -> 00:46:30] index bits okay
+[00:46:30 -> 00:46:33] and typically what I do is after I
+[00:46:33 -> 00:46:34] lock off the
+[00:46:34 -> 00:46:37] byte the block offset bits
+[00:46:37 -> 00:46:42] the next set of bits
+[00:46:42 -> 00:46:44] is the bits that I'm going to use to
+[00:46:44 -> 00:46:45] index over here
+[00:46:45 -> 00:46:50] nothing says that these are the bits
+[00:46:50 -> 00:46:54] that I have to use
+[00:46:54 -> 00:46:56] the these bits could be some other
+[00:46:56 -> 00:46:59] sets of bits
+[00:46:59 -> 00:47:01] okay instead of it being bits 5 through
+[00:47:01 -> 00:47:03] 14 they could be 6 through 15
+[00:47:03 -> 00:47:07] or 7 through
+[00:47:07 -> 00:47:11] 16 or they could be
+[00:47:11 -> 00:47:15] 5 through 9 and then 11 through
+[00:47:15 -> 00:47:19] whatever okay there could be any bits
+[00:47:19 -> 00:47:22] of the address
+[00:47:22 -> 00:47:29] and why do you use these bits spatial
+[00:47:29 -> 00:47:30] locality
+[00:47:30 -> 00:47:33] right because hey you know so these
+[00:47:33 -> 00:47:34] are the bits that
+[00:47:34 -> 00:47:36] are going in these address are going to
+[00:47:36 -> 00:47:37] correspond to consecutive memory
+[00:47:37 -> 00:47:39] addresses
+[00:47:39 -> 00:47:41] and you know you're likely to access
+[00:47:41 -> 00:47:44] consecutive memory addresses
+[00:47:44 -> 00:47:47] and then if you want to not only bring
+[00:47:47 -> 00:47:49] those in but you also want to make
+[00:47:49 -> 00:47:51] sure they can collectively reside in
+[00:47:51 -> 00:47:54] the cache at the same time
+[00:47:54 -> 00:47:57] okay so you know if I chose some
+[00:47:57 -> 00:47:59] other sets of bits
+[00:47:59 -> 00:48:00] it may be the case that two
+[00:48:00 -> 00:48:02] consecutive blocks
+[00:48:02 -> 00:48:04] may not be able to reside in the
+[00:48:04 -> 00:48:06] cache at the same time because they
+[00:48:06 -> 00:48:09] conflict
+[00:48:09 -> 00:48:13] okay so these work best but
+[00:48:13 -> 00:48:15] again I point out nothing says the
+[00:48:15 -> 00:48:18] index must be these bits
+[00:48:18 -> 00:48:22] okay later on when we talk about one of
+[00:48:22 -> 00:48:24] the
+[00:48:24 -> 00:48:27] more cache optimization tricks
+[00:48:27 -> 00:48:31] what we will do is we use these bits
+[00:48:31 -> 00:48:35] and XOR them with some other bits
+[00:48:35 -> 00:48:41] to figure out the index all right
+[00:48:41 -> 00:48:44] okay so now
+[00:48:44 -> 00:48:48] if I have a this cache
+[00:48:48 -> 00:48:52] this cache is 32 kilobytes of cache
+[00:48:52 -> 00:48:55] okay I can only hold and I have
+[00:48:55 -> 00:49:00] four gigabytes of memory I could access
+[00:49:00 -> 00:49:02] with 32 bits
+[00:49:02 -> 00:49:04] only 32 kilobytes of that memory could
+[00:49:04 -> 00:49:06] be in the cache at any given time
+[00:49:06 -> 00:49:10] so which one of the memory blocks
+[00:49:10 -> 00:49:12] of the entire memory are actually
+[00:49:12 -> 00:49:12] present
+[00:49:12 -> 00:49:16] and that's what I have tags for
+[00:49:16 -> 00:49:20] okay so so 32 bit address
+[00:49:20 -> 00:49:22] five bits are there for block offset and
+[00:49:22 -> 00:49:25] for the index that's 15 down that's 17
+[00:49:25 -> 00:49:27] bits left over
+[00:49:27 -> 00:49:30] and all the blocks that have the
+[00:49:30 -> 00:49:35] same you know the same index pattern
+[00:49:35 -> 00:49:36] are going to be in the same frame
+[00:49:36 -> 00:49:38] over here
+[00:49:38 -> 00:49:41] and and for the same set of index
+[00:49:41 -> 00:49:42] bits I could have
+[00:49:42 -> 00:49:45] two to the 17 different sets of bits
+[00:49:45 -> 00:49:46] over here
+[00:49:46 -> 00:49:48] right that's 17 this is two to the 17
+[00:49:48 -> 00:49:50] different value
+[00:49:50 -> 00:49:52] okay so I could have two to the 17
+[00:49:52 -> 00:49:53] blocks
+[00:49:53 -> 00:49:58] back onto that single frame
+[00:49:58 -> 00:50:01] and only one of them can be there
+[00:50:01 -> 00:50:03] and how do I know which one is there
+[00:50:03 -> 00:50:05] so what I do is I
+[00:50:05 -> 00:50:08] keep a tag with each block frame and
+[00:50:08 -> 00:50:09] I have a
+[00:50:09 -> 00:50:12] valid bit and now when I
+[00:50:12 -> 00:50:15] go and try and access this with
+[00:50:15 -> 00:50:18] address bits I go and select the
+[00:50:18 -> 00:50:20] appropriate frame
+[00:50:20 -> 00:50:22] read the data for that frame and read
+[00:50:22 -> 00:50:24] the tag for that frame
+[00:50:24 -> 00:50:28] check to see if the bit is valid
+[00:50:28 -> 00:50:30] compare my tag bits of the address
+[00:50:30 -> 00:50:32] which are these bits
+[00:50:32 -> 00:50:34] against the tag bits attached to that
+[00:50:34 -> 00:50:35] frame
+[00:50:35 -> 00:50:37] if they are the same I have a hit if
+[00:50:37 -> 00:50:38] I have a hit
+[00:50:38 -> 00:50:42] then I take my 32 bytes of data
+[00:50:42 -> 00:50:44] and if I want you know four bytes out
+[00:50:44 -> 00:50:45] of it
+[00:50:45 -> 00:50:47] I pull out the four bytes of it and
+[00:50:47 -> 00:50:50] that's how I get my data
+[00:50:50 -> 00:50:53] if this competitor over here says that
+[00:50:53 -> 00:50:54] this tag
+[00:50:54 -> 00:50:57] doesn't match the store tag over here
+[00:50:57 -> 00:50:58] then I have a miss then I have to go
+[00:50:58 -> 00:51:00] and press the block
+[00:51:00 -> 00:51:03] okay so you all seen this before but
+[00:51:03 -> 00:51:04] you know I wanted to
+[00:51:04 -> 00:51:05] review it again because once you
+[00:51:05 -> 00:51:07] start talking about times and so on
+[00:51:07 -> 00:51:10] then that becomes important
+[00:51:10 -> 00:51:13] okay first things first is let us
+[00:51:13 -> 00:51:16] try and see what the tag overhead is
+[00:51:17 -> 00:51:19] and again different techniques are going
+[00:51:19 -> 00:51:20] to have a different cost
+[00:51:20 -> 00:51:22] so we won't just keep in perspective
+[00:51:22 -> 00:51:25] you know all the different trade-offs
+[00:51:25 -> 00:51:26] that are over there
+[00:51:26 -> 00:51:30] that are happening so if I have a 32
+[00:51:30 -> 00:51:31] kilobyte cache
+[00:51:31 -> 00:51:33] means the cache over 30 kilobytes of
+[00:51:33 -> 00:51:34] data that's what's called the
+[00:51:34 -> 00:51:37] capacity of the cache
+[00:51:37 -> 00:51:40] that's how much data it can store
+[00:51:40 -> 00:51:43] the tag is considered overhead and
+[00:51:43 -> 00:51:45] let us see
+[00:51:45 -> 00:51:48] how much of a tag overhead we have
+[00:51:48 -> 00:51:50] in this cache over here in other words
+[00:51:50 -> 00:51:51] hey these are
+[00:51:51 -> 00:51:54] you know 250 so that's 32 bytes of
+[00:51:54 -> 00:51:55] data being stored here
+[00:51:55 -> 00:51:57] how many bits are being taken by the
+[00:51:57 -> 00:51:58] tags
+[00:51:58 -> 00:52:03] over here and that is the overhead
+[00:52:03 -> 00:52:06] so if I have 32 byte frames
+[00:52:06 -> 00:52:10] I have this five bit offset
+[00:52:10 -> 00:52:14] 10 bit index left with 17 tag bits
+[00:52:14 -> 00:52:18] so I have 17 tag bits here plus one
+[00:52:18 -> 00:52:21] and 256 bits over here so
+[00:52:21 -> 00:52:25] I have 17 tag bits plus one
+[00:52:25 -> 00:52:28] times how many frames I have you know
+[00:52:28 -> 00:52:32] 18 kilobits of tags or 2.2 kilobytes
+[00:52:32 -> 00:52:35] and 32 bytes kilobytes of data
+[00:52:35 -> 00:52:37] or in other words I have 18 bits of
+[00:52:37 -> 00:52:38] overhead
+[00:52:38 -> 00:52:42] for 256 bits of data
+[00:52:42 -> 00:52:47] that's got a six percent overhead what if
+[00:52:47 -> 00:52:50] I had 64 bit addresses
+[00:52:50 -> 00:52:54] if I had 64 bit addresses for the same
+[00:52:54 -> 00:52:55] situation
+[00:52:55 -> 00:52:58] what I would have is I would have five
+[00:52:58 -> 00:53:00] bits
+[00:53:00 -> 00:53:02] offset 10 bits index so 15 bits of
+[00:53:02 -> 00:53:05] these 64 bits are
+[00:53:05 -> 00:53:07] taken away I left it 49 bits for a
+[00:53:07 -> 00:53:08] tag
+[00:53:08 -> 00:53:10] and now the offset become the overhead
+[00:53:10 -> 00:53:13] becomes about 20 percent
+[00:53:13 -> 00:53:19] okay so 50 bits for 256 bits
+[00:53:19 -> 00:53:24] that starts at now all right so now what
+[00:53:24 -> 00:53:25] I'm going to do is
+[00:53:25 -> 00:53:28] I'm going to do a very simple cache
+[00:53:28 -> 00:53:29] simulation
+[00:53:29 -> 00:53:32] and the I go through this figure a
+[00:53:32 -> 00:53:33] little bit
+[00:53:33 -> 00:53:34] and then there will be multiple
+[00:53:34 -> 00:53:36] figures like this as we talk about
+[00:53:36 -> 00:53:38] the different cache organizations which
+[00:53:38 -> 00:53:40] I won't go through that much in detail
+[00:53:40 -> 00:53:43] okay so here is what I have is I
+[00:53:43 -> 00:53:44] have a cache
+[00:53:44 -> 00:53:49] that has eight entries in it
+[00:53:49 -> 00:53:52] okay so I just have eight entries and
+[00:53:52 -> 00:53:53] the entries are
+[00:53:53 -> 00:53:59] you know sorry okay
+[00:53:59 -> 00:54:02] I have it's a 32 byte cache and four
+[00:54:02 -> 00:54:03] white blocks so it has
+[00:54:03 -> 00:54:06] eight frames in it okay and
+[00:54:06 -> 00:54:14] so the frames are and so
+[00:54:14 -> 00:54:17] right so now the way I have so
+[00:54:17 -> 00:54:22] I have an eight bit address
+[00:54:22 -> 00:54:27] okay and so
+[00:54:27 -> 00:54:29] for the cache two bits are going to be
+[00:54:29 -> 00:54:31] and I have four white blocks two bits
+[00:54:31 -> 00:54:32] are going to be
+[00:54:32 -> 00:54:36] for the white in the block I have eight
+[00:54:36 -> 00:54:38] entries in the cache so I have index of
+[00:54:38 -> 00:54:40] three bits and then the tag is of
+[00:54:40 -> 00:54:42] three bits
+[00:54:42 -> 00:54:45] okay and this notation that I'm going
+[00:54:45 -> 00:54:46] to have
+[00:54:46 -> 00:54:48] these is a nibble notation so these are
+[00:54:48 -> 00:54:50] each of these is two bits okay so this
+[00:54:50 -> 00:54:51] is zero zero this is
+[00:54:51 -> 00:54:54] one one this is zero one this is zero
+[00:54:54 -> 00:54:56] zero
+[00:54:56 -> 00:55:01] okay so initially say that the
+[00:55:01 -> 00:55:04] cache and and so the and so the
+[00:55:04 -> 00:55:07] the the eight entries
+[00:55:07 -> 00:55:10] that the the eight index bits that I
+[00:55:10 -> 00:55:11] have over here
+[00:55:11 -> 00:55:14] they will be basically
+[00:55:14 -> 00:55:16] numbered
+[00:55:21 -> 00:55:24] so say that initially the cache content
+[00:55:24 -> 00:55:25] had it was in
+[00:55:25 -> 00:55:28] you know entry one it was this address
+[00:55:28 -> 00:55:32] and then an entry you know zero
+[00:55:32 -> 00:55:35] entry over here zero zero zero and I
+[00:55:35 -> 00:55:35] have
+[00:55:35 -> 00:55:37] for these three minutes zero zero one
+[00:55:37 -> 00:55:38] I have this
+[00:55:38 -> 00:55:42] and an address here etc okay in the
+[00:55:42 -> 00:55:45] cache that index
+[00:55:45 -> 00:55:49] so now I have this reference pattern
+[00:55:49 -> 00:55:54] okay so I sent to the cache address
+[00:55:54 -> 00:55:57] three zero two zero three zero two
+[00:55:57 -> 00:56:00] zero is going to map onto
+[00:56:00 -> 00:56:04] entry uh get this entry in the cache
+[00:56:04 -> 00:56:06] and it's going to then replace
+[00:56:06 -> 00:56:07] whatever was there
+[00:56:07 -> 00:56:09] would replace address zero zero two
+[00:56:09 -> 00:56:13] zero and I had a miss
+[00:56:13 -> 00:56:16] then I make a separate address three
+[00:56:16 -> 00:56:18] zero three zero to the cache it's
+[00:56:18 -> 00:56:20] going to map to entry
+[00:56:20 -> 00:56:22] zero three so zero three is this
+[00:56:22 -> 00:56:23] entry here
+[00:56:23 -> 00:56:26] and whatever was there it's going to
+[00:56:26 -> 00:56:27] replace
+[00:56:27 -> 00:56:31] and get a mess two one zero zero is
+[00:56:31 -> 00:56:32] going to go to
+[00:56:32 -> 00:56:36] entry one zero on the cache
+[00:56:36 -> 00:56:40] entry one zero in the cache is over
+[00:56:40 -> 00:56:42] this entry over here and replace this
+[00:56:42 -> 00:56:44] address over here
+[00:56:44 -> 00:56:47] get a mess zero zero one zero is going
+[00:56:47 -> 00:56:48] to entry
+[00:56:48 -> 00:56:51] zero one entry zero one
+[00:56:51 -> 00:56:54] what is there is zero zero one zero so
+[00:56:54 -> 00:56:56] I have a hit
+[00:56:56 -> 00:56:59] okay zero zero three zero is going to
+[00:56:59 -> 00:57:00] go to entry
+[00:57:00 -> 00:57:03] zero three entry zero three is this
+[00:57:03 -> 00:57:05] entry over here
+[00:57:05 -> 00:57:07] so the zero zero zero one zero two
+[00:57:07 -> 00:57:08] zero three
+[00:57:08 -> 00:57:24] one zero one and so you go there and previously had this but that got kicked out and got replaced
+[00:57:24 -> 00:57:40] by 3030 so you have a miss okay so let's try and classify the different misses that are happening
+[00:57:41 -> 00:57:47] because to be able to to be able to try and figure out how can i improve my catch
+[00:57:47 -> 00:57:59] i have to understand the misses not only the misses but what's causing the misses once i
+[00:57:59 -> 00:58:06] understand the cause of the misses then i can attack the different cause of the misses using
+[00:58:06 -> 00:58:21] different techniques so we are going to classify the misses into three c's you know former colleague
+[00:58:22 -> 00:58:27] just died a few years ago mark hill came up with this three c misclassification
+[00:58:28 -> 00:58:32] that you're going to classify you're doing a simulation like this and a miss happens
+[00:58:33 -> 00:58:36] you're going to classify a miss into either a compulsory miss
+[00:58:38 -> 00:58:47] a capacity miss or a conflict miss all right and what is a compulsory miss
+[00:58:49 -> 00:58:55] a compulsory miss is a miss that's going to happen for the very first time you access
+[00:58:56 -> 00:59:04] data means you start out the caches entry okay first time you access a data item it's going to
+[00:59:04 -> 00:59:17] miss in the cache so these compulsory misses basically are you know not misses that you can
+[00:59:17 -> 00:59:23] necessarily you know solve with by trying to change the cache organization except you will
+[00:59:23 -> 00:59:31] see we classify something made a little bit later on okay so you know you can play around
+[00:59:31 -> 00:59:34] with bricks in the cache and there's nothing you can be able to do about these compulsory
+[00:59:39 -> 00:59:46] you know the whole point of locality and so on and exporting locality is like you know
+[00:59:49 -> 00:59:54] if you have a program that's running for a long time that's what you want to make go fast
+[00:59:54 -> 00:59:59] if the program is you know comes and goes you know who cares whether you make it faster or not
+[00:59:59 -> 01:00:07] okay you want to make the program that's running a long time make it go fast and if it's running
+[01:00:07 -> 01:00:10] a long time it's going to be repeatedly executing the same set of instructions
+[01:00:11 -> 01:00:18] and working on the same data if you will okay so you know and so that data will be
+[01:00:19 -> 01:00:26] you know the overtime the compulsory message if you will will just become to be in the noise
+[01:00:26 -> 01:00:36] a capacity miss is a miss that is caused because of the finite capacity of the cache
+[01:00:37 -> 01:00:47] if you had an infinite cache you will not have any capacity misses and then the third
+[01:00:47 -> 01:00:59] type of conflict is i have a cache of a certain size okay but i have limited places in the cache
+[01:00:59 -> 01:01:06] where i can place a cache where i can place a block okay and the limitation is what is called
+[01:01:06 -> 01:01:15] the associativity of the cache okay and and so the conflict misses are the misses caused
+[01:01:15 -> 01:01:26] because i had a finite number of places in the cache where i can place a block so the if i had
+[01:01:26 -> 01:01:33] if i could place any arbitrary cache block any arbitrary block that apart from memory into any
+[01:01:33 -> 01:01:39] arbitrary cache block frame i would not have conflict so if i had a fully associated cache
+[01:01:39 -> 01:01:46] i would not have any conflict misses okay but these conflict misses are now what would be
+[01:01:46 -> 01:01:57] because i had a finite associativity all right so this model got extended to a fourth c which is
+[01:01:57 -> 01:02:03] actually additional misses caused by invalidation to enforce cache coherence later on and we
+[01:02:03 -> 01:02:13] briefly see this but it's more much more than any questions about compulsory capacity and
+[01:02:13 -> 01:02:24] conflict so you have some number of compulsory misses is positive some number of some number
+[01:02:24 -> 01:02:31] of misses you classify as capacity misses positive number some other number of misses
+[01:02:31 -> 01:02:40] i classify as conflict misses you know positive number except when it's negative we'll get that
+[01:02:41 -> 01:02:53] okay and what what does a negative conflict miss mean means that a a cache with a smaller
+[01:02:53 -> 01:03:03] associativity has fewer misses than a cache of a larger associativity right that's what it means
+[01:03:06 -> 01:03:12] seems counter-intuitive yeah a lot of stuff that's counter-intuitive that happens in real
+[01:03:12 -> 01:03:31] world we'll see this one later on what do you mean by okay all right
+[01:03:31 -> 01:03:51] so you know so the way this cache is going to work is index read a frame or if you have more
+[01:03:51 -> 01:03:58] associativity read multiple of them read all of them and then pull that data out of there
+[01:03:59 -> 01:04:07] and give it okay send it to the in a proper way if the data that you want doesn't end up
+[01:04:07 -> 01:04:16] in a cache line that is a misaligned access so you have to now make this access a second time
+[01:04:16 -> 01:04:21] all right
+[01:04:26 -> 01:04:33] here's what here's the whole cache line and here's a cache line and based on this address
+[01:04:33 -> 01:04:40] i'm pulling out whatever it is the address and i have a you know if you are making a misaligned
+[01:04:40 -> 01:04:49] access no no okay then i mean if the software basically saying they don't know i don't want to
+[01:04:49 -> 01:04:52] deal with the misaligned access and the hardware is dealing with misaligned accesses
+[01:04:53 -> 01:04:59] you have to then fetch the other cash mark now now you can appreciate the miss what the
+[01:04:59 -> 01:05:04] problem is like access colors and then pull out whatever the leftover data was in the second
+[01:05:04 -> 01:05:12] cash block and then and then and what you're saying is you know that doesn't mind you know
+[01:05:12 -> 01:05:16] i can do this i can do that you can access this hardware again a second time what's the
+[01:05:24 -> 01:05:28] so if the if the misaligned access misses then you have to
+[01:05:28 -> 01:05:34] do but the access to the second block misses then you have to do that etc yeah okay
+[01:05:34 -> 01:05:46] it's complicated but hopefully after hopefully where you are now in class after having seen
+[01:05:46 -> 01:05:58] the order execution scheduling and scheduling the depend bypassing and we saw in the you know
+[01:05:58 -> 01:06:03] in the commissal order algorithm how we can actually bypass we actually have to broadcast
+[01:06:03 -> 01:06:13] the tags before you actually do the access so you actually wake up and start the dependent
+[01:06:13 -> 01:06:20] instructions while you're accessing the cash before you even know there's a miss in the cash
+[01:06:22 -> 01:06:26] you can appreciate the complications that would happen if i actually
+[01:06:27 -> 01:06:31] hidden the cash but i have to make two cash accesses to pick in the cash because of the
+[01:06:31 -> 01:06:49] misaligned act i pay them the ms so you know and the it's not that the hardware couldn't do it
+[01:06:50 -> 01:06:54] you know and you have the hardware actually worked actually do the check
+[01:06:55 -> 01:07:01] and then make the thing so slow for the software doesn't ever do that again
+[01:07:02 -> 01:07:04] so do you have a question
+[01:07:08 -> 01:07:14] is it the case that you get that little uh the less than arrows there doesn't cash actually
+[01:07:15 -> 01:07:21] like pick out the bits or does it just send the whole cash line to the processor no no no
+[01:07:21 -> 01:07:38] so so so so what you do is if the cash reads the whole cash line this thing that i'm
+[01:07:38 -> 01:07:44] showing over here and so typically in this memory array you know you would read all the bits into
+[01:07:44 -> 01:07:50] you know how a multiplexer over here so this basically is then would be a multiplexer
+[01:07:51 -> 01:07:58] that is going to pull out the bytes that you are interested in and send them because the
+[01:07:58 -> 01:08:03] intro or the inter-cash lines are always doing everything in like the 64 byte
+[01:08:04 -> 01:08:09] we are reading the whole cache but yeah but it doesn't send it does select
+[01:08:12 -> 01:08:12] correct
+[01:08:16 -> 01:08:20] and in fact later on what we will see one of the more interesting things we will see
+[01:08:21 -> 01:08:30] is that when we get talking to the non with what non-bottom caches we will see actually
+[01:08:30 -> 01:08:39] you could get another load to the same cash line okay and then you would service it from
+[01:08:39 -> 01:08:47] the buffer that brought in cash and in fact that's going to be one of the more complications
+[01:08:47 -> 01:08:56] of actually trying to get that to work correctly because if you just want to read it like oh yeah
+[01:08:59 -> 01:09:03] is that true in the instruction cache too i mean because we're trying to
+[01:09:04 -> 01:09:07] typically we're trying to get a bunch of instructions at one time right
+[01:09:08 -> 01:09:13] and so you know we're potentially in this cache we would be getting 32 bytes at a time
+[01:09:14 -> 01:09:18] do we send those off to the better i mean does the fetcher grab all those and
+[01:09:20 -> 01:09:26] wear a bunch of them okay okay okay for data we are reading cache line
+[01:09:26 -> 01:09:32] okay and say you access wonder you know four words you know four bytes in the then you
+[01:09:32 -> 01:09:40] from the data cache you send those four bytes the instruction cache you just dump the whole
+[01:09:40 -> 01:09:48] thing to the right okay and there because it's going to need these additional instructions
+[01:09:48 -> 01:09:54] rather than make those additional cash access or as we saw our white fetch we talked about
+[01:09:54 -> 01:10:00] white fetch okay so you're fetching the entire cache line or we try to you know document
+[01:10:00 -> 01:10:05] bottom view but you know we had the you know collapsing buffers whatever it is you actually
+[01:10:05 -> 01:10:11] had two cash lines and you know selected a large part portion of that from there and sent
+[01:10:11 -> 01:10:16] to the processor but you send many instructions in the process so you have to otherwise you
+[01:10:16 -> 01:10:36] aren't doing the end okay so given this now let us understand the abc's of caches okay
+[01:10:36 -> 01:10:46] you know abc's are associativity block size and capacity you know larger the capacity it
+[01:10:46 -> 01:10:54] decreases the capacity misses but an increase of the hit latency larger the associativity
+[01:10:54 -> 01:10:59] decreases conflict misses but it increases the hit latency why we see
+[01:11:00 -> 01:11:09] okay larger the block sizes larger block size for the same size cache you can have fewer blocks
+[01:11:09 -> 01:11:19] in it okay so since i have fewer frames i can also you know increase the conflict and capacity
+[01:11:19 -> 01:11:27] misses in capacity because i have smaller capacity by smaller not in total not in total
+[01:11:28 -> 01:11:36] bytes but in fewer frames and the fewer frames i can also get more conflict but a larger block
+[01:11:36 -> 01:11:44] size because of the spatial prefetching you know if i have blocks one two three four that i'm
+[01:11:44 -> 01:11:50] having misses on if i combine them into one big block i have a miss on block one but two three four
+[01:11:50 -> 01:11:58] will be hence okay so i can decrease the compulsory and capacity misses due to spatial
+[01:11:58 -> 01:12:07] retouching okay and typically it doesn't have an effect on hit latency because you know
+[01:12:07 -> 01:12:13] i just make my cache wider and reading the whole cache it may take a little more energy if
+[01:12:13 -> 01:12:21] that's not something to consider here but it may increase the miss latency why so we will see
+[01:12:23 -> 01:12:25] okay questions
+[01:12:43 -> 01:12:47] so
+[01:13:04 -> 01:13:08] the whole point of this is hey here's a bag of cricks you know we'll talk about some of the most
+[01:13:08 -> 01:13:10] people being used

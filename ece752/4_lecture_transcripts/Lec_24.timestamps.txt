@@ -1,0 +1,1701 @@
+Title: Lec_24
+Source file: Lec_24.mp3
+Detected language: en
+------------------------------------------------------------
+
+[00:00:00 -> 00:00:02] I'm some sort of
+[00:00:02 -> 00:00:05] questions
+[00:00:05 -> 00:00:15] okay
+[00:00:15 -> 00:00:17] where we left off last time
+[00:00:17 -> 00:00:19] is we talked about
+[00:00:19 -> 00:00:21] cache coherence
+[00:00:21 -> 00:00:23] and came up with this
+[00:00:23 -> 00:00:25] very simple
+[00:00:25 -> 00:00:27] uh
+[00:00:27 -> 00:00:29] protocol for a write back
+[00:00:29 -> 00:00:31] cache
+[00:00:31 -> 00:00:33] validate and validate protocol went through it
+[00:00:33 -> 00:00:35] saw that it gave us
+[00:00:35 -> 00:00:37] the correct result
+[00:00:37 -> 00:00:39] the problem with the
+[00:00:39 -> 00:00:41] validate and validate protocol is
+[00:00:41 -> 00:00:43] it's only going to let one cached copy
+[00:00:45 -> 00:00:47] at any time
+[00:00:47 -> 00:00:49] okay so I have N processors
+[00:00:49 -> 00:00:51] only one of them can
+[00:00:51 -> 00:00:53] have a copy in their
+[00:00:53 -> 00:00:55] cache
+[00:00:55 -> 00:00:57] multiple copies cannot exist even if you adjust
+[00:00:57 -> 00:00:59] that block is purely read only
+[00:00:59 -> 00:01:01] you aren't even writing into it
+[00:01:01 -> 00:01:03] okay
+[00:01:03 -> 00:01:05] and you cannot have multiple read only copies
+[00:01:07 -> 00:01:09] this actually ends up being a big deal
+[00:01:09 -> 00:01:11] in a real situation because
+[00:01:11 -> 00:01:13] there are many situations that
+[00:01:13 -> 00:01:15] you know you have your global
+[00:01:15 -> 00:01:17] variables or whatever it is
+[00:01:17 -> 00:01:19] you know that you want to have
+[00:01:19 -> 00:01:21] you know copies of
+[00:01:21 -> 00:01:23] uh privately
+[00:01:23 -> 00:01:25] in the caches
+[00:01:25 -> 00:01:27] read only copies and that does not
+[00:01:27 -> 00:01:29] cannot exist with a simple read protocol
+[00:01:31 -> 00:01:33] so what we're going to do now is
+[00:01:33 -> 00:01:35] break that valid state into two different
+[00:01:35 -> 00:01:37] states
+[00:01:37 -> 00:01:39] into an M state
+[00:01:39 -> 00:01:41] and a S state
+[00:01:41 -> 00:01:43] a M state that refers to a modified
+[00:01:43 -> 00:01:45] state which
+[00:01:45 -> 00:01:47] indicates that
+[00:01:47 -> 00:01:49] a block in the modified
+[00:01:49 -> 00:01:51] state that cache has a copy
+[00:01:51 -> 00:01:53] and it's
+[00:01:53 -> 00:01:55] dirty
+[00:01:55 -> 00:01:57] and in the S state
+[00:01:57 -> 00:01:59] it means it has a local copy
+[00:01:59 -> 00:02:01] and it is
+[00:02:01 -> 00:02:03] clean
+[00:02:03 -> 00:02:05] so it's the same as all the other copies
+[00:02:05 -> 00:02:07] it's the same as what's in memory
+[00:02:07 -> 00:02:09] dirty means it is different from
+[00:02:09 -> 00:02:11] what is it
+[00:02:11 -> 00:02:13] what it is in memory
+[00:02:13 -> 00:02:15] and so this protocol will allow
+[00:02:15 -> 00:02:17] multiple read copies
+[00:02:17 -> 00:02:19] in that state
+[00:02:19 -> 00:02:21] but only a single
+[00:02:21 -> 00:02:23] read write copy in that state
+[00:02:23 -> 00:02:25] which is what you want
+[00:02:25 -> 00:02:27] if you want if you're writing into a block
+[00:02:27 -> 00:02:29] you should have the only copy
+[00:02:29 -> 00:02:31] no one else should have a copy
+[00:02:31 -> 00:02:33] write into or even read
+[00:02:33 -> 00:02:35] it's just going to
+[00:02:35 -> 00:02:37] get the wrong value
+[00:02:37 -> 00:02:41] so let us see what
+[00:02:41 -> 00:02:43] this protocol and see
+[00:02:43 -> 00:02:45] what it works with the different states
+[00:02:45 -> 00:02:47] so let me
+[00:02:47 -> 00:02:49] say start off by the end
+[00:02:49 -> 00:02:51] I don't have the block
+[00:02:51 -> 00:02:53] or alternatively I have the block in the
+[00:02:53 -> 00:02:55] meta state
+[00:02:55 -> 00:02:57] and if there's
+[00:02:57 -> 00:02:59] a read for the block
+[00:02:59 -> 00:03:01] going across on the bus
+[00:03:01 -> 00:03:03] I don't do anything
+[00:03:03 -> 00:03:05] I just stay in that same state
+[00:03:05 -> 00:03:07] a little bit
+[00:03:07 -> 00:03:09] okay
+[00:03:09 -> 00:03:11] now
+[00:03:11 -> 00:03:13] if I have a copy of the block
+[00:03:13 -> 00:03:15] in the meta state
+[00:03:15 -> 00:03:17] or I don't have a copy of the block
+[00:03:17 -> 00:03:19] if the processor
+[00:03:19 -> 00:03:21] does a read
+[00:03:21 -> 00:03:23] okay
+[00:03:23 -> 00:03:25] then that read
+[00:03:25 -> 00:03:27] goes out on the bus
+[00:03:27 -> 00:03:31] you get a copy of the block
+[00:03:31 -> 00:03:33] you get a copy of the block
+[00:03:33 -> 00:03:35] and keep it in the shared state
+[00:03:35 -> 00:03:41] if the processor
+[00:03:41 -> 00:03:43] does a write
+[00:03:43 -> 00:03:45] you're going to
+[00:03:45 -> 00:03:47] allocate that block
+[00:03:47 -> 00:03:49] do a write allocate
+[00:03:49 -> 00:03:51] and allocate that block
+[00:03:51 -> 00:03:53] in the cache and write into that
+[00:03:53 -> 00:03:55] block
+[00:03:55 -> 00:03:57] and bring that block
+[00:03:57 -> 00:03:59] in a modified state
+[00:03:59 -> 00:04:04] if you have the block in shared
+[00:04:04 -> 00:04:06] state
+[00:04:06 -> 00:04:08] you are doing a read
+[00:04:08 -> 00:04:10] you keep that block in shared state
+[00:04:10 -> 00:04:12] processor doing a read
+[00:04:12 -> 00:04:14] okay
+[00:04:14 -> 00:04:16] if the
+[00:04:16 -> 00:04:18] you have the block in shared state
+[00:04:18 -> 00:04:20] and you see a bus read
+[00:04:20 -> 00:04:22] in the bus side
+[00:04:22 -> 00:04:24] again you just keep the block as is
+[00:04:24 -> 00:04:27] you don't do anything to it
+[00:04:27 -> 00:04:29] okay
+[00:04:29 -> 00:04:31] if you have the block in shared state
+[00:04:31 -> 00:04:33] and you do a write
+[00:04:33 -> 00:04:35] then that write
+[00:04:35 -> 00:04:37] goes out on the bus as a bus write
+[00:04:37 -> 00:04:39] and that bus write
+[00:04:39 -> 00:04:41] will
+[00:04:41 -> 00:04:43] invalidate copies
+[00:04:43 -> 00:04:45] in other caches
+[00:04:45 -> 00:04:47] okay
+[00:04:47 -> 00:04:49] we'll get to the bus writes in this diagram
+[00:04:49 -> 00:04:51] in a little while
+[00:04:51 -> 00:04:53] and you transition
+[00:04:53 -> 00:04:55] your block into the modified state
+[00:04:55 -> 00:04:57] you write into your local copy
+[00:04:57 -> 00:04:59] and now this is indicating that
+[00:04:59 -> 00:05:01] this data over here in this cache
+[00:05:01 -> 00:05:03] is different
+[00:05:03 -> 00:05:05] it's modified
+[00:05:05 -> 00:05:07] and I have the only local copy
+[00:05:07 -> 00:05:09] and all the other copies have been invalidated
+[00:05:09 -> 00:05:14] okay
+[00:05:14 -> 00:05:16] and finally
+[00:05:16 -> 00:05:18] if you see a
+[00:05:18 -> 00:05:20] bus write
+[00:05:20 -> 00:05:22] bus write means some other processor
+[00:05:22 -> 00:05:24] is trying to write into that block
+[00:05:24 -> 00:05:26] I have a shared copy
+[00:05:26 -> 00:05:28] okay
+[00:05:28 -> 00:05:30] I am going to invalidate my
+[00:05:30 -> 00:05:32] block so transition to the
+[00:05:32 -> 00:05:37] invalid state over here
+[00:05:37 -> 00:05:39] and you know
+[00:05:39 -> 00:05:41] in the process
+[00:05:41 -> 00:05:43] of transitioning
+[00:05:43 -> 00:05:45] in some you know situations
+[00:05:45 -> 00:05:47] if I am also going to give
+[00:05:47 -> 00:05:49] the common block to
+[00:05:49 -> 00:05:51] the requester you know I could also
+[00:05:51 -> 00:05:53] copy back that block onto the bus
+[00:05:53 -> 00:05:55] otherwise I could
+[00:05:55 -> 00:05:57] just get that transition
+[00:05:57 -> 00:05:59] and not do anything with the block
+[00:05:59 -> 00:06:03] it's not good
+[00:06:03 -> 00:06:07] alright
+[00:06:07 -> 00:06:09] you as a processor
+[00:06:09 -> 00:06:11] may choose to be the one supplying
+[00:06:11 -> 00:06:13] the block instead of memory
+[00:06:13 -> 00:06:15] yes
+[00:06:15 -> 00:06:17] that cache could be responsible for
+[00:06:17 -> 00:06:19] supplying the block instead of memory
+[00:06:19 -> 00:06:21] and again
+[00:06:21 -> 00:06:23] I mean you may ask why
+[00:06:23 -> 00:06:25] because
+[00:06:25 -> 00:06:27] the memory would be
+[00:06:27 -> 00:06:29] hundreds of cycles away and this would be
+[00:06:29 -> 00:06:33] tens of cycles away
+[00:06:33 -> 00:06:37] alright okay
+[00:06:37 -> 00:06:39] now if I have a block
+[00:06:39 -> 00:06:41] in the modified state
+[00:06:41 -> 00:06:43] if I do a read or a write
+[00:06:43 -> 00:06:45] I stick in the
+[00:06:45 -> 00:06:47] same state
+[00:06:47 -> 00:06:49] okay
+[00:06:49 -> 00:06:51] if I see a
+[00:06:51 -> 00:06:53] bus read
+[00:06:53 -> 00:06:55] some other processor is trying to read it
+[00:06:55 -> 00:06:57] I have the dirty copy
+[00:06:57 -> 00:06:59] memory does not have the correct copy
+[00:06:59 -> 00:07:01] so I must copy back
+[00:07:01 -> 00:07:03] that block
+[00:07:03 -> 00:07:05] so that the other processor
+[00:07:05 -> 00:07:07] cache can have it
+[00:07:07 -> 00:07:09] and in the
+[00:07:09 -> 00:07:11] in doing that
+[00:07:11 -> 00:07:13] I likely also update the memory
+[00:07:13 -> 00:07:15] the memory also get updated
+[00:07:17 -> 00:07:19] okay and then I
+[00:07:19 -> 00:07:21] but what I do is now
+[00:07:21 -> 00:07:23] previously when another processor was
+[00:07:23 -> 00:07:25] trying to read
+[00:07:25 -> 00:07:27] when another processor was trying to read
+[00:07:27 -> 00:07:29] I went from
+[00:07:29 -> 00:07:31] the valid state to the invalid state
+[00:07:31 -> 00:07:33] okay
+[00:07:33 -> 00:07:35] here if the other processor
+[00:07:35 -> 00:07:37] was trying to read so there's a bus read
+[00:07:37 -> 00:07:39] signal I copy back that block but I
+[00:07:39 -> 00:07:41] transition to a shared state
+[00:07:41 -> 00:07:43] where I can continue reading that copy
+[00:07:43 -> 00:07:45] of the block
+[00:07:45 -> 00:07:47] okay if
+[00:07:47 -> 00:07:49] there is a bus write
+[00:07:49 -> 00:07:51] which means some other processor
+[00:07:51 -> 00:07:53] is trying to write into that block
+[00:07:53 -> 00:07:55] again I copy that block so the
+[00:07:55 -> 00:07:57] other processor can get it probably
+[00:07:57 -> 00:07:59] write the memory at the same time
+[00:07:59 -> 00:08:01] and then
+[00:08:01 -> 00:08:03] transition to an invalid state
+[00:08:03 -> 00:08:05] okay
+[00:08:05 -> 00:08:07] if my
+[00:08:07 -> 00:08:09] modified state and I
+[00:08:09 -> 00:08:11] replace the block so I have a write back
+[00:08:11 -> 00:08:13] I copy back that block
+[00:08:13 -> 00:08:15] and transition to the
+[00:08:15 -> 00:08:20] invalid state okay
+[00:08:20 -> 00:08:22] and if I do not have
+[00:08:22 -> 00:08:24] the copy of the block or have it
+[00:08:24 -> 00:08:26] in invalid state if the processor
+[00:08:26 -> 00:08:28] doesn't write then I
+[00:08:32 -> 00:08:34] read the block and then
+[00:08:34 -> 00:08:36] put it in modified state
+[00:08:36 -> 00:08:40] and write questions about this
+[00:08:40 -> 00:08:42] again I
+[00:08:42 -> 00:08:44] point out this is fairly simplistic
+[00:08:44 -> 00:08:46] in actuality
+[00:08:46 -> 00:08:48] you know each one of these states will also
+[00:08:48 -> 00:08:50] have multiple substates
+[00:08:50 -> 00:08:52] to take care of the variety
+[00:08:52 -> 00:08:54] of the different cases they have
+[00:08:54 -> 00:08:56] okay so let us see
+[00:08:56 -> 00:08:58] now how this works
+[00:08:58 -> 00:09:00] same piece of code this
+[00:09:00 -> 00:09:02] processor zero did a load so it brought
+[00:09:02 -> 00:09:04] that block you know
+[00:09:04 -> 00:09:06] value memory
+[00:09:06 -> 00:09:08] was 500 you brought that block with
+[00:09:08 -> 00:09:10] value 500 in shared state
+[00:09:10 -> 00:09:12] okay then
+[00:09:12 -> 00:09:14] 500 went
+[00:09:14 -> 00:09:16] into a register R4
+[00:09:16 -> 00:09:18] you checked that subtracted it and then you
+[00:09:18 -> 00:09:20] stored R4 so now
+[00:09:20 -> 00:09:22] you know processor zero
+[00:09:22 -> 00:09:24] had a cache hit so
+[00:09:24 -> 00:09:26] if you did a write it was
+[00:09:26 -> 00:09:28] in shared state you did a write so you
+[00:09:28 -> 00:09:30] carried out the bus write
+[00:09:30 -> 00:09:32] to invalidate others if any
+[00:09:32 -> 00:09:34] and you transition to the
+[00:09:34 -> 00:09:38] modified state
+[00:09:38 -> 00:09:40] this processor now
+[00:09:40 -> 00:09:42] does a load
+[00:09:42 -> 00:09:44] processor one does a load misses
+[00:09:44 -> 00:09:46] so it
+[00:09:46 -> 00:09:48] misses so it issues the bus read
+[00:09:48 -> 00:09:50] signal okay
+[00:09:50 -> 00:09:52] this processor has it in
+[00:09:52 -> 00:09:54] processor zero has it in modified it sees a bus
+[00:09:54 -> 00:09:56] read signal okay so it
+[00:09:56 -> 00:09:58] copies back the block and
+[00:09:58 -> 00:10:00] transitions to the shared
+[00:10:00 -> 00:10:02] state over here so now
+[00:10:02 -> 00:10:04] this block was copied
+[00:10:04 -> 00:10:06] back on the bus from where it ended up in
+[00:10:06 -> 00:10:08] memory and it also ended up in this other
+[00:10:08 -> 00:10:10] processor cache and this
+[00:10:10 -> 00:10:12] state was set to
+[00:10:12 -> 00:10:14] share
+[00:10:14 -> 00:10:16] all right this processor now
+[00:10:16 -> 00:10:18] writes into
+[00:10:18 -> 00:10:20] that block
+[00:10:20 -> 00:10:22] so it has the block in shared
+[00:10:22 -> 00:10:24] state it does a
+[00:10:24 -> 00:10:26] write into that block so it does a
+[00:10:26 -> 00:10:28] bus write that bus
+[00:10:28 -> 00:10:30] write is going to invalidate the block
+[00:10:30 -> 00:10:32] in processor zero
+[00:10:32 -> 00:10:34] and you transition to
+[00:10:34 -> 00:10:36] modified okay
+[00:10:36 -> 00:10:38] so here this processor
+[00:10:38 -> 00:10:40] you know
+[00:10:40 -> 00:10:42] updates the block value
+[00:10:42 -> 00:10:44] over here to 300 and
+[00:10:44 -> 00:10:46] the block in processor zero is
+[00:10:46 -> 00:10:53] okay but you are allowing multiple
+[00:10:53 -> 00:10:55] read copies that can actually be a huge
+[00:10:55 -> 00:11:02] use of functions questions
+[00:11:02 -> 00:11:04] yeah did they ever build caches where
+[00:11:04 -> 00:11:06] like the modifier is
+[00:11:06 -> 00:11:08] simply one that is moved from one
+[00:11:08 -> 00:11:10] to the other
+[00:11:10 -> 00:11:12] yes so
+[00:11:12 -> 00:11:14] so
+[00:11:14 -> 00:11:20] you know this is
+[00:11:20 -> 00:11:22] what I'm talking about is they have
+[00:11:22 -> 00:11:24] invalidates the
+[00:11:24 -> 00:11:26] protocol they also
+[00:11:26 -> 00:11:28] built they also built
+[00:11:28 -> 00:11:30] the processor
+[00:11:30 -> 00:11:32] they had a not invalidate
+[00:11:32 -> 00:11:34] an update protocol where you
+[00:11:34 -> 00:11:36] update the value of this cache
+[00:11:36 -> 00:11:38] okay
+[00:11:38 -> 00:11:40] and they didn't turn out to be in a sense
+[00:11:40 -> 00:11:42] you know it's a little more difficult to get
+[00:11:42 -> 00:11:44] right okay
+[00:11:44 -> 00:11:46] and then
+[00:11:46 -> 00:11:48] then one of the other
+[00:11:48 -> 00:11:50] things that is routinely done is what is called a
+[00:11:50 -> 00:11:52] cache to cache transfer
+[00:11:52 -> 00:11:54] okay rather than getting it from memory you get it
+[00:11:54 -> 00:11:56] from a different cache
+[00:11:56 -> 00:11:58] and what was the situation you were asking
+[00:11:58 -> 00:12:00] if the
+[00:12:00 -> 00:12:02] if the cache that
+[00:12:02 -> 00:12:04] current has it hasn't modified
+[00:12:04 -> 00:12:06] will it send it to another cache
+[00:12:06 -> 00:12:08] and say you know it's you own it
+[00:12:08 -> 00:12:10] now it's your job to write it back
+[00:12:10 -> 00:12:12] to memory
+[00:12:12 -> 00:12:14] so in the cache to cache transfer
+[00:12:14 -> 00:12:16] you would also transfer
+[00:12:16 -> 00:12:18] the own so modify
+[00:12:18 -> 00:12:20] this modified state
+[00:12:20 -> 00:12:22] okay in a sense what it is
+[00:12:22 -> 00:12:24] this is only
+[00:12:24 -> 00:12:26] a single copy and
+[00:12:26 -> 00:12:28] it's different from memory
+[00:12:28 -> 00:12:30] that is many times also called
+[00:12:30 -> 00:12:32] an own state
+[00:12:32 -> 00:12:34] okay so that cache has the ownership of it
+[00:12:34 -> 00:12:36] so you can have protocols that transfer
+[00:12:36 -> 00:12:40] the ownership to the other cache
+[00:12:40 -> 00:12:42] but typically typically what
+[00:12:42 -> 00:12:44] you do is
+[00:12:44 -> 00:12:46] most code
+[00:12:46 -> 00:12:48] if you are communicating
+[00:12:48 -> 00:12:50] a shared variable okay
+[00:12:50 -> 00:12:52] you are doing a read before
+[00:12:52 -> 00:12:54] you do the write if someone else
+[00:12:54 -> 00:13:03] has done a write okay
+[00:13:03 -> 00:13:05] so
+[00:13:05 -> 00:13:07] we talk
+[00:13:07 -> 00:13:09] about coherence and very simple bus
+[00:13:09 -> 00:13:11] broadcast structure
+[00:13:11 -> 00:13:13] that's only one part of the equation
+[00:13:13 -> 00:13:15] okay let's see what the other
+[00:13:15 -> 00:13:17] parts of the equation are
+[00:13:17 -> 00:13:19] same piece of code
+[00:13:19 -> 00:13:21] okay same piece of code
+[00:13:21 -> 00:13:23] and the difference between this piece of code
+[00:13:23 -> 00:13:25] the execution
+[00:13:25 -> 00:13:27] over here and the execution
+[00:13:27 -> 00:13:29] over here is that over here
+[00:13:29 -> 00:13:31] processor zero started
+[00:13:31 -> 00:13:33] executing this code after processor
+[00:13:33 -> 00:13:35] sorry you want to start executing this code
+[00:13:35 -> 00:13:37] this is time after processor zero
+[00:13:37 -> 00:13:41] but you have no
+[00:13:41 -> 00:13:43] control over the things that are going to execute
+[00:13:43 -> 00:13:45] and here is not the same
+[00:13:45 -> 00:13:47] two different threads if you were
+[00:13:47 -> 00:13:49] and the execution is a little staggered
+[00:13:49 -> 00:13:51] so there is a little overlap in time
+[00:13:51 -> 00:13:55] of this execution okay
+[00:13:55 -> 00:13:57] so let's walk through this
+[00:13:57 -> 00:13:59] example and see what's going to happen
+[00:13:59 -> 00:14:01] again processor
+[00:14:01 -> 00:14:03] zero of memory is
+[00:14:03 -> 00:14:05] 500 does the load brings a block
+[00:14:05 -> 00:14:07] in shared state
+[00:14:07 -> 00:14:09] 500 and then
+[00:14:09 -> 00:14:11] that value of
+[00:14:11 -> 00:14:13] accounts with value
+[00:14:13 -> 00:14:15] 500 is loaded into register
+[00:14:15 -> 00:14:17] output
+[00:14:17 -> 00:14:20] this processor does
+[00:14:20 -> 00:14:22] this load
+[00:14:22 -> 00:14:24] misses in the cache
+[00:14:24 -> 00:14:26] it now goes and
+[00:14:26 -> 00:14:28] you know does a bus read
+[00:14:28 -> 00:14:30] does a bus read
+[00:14:30 -> 00:14:32] this processor
+[00:14:32 -> 00:14:34] processor zero has the
+[00:14:34 -> 00:14:36] cache in shared state
+[00:14:36 -> 00:14:38] block in shared state
+[00:14:38 -> 00:14:40] sees a bus read
+[00:14:40 -> 00:14:42] and so it doesn't do anything
+[00:14:42 -> 00:14:44] it stays in shared state
+[00:14:44 -> 00:14:48] alright
+[00:14:48 -> 00:14:50] so now you have two copies
+[00:14:50 -> 00:14:52] of the block in shared state
+[00:14:52 -> 00:14:54] which is what we wanted
+[00:14:54 -> 00:14:56] we thought was a good thing
+[00:14:56 -> 00:15:00] alright this processor
+[00:15:00 -> 00:15:02] takes the value from R4
+[00:15:02 -> 00:15:04] which is 400
+[00:15:04 -> 00:15:06] and stores it into memory
+[00:15:06 -> 00:15:08] so it stores
+[00:15:08 -> 00:15:10] the value 400
+[00:15:10 -> 00:15:12] overhead
+[00:15:12 -> 00:15:14] okay and it is cached and it is modified
+[00:15:14 -> 00:15:16] and it invalidates this
+[00:15:16 -> 00:15:18] block okay
+[00:15:18 -> 00:15:20] this processor
+[00:15:20 -> 00:15:22] read 400 from
+[00:15:22 -> 00:15:24] memory
+[00:15:24 -> 00:15:26] put it in register R4
+[00:15:26 -> 00:15:28] and now it did the subtraction
+[00:15:28 -> 00:15:30] on register R4 and now
+[00:15:30 -> 00:15:32] it writes R4 back to memory
+[00:15:32 -> 00:15:34] and R4 is
+[00:15:34 -> 00:15:36] 400 so it
+[00:15:36 -> 00:15:38] writes 400 invalidates
+[00:15:38 -> 00:15:40] this cache and
+[00:15:40 -> 00:15:42] creates this modifiers you know sets
+[00:15:42 -> 00:15:44] the value of this cache
+[00:15:44 -> 00:15:48] with state modified
+[00:15:48 -> 00:15:50] okay and you know
+[00:15:50 -> 00:15:52] these are write back caches
+[00:15:52 -> 00:15:54] okay everything should be fine
+[00:15:54 -> 00:15:56] but coherence is
+[00:15:56 -> 00:15:58] working fine but the value is wrong
+[00:16:01 -> 00:16:03] and the reason
+[00:16:03 -> 00:16:05] why the value is wrong is
+[00:16:05 -> 00:16:07] these access
+[00:16:07 -> 00:16:09] to that account only
+[00:16:09 -> 00:16:11] one processor should have been allowed to get
+[00:16:11 -> 00:16:13] access to that account at any given time
+[00:16:13 -> 00:16:15] that access should be synchronized
+[00:16:15 -> 00:16:17] and it wasn't
+[00:16:17 -> 00:16:22] synchronized
+[00:16:22 -> 00:16:24] so what really happened is that
+[00:16:24 -> 00:16:26] access should have been
+[00:16:26 -> 00:16:28] set to atomic
+[00:16:28 -> 00:16:30] these transactions should not have been
+[00:16:30 -> 00:16:32] interleaved
+[00:16:32 -> 00:16:35] but that's exactly what happened
+[00:16:35 -> 00:16:37] okay and you know
+[00:16:37 -> 00:16:39] this is not necessarily
+[00:16:39 -> 00:16:41] a situation on a
+[00:16:41 -> 00:16:43] multi processor the same
+[00:16:43 -> 00:16:45] thing can happen on a multi program
+[00:16:45 -> 00:16:47] uniprocessor
+[00:16:47 -> 00:16:49] because you can
+[00:16:49 -> 00:16:51] stop
+[00:16:51 -> 00:16:53] this thread if you would
+[00:16:53 -> 00:16:55] in the middle of
+[00:16:55 -> 00:16:57] this update over here
+[00:16:57 -> 00:16:59] and execute this
+[00:16:59 -> 00:17:01] thread and you would get the wrong way
+[00:17:01 -> 00:17:06] so what you have to do is you have to
+[00:17:06 -> 00:17:08] synchronize access to
+[00:17:08 -> 00:17:10] this shared
+[00:17:10 -> 00:17:12] account
+[00:17:12 -> 00:17:14] so that only one thread
+[00:17:14 -> 00:17:16] can be updating it
+[00:17:16 -> 00:17:18] at any given time
+[00:17:18 -> 00:17:20] alright
+[00:17:20 -> 00:17:22] so you see this in a course
+[00:17:22 -> 00:17:24] like 537
+[00:17:24 -> 00:17:26] okay so synchronization
+[00:17:26 -> 00:17:28] that's the second issue for shared
+[00:17:28 -> 00:17:30] memory you have to regulate access to shared
+[00:17:30 -> 00:17:32] data and in a course like
+[00:17:32 -> 00:17:34] 537 you
+[00:17:34 -> 00:17:36] learned about semaphores and
+[00:17:36 -> 00:17:38] monitors and other
+[00:17:38 -> 00:17:40] synchronization constructs
+[00:17:40 -> 00:17:42] okay and
+[00:17:42 -> 00:17:44] for the
+[00:17:44 -> 00:17:46] hardware purposes the basic
+[00:17:46 -> 00:17:48] hardware primitive is unlock
+[00:17:48 -> 00:17:50] and we will see how
+[00:17:50 -> 00:17:52] we do that
+[00:17:52 -> 00:17:54] and so you can have
+[00:17:54 -> 00:17:56] operations that are going to
+[00:17:56 -> 00:17:58] acquire the lock and
+[00:17:58 -> 00:18:00] release the lock
+[00:18:00 -> 00:18:02] and the critical section
+[00:18:02 -> 00:18:04] which is what you want
+[00:18:04 -> 00:18:06] only one processor to be
+[00:18:06 -> 00:18:08] executing at any given time
+[00:18:08 -> 00:18:10] you isolate
+[00:18:10 -> 00:18:12] the critical section
+[00:18:12 -> 00:18:14] with a acquire
+[00:18:14 -> 00:18:16] a lock and release
+[00:18:16 -> 00:18:18] a lock so you first
+[00:18:18 -> 00:18:20] acquire the lock and only after you
+[00:18:20 -> 00:18:22] acquire the lock can you be in this critical
+[00:18:22 -> 00:18:24] section and when you're done
+[00:18:24 -> 00:18:26] with this critical section you're going to
+[00:18:26 -> 00:18:30] release this lock okay
+[00:18:30 -> 00:18:32] so
+[00:18:32 -> 00:18:34] you know these
+[00:18:34 -> 00:18:36] you are going to basically
+[00:18:36 -> 00:18:38] interleave the acquired releases
+[00:18:38 -> 00:18:40] so if you have an acquire
+[00:18:40 -> 00:18:42] there can only be one acquire
+[00:18:42 -> 00:18:44] the second consecutive acquire
+[00:18:44 -> 00:18:46] that happens
+[00:18:46 -> 00:18:48] before a release
+[00:18:48 -> 00:18:50] somehow is going to fail
+[00:18:50 -> 00:18:52] and if it fails then
+[00:18:52 -> 00:18:54] the second processor is not
+[00:18:54 -> 00:18:56] going to be able to enter into this
+[00:18:56 -> 00:18:59] critical section okay
+[00:18:59 -> 00:19:03] so how do we
+[00:19:03 -> 00:19:05] implement
+[00:19:05 -> 00:19:07] this acquire and release
+[00:19:07 -> 00:19:09] functionality how do we implement
+[00:19:09 -> 00:19:15] implement the lock you have to have
+[00:19:15 -> 00:19:17] another primitive that the
+[00:19:17 -> 00:19:19] instruction set has to support
+[00:19:19 -> 00:19:21] okay and
+[00:19:21 -> 00:19:23] we can have you know
+[00:19:23 -> 00:19:25] so this has to basically
+[00:19:25 -> 00:19:27] be an atomic operation
+[00:19:27 -> 00:19:29] we'll talk about one
+[00:19:29 -> 00:19:31] atomic operation a
+[00:19:31 -> 00:19:33] test and set operation
+[00:19:33 -> 00:19:35] and different architectures
+[00:19:35 -> 00:19:37] at least support
+[00:19:37 -> 00:19:39] different atomic
+[00:19:39 -> 00:19:41] operations I'll briefly
+[00:19:41 -> 00:19:43] you know give you an idea what
+[00:19:43 -> 00:19:45] these are after we've done this
+[00:19:45 -> 00:19:47] test and set
+[00:19:47 -> 00:19:49] okay
+[00:19:49 -> 00:19:51] so this test and set
+[00:19:51 -> 00:19:53] is a single instruction
+[00:19:53 -> 00:19:56] okay single instruction
+[00:19:56 -> 00:19:58] means the whole thing executes
+[00:19:58 -> 00:20:00] you cannot interrupt it in the middle
+[00:20:00 -> 00:20:04] and this single instruction
+[00:20:04 -> 00:20:06] atomically
+[00:20:06 -> 00:20:08] does the following operations
+[00:20:08 -> 00:20:11] it reads a memory location
+[00:20:11 -> 00:20:13] where the lock
+[00:20:13 -> 00:20:15] is
+[00:20:15 -> 00:20:17] okay and
+[00:20:17 -> 00:20:19] the values in the memory location
+[00:20:19 -> 00:20:21] can only be zero by one
+[00:20:21 -> 00:20:23] only two values
+[00:20:23 -> 00:20:25] okay zero
+[00:20:25 -> 00:20:27] means the lock is free
+[00:20:27 -> 00:20:29] and you can
+[00:20:29 -> 00:20:31] get it one means the lock
+[00:20:31 -> 00:20:33] is not free it's busy
+[00:20:33 -> 00:20:35] means someone else has
+[00:20:35 -> 00:20:40] locked it so atomically
+[00:20:40 -> 00:20:42] you read the value
+[00:20:44 -> 00:20:46] in that memory location into register
+[00:20:46 -> 00:20:48] R1 and
+[00:20:48 -> 00:20:50] you store the value one
+[00:20:50 -> 00:20:52] into that memory location
+[00:20:52 -> 00:20:54] okay
+[00:20:54 -> 00:20:56] again I repeat this is an atomic
+[00:20:56 -> 00:20:58] operation
+[00:20:58 -> 00:21:00] okay so you are implementing that load
+[00:21:00 -> 00:21:02] and store as
+[00:21:02 -> 00:21:04] one operation rather than
+[00:21:04 -> 00:21:06] hey these are separate loads and stores
+[00:21:06 -> 00:21:08] and things can go happen
+[00:21:08 -> 00:21:10] this is only one operation it has to be
+[00:21:10 -> 00:21:12] done atomically nothing
+[00:21:12 -> 00:21:19] else can happen in between
+[00:21:19 -> 00:21:21] so what this test and set
+[00:21:21 -> 00:21:23] does is if this lock was initially
+[00:21:23 -> 00:21:25] free you know so what
+[00:21:25 -> 00:21:27] it does is if it reads the value
+[00:21:27 -> 00:21:29] zero then R1 gets zero
+[00:21:29 -> 00:21:31] and you
+[00:21:31 -> 00:21:33] store one into that
+[00:21:33 -> 00:21:35] memory location so if the lock
+[00:21:35 -> 00:21:37] is if you see R1
+[00:21:37 -> 00:21:39] has zero it means you
+[00:21:39 -> 00:21:41] were able to acquire that lock
+[00:21:41 -> 00:21:43] okay if
+[00:21:43 -> 00:21:45] R1 has one
+[00:21:45 -> 00:21:47] memory location
+[00:21:47 -> 00:21:49] had one R1 became one
+[00:21:49 -> 00:21:51] which meant that someone else has
+[00:21:51 -> 00:21:53] locked and then you also write
+[00:21:53 -> 00:21:55] one into that memory location
+[00:21:55 -> 00:21:57] it doesn't change the value of the memory location
+[00:21:57 -> 00:21:59] because it was already one
+[00:21:59 -> 00:22:01] okay if the
+[00:22:01 -> 00:22:03] value of the memory location was zero
+[00:22:03 -> 00:22:05] you got zero you
+[00:22:05 -> 00:22:07] wrote a one you change the value of the memory location
+[00:22:07 -> 00:22:09] from zero to one so in a sense
+[00:22:09 -> 00:22:11] you are basically saying hey you've got
+[00:22:11 -> 00:22:13] the lock and no one else can that lock
+[00:22:13 -> 00:22:15] is busy no one else can get it
+[00:22:15 -> 00:22:17] okay
+[00:22:17 -> 00:22:19] so
+[00:22:19 -> 00:22:21] what does this
+[00:22:21 -> 00:22:23] acquire look like
+[00:22:23 -> 00:22:25] what this acquire looks like
+[00:22:25 -> 00:22:27] would be would be
+[00:22:27 -> 00:22:29] this piece of code
+[00:22:29 -> 00:22:31] okay
+[00:22:31 -> 00:22:33] test and set into
+[00:22:33 -> 00:22:35] R1 the
+[00:22:35 -> 00:22:37] lock and
+[00:22:37 -> 00:22:39] branch not equal to zero on the value
+[00:22:39 -> 00:22:41] of R1 go back to
+[00:22:41 -> 00:22:46] so
+[00:22:46 -> 00:22:48] if this
+[00:22:48 -> 00:22:50] test and set returned
+[00:22:50 -> 00:22:52] a zero into R1
+[00:22:52 -> 00:22:54] this branch would fail
+[00:22:54 -> 00:22:56] and you would move on to the next instruction
+[00:22:56 -> 00:22:58] this branch would fail
+[00:22:58 -> 00:23:00] if this branch fails
+[00:23:00 -> 00:23:02] means you actually acquired the lock
+[00:23:02 -> 00:23:04] okay if
+[00:23:04 -> 00:23:06] R1 is one
+[00:23:06 -> 00:23:08] this branch condition
+[00:23:08 -> 00:23:10] succeeds so you go back over here
+[00:23:10 -> 00:23:12] and keep reading that memory location
+[00:23:12 -> 00:23:14] and seeing
+[00:23:14 -> 00:23:16] as long as the memory location is one
+[00:23:16 -> 00:23:18] you keep in this loop over here
+[00:23:18 -> 00:23:20] the moment that memory location
+[00:23:20 -> 00:23:22] becomes one you break out of this loop
+[00:23:22 -> 00:23:24] you acquire the lock and you set the value
+[00:23:24 -> 00:23:32] of one in that memory location
+[00:23:32 -> 00:23:37] any questions on the acquire what would this
+[00:23:37 -> 00:23:43] release look like store
+[00:23:43 -> 00:23:45] just a store of zero
+[00:23:45 -> 00:23:47] into that memory location
+[00:23:47 -> 00:23:49] I mean a store is one
+[00:23:49 -> 00:23:51] there's no need to be
+[00:23:51 -> 00:23:53] that's the term
+[00:23:53 -> 00:23:55] all right
+[00:23:55 -> 00:23:57] so
+[00:23:57 -> 00:23:59] now if you have
+[00:23:59 -> 00:24:01] processor zero
+[00:24:01 -> 00:24:03] and processor one over here
+[00:24:03 -> 00:24:05] processor zero does that
+[00:24:05 -> 00:24:07] acquire test and set
+[00:24:07 -> 00:24:09] it gets the lock it can enter the critical section
+[00:24:09 -> 00:24:11] processor one
+[00:24:11 -> 00:24:13] comes to try and do the acquire
+[00:24:13 -> 00:24:15] it cannot get the lock so it keeps
+[00:24:15 -> 00:24:17] repeatedly spinning
+[00:24:17 -> 00:24:19] in this acquire
+[00:24:19 -> 00:24:21] loop until
+[00:24:21 -> 00:24:23] processor one is done with
+[00:24:23 -> 00:24:25] this critical section at the end
+[00:24:25 -> 00:24:27] of this critical section it
+[00:24:27 -> 00:24:29] releases the lock so it stores
+[00:24:29 -> 00:24:31] zero into R1
+[00:24:31 -> 00:24:33] at that point processor one
+[00:24:33 -> 00:24:35] can acquire that lock
+[00:24:35 -> 00:24:37] and enter the critical section
+[00:24:37 -> 00:24:44] okay
+[00:24:44 -> 00:24:46] so what are
+[00:24:46 -> 00:24:48] these other
+[00:24:48 -> 00:24:53] mechanisms I can just briefly
+[00:24:53 -> 00:24:55] overview them without getting into details
+[00:24:55 -> 00:24:57] you know swap
+[00:24:57 -> 00:24:59] is to basically atomically
+[00:24:59 -> 00:25:01] swap two values
+[00:25:01 -> 00:25:03] okay
+[00:25:03 -> 00:25:05] exchange is very similar to
+[00:25:05 -> 00:25:07] swap the values into different memory locations
+[00:25:07 -> 00:25:09] exchange is
+[00:25:09 -> 00:25:11] you know
+[00:25:11 -> 00:25:13] very similar to swap
+[00:25:13 -> 00:25:15] fetch and add
+[00:25:15 -> 00:25:17] is you actually read the value
+[00:25:17 -> 00:25:19] of a memory location and
+[00:25:19 -> 00:25:21] add some
+[00:25:21 -> 00:25:25] constant to it
+[00:25:25 -> 00:25:27] that also you can implement
+[00:25:27 -> 00:25:29] with that you know some atomic
+[00:25:29 -> 00:25:31] operations and
+[00:25:31 -> 00:25:33] compare and swap is you're going to
+[00:25:33 -> 00:25:35] compare to
+[00:25:35 -> 00:25:37] memory locations
+[00:25:37 -> 00:25:39] and if a condition is met then you swap
+[00:25:39 -> 00:25:44] so you know
+[00:25:44 -> 00:25:46] the
+[00:25:46 -> 00:25:48] some of these you know other mechanisms
+[00:25:48 -> 00:25:50] is like the
+[00:25:50 -> 00:25:52] fetch and add one of the niceties
+[00:25:52 -> 00:25:54] about the fetch and add typically
+[00:25:54 -> 00:25:56] is you know if you're trying to do work
+[00:25:56 -> 00:25:58] in parallel let's say you're trying to do
+[00:25:58 -> 00:26:00] you know different loop iterations in
+[00:26:00 -> 00:26:02] parallel okay
+[00:26:02 -> 00:26:04] and you know the
+[00:26:04 -> 00:26:06] and you're atomically
+[00:26:06 -> 00:26:08] trying to access the induction
+[00:26:08 -> 00:26:10] variable if you were
+[00:26:10 -> 00:26:12] okay to get a different value of the induction variable
+[00:26:12 -> 00:26:14] okay if you do a fetch and add
+[00:26:14 -> 00:26:16] operation you could have multiple
+[00:26:16 -> 00:26:18] process for doing a fetch and add
+[00:26:18 -> 00:26:20] and they
+[00:26:20 -> 00:26:22] will get a value of the induction variable
+[00:26:22 -> 00:26:24] I want to go into
+[00:26:24 -> 00:26:26] one more detail but you know
+[00:26:26 -> 00:26:28] I mean the test set is the one that is
+[00:26:28 -> 00:26:30] most commonly used
+[00:26:30 -> 00:26:32] okay but you know some of the more
+[00:26:32 -> 00:26:34] advanced scenarios
+[00:26:34 -> 00:26:36] I mean I think the
+[00:26:36 -> 00:26:38] N337P has swaps
+[00:26:38 -> 00:26:40] and exchanges as
+[00:26:40 -> 00:26:42] a basic primitive
+[00:26:42 -> 00:26:44] locking up
+[00:26:44 -> 00:26:46] synchronization
+[00:26:46 -> 00:26:51] I shouldn't say locking up
+[00:26:51 -> 00:26:53] Questions?
+[00:26:53 -> 00:26:55] Can you use fetch and add
+[00:26:55 -> 00:26:59] for making some reports?
+[00:26:59 -> 00:27:01] No fetch and add
+[00:27:01 -> 00:27:03] was
+[00:27:03 -> 00:27:05] more used for
+[00:27:05 -> 00:27:09] more like
+[00:27:09 -> 00:27:14] you know what a pre-tix
+[00:27:14 -> 00:27:16] operation, doing parallel pre-tix
+[00:27:16 -> 00:27:18] operations
+[00:27:18 -> 00:27:20] so basically
+[00:27:20 -> 00:27:22] you have
+[00:27:22 -> 00:27:25] a
+[00:27:25 -> 00:27:27] you have a counter
+[00:27:27 -> 00:27:29] let's say you have a counter
+[00:27:29 -> 00:27:31] and then
+[00:27:31 -> 00:27:33] you have n processors trying to get
+[00:27:33 -> 00:27:35] that counter
+[00:27:35 -> 00:27:37] each one wants to get a different value
+[00:27:37 -> 00:27:39] of that counter
+[00:27:39 -> 00:27:41] so if you do it that's in fact
+[00:27:41 -> 00:27:43] what's going to happen is
+[00:27:43 -> 00:27:45] one processor gets it
+[00:27:45 -> 00:27:47] other keeps spinning
+[00:27:47 -> 00:27:49] and that spinning
+[00:27:49 -> 00:27:51] means
+[00:27:51 -> 00:27:55] repeated memory accesses
+[00:27:55 -> 00:27:57] and then the next processor is going to keep spinning
+[00:27:57 -> 00:27:59] even longer
+[00:27:59 -> 00:28:01] the repeated memory accesses
+[00:28:01 -> 00:28:03] multiple processes
+[00:28:03 -> 00:28:05] repeated memory accesses
+[00:28:05 -> 00:28:10] so
+[00:28:10 -> 00:28:12] one follow on to these basic
+[00:28:12 -> 00:28:14] locks has been hey
+[00:28:14 -> 00:28:16] the router then had each pro
+[00:28:16 -> 00:28:18] and then what happens is once the lock
+[00:28:18 -> 00:28:20] gets released
+[00:28:20 -> 00:28:22] all the remaining
+[00:28:22 -> 00:28:24] processors fight for it
+[00:28:24 -> 00:28:27] that is again repeated activity
+[00:28:27 -> 00:28:29] and you get a hot spot
+[00:28:29 -> 00:28:31] if you get a hot spot
+[00:28:31 -> 00:28:33] at some
+[00:28:33 -> 00:28:35] memory bank because it has a lock
+[00:28:35 -> 00:28:37] then anything else
+[00:28:37 -> 00:28:39] that's happening in the network
+[00:28:39 -> 00:28:44] also freezes
+[00:28:44 -> 00:28:46] so
+[00:28:46 -> 00:28:48] one variation
+[00:28:48 -> 00:28:50] of the locks that people
+[00:28:50 -> 00:28:52] have proposed is
+[00:28:52 -> 00:28:54] queue based locks then what you do is you actually
+[00:28:54 -> 00:28:56] you know you try and get a lock
+[00:28:56 -> 00:28:58] if you can't get the lock you
+[00:28:58 -> 00:29:00] queue up
+[00:29:00 -> 00:29:02] so there's no queue of processors
+[00:29:02 -> 00:29:04] and now
+[00:29:04 -> 00:29:06] when you release a processor
+[00:29:06 -> 00:29:08] one release a lock
+[00:29:08 -> 00:29:10] it passes the lock to processor two
+[00:29:10 -> 00:29:12] so the other is going to wake up
+[00:29:12 -> 00:29:14] and aren't fighting to go get the lock again
+[00:29:14 -> 00:29:16] so you don't have that hot spot
+[00:29:16 -> 00:29:18] what the fetch and add
+[00:29:18 -> 00:29:20] says is look
+[00:29:20 -> 00:29:22] you know
+[00:29:22 -> 00:29:24] each processor
+[00:29:24 -> 00:29:26] wants to increment that variable
+[00:29:26 -> 00:29:28] by one
+[00:29:28 -> 00:29:30] so I have
+[00:29:30 -> 00:29:40] you know I have
+[00:29:40 -> 00:29:42] a large number of processors
+[00:29:42 -> 00:29:44] each trying to increment this
+[00:29:44 -> 00:29:46] variable by one
+[00:29:46 -> 00:29:48] and those requests will all
+[00:29:48 -> 00:29:50] go over in some network
+[00:29:50 -> 00:29:52] so what
+[00:29:52 -> 00:29:54] you can do is
+[00:29:54 -> 00:29:56] the process can be fetch and add
+[00:29:56 -> 00:29:58] and you know the network
+[00:29:58 -> 00:30:00] could be built so that these requests
+[00:30:00 -> 00:30:02] multiple fetch and add
+[00:30:02 -> 00:30:04] requests combine so this fetch and add
+[00:30:04 -> 00:30:06] plus one plus one
+[00:30:06 -> 00:30:08] becomes this fetch and add
+[00:30:08 -> 00:30:10] plus two this one becomes
+[00:30:10 -> 00:30:12] fetch and add plus two
+[00:30:12 -> 00:30:14] and then these two can
+[00:30:14 -> 00:30:16] combine and then I remember over here
+[00:30:16 -> 00:30:18] is when I get the value back
+[00:30:18 -> 00:30:20] I'll give one value to this one
+[00:30:20 -> 00:30:22] and that value plus one
+[00:30:22 -> 00:30:24] to this one over here
+[00:30:24 -> 00:30:26] and then this becomes fetch and add
+[00:30:26 -> 00:30:28] four so eventually
+[00:30:28 -> 00:30:30] only one request
+[00:30:30 -> 00:30:32] fetch and add plus
+[00:30:32 -> 00:30:34] n reaches this
+[00:30:34 -> 00:30:36] processor
+[00:30:36 -> 00:30:38] if this was x this becomes
+[00:30:38 -> 00:30:40] x plus n if you were
+[00:30:40 -> 00:30:42] and then you return this back
+[00:30:42 -> 00:30:44] and those values each one of these
+[00:30:44 -> 00:30:46] can end up getting the
+[00:30:46 -> 00:30:48] x plus i
+[00:30:48 -> 00:30:52] process rocking
+[00:30:52 -> 00:30:54] so that was the rationale behind fetch and add
+[00:30:54 -> 00:30:56] and they
+[00:30:56 -> 00:30:58] actually built combining networks
+[00:30:58 -> 00:31:00] to do this and what this
+[00:31:00 -> 00:31:02] happens now is these processes
+[00:31:02 -> 00:31:04] aren't repeatedly fighting trying to get
+[00:31:04 -> 00:31:06] this locked so this network
+[00:31:06 -> 00:31:08] the traffic in there is minimized
+[00:31:08 -> 00:31:10] and other requests could be going
+[00:31:10 -> 00:31:12] on here's the way you
+[00:31:12 -> 00:31:18] unblock it make sense
+[00:31:18 -> 00:31:20] thank you
+[00:31:20 -> 00:31:22] two questions
+[00:31:22 -> 00:31:24] so the first one is
+[00:31:24 -> 00:31:26] you can ask n
+[00:31:26 -> 00:31:28] so if we are doing spinlocks
+[00:31:28 -> 00:31:30] in one of the very
+[00:31:30 -> 00:31:32] first papers you had used for reading
+[00:31:32 -> 00:31:34] which was the ARM paper
+[00:31:34 -> 00:31:36] they had they claimed
+[00:31:36 -> 00:31:38] that they could detect spinlocks
+[00:31:38 -> 00:31:40] and they could power down their threads
+[00:31:40 -> 00:31:42] so how would that like
+[00:31:42 -> 00:31:44] how difficult is that
+[00:31:44 -> 00:31:48] you know
+[00:31:48 -> 00:31:50] I mean
+[00:31:50 -> 00:31:52] people like to make claims
+[00:31:52 -> 00:31:54] you know
+[00:31:54 -> 00:31:56] we are repeatedly spinning
+[00:31:56 -> 00:31:58] okay and you know
+[00:31:58 -> 00:32:00] sometimes the OS
+[00:32:00 -> 00:32:02] needs to get involved
+[00:32:02 -> 00:32:04] you know
+[00:32:04 -> 00:32:06] or they could
+[00:32:06 -> 00:32:08] do whatever it is
+[00:32:08 -> 00:32:10] do some of that
+[00:32:10 -> 00:32:12] obvious on that is people propose
+[00:32:12 -> 00:32:15] these key based locks
+[00:32:15 -> 00:32:17] it's better to in a sense
+[00:32:17 -> 00:32:21] avoid them rather than
+[00:32:21 -> 00:32:23] detect them
+[00:32:23 -> 00:32:25] yeah
+[00:32:25 -> 00:32:27] depends on
+[00:32:27 -> 00:32:29] if you have or take
+[00:32:29 -> 00:32:31] what's the other question
+[00:32:31 -> 00:32:33] the other one was you said
+[00:32:33 -> 00:32:35] about hotspots in the memory
+[00:32:35 -> 00:32:37] and this is more pertaining
+[00:32:37 -> 00:32:39] to what when you have
+[00:32:39 -> 00:32:41] warehouse scale computers
+[00:32:41 -> 00:32:43] they have bit ellipses
+[00:32:43 -> 00:32:45] because these are all in memory right
+[00:32:45 -> 00:32:47] so even if a bit flips
+[00:32:47 -> 00:32:49] right and secondly
+[00:32:49 -> 00:32:51] like bit flips are going to happen
+[00:32:51 -> 00:32:53] just because of the scale we have
+[00:32:53 -> 00:32:55] and if we are running
+[00:32:55 -> 00:32:57] old code
+[00:32:57 -> 00:32:59] that probably only uses test net set
+[00:32:59 -> 00:33:01] or something like that
+[00:33:01 -> 00:33:03] then how do
+[00:33:03 -> 00:33:05] large scale panel programs
+[00:33:05 -> 00:33:07] or even these
+[00:33:07 -> 00:33:11] warehouse systems actually
+[00:33:11 -> 00:33:13] suddenly even
+[00:33:13 -> 00:33:15] you are not using
+[00:33:15 -> 00:33:17] this kind of low level synchronization
+[00:33:17 -> 00:33:19] at that level
+[00:33:19 -> 00:33:24] you are using higher level software
+[00:33:24 -> 00:33:26] and it's doing something
+[00:33:26 -> 00:33:28] usually compared to
+[00:33:28 -> 00:33:30] exchanges
+[00:33:30 -> 00:33:32] it's doing something like this
+[00:33:32 -> 00:33:34] but certainly it's not all
+[00:33:34 -> 00:33:36] the repeated accesses
+[00:33:36 -> 00:33:38] etc.
+[00:33:38 -> 00:33:42] I mean to make this work across
+[00:33:42 -> 00:33:44] machines you need something like
+[00:33:44 -> 00:33:46] some really
+[00:33:46 -> 00:33:50] complicated protocol
+[00:33:50 -> 00:33:52] consensus is hard
+[00:33:52 -> 00:33:54] yeah life is good
+[00:33:54 -> 00:33:56] everything is sequential
+[00:33:56 -> 00:33:58] you don't have to interact with anyone
+[00:33:58 -> 00:34:00] then you control your own situation
+[00:34:00 -> 00:34:02] the real world unfortunately
+[00:34:02 -> 00:34:04] doesn't work that way
+[00:34:04 -> 00:34:06] there are others around
+[00:34:06 -> 00:34:08] that get in your way
+[00:34:08 -> 00:34:10] okay
+[00:34:10 -> 00:34:12] alright so we figured out
+[00:34:12 -> 00:34:14] synchronization
+[00:34:14 -> 00:34:16] that was the easy part
+[00:34:16 -> 00:34:18] can I ask a different question
+[00:34:18 -> 00:34:20] Blake
+[00:34:20 -> 00:34:22] we go all the way back to earlier
+[00:34:22 -> 00:34:24] in the class
+[00:34:24 -> 00:34:26] let's think about what's happening in the pipeline
+[00:34:26 -> 00:34:28] with this
+[00:34:28 -> 00:34:30] like
+[00:34:30 -> 00:34:32] test and set
+[00:34:32 -> 00:34:34] it's kind of complicated
+[00:34:34 -> 00:34:36] doesn't it
+[00:34:36 -> 00:34:38] it does
+[00:34:38 -> 00:34:40] you have to do the read of the cache
+[00:34:40 -> 00:34:42] okay
+[00:34:42 -> 00:34:44] you have to do the read of the cache
+[00:34:44 -> 00:34:46] and the write of the cache
+[00:34:46 -> 00:34:48] you know
+[00:34:48 -> 00:34:50] big atomically
+[00:34:50 -> 00:34:52] more importantly
+[00:34:54 -> 00:34:56] those
+[00:34:56 -> 00:34:58] then you have to do the
+[00:34:58 -> 00:35:00] coherence protocol
+[00:35:00 -> 00:35:02] on top of that
+[00:35:02 -> 00:35:04] alright
+[00:35:04 -> 00:35:06] so if they have to write
+[00:35:06 -> 00:35:08] flip it to a modified state
+[00:35:08 -> 00:35:10] then you have to invalidate all the other
+[00:35:10 -> 00:35:15] copies
+[00:35:15 -> 00:35:17] and then now when they go get their lock
+[00:35:17 -> 00:35:19] they are going to try and get
+[00:35:19 -> 00:35:21] read copies etc
+[00:35:21 -> 00:35:23] it gets complicated
+[00:35:23 -> 00:35:25] even inside the pipeline
+[00:35:25 -> 00:35:27] right
+[00:35:27 -> 00:35:29] you know we've been talking about
+[00:35:29 -> 00:35:31] some of this multi-threading stuff
+[00:35:31 -> 00:35:33] you can't
+[00:35:33 -> 00:35:35] another thread
+[00:35:35 -> 00:35:37] see that this value is
+[00:35:37 -> 00:35:39] being changed
+[00:35:39 -> 00:35:41] you've got to be snooping and watching what the
+[00:35:41 -> 00:35:43] another thread is doing if they're accessing
+[00:35:43 -> 00:35:46] okay
+[00:35:46 -> 00:35:48] did everybody hear that question
+[00:35:48 -> 00:35:51] so
+[00:35:51 -> 00:35:53] so
+[00:35:53 -> 00:35:55] where is the other thread
+[00:35:55 -> 00:35:57] so
+[00:35:57 -> 00:35:59] we just read the spark paper
+[00:35:59 -> 00:36:01] where they have these four threads running
+[00:36:01 -> 00:36:03] on the same core
+[00:36:03 -> 00:36:05] they're dispatching
+[00:36:05 -> 00:36:10] so they kind of have to see
+[00:36:10 -> 00:36:12] what's happening in that memory location
+[00:36:12 -> 00:36:14] and know that they can't use that
+[00:36:14 -> 00:36:16] value even if
+[00:36:16 -> 00:36:18] you know
+[00:36:18 -> 00:36:20] because the other thread is in the process of doing this type of thing
+[00:36:20 -> 00:36:22] so
+[00:36:22 -> 00:36:24] any of these things
+[00:36:24 -> 00:36:26] when we talked about the
+[00:36:26 -> 00:36:28] coherence protocol so far
+[00:36:28 -> 00:36:30] the simple coherence protocol that we were talking about
+[00:36:30 -> 00:36:32] we relied
+[00:36:32 -> 00:36:34] on the bus being a centralization
+[00:36:34 -> 00:36:36] point
+[00:36:36 -> 00:36:38] where everyone was going through
+[00:36:38 -> 00:36:40] and based
+[00:36:40 -> 00:36:42] on the arbitration protocol
+[00:36:42 -> 00:36:44] for that bus
+[00:36:44 -> 00:36:46] one process
+[00:36:46 -> 00:36:48] or one thread is going to get that
+[00:36:48 -> 00:36:50] ahead of the others
+[00:36:50 -> 00:36:52] and then the others see what this thread is
+[00:36:52 -> 00:36:55] alright so
+[00:36:55 -> 00:36:57] very similarly
+[00:36:57 -> 00:36:59] the cache is going to be
+[00:36:59 -> 00:37:01] that centralization point
+[00:37:01 -> 00:37:03] where whoever gets to
+[00:37:03 -> 00:37:05] whichever thread gets to the cache
+[00:37:05 -> 00:37:07] first with the best in fact
+[00:37:07 -> 00:37:11] won't get that long
+[00:37:11 -> 00:37:13] but there has to be that centralization point
+[00:37:13 -> 00:37:15] otherwise
+[00:37:15 -> 00:37:17] protocols will become complex
+[00:37:17 -> 00:37:19] as you were just talking about the same things you see
+[00:37:19 -> 00:37:21] in disappeared systems
+[00:37:21 -> 00:37:28] make sense?
+[00:37:28 -> 00:37:30] okay
+[00:37:30 -> 00:37:32] which then leads to the other issue
+[00:37:32 -> 00:37:34] where
+[00:37:34 -> 00:37:36] what memory coherence did
+[00:37:36 -> 00:37:38] was it created a
+[00:37:38 -> 00:37:40] globally uniform consistent view
+[00:37:40 -> 00:37:42] of a single memory
+[00:37:42 -> 00:37:44] location
+[00:37:44 -> 00:37:46] or a cache line
+[00:37:46 -> 00:37:48] it basically
+[00:37:48 -> 00:37:50] what we did is made sure that
+[00:37:50 -> 00:37:52] that a single
+[00:37:52 -> 00:37:54] cache line is updated
+[00:37:54 -> 00:37:56] in particular order
+[00:37:56 -> 00:37:58] based on the order of the processor
+[00:37:58 -> 00:38:00] access it and importantly
+[00:38:00 -> 00:38:02] everyone sees that same order
+[00:38:02 -> 00:38:04] so there is a
+[00:38:04 -> 00:38:06] globally uniform and consistent
+[00:38:06 -> 00:38:08] view at the cache line
+[00:38:08 -> 00:38:15] that unfortunately is not
+[00:38:15 -> 00:38:17] enough
+[00:38:17 -> 00:38:19] because
+[00:38:19 -> 00:38:21] two different cache lines can be
+[00:38:21 -> 00:38:23] individually consistent
+[00:38:23 -> 00:38:25] solely
+[00:38:25 -> 00:38:27] beautiful here
+[00:38:27 -> 00:38:29] but they can be inconsistent
+[00:38:29 -> 00:38:31] with respect to
+[00:38:31 -> 00:38:33] each other
+[00:38:33 -> 00:38:35] what does that mean?
+[00:38:35 -> 00:38:37] we will see very shortly
+[00:38:37 -> 00:38:39] and
+[00:38:39 -> 00:38:41] because
+[00:38:41 -> 00:38:43] that could be inconsistent
+[00:38:43 -> 00:38:45] with respect to each other
+[00:38:45 -> 00:38:47] we have to talk about memory consistency
+[00:38:47 -> 00:38:49] and memory consistency model
+[00:38:49 -> 00:38:51] which is going to create
+[00:38:51 -> 00:38:53] a globally uniform consistent
+[00:38:53 -> 00:38:55] view of all
+[00:38:55 -> 00:38:57] the memory locations
+[00:38:57 -> 00:39:01] relative to each other
+[00:39:01 -> 00:39:03] and by the way this stuff is complex
+[00:39:03 -> 00:39:05] okay
+[00:39:05 -> 00:39:07] it is complex
+[00:39:07 -> 00:39:09] even if you take a course
+[00:39:09 -> 00:39:11] like 757
+[00:39:11 -> 00:39:13] it still is complex
+[00:39:13 -> 00:39:15] I'm just going to give you an introduction
+[00:39:15 -> 00:39:17] to what it is and the question is
+[00:39:17 -> 00:39:19] who cares?
+[00:39:19 -> 00:39:21] well anyone who
+[00:39:21 -> 00:39:23] writes a parallel program
+[00:39:23 -> 00:39:25] cares
+[00:39:25 -> 00:39:27] the simple solution is to not write parallel programs
+[00:39:27 -> 00:39:29] okay
+[00:39:29 -> 00:39:31] or then
+[00:39:31 -> 00:39:33] you actually have to restrict the creation
+[00:39:33 -> 00:39:35] to a small number of people who can actually understand the stuff
+[00:39:35 -> 00:39:37] who care about the stuff
+[00:39:37 -> 00:39:39] so some people don't care
+[00:39:39 -> 00:39:41] okay
+[00:39:41 -> 00:39:43] what is this?
+[00:39:43 -> 00:39:45] here is a very very simple piece of code
+[00:39:45 -> 00:39:47] I have two variables
+[00:39:47 -> 00:39:49] and two different
+[00:39:49 -> 00:39:51] cache blocks
+[00:39:51 -> 00:39:53] A and flag
+[00:39:53 -> 00:39:55] both are 0
+[00:39:55 -> 00:39:57] okay
+[00:39:57 -> 00:39:59] what processor 0 does is
+[00:39:59 -> 00:40:01] it first sets A equal to 1
+[00:40:01 -> 00:40:03] and
+[00:40:03 -> 00:40:05] it sets flag after that
+[00:40:05 -> 00:40:09] okay
+[00:40:09 -> 00:40:11] processor 1
+[00:40:11 -> 00:40:13] is
+[00:40:13 -> 00:40:15] spinning
+[00:40:15 -> 00:40:17] on while not flag
+[00:40:17 -> 00:40:19] okay
+[00:40:19 -> 00:40:21] so while flag is 0
+[00:40:21 -> 00:40:23] it is even on spinning
+[00:40:23 -> 00:40:25] okay flag is 1
+[00:40:25 -> 00:40:27] it breaks out and executes the
+[00:40:27 -> 00:40:29] sprint instruction
+[00:40:29 -> 00:40:34] and print state
+[00:40:34 -> 00:40:36] so what value
+[00:40:36 -> 00:40:38] of A gets
+[00:40:38 -> 00:40:45] printed out?
+[00:40:45 -> 00:40:49] it could be 0 or 1
+[00:40:49 -> 00:40:51] 1!
+[00:40:51 -> 00:40:53] come on this is like a basic simple
+[00:40:53 -> 00:40:55] programming thing
+[00:40:55 -> 00:40:57] you know
+[00:40:57 -> 00:40:59] it should be 1
+[00:40:59 -> 00:41:01] look very simple
+[00:41:01 -> 00:41:03] begin 1 and then flag
+[00:41:03 -> 00:41:05] begin 1
+[00:41:05 -> 00:41:07] if flag is 0
+[00:41:07 -> 00:41:09] A is not going to get printed out
+[00:41:09 -> 00:41:11] A is only going to get printed out if flag is 1
+[00:41:11 -> 00:41:13] and if flag is 1
+[00:41:13 -> 00:41:15] A is 1
+[00:41:15 -> 00:41:17] A is 1
+[00:41:17 -> 00:41:19] right?
+[00:41:19 -> 00:41:23] well that's what intuition says
+[00:41:23 -> 00:41:25] when you write the program yeah that's how this program behaves
+[00:41:25 -> 00:41:27] coherence says nothing about it
+[00:41:27 -> 00:41:33] why?
+[00:41:33 -> 00:41:35] why is that the case?
+[00:41:35 -> 00:41:37] so
+[00:41:37 -> 00:41:46] you know
+[00:41:46 -> 00:41:48] where's my multi processor?
+[00:41:48 -> 00:41:50] whatever
+[00:41:50 -> 00:41:52] this happens even in a one space multi processor
+[00:41:52 -> 00:41:54] you know I have multiple paths
+[00:41:54 -> 00:41:56] if I want to have values
+[00:41:56 -> 00:41:58] A go from here to here
+[00:41:58 -> 00:42:00] it could go down this way
+[00:42:00 -> 00:42:02] flag go from here to here it could go down this way
+[00:42:02 -> 00:42:04] okay
+[00:42:04 -> 00:42:06] so
+[00:42:06 -> 00:42:15] P1
+[00:42:15 -> 00:42:17] can seize P0's right of flag
+[00:42:17 -> 00:42:19] before it
+[00:42:19 -> 00:42:23] sees the right of A
+[00:42:23 -> 00:42:25] how can that happen?
+[00:42:25 -> 00:42:27] because maybe
+[00:42:27 -> 00:42:29] this coherence meant of A got delayed
+[00:42:29 -> 00:42:31] somewhere in the network it took a different path
+[00:42:31 -> 00:42:33] to the network
+[00:42:33 -> 00:42:35] okay
+[00:42:35 -> 00:42:38] oh it got decided
+[00:42:38 -> 00:42:40] hey spring break for me
+[00:42:40 -> 00:42:42] I'll come back later
+[00:42:42 -> 00:42:44] and it came back after
+[00:42:44 -> 00:42:46] its own sweet time
+[00:42:46 -> 00:42:50] okay
+[00:42:50 -> 00:42:52] and
+[00:42:52 -> 00:42:54] then you can start saying hey maybe I can have
+[00:42:54 -> 00:42:56] networks that are ordered
+[00:42:56 -> 00:42:58] and this way and that way and so on like that
+[00:42:58 -> 00:43:00] but even if
+[00:43:00 -> 00:43:02] this process has a very very simple
+[00:43:02 -> 00:43:04] write buffer
+[00:43:04 -> 00:43:06] we know write buffers
+[00:43:06 -> 00:43:08] very simple thing
+[00:43:08 -> 00:43:10] okay
+[00:43:10 -> 00:43:12] if in the write buffer
+[00:43:12 -> 00:43:14] you
+[00:43:14 -> 00:43:16] either maybe merge requests
+[00:43:16 -> 00:43:18] or
+[00:43:18 -> 00:43:20] some other processor can go and
+[00:43:20 -> 00:43:22] see it in a different order
+[00:43:22 -> 00:43:26] okay
+[00:43:26 -> 00:43:28] you can lose
+[00:43:28 -> 00:43:30] the ordering
+[00:43:30 -> 00:43:32] of the read
+[00:43:32 -> 00:43:34] and write accesses
+[00:43:34 -> 00:43:36] and have this
+[00:43:36 -> 00:43:38] memory
+[00:43:38 -> 00:43:43] consistency
+[00:43:43 -> 00:43:45] so you know
+[00:43:45 -> 00:43:47] again this is a
+[00:43:47 -> 00:43:49] really frustrating stuff to get
+[00:43:49 -> 00:43:51] you know I gave you sort of the example
+[00:43:51 -> 00:43:53] you know parallelization
+[00:43:53 -> 00:43:55] bug in one of the
+[00:43:55 -> 00:43:57] Adobe tools didn't show up after
+[00:43:57 -> 00:43:59] having been working in real life for
+[00:43:59 -> 00:44:03] many years
+[00:44:03 -> 00:44:05] so what you have
+[00:44:05 -> 00:44:07] to do is you have to try
+[00:44:07 -> 00:44:09] and give some
+[00:44:09 -> 00:44:12] tools for the program or to
+[00:44:12 -> 00:44:14] say yeah if I do this
+[00:44:14 -> 00:44:16] I'm going to get the right result
+[00:44:16 -> 00:44:18] which I expect A equals
+[00:44:18 -> 00:44:21] one okay
+[00:44:21 -> 00:44:23] so
+[00:44:23 -> 00:44:25] that is what is called the
+[00:44:25 -> 00:44:27] memory consistency model and in the
+[00:44:27 -> 00:44:29] most basic
+[00:44:29 -> 00:44:31] the simplest
+[00:44:31 -> 00:44:33] model which is also
+[00:44:33 -> 00:44:35] the hardest to implement
+[00:44:35 -> 00:44:37] and also therefore has you know
+[00:44:37 -> 00:44:39] a significant you know
+[00:44:39 -> 00:44:41] performance impact is what
+[00:44:41 -> 00:44:43] is called sequential consistency
+[00:44:43 -> 00:44:45] so a memory
+[00:44:45 -> 00:44:47] consistency model is a formal
+[00:44:47 -> 00:44:49] definition of the
+[00:44:49 -> 00:44:51] memory view that a programmer
+[00:44:51 -> 00:44:55] has.
+[00:44:55 -> 00:44:57] And in
+[00:44:57 -> 00:44:59] sequential consistency
+[00:44:59 -> 00:45:01] each processor
+[00:45:01 -> 00:45:03] sees its own
+[00:45:03 -> 00:45:05] loads and stores in
+[00:45:05 -> 00:45:10] the program
+[00:45:10 -> 00:45:12] that we know how to do
+[00:45:12 -> 00:45:14] with our load buffers
+[00:45:14 -> 00:45:16] and store buffers so even if
+[00:45:16 -> 00:45:18] you're doing specular execution
+[00:45:18 -> 00:45:20] out of order execution and so
+[00:45:20 -> 00:45:22] on and so on like that
+[00:45:22 -> 00:45:24] each processor
+[00:45:24 -> 00:45:26] can see its loads and stores
+[00:45:26 -> 00:45:34] in program order. Each processor
+[00:45:34 -> 00:45:36] also
+[00:45:36 -> 00:45:38] so processor one needs to see
+[00:45:38 -> 00:45:40] processor zeroes
+[00:45:40 -> 00:45:42] loads and stores
+[00:45:42 -> 00:45:44] in that program
+[00:45:44 -> 00:45:47] okay what the reason why
+[00:45:47 -> 00:45:49] A got printed zero is
+[00:45:49 -> 00:45:51] because processor one saw
+[00:45:51 -> 00:45:53] a different order
+[00:45:53 -> 00:45:55] of these stores than
+[00:45:55 -> 00:45:57] the order in which processor
+[00:45:57 -> 00:46:01] zeroes the internet okay.
+[00:46:01 -> 00:46:03] And finally
+[00:46:03 -> 00:46:05] all the processors
+[00:46:05 -> 00:46:07] need to see
+[00:46:07 -> 00:46:09] the same global
+[00:46:09 -> 00:46:11] load and store
+[00:46:11 -> 00:46:18] and you know
+[00:46:18 -> 00:46:20] Leslie Lamport came up with this
+[00:46:20 -> 00:46:22] and basically you know
+[00:46:22 -> 00:46:24] this
+[00:46:24 -> 00:46:26] sequential ordering
+[00:46:26 -> 00:46:28] corresponds to some sequential
+[00:46:28 -> 00:46:30] interleaving of the uniprocessor
+[00:46:30 -> 00:46:32] orders. It doesn't have to be
+[00:46:32 -> 00:46:34] just one and only one it has to be one
+[00:46:34 -> 00:46:36] sequential ordering
+[00:46:36 -> 00:46:38] but everyone has to see
+[00:46:38 -> 00:46:40] that same sequential ordering
+[00:46:40 -> 00:46:45] so you know
+[00:46:45 -> 00:46:47] so it should be indistinguishable
+[00:46:47 -> 00:46:49] as if you had a multi-programmed
+[00:46:49 -> 00:46:51] uniprocessor and the different
+[00:46:51 -> 00:46:53] programs ran on the uniprocessor
+[00:46:53 -> 00:46:55] one after the other. That's how
+[00:46:55 -> 00:46:57] their loads and stores are interleaved
+[00:46:57 -> 00:46:59] that's how everyone saw
+[00:46:59 -> 00:47:01] the updates that
+[00:47:01 -> 00:47:03] those programs
+[00:47:03 -> 00:47:05] had done
+[00:47:05 -> 00:47:09] and these
+[00:47:09 -> 00:47:11] two are
+[00:47:11 -> 00:47:13] not easy to enforce
+[00:47:13 -> 00:47:16] naturally via
+[00:47:16 -> 00:47:18] especially when you have
+[00:47:18 -> 00:47:20] more complex networks
+[00:47:20 -> 00:47:22] where you can take different paths
+[00:47:22 -> 00:47:24] to the network and you know how to
+[00:47:24 -> 00:47:32] maintain order etc etc.
+[00:47:32 -> 00:47:34] How do we enforce
+[00:47:34 -> 00:47:37] sequential consistency? Again
+[00:47:37 -> 00:47:39] I'm giving you sort of a very simplistic view
+[00:47:39 -> 00:47:41] over here
+[00:47:41 -> 00:47:43] it can get to be quite complicated
+[00:47:43 -> 00:47:45] and you know
+[00:47:45 -> 00:47:47] what it takes to enforce sequential
+[00:47:47 -> 00:47:49] consistency is all loads and
+[00:47:49 -> 00:47:51] stores
+[00:47:51 -> 00:47:53] must be globally ordered
+[00:47:53 -> 00:47:55] and basically what this means
+[00:47:55 -> 00:47:57] is that hey
+[00:47:57 -> 00:47:59] another processor
+[00:47:59 -> 00:48:01] processor one never sees
+[00:48:01 -> 00:48:03] processor zero loads and stores
+[00:48:03 -> 00:48:05] what it sees
+[00:48:05 -> 00:48:07] is coherence events
+[00:48:07 -> 00:48:09] that were
+[00:48:09 -> 00:48:11] created by processor zero
+[00:48:11 -> 00:48:15] okay
+[00:48:15 -> 00:48:17] so you know
+[00:48:17 -> 00:48:19] the coherence events
+[00:48:19 -> 00:48:21] due to that result from all the loads and
+[00:48:21 -> 00:48:23] stores should be globally
+[00:48:23 -> 00:48:28] ordered. So let's ask
+[00:48:28 -> 00:48:30] ourselves when do these coherence
+[00:48:30 -> 00:48:32] events happen naturally? They happen
+[00:48:32 -> 00:48:36] when you're accessing the cache
+[00:48:36 -> 00:48:38] so you know
+[00:48:38 -> 00:48:40] for stores
+[00:48:40 -> 00:48:42] when do we access the cache on stores?
+[00:48:42 -> 00:48:44] When a store is retired
+[00:48:44 -> 00:48:48] and we are retiring stores in
+[00:48:48 -> 00:48:50] order
+[00:48:50 -> 00:48:52] okay so that seems
+[00:48:52 -> 00:48:54] to be good
+[00:48:54 -> 00:48:56] however
+[00:48:56 -> 00:48:58] what we further saw
+[00:48:58 -> 00:49:00] you know
+[00:49:00 -> 00:49:02] when we are
+[00:49:02 -> 00:49:04] writing
+[00:49:04 -> 00:49:06] doing stores in the cache
+[00:49:06 -> 00:49:08] we have this write buffer
+[00:49:08 -> 00:49:10] and as far as the processor
+[00:49:10 -> 00:49:12] is concerned the store
+[00:49:12 -> 00:49:14] is done in order to the write buffer
+[00:49:14 -> 00:49:17] from the write buffer how the
+[00:49:17 -> 00:49:23] coherence event happens
+[00:49:23 -> 00:49:25] so should the processor wait for the
+[00:49:25 -> 00:49:27] entire coherence event
+[00:49:27 -> 00:49:29] from that store to happen
+[00:49:29 -> 00:49:31] all the events and you know
+[00:49:31 -> 00:49:33] and which is something that you actually end up
+[00:49:33 -> 00:49:37] having to do to maintain sequences
+[00:49:37 -> 00:49:39] which can take quite
+[00:49:39 -> 00:49:41] you know a long time
+[00:49:41 -> 00:49:43] okay
+[00:49:43 -> 00:49:45] now
+[00:49:45 -> 00:49:47] you know
+[00:49:47 -> 00:49:49] for loads
+[00:49:49 -> 00:49:51] we figured out
+[00:49:51 -> 00:49:53] we have to do a more important
+[00:49:53 -> 00:49:55] process right
+[00:49:55 -> 00:49:57] otherwise you aren't going anywhere
+[00:49:57 -> 00:49:59] that's why we had
+[00:49:59 -> 00:50:01] dependence predictor, out of order
+[00:50:01 -> 00:50:03] loads and stores
+[00:50:03 -> 00:50:05] do whatever it is etc etc
+[00:50:05 -> 00:50:07] you know if I say
+[00:50:07 -> 00:50:09] no I cannot do out of order
+[00:50:09 -> 00:50:11] execution of loads and stores
+[00:50:11 -> 00:50:13] that just doesn't
+[00:50:13 -> 00:50:20] go anywhere but what you can do
+[00:50:20 -> 00:50:22] is
+[00:50:22 -> 00:50:24] even the processor
+[00:50:24 -> 00:50:26] should be doing its loads
+[00:50:26 -> 00:50:32] out of order
+[00:50:32 -> 00:50:34] you can further than
+[00:50:34 -> 00:50:36] especially for the loads
+[00:50:36 -> 00:50:38] that actually end up retiring
+[00:50:38 -> 00:50:40] not for the speculative ones
+[00:50:40 -> 00:50:42] make sure that
+[00:50:42 -> 00:50:44] they are seen by
+[00:50:44 -> 00:50:46] other processors
+[00:50:46 -> 00:50:48] in order
+[00:50:48 -> 00:50:53] as if they happen in order
+[00:50:53 -> 00:51:00] okay are you with me on this
+[00:51:00 -> 00:51:02] you know that is in a sense
+[00:51:02 -> 00:51:04] what you have to do but as we know
+[00:51:04 -> 00:51:06] play also
+[00:51:06 -> 00:51:08] suppress
+[00:51:08 -> 00:51:10] we don't have to do them in order
+[00:51:10 -> 00:51:12] we just have to get the
+[00:51:12 -> 00:51:16] appearance of having them
+[00:51:16 -> 00:51:18] in order
+[00:51:18 -> 00:51:20] so what you can further
+[00:51:20 -> 00:51:22] do is you know
+[00:51:22 -> 00:51:24] once you actually have
+[00:51:24 -> 00:51:26] built a processor
+[00:51:26 -> 00:51:28] with speculative execution
+[00:51:28 -> 00:51:30] and it will recover from
+[00:51:30 -> 00:51:36] a branch desperation
+[00:51:36 -> 00:51:38] it can recover from
+[00:51:38 -> 00:51:40] load being executed before a prior store
+[00:51:40 -> 00:51:42] to the same address
+[00:51:42 -> 00:51:44] no problem we don't want to do that
+[00:51:44 -> 00:51:53] we can
+[00:51:53 -> 00:51:55] in an additional
+[00:51:55 -> 00:51:57] exception case if you will
+[00:51:57 -> 00:51:59] is hey
+[00:51:59 -> 00:52:01] I saw a coherence event
+[00:52:01 -> 00:52:03] that
+[00:52:03 -> 00:52:05] was not what
+[00:52:05 -> 00:52:07] would have happened
+[00:52:07 -> 00:52:09] had the other processor
+[00:52:09 -> 00:52:11] seen my
+[00:52:11 -> 00:52:15] loads and store operations
+[00:52:15 -> 00:52:17] that is actually
+[00:52:17 -> 00:52:20] much more complicated than that
+[00:52:20 -> 00:52:22] so you can treat
+[00:52:22 -> 00:52:24] these out of order loads and stores
+[00:52:24 -> 00:52:26] as speculative
+[00:52:26 -> 00:52:28] and treat certain coherence
+[00:52:28 -> 00:52:30] events as some kind of
+[00:52:30 -> 00:52:32] mis-speculation
+[00:52:32 -> 00:52:34] so
+[00:52:34 -> 00:52:36] for example
+[00:52:36 -> 00:52:38] if you actually have a bus ride request
+[00:52:38 -> 00:52:40] to a block
+[00:52:40 -> 00:52:42] with a speculative load pending
+[00:52:42 -> 00:52:44] alright
+[00:52:44 -> 00:52:46] then that means some other processor
+[00:52:46 -> 00:52:48] is trying to write
+[00:52:48 -> 00:52:50] over there and
+[00:52:50 -> 00:52:52] I should this
+[00:52:52 -> 00:52:54] load that I am seeing
+[00:52:54 -> 00:52:56] you know
+[00:52:56 -> 00:52:58] out of order is
+[00:52:58 -> 00:53:00] a mis-speculation and I can
+[00:53:00 -> 00:53:02] recover from that
+[00:53:02 -> 00:53:04] I'm just saying this very simply
+[00:53:04 -> 00:53:06] it can actually
+[00:53:06 -> 00:53:11] get quite complex
+[00:53:11 -> 00:53:16] now so the
+[00:53:16 -> 00:53:18] initial consistency like I said
+[00:53:18 -> 00:53:20] over here is that
+[00:53:20 -> 00:53:22] all loads and stores have to be globally
+[00:53:22 -> 00:53:24] ordered
+[00:53:24 -> 00:53:26] alright
+[00:53:26 -> 00:53:28] and
+[00:53:28 -> 00:53:30] that requires me to
+[00:53:30 -> 00:53:32] make sure that
+[00:53:32 -> 00:53:34] all the other processors
+[00:53:34 -> 00:53:36] see my loads
+[00:53:36 -> 00:53:38] in the order and if not
+[00:53:38 -> 00:53:40] again maybe you know there are tricks I can play
+[00:53:40 -> 00:53:42] to do with
+[00:53:42 -> 00:53:44] speculation
+[00:53:44 -> 00:53:46] strong belief that this memory
+[00:53:46 -> 00:53:48] is the sequential consistency
+[00:53:48 -> 00:53:50] model which is
+[00:53:50 -> 00:53:52] making sure that
+[00:53:52 -> 00:53:54] all processors see all loads
+[00:53:54 -> 00:53:56] and stores in the same order
+[00:53:56 -> 00:53:58] is too restrictive
+[00:53:58 -> 00:54:00] for performance
+[00:54:00 -> 00:54:02] considerations okay
+[00:54:02 -> 00:54:04] because it just cannot you know implementing
+[00:54:04 -> 00:54:06] it and so on you know
+[00:54:06 -> 00:54:08] is it
+[00:54:08 -> 00:54:10] is too restrictive
+[00:54:10 -> 00:54:13] okay
+[00:54:13 -> 00:54:28] now why did we have this problem
+[00:54:28 -> 00:54:30] over here
+[00:54:30 -> 00:54:32] the problem we had over here
+[00:54:32 -> 00:54:34] was while A was a shared
+[00:54:34 -> 00:54:36] variable that this
+[00:54:36 -> 00:54:38] process of writing and this process
+[00:54:38 -> 00:54:40] of reading
+[00:54:40 -> 00:54:42] this flag
+[00:54:42 -> 00:54:44] is more like a
+[00:54:44 -> 00:54:50] synchronization variable okay
+[00:54:50 -> 00:54:52] so the problem
+[00:54:52 -> 00:54:54] we got was
+[00:54:54 -> 00:54:56] we were treating both these rights
+[00:54:56 -> 00:54:58] as if they were just you know
+[00:54:58 -> 00:55:00] ordinary
+[00:55:00 -> 00:55:02] we were not distinguishing
+[00:55:02 -> 00:55:04] synchronization operations from
+[00:55:04 -> 00:55:07] non-synchronization operations okay
+[00:55:07 -> 00:55:09] so what
+[00:55:09 -> 00:55:11] some of the weaker memory
+[00:55:11 -> 00:55:13] models okay do
+[00:55:13 -> 00:55:15] and there are
+[00:55:15 -> 00:55:17] a few weaker memory
+[00:55:17 -> 00:55:19] models you know total store order
+[00:55:19 -> 00:55:21] weak ordering and
+[00:55:21 -> 00:55:23] you see some of these discussions if you take a look
+[00:55:23 -> 00:55:25] at you know
+[00:55:25 -> 00:55:27] discussion risk five or discussions
+[00:55:27 -> 00:55:29] in the media or whatever it is
+[00:55:29 -> 00:55:31] about the memory ordering and
+[00:55:31 -> 00:55:33] people are going for
+[00:55:33 -> 00:55:35] weaker memory models okay
+[00:55:35 -> 00:55:37] the weaker memory
+[00:55:37 -> 00:55:39] memory models
+[00:55:39 -> 00:55:41] basically they say the following
+[00:55:41 -> 00:55:43] is you know if you want to
+[00:55:43 -> 00:55:45] write sort of a parallel program
+[00:55:45 -> 00:55:52] and do it correctly
+[00:55:52 -> 00:55:56] all your shared memory is the same
+[00:55:56 -> 00:55:58] separate out parts of the shared memory
+[00:55:58 -> 00:56:00] that you're using for synchronization
+[00:56:00 -> 00:56:04] from other parts of your memory
+[00:56:04 -> 00:56:08] that you're not using for synchronization
+[00:56:08 -> 00:56:10] okay
+[00:56:10 -> 00:56:12] and then
+[00:56:12 -> 00:56:14] the hardware
+[00:56:14 -> 00:56:16] enforces sequential
+[00:56:16 -> 00:56:20] consistency only for the
+[00:56:20 -> 00:56:24] synchronization variables okay
+[00:56:24 -> 00:56:26] what about the other
+[00:56:26 -> 00:56:30] okay
+[00:56:30 -> 00:56:32] for the others
+[00:56:32 -> 00:56:34] then I
+[00:56:34 -> 00:56:36] have to make sure
+[00:56:36 -> 00:56:38] that
+[00:56:38 -> 00:56:40] you create these things
+[00:56:40 -> 00:56:42] for barriers
+[00:56:42 -> 00:56:44] and when you have a barrier
+[00:56:44 -> 00:56:46] you make sure all memory operations
+[00:56:46 -> 00:56:48] before the barrier
+[00:56:48 -> 00:56:50] have completed
+[00:56:50 -> 00:56:52] globally before you can get past
+[00:56:52 -> 00:56:54] that barrier
+[00:56:54 -> 00:56:56] okay so the synchronization
+[00:56:56 -> 00:56:58] points end up being some barriers
+[00:56:58 -> 00:57:00] and
+[00:57:00 -> 00:57:02] you make sure all memory operations
+[00:57:02 -> 00:57:04] from your processor before you
+[00:57:04 -> 00:57:06] hit a barrier have completed
+[00:57:06 -> 00:57:08] globally
+[00:57:08 -> 00:57:10] before you can get past
+[00:57:10 -> 00:57:12] that barrier
+[00:57:12 -> 00:57:14] okay so in this case
+[00:57:14 -> 00:57:16] you know if this were
+[00:57:16 -> 00:57:18] the synchronization operation
+[00:57:18 -> 00:57:20] before I get past the synchronization
+[00:57:20 -> 00:57:22] operation I'm going
+[00:57:22 -> 00:57:24] to make sure that all the memory
+[00:57:24 -> 00:57:26] operations before this have
+[00:57:26 -> 00:57:28] completed globally so this
+[00:57:28 -> 00:57:30] right of A equal to 1 has reached
+[00:57:30 -> 00:57:33] everywhere okay all the coherence
+[00:57:33 -> 00:57:35] operations have completed
+[00:57:35 -> 00:57:37] okay and now
+[00:57:37 -> 00:57:39] you know this is the barrier
+[00:57:39 -> 00:57:41] and so when I get to this point
+[00:57:41 -> 00:57:43] I don't get to this point
+[00:57:43 -> 00:57:45] after that point and so
+[00:57:45 -> 00:57:50] therefore I'll repeat okay
+[00:57:50 -> 00:57:52] so you know
+[00:57:52 -> 00:57:54] what you have to do with those weaker
+[00:57:54 -> 00:57:56] memory models is basically separate out
+[00:57:56 -> 00:57:58] the
+[00:57:58 -> 00:58:04] the
+[00:58:04 -> 00:58:06] separate out accesses
+[00:58:06 -> 00:58:08] operations on
+[00:58:08 -> 00:58:10] synchronization variables
+[00:58:10 -> 00:58:12] you can reserve a certain
+[00:58:12 -> 00:58:14] of memory for synchronization variables
+[00:58:14 -> 00:58:16] separate the operations on
+[00:58:16 -> 00:58:18] identify the
+[00:58:18 -> 00:58:20] operations on the synchronization variables
+[00:58:20 -> 00:58:22] separate them from non-synchronization
+[00:58:22 -> 00:58:24] operations
+[00:58:24 -> 00:58:26] okay that's easier said
+[00:58:26 -> 00:58:28] than done
+[00:58:28 -> 00:58:30] okay because
+[00:58:30 -> 00:58:32] you know
+[00:58:32 -> 00:58:34] this
+[00:58:34 -> 00:58:36] release operation
+[00:58:36 -> 00:58:40] is just a normal store
+[00:58:40 -> 00:58:42] so now I have a normal store different from
+[00:58:42 -> 00:58:44] synchronization area of memory
+[00:58:44 -> 00:58:46] and non-synchronization area of memory
+[00:58:46 -> 00:58:48] and so you know
+[00:58:48 -> 00:58:50] people write that program
+[00:58:50 -> 00:58:52] it sometimes work it doesn't work if
+[00:58:52 -> 00:58:54] they didn't properly synchronize the program
+[00:58:54 -> 00:58:56] identify with the appropriate
+[00:58:56 -> 00:58:58] barriers
+[00:58:58 -> 00:59:00] and you know
+[00:59:00 -> 00:59:02] there's still the debate is hey
+[00:59:02 -> 00:59:04] am I necessarily getting
+[00:59:04 -> 00:59:06] that much more the issue
+[00:59:06 -> 00:59:08] with memory consistency the weaker memory model
+[00:59:08 -> 00:59:11] is you get more performance but then the
+[00:59:11 -> 00:59:13] sequential consistency
+[00:59:13 -> 00:59:15] implementations come up with more
+[00:59:15 -> 00:59:17] cleverness and you know speculation and
+[00:59:17 -> 00:59:19] so on like that that can perhaps
+[00:59:19 -> 00:59:21] get better performance than the weaker
+[00:59:21 -> 00:59:23] memory models but as good
+[00:59:23 -> 00:59:25] at least so people are
+[00:59:25 -> 00:59:32] still fighting that
+[00:59:32 -> 00:59:34] anytime you have a new RSA
+[00:59:34 -> 00:59:38] you know
+[00:59:38 -> 00:59:40] for that weaker memory model
+[00:59:40 -> 00:59:42] is pushing
+[00:59:42 -> 00:59:44] results from the
+[00:59:44 -> 00:59:47] sometimes they're right
+[00:59:47 -> 00:59:49] so
+[00:59:49 -> 00:59:51] okay
+[00:59:51 -> 00:59:53] so
+[00:59:53 -> 00:59:55] question
+[00:59:55 -> 00:59:57] like today in Linux
+[00:59:57 -> 00:59:59] there's memory barriers that are
+[00:59:59 -> 01:00:01] in the kernel
+[01:00:01 -> 01:00:03] but there's no special memory area
+[01:00:03 -> 01:00:05] for synchronization
+[01:00:05 -> 01:00:07] so who
+[01:00:07 -> 01:00:09] who's playing
+[01:00:09 -> 01:00:11] this game with
+[01:00:11 -> 01:00:13] you know special memory areas
+[01:00:13 -> 01:00:15] uh uh uh
+[01:00:15 -> 01:00:17] so
+[01:00:17 -> 01:00:19] so actually let me not
+[01:00:19 -> 01:00:21] say necessarily special
+[01:00:21 -> 01:00:23] memory areas
+[01:00:23 -> 01:00:25] separately if you would
+[01:00:25 -> 01:00:27] basically what you're doing
+[01:00:27 -> 01:00:29] before there was properly labeled
+[01:00:29 -> 01:00:31] programs you specifically
+[01:00:31 -> 01:00:33] labeled
+[01:00:33 -> 01:00:35] you know labeled synchronization
+[01:00:35 -> 01:00:37] operations that work
+[01:00:37 -> 01:00:39] on some area of memory
+[01:00:39 -> 01:00:41] but then you don't
+[01:00:41 -> 01:00:43] write into that area of memory as
+[01:00:43 -> 01:00:45] part of your problem
+[01:00:45 -> 01:00:47] so the kernel is making these primitives
+[01:00:47 -> 01:00:49] and it's managing them
+[01:00:49 -> 01:00:53] okay that's what I mean
+[01:00:53 -> 01:00:55] it doesn't mean some program is fun
+[01:00:55 -> 01:00:57] but
+[01:00:57 -> 01:01:00] throw it at it
+[01:01:00 -> 01:01:02] but you don't do that
+[01:01:02 -> 01:01:04] you can probably try and do some
+[01:01:04 -> 01:01:06] production games and then
+[01:01:06 -> 01:01:08] be
+[01:01:08 -> 01:01:10] uh
+[01:01:10 -> 01:01:12] but yeah
+[01:01:12 -> 01:01:14] yeah
+[01:01:14 -> 01:01:16] so
+[01:01:16 -> 01:01:18] anyway
+[01:01:18 -> 01:01:22] so we talked about three aspects
+[01:01:22 -> 01:01:24] coherence, synchronization, consistency
+[01:01:24 -> 01:01:26] and
+[01:01:26 -> 01:01:28] you know
+[01:01:28 -> 01:01:30] you
+[01:01:30 -> 01:01:32] you know there is much much more
+[01:01:32 -> 01:01:34] to coherence than we talked about
+[01:01:34 -> 01:01:36] you know some more about
+[01:01:36 -> 01:01:38] synchronization than a lot
+[01:01:38 -> 01:01:40] more about consistency which
+[01:01:40 -> 01:01:42] you talk about in the course like
+[01:01:42 -> 01:01:46] so
+[01:01:46 -> 01:01:48] that's all that I have to say
+[01:01:48 -> 01:01:50] questions
+[01:01:50 -> 01:01:52] yeah
+[01:01:52 -> 01:01:54] like how
+[01:01:54 -> 01:01:56] processes from the same company
+[01:01:56 -> 01:01:58] supporting the same
+[01:01:58 -> 01:02:00] and relax their
+[01:02:00 -> 01:02:02] consistency models across their
+[01:02:02 -> 01:02:04] rings never
+[01:02:04 -> 01:02:06] so never because
+[01:02:06 -> 01:02:08] you know so you know
+[01:02:08 -> 01:02:10] I mean many of
+[01:02:10 -> 01:02:12] these
+[01:02:12 -> 01:02:14] processes
+[01:02:14 -> 01:02:16] some came up with something called
+[01:02:16 -> 01:02:18] total store order you have to
+[01:02:18 -> 01:02:20] the hardware implementation has to
+[01:02:20 -> 01:02:22] you know enforce that
+[01:02:22 -> 01:02:24] uh uh uh
+[01:02:24 -> 01:02:26] consistency model and total store order
+[01:02:26 -> 01:02:28] and others are you
+[01:02:28 -> 01:02:30] many others are using total store order
+[01:02:30 -> 01:02:32] it uses something very similar
+[01:02:32 -> 01:02:34] because the software
+[01:02:34 -> 01:02:36] created regardless
+[01:02:36 -> 01:02:38] of which
+[01:02:38 -> 01:02:40] it expects that's the memory
+[01:02:40 -> 01:02:42] consistency model
+[01:02:42 -> 01:02:44] Yeah
+[01:02:44 -> 01:02:46] yeah
+[01:02:46 -> 01:02:48] well
+[01:02:48 -> 01:02:52] the
+[01:02:52 -> 01:02:54] it has to go
+[01:02:54 -> 01:02:56] I
+[01:02:56 -> 01:02:58] want
+[01:02:58 -> 01:03:00] to
+[01:03:00 -> 01:03:02] seven
+[01:03:02 -> 01:03:04] seven
+[01:03:04 -> 01:03:06] so
+[01:03:06 -> 01:03:08] it's
+[01:03:08 -> 01:03:10] your
+[01:03:10 -> 01:03:29] I say what you're saying, I say what you're saying, see what you're saying is that, that
+[01:03:29 -> 01:03:34] you have your software written with a particular memory model for an architecture and now
+[01:03:34 -> 01:03:40] you want to weaken the memory model because that's what the newest processors are.
+[01:03:40 -> 01:03:51] You want to have the weaker memory model than your processor, you better support an hardware.
+[01:03:51 -> 01:04:01] So you have to support the weaker one and the way basically it means very simply is
+[01:04:01 -> 01:04:07] that if you wrote your programs on that your weaker memory model you can use that
+[01:04:07 -> 01:04:33] No amount of software routines and emulation at that base level, you know, okay, you know, what you could do, you could probably play games like, hey, detecting a
+[01:04:33 -> 01:04:45] But that's going to be so common that you probably want to provide that hardware support.
+[01:04:45 -> 01:05:02] You know, I mean, you know, you hear a lot, you hear a lot about, you know, I could write or retranslate binaries, I could, you know, recompile them, you know, create binaries and translate them into something like that.
+[01:05:02 -> 01:05:27] You know, if there's an error, you know, it's like, you know, one of the reasons why ideas basically, you know, and I don't see this happening, you know, companies would go down to Wall Street.
+[01:05:27 -> 01:05:29] Look, we have this, we have this.

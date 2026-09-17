@@ -1,0 +1,798 @@
+Title: 752_Lec10
+Source file: 752_Lec10.m4a
+Detected language: en
+------------------------------------------------------------
+
+[00:00:00 -> 00:00:11] Further, you know, you know, life would be good if you could build a big, huge memory
+[00:00:11 -> 00:00:18] that was in pretty fast, but you can't do that, so you have memory hierarchies, and,
+[00:00:18 -> 00:00:25] you know, you're going to want to have a cache to access memory fast, okay, and if
+[00:00:25 -> 00:00:29] you don't find data in the cache, it's going to miss, because it misses all of
+[00:00:29 -> 00:00:34] a sudden now the load latency is not yet one or two cycles that you assume for the
+[00:00:34 -> 00:00:41] pipeline, it is something else. Okay, so the assumption of the software that the
+[00:00:41 -> 00:00:47] load latency was known and fixed is sort of gone. Okay, so what happens over there is
+[00:00:47 -> 00:00:52] then you basically have to stall everything, just like, you know, in a
+[00:00:52 -> 00:01:00] sense it's a simple one issue pipeline stall. It doesn't support caches very well. So this
+[00:01:00 -> 00:01:05] type has been used, actually, you know, I mean, you know, there are environments,
+[00:01:05 -> 00:01:09] microcontrollers, where you don't have any caches and so on like that, okay,
+[00:01:09 -> 00:01:15] you're just doing, you know, fixed computation, so, you know, in DSPs, you
+[00:01:15 -> 00:01:22] know, mortems and stuff like that, this kind of stuff is used. Okay, the, you know,
+[00:01:22 -> 00:01:28] a more realistic is to actually have the checks between the intergroups, so
+[00:01:28 -> 00:01:34] these stall cycles aren't scheduled by the pipeline, and so the pipeline depth
+[00:01:34 -> 00:01:41] and latencies are not fixed, they can be changed. Okay, and that also then allows you
+[00:01:41 -> 00:01:47] to support caches, you know, transmit, and this comes up from time to time, you
+[00:01:47 -> 00:01:52] know, Transmeta was a company that basically, what it did is it actually
+[00:01:52 -> 00:01:59] translated x86 code to these VLRW instructions dynamically, and with the
+[00:01:59 -> 00:02:03] intention I can have a, you know, and then they came up with this
+[00:02:03 -> 00:02:07] technique of dynamic compilation to use the technique of dynamic
+[00:02:07 -> 00:02:14] compilation, but, you know, I mean, eventually the other hardware caught up,
+[00:02:14 -> 00:03:22] and they also didn't quite do well, but, so, you know, what does VLRW actually
+[00:03:22 -> 00:03:26] bias, what makes the hardware simpler, okay, there is a simpler instruction cache,
+[00:03:26 -> 00:03:31] you know, branch prediction, no need for trace cache, simpler dependence
+[00:03:31 -> 00:03:36] check logic, because you really don't have any in some sense, okay, bypass
+[00:03:36 -> 00:03:41] paths are the same, clustering helps, you know, but it's not compatible across
+[00:03:41 -> 00:03:47] different machine bits, so you basically, you know, the question is, hey, is it
+[00:03:47 -> 00:03:54] worth non-compatibility, what's all these benefits necessary, and so the,
+[00:03:54 -> 00:04:00] you know, the Intel and HB were already sold on, mainly HB, we've got Josh Fisher
+[00:04:00 -> 00:04:07] and Barbara over there, okay, and trying to use this VLRW model for their future
+[00:04:07 -> 00:04:14] architecture, okay, so, you know, what they did is, and Intel being, you know,
+[00:04:14 -> 00:04:17] new software base, they say, you know, there has to be sort of a compatible
+[00:04:17 -> 00:04:24] path from one generation to the next, okay, so what they created was sort of a
+[00:04:24 -> 00:04:32] new VLRW, okay, but, you know, I mean, they changed, they said variable length
+[00:04:32 -> 00:04:36] instruction, whatever, okay, just some marketing BSR, explicitly parallel, so
+[00:04:36 -> 00:04:46] what, you know, what was done, you know, the thinking is, look, we can do a lot
+[00:04:46 -> 00:04:49] of stuff in software, which we will see what all we can do, tricks we can
+[00:04:49 -> 00:04:54] play, we don't want to do that in hardware, we'll see over the next
+[00:04:54 -> 00:04:57] several lectures what happens if we have to do it in hardware, the hardware
+[00:04:57 -> 00:05:02] required, okay, so, but we want to go from one generation to the next as
+[00:05:02 -> 00:05:08] hardware capabilities change without having to recompile, so we create an
+[00:05:08 -> 00:05:13] instruction set where it specifies a fair amount of parallelism, and you
+[00:05:13 -> 00:05:20] create the parallel, a parallel set of operations, if you will, but then
+[00:05:20 -> 00:05:26] dynamically you can actually do something else with it, if you will, okay, so they
+[00:05:26 -> 00:05:33] called it, you know, EPIC, explicitly parallel instruction set computing, so
+[00:05:33 -> 00:05:41] what you do is now you have 128-bit instructions over there, okay, and in
+[00:05:41 -> 00:05:52] those 128 bits, there are three different 41-bit instructions, okay, and so three
+[00:05:52 -> 00:05:56] 41-bit instruction, that's a hundred twenty three bits, the remaining five
+[00:05:56 -> 00:06:02] bits are left over for what is called a template, okay, and what the template
+[00:06:02 -> 00:06:09] does is that the template indicates, you know, what different types of
+[00:06:09 -> 00:06:15] instructions are the three, the combinations of those, okay, so, you know, you could
+[00:06:15 -> 00:06:22] have a instruction that has floating point or a memory or integer ALU, and
+[00:06:22 -> 00:06:26] what is the other one, you know, some, they had a couple of other types over
+[00:06:26 -> 00:06:32] there, okay, so you know, so you pack these instructions in a hundred, three
+[00:06:32 -> 00:06:37] of these instructions in a 128-bit wide instruction, and the template bit
+[00:06:37 -> 00:06:47] tells you what different types those three instructions are, okay, so why 41-bit
+[00:06:47 -> 00:06:55] instructions, hey, you know, in the MIPS and all we saw, we had 32-bit instructions, okay, so
+[00:06:55 -> 00:07:02] what are the additional nine bits in some sense being used for, okay, so
+[00:07:02 -> 00:07:10] in the MIPS, we had 32 registers, five bits to specify a register, they have 128
+[00:07:10 -> 00:07:18] integer registers, why do they have so many, we will see when we start trying to get
+[00:07:18 -> 00:07:22] lots of parallelism, you need more registers somehow, okay, the more
+[00:07:22 -> 00:07:26] parallelism you have, the more instructions you have in flight, the
+[00:07:26 -> 00:07:30] results of the instruction have to go somewhere, okay, where are they going to go?
+[00:07:30 -> 00:07:35] They're going to go in a register, in the IA 64, in any statically scheduled, you
+[00:07:35 -> 00:07:39] actually have to go and specify the architectural register, when we talk
+[00:07:39 -> 00:07:43] about dynamic scheduling, we'll still need to have a register, but it'll be a
+[00:07:43 -> 00:07:50] physical register instead, okay, are you with me on this? We'll see that, okay, so
+[00:07:50 -> 00:07:55] they had 128 registers, okay, so now three, if you have three registers, that's 21
+[00:07:55 -> 00:08:05] bits gone over there, okay, then they also have 64 predicate registers, and we'll see what
+[00:08:05 -> 00:08:12] predicate registers are, in other words, okay, so, you know, and you say, hey, you know, 41 bits is
+[00:08:12 -> 00:08:18] clue G, it's not a power of two, that's okay, because, you know, you never have
+[00:08:18 -> 00:08:23] only a single 41-bit instruction, you always have them in bundles of three,
+[00:08:23 -> 00:08:33] okay, and so, the, you know, compiler is going to discover as much parallelism as
+[00:08:33 -> 00:08:37] scan and hardware does the rest, and how the compiler, the techniques that it does
+[00:08:37 -> 00:08:48] to discover parallelism, we will see. So these templates, these five bits, like, you can't encode
+[00:08:48 -> 00:08:55] much, if you have three instructions, right, so they actually have different, several of the
+[00:08:55 -> 00:09:00] encodings talk about the different combinations, hey, you know, first is a memory, second is a
+[00:09:00 -> 00:09:04] memory, third is an integer instruction, that kind of stuff, and they had, and so they had, like,
+[00:09:04 -> 00:09:09] 32 different combinations that they could have of that, and was the compiler then limited to
+[00:09:09 -> 00:09:23] what it could, the way it could mix these three instructions? Yes, yes, okay, so, you know,
+[00:09:23 -> 00:09:30] we can build a huge, you know, do lots of instructions in parallel, build hardware to do
+[00:09:30 -> 00:09:36] that, but none of that is going to work out if there isn't enough parallelism in the program
+[00:09:36 -> 00:09:45] that you have to discover, okay, so how can the compiler help to extract the parallelism? We
+[00:09:45 -> 00:09:50] will talk about several techniques, these are applicable to any regular processor, but these
+[00:09:50 -> 00:09:58] are, you know, critical for the statically scheduled VRW epic process. So, you know, basically
+[00:09:58 -> 00:10:03] the principles of, hey, you have a program I need to try, and there is parallelism in the
+[00:10:03 -> 00:10:08] program, but it's hidden, how do I uncover the parallelism in the program, and, you know,
+[00:10:08 -> 00:10:15] we'll talk about several techniques, and those techniques, sorry, concepts, basic concepts, you
+[00:10:15 -> 00:10:21] know, and those concepts are going to be applied in different ways in either the static
+[00:10:21 -> 00:10:30] or dynamic rescheduled process. Okay, so let me take a very simple piece of code,
+[00:10:30 -> 00:10:35] what is called SACSP, single procession, AX plus Y, constant A, you know, vector
+[00:10:35 -> 00:10:42] X, vector Y, I'm carrying out this calculation, so A is going to be in register F0 outside
+[00:10:42 -> 00:10:48] this loop, and then I'm going to load X, you know, offset of R1 into F1, multiply
+[00:10:48 -> 00:10:57] F0 and F1, put it in F2, then load Y into F3, add F2 and F3, put it in F4, store
+[00:10:57 -> 00:11:03] F4 into Z, then increment the induction variable, compare it to C, check to see
+[00:11:03 -> 00:11:12] if I'm at the end of the loop, if not, I branch back to instruction 0. Okay, so
+[00:11:12 -> 00:11:21] if you now go ahead and take a single-issue five-stage pipeline and, you know, schedule
+[00:11:21 -> 00:11:25] this piece of code, how this piece of code flows through this pipeline, and I'm not
+[00:11:25 -> 00:11:29] going to go through this, you know, I mean, the first time around, you can figure
+[00:11:29 -> 00:11:35] out this fairly straightforward, where, you know, full bypassing, five cycles to
+[00:11:35 -> 00:11:39] do a floating point multiply, two cycles to do a floating point addition, and branch
+[00:11:39 -> 00:11:46] is predicted, taken, and memory operations take a single cycle, you will see that I
+[00:11:46 -> 00:11:51] have one, two, three, four, five, six, seven, seven of these instructions in a steady
+[00:11:51 -> 00:11:55] state, if you will, take a look at, you know, execute, are going to execute
+[00:11:55 -> 00:12:01] in 11 cycles, so I'm going to get 0.64 IPC, and the utilization is going to
+[00:12:01 -> 00:12:08] be 64% of the machine. Okay? Now, let me do the same piece of code, but try
+[00:12:08 -> 00:12:14] and do two instructions at a time, and I'm going to do sort of a fluid schedule.
+[00:12:14 -> 00:12:19] Fluid means that I have this bundle of two, this bundle of two, then, you know,
+[00:12:19 -> 00:12:26] and then, you know, a instruction from a later bundle could execute an overlap
+[00:12:26 -> 00:12:32] with the previous bundle if you were bypassing, okay? So, again, you can take a look
+[00:12:32 -> 00:12:40] at, you know, figure out this schedule is fine, and so if you do this, you know,
+[00:12:40 -> 00:12:44] you will get the performance, I'm taking ten cycles to execute these seven
+[00:12:44 -> 00:12:54] instructions, okay? So now I get 0.7 IPC, however, the peak is two, so my
+[00:12:54 -> 00:13:03] utilization of the pipeline is only 35%, okay? What happened is that I had
+[00:13:03 -> 00:13:08] more hazards because I was trying to do more multiple things, and those hazards
+[00:13:08 -> 00:13:16] left to more stalls, and if I have to stall for one cycle, okay, that is two
+[00:13:16 -> 00:13:27] instruction opportunities, so each stall is more expensive, okay? So the,
+[00:13:28 -> 00:13:36] all right, so now let's just actually talk about, you know, a couple of things
+[00:13:36 -> 00:13:40] because these will come up repeatedly. Issue is the time at which an
+[00:13:40 -> 00:13:46] instruction begins execution, and the schedule is the order in which the
+[00:13:46 -> 00:13:54] instructions execute, okay? So what we want to do is if I'm doing N wide,
+[00:13:54 -> 00:13:59] I want to have an issue rate of N, and, you know, that's what I'd like to be
+[00:13:59 -> 00:14:05] able to do. Regarding the schedule, you know, if I have an in-order pipeline,
+[00:14:05 -> 00:14:10] the schedule and the stalls determine the time and instruction issues, very
+[00:14:10 -> 00:14:16] simply, okay? And a good schedule that minimizes stalls is important, both
+[00:14:16 -> 00:14:22] for performance and utilization. So a purely VLIW, a static schedule and
+[00:14:22 -> 00:14:29] static issue, so everything was determined statically, okay? Tainted VLIW,
+[00:14:29 -> 00:14:34] statics schedule, and pretty much dynamic issue, so I figured out the
+[00:14:34 -> 00:14:39] schedule of execution of instructions, but the time each instruction was
+[00:14:39 -> 00:14:44] issued was determined dynamically, partly. And in superscalar and epic,
+[00:14:44 -> 00:14:49] it's a static schedule, and the time at issue time is going to be fairly
+[00:14:49 -> 00:15:00] dynamic. Okay, so the idea that we've seen before is, look, if I have an
+[00:15:00 -> 00:15:06] instruction that depends on a previous instruction, what I want to do is I
+[00:15:06 -> 00:15:11] want to try and place instructions between the slow operations and the
+[00:15:11 -> 00:15:18] uses, okay? So what we need to do to schedule well is you need independent
+[00:15:18 -> 00:15:27] instructions, lots of independent instructions if you will, okay? And to get
+[00:15:27 -> 00:15:34] more independent instructions, I need to have a larger scheduling scope. What
+[00:15:34 -> 00:15:39] is the scheduling scope? The scheduling scope is the code region, the
+[00:15:39 -> 00:15:46] instructions that we have, that we are trying to schedule, okay? So the
+[00:15:46 -> 00:15:50] bigger the scheduling scope, the more instructions I have, the more
+[00:15:50 -> 00:15:56] independent instructions I have to choose from. Once the scope is defined,
+[00:15:56 -> 00:16:00] then you just figure out, you know, create the DAG of the instructions,
+[00:16:00 -> 00:16:05] okay? And then you just, you know, pick up instructions in the, you know,
+[00:16:05 -> 00:16:08] traverse the DAG in the order, and that determines your schedule.
+[00:16:08 -> 00:16:14] Fairly straightforward, okay? So now let's talk about a couple of
+[00:16:14 -> 00:16:19] compiler scheduling techniques, which are really techniques to enhance the
+[00:16:19 -> 00:16:24] scheduling scope. We'll start off with loop and rolling, which you likely have
+[00:16:24 -> 00:16:29] seen before, but it's a bread and butter technique, and then for more
+[00:16:29 -> 00:16:33] non-loop and roll floor trace scheduling, where a lot of interesting
+[00:16:33 -> 00:16:38] stuff comes in. And this is critical, you know, was critical for something
+[00:16:38 -> 00:16:43] like the Epic IA-64, and we will see that they had instructions to
+[00:16:43 -> 00:16:55] support what was needed for trace scheduling. Okay. Now, before we go to loop
+[00:16:55 -> 00:17:00] and rolling, when we get to the trace scheduling, we will see, okay, you
+[00:17:00 -> 00:17:07] know, hey, you know, this branch has a high probability of going in this
+[00:17:07 -> 00:17:15] one direction or the other, okay? Or, hey, this load is unlikely to be
+[00:17:15 -> 00:17:24] dependent on this store instruction, okay? How do I know that? How do I know
+[00:17:24 -> 00:17:29] that? Okay. And this all has, the compiler has to know that. How does the
+[00:17:29 -> 00:17:36] compiler know that? Okay. And what the compiler does not know, what the
+[00:17:36 -> 00:17:39] dynamic execution of the program is going to look like, which way the
+[00:17:39 -> 00:17:46] branches are going to go, okay? So what a typical technique that you do is you
+[00:17:46 -> 00:17:54] profile an execution of the program. You profile it, you know, with a set of
+[00:17:54 -> 00:18:00] inputs, and you actually carry out multiple profiles, okay? And then the
+[00:18:00 -> 00:18:04] assumption is that, hey, when you actually execute the program with a
+[00:18:04 -> 00:18:09] different set of inputs, the profile is going to look very similar to the
+[00:18:09 -> 00:18:16] profile over here, okay? So if branch A was taken 90% of the time with this
+[00:18:16 -> 00:18:23] set of inputs, with this set of inputs, maybe, you know, 90, 89, 91,
+[00:18:23 -> 00:18:29] whatever it is, similar, if you will, okay? So compilers, part of the
+[00:18:30 -> 00:18:35] reason, you know, I mean, so you can carry out, you collect information from
+[00:18:35 -> 00:18:41] previous runs of the program. And there's a lot of work that has gone on,
+[00:18:41 -> 00:18:50] and they realize that, hey, you know, instructions that miss in the cache,
+[00:18:50 -> 00:18:56] the same instruction is the one that repeatedly misses in the cache, okay?
+[00:18:56 -> 00:19:03] So given from a profile. Or, you know, if a load is dependent on a store,
+[00:19:03 -> 00:19:08] okay, in one run of the program, it's very likely the case in a different
+[00:19:08 -> 00:19:13] run of the program. A load is not dependent on a store in one run of the
+[00:19:13 -> 00:19:17] program, it's very likely not dependent on that store in a different
+[00:19:17 -> 00:19:23] run of the program, okay? So they carry out a lot of profiling
+[00:19:23 -> 00:19:26] techniques, and straight away, you're saying, you know, this is a lot of work
+[00:19:26 -> 00:19:31] that has been done before you even compile the program. You have to compile,
+[00:19:31 -> 00:19:36] run it, and then, you know, compile it again, okay?
+[00:19:36 -> 00:19:43] Branch outcomes tend not to be stable across inputs, okay? And the memory
+[00:19:43 -> 00:19:47] dependencies are stable, but we will see, exploiting this information, you
+[00:19:47 -> 00:19:56] still need a little hardware help. So this is a technique that is without
+[00:19:56 -> 00:20:01] profiling a lot of the software tricks that we're going to talk about
+[00:20:01 -> 00:20:07] just on board work, okay? It's an enabling technique.
+[00:20:07 -> 00:20:13] Now, in a sense, you know, what we are also doing when we talk about
+[00:20:13 -> 00:20:17] hardware techniques, what we did in the branch predictor, in a sense,
+[00:20:17 -> 00:20:22] we are doing a profile of execution of the same program, and then using it
+[00:20:22 -> 00:20:28] as the program executes, but we are doing it dynamically, okay?
+[00:20:28 -> 00:20:41] Okay, so why did I not get much performance in this XB? Okay, so this
+[00:20:41 -> 00:20:47] load took one cycle, multiply took five cycles, add took two cycles,
+[00:20:47 -> 00:20:55] store took one cycle, okay? So one cycle, and this instruction depends on this,
+[00:20:55 -> 00:21:00] so now, if I take a look at the chain of dependence of computation through this
+[00:21:00 -> 00:21:04] piece of code, it's going to take one cycle here, five cycles here, so six
+[00:21:04 -> 00:21:08] cycles, and then from here, I go to this add, which is going to take two
+[00:21:08 -> 00:21:12] cycles, so seven, eight cycles, and from there, I'm going to go to the
+[00:21:12 -> 00:21:19] store, it's going to take eight cycles, okay? So, you know, and then
+[00:21:19 -> 00:21:24] after that, you know, I can, in this add, so, you know, I'm going to have to
+[00:21:24 -> 00:21:30] expand at least those many cycles to execute one iteration of the loop.
+[00:21:30 -> 00:21:36] That's nothing I can do about it, okay? So the longest chain of
+[00:21:36 -> 00:21:41] instructions through one iteration of the loop is load to multiply, add,
+[00:21:41 -> 00:21:50] store, so that is nine cycles, okay? So if I only have these seven
+[00:21:50 -> 00:21:58] instructions, okay, and I'm trying to tolerate a latency of a nine cycle
+[00:21:58 -> 00:22:06] chain, I can't do that with only seven instructions. So how about I take two
+[00:22:06 -> 00:22:11] of these nine cycle chains and overlap them together, okay? Where do I
+[00:22:11 -> 00:22:15] get this other nine cycle chain? I get it from the next iteration of the
+[00:22:15 -> 00:22:21] loop, okay? So I'm going to unroll the loop, schedule two or more iterations
+[00:22:21 -> 00:22:27] together, and I'm going to get all the, take the instructions from two
+[00:22:27 -> 00:22:32] different iterations, fuse them together, fuse the iterations together,
+[00:22:32 -> 00:22:37] pipeline the schedule to reduce these stalls, and this pipeline schedule
+[00:22:37 -> 00:22:42] is going to introduce these right after read violations, and we're going to
+[00:22:42 -> 00:22:50] fix them by renaming registers, okay? Let's see how we do that, okay? So
+[00:22:50 -> 00:22:55] here is one iteration of the loop, here is the second instruction of the
+[00:22:55 -> 00:22:59] second iteration of the loop, okay? Now basically what I'm going to do is
+[00:22:59 -> 00:23:04] I'm just going to have one iteration, one big iteration that has
+[00:23:04 -> 00:23:09] instructions from two other iterations of the loop, okay? So the first thing
+[00:23:09 -> 00:23:13] that I need to do is, hey, this was the loop control instructions in the
+[00:23:13 -> 00:23:18] iteration, I only need one set of loop control instructions, okay? So what I've
+[00:23:18 -> 00:23:22] done is I'm going to fuse the induction variable and implement the
+[00:23:22 -> 00:23:26] branch, only have one of these, but now previously these were two
+[00:23:26 -> 00:23:35] implementing by four each, so that increments by eight, okay? And now this
+[00:23:36 -> 00:23:45] offset X from R1, this R1 was the, you know, this R1 was the R1 that I
+[00:23:45 -> 00:23:51] started out with over here, incremented by four, okay? And very similarly for
+[00:23:51 -> 00:23:56] this offset and this offset, so I'm going to add, I'm going to add four to
+[00:23:56 -> 00:24:01] these offsets over here, so I will get the correct offset of this R1,
+[00:24:01 -> 00:24:10] because I'm not changing this R1 over here, okay? All right? Got rid of that
+[00:24:10 -> 00:24:17] loop control, adjusted the implicit induction variable uses. And now what
+[00:24:17 -> 00:24:23] you do is you try and put some instructions between this load and this
+[00:24:23 -> 00:24:29] multiply and between this multiply and this add and between this add and
+[00:24:29 -> 00:24:36] this store, that's what we're going to try and do, okay? So you take the
+[00:24:36 -> 00:24:41] instructions that we had here and schedule them so that these
+[00:24:41 -> 00:24:45] instructions from the black iteration now get interspersed with the
+[00:24:45 -> 00:24:49] instructions, the second iteration get interspersed with the purple
+[00:24:49 -> 00:24:56] instructions from the blue instructions from the first iteration, okay? So far
+[00:24:56 -> 00:25:03] so good? So between this load and the multiply of the 1st iteration I put the
+[00:25:06 -> 00:25:11] load of the second iteration. Between the multiply and the add of the
+[00:25:11 -> 00:25:16] second iteration, I put the multiply of the, sorry, between the multiply and the
+[00:25:16 -> 00:25:20] add of the 1st iteration I put the multiply of the second iteration and
+[00:25:20 -> 00:25:27] and this second load of the second iteration, okay?
+[00:25:27 -> 00:25:35] Well, this code, if I just simply mix the instruction like this, is wrong.
+[00:25:35 -> 00:25:42] Okay? Why is it wrong? Why is it wrong? Because the load of the second
+[00:25:42 -> 00:25:44] iteration, the load of the first iteration is
+[00:25:44 -> 00:25:46] writing into F1, the load of the second iteration is
+[00:25:46 -> 00:25:51] writing into F1, and the multiply of the first iteration reads F1.
+[00:25:51 -> 00:25:55] If I move the load of the second iteration before this multiply,
+[00:25:55 -> 00:25:59] it's going to use the F1 from the second iteration, which is wrong.
+[00:25:59 -> 00:26:04] Okay? So what I want to do is I want to have the load in the second iteration
+[00:26:04 -> 00:26:09] write into a different register. So that register is going to be F5,
+[00:26:09 -> 00:26:12] and now this multiply of the second iteration
+[00:26:12 -> 00:26:16] uses as input the load from the second iteration
+[00:26:16 -> 00:26:22] F5 and writes into F6. The load of this load of the second
+[00:26:22 -> 00:26:26] iteration now writes into F7. This add of the second
+[00:26:26 -> 00:26:31] iteration writes into reads F6 and F7, which are the, you
+[00:26:31 -> 00:26:35] know, multiply and the load of the second iteration writes into F8.
+[00:26:35 -> 00:26:40] The store of the second iteration stores F8.
+[00:26:40 -> 00:26:45] Okay? So basically what I've done is I've renamed the registers
+[00:26:45 -> 00:26:49] of the instructions of the second iteration. And the way I've renamed them,
+[00:26:49 -> 00:26:54] I've renamed them statically by using different registers.
+[00:26:54 -> 00:26:59] Okay? The more the instructions now, previously I was getting by with F1,
+[00:26:59 -> 00:27:02] F2, F3, F4, four floating point registers,
+[00:27:02 -> 00:27:12] now I need eight of them. So the larger my scheduling scope, the more the
+[00:27:12 -> 00:27:15] registers I need, the larger the number of instructions I have in parallel,
+[00:27:15 -> 00:27:19] the more registers I need. The IA 64 was dependent solely on
+[00:27:19 -> 00:27:22] trying to do this stuff in statically in software.
+[00:27:22 -> 00:27:25] They were trying to create these scheduling scopes of several hundred
+[00:27:25 -> 00:27:32] instructions. You need 120 addresses. Any questions
+[00:27:32 -> 00:27:38] about this? Now if you go ahead and figure out the
+[00:27:38 -> 00:27:42] pipeline schedule for that with a single issue, you will see
+[00:27:42 -> 00:27:46] that, you know, you'll end up getting 12 instructions
+[00:27:46 -> 00:27:52] in 13 cycles. So you get this kind of IPC, fairly high utilization.
+[00:27:52 -> 00:27:55] Okay, so fairly significant speed up now
+[00:27:55 -> 00:27:59] in the single case. You can go ahead and draw this
+[00:27:59 -> 00:28:03] diagram over here, understand this diagram. The only thing I want to point
+[00:28:03 -> 00:28:08] out is, hey, this store is not,
+[00:28:08 -> 00:28:11] you know, this add is stalled in decode over here,
+[00:28:11 -> 00:28:15] and then it goes in, sorry, and this,
+[00:28:15 -> 00:28:18] and it's in execute over here. This execute
+[00:28:19 -> 00:28:23] does not propagate, the store from the execute store doesn't propagate over
+[00:28:23 -> 00:28:27] here, because this one's using the floating point addition pipeline. This
+[00:28:27 -> 00:28:32] one is using the integer execution. Yeah?
+[00:28:32 -> 00:28:37] How is it 13 cycles? It's more in it, so this, you know,
+[00:28:37 -> 00:28:40] if you, if you, it's not, it's not going to show up for the
+[00:28:40 -> 00:28:44] first iteration, if you will. Okay, but you can just take a look
+[00:28:44 -> 00:28:49] at the time between some instruction over here and the
+[00:28:49 -> 00:28:52] next iteration, if you will, you know, this
+[00:28:52 -> 00:28:56] it'll end up being like here. This is time, this is the time 13 cycle from
+[00:28:56 -> 00:29:00] here to here. Right? If I, you know, if I take a
+[00:29:00 -> 00:29:05] look at from the time the, you know, the
+[00:29:05 -> 00:29:11] first instruction completed until the same instruction the next iteration
+[00:29:11 -> 00:29:22] completed. Okay, okay. So one of the other things that
+[00:29:23 -> 00:29:28] is done, and I won't go too much into it, is the following.
+[00:29:28 -> 00:29:40] So say I have a piece of code that is x i equals to
+[00:29:40 -> 00:29:47] x i minus two star a plus y i or something like that, okay?
+[00:29:47 -> 00:29:51] Sort of loop over here, okay? Where what you're doing is you have a
+[00:29:51 -> 00:29:55] recurrence where in one iteration you're using
+[00:29:55 -> 00:30:04] the results of the previous iteration. Simple loop unrolling
+[00:30:04 -> 00:30:09] is not quite going to get you parallel execution over here.
+[00:30:09 -> 00:30:15] So what you can actually do is you can basically try and create a
+[00:30:15 -> 00:30:20] different piece of code where in the loop body, so what you
+[00:30:20 -> 00:30:22] would do, what you would do over here
+[00:30:22 -> 00:30:34] in this piece of code over here, in one iteration of the loop you
+[00:30:34 -> 00:30:40] would have a load of x i minus one, okay?
+[00:30:40 -> 00:30:44] Multiply with a and then the store of
+[00:30:44 -> 00:30:48] x i. That is one iteration of the loop.
+[00:30:48 -> 00:30:51] Okay? And hey, you know, there is no parallelism
+[00:30:51 -> 00:30:54] necessarily, no possibility of overlapping
+[00:30:54 -> 00:31:10] pretty much anything over here. What you can actually do
+[00:31:10 -> 00:31:18] is you can create a body of the loop where what you're doing is you're
+[00:31:18 -> 00:31:25] doing the load for iteration i,
+[00:31:25 -> 00:31:30] whereas you're doing the execution for iteration i minus one
+[00:31:30 -> 00:31:37] and the store for iteration i minus two.
+[00:31:37 -> 00:31:40] And these are now in a sense over here
+[00:31:40 -> 00:31:49] independent. But then you have to have a loop prologue
+[00:31:49 -> 00:31:55] where, you know, you actually do the loads of several iterations
+[00:31:55 -> 00:31:59] and before you get into the main loop and the execute for
+[00:31:59 -> 00:32:04] iterations and then store for that, then you do the main body in the
+[00:32:04 -> 00:32:09] loop and then you have an epilogue over here.
+[00:32:09 -> 00:32:14] Okay? This is another technique like, so this is what is called software
+[00:32:14 -> 00:32:17] pipelining. Quick sketch, I'm not going to go into more detail over here.
+[00:32:17 -> 00:32:21] To carry out this, you know, software pipelining,
+[00:32:21 -> 00:32:25] you also need to have a very special set of
+[00:32:25 -> 00:32:31] tricks in the register file, which is also what the IA-64 had. I'm not going to go into that.
+[00:32:31 -> 00:32:35] This is a technique that is even quite widely used
+[00:32:35 -> 00:32:41] even just in trying to get, you know, parallelism and overlap
+[00:32:41 -> 00:32:45] between loop iterations when you have an
+[00:32:45 -> 00:32:53] inter-iteration dependence. Okay, now we get to the more interesting part.
+[00:32:53 -> 00:33:00] Well, so, you know, a lot of these VLW processors started out
+[00:33:00 -> 00:33:03] initially for doing scientific, you know,
+[00:33:03 -> 00:33:08] scientific computation, heavy matrix computation,
+[00:33:08 -> 00:33:14] a lot of floating point operations, but, you know, loops that iterated
+[00:33:14 -> 00:33:18] hundreds of times. There wasn't that much other code.
+[00:33:18 -> 00:33:24] Okay? And, but, you know, if you want to have a more general purpose
+[00:33:24 -> 00:33:30] processor, so, you know, you have code with lots of branches.
+[00:33:30 -> 00:33:36] Okay? So, what do you do? Okay. How do you create large scheduling
+[00:33:36 -> 00:33:42] scope from non-loop code? And there's this technique called
+[00:33:42 -> 00:33:45] trace scheduling. The idea is still, you know,
+[00:33:45 -> 00:33:48] used in, you know, compiler optimizations
+[00:33:48 -> 00:33:55] even without, even without other, those process, without VLW
+[00:33:55 -> 00:33:58] kind of processors. Okay, so what you do is you try and find the
+[00:33:58 -> 00:34:05] common paths in a program by profiling the code. Okay?
+[00:34:05 -> 00:34:12] And then you realign the basic blocks in the code to form straight line
+[00:34:12 -> 00:34:14] traces just like the trace cache in some sense. So,
+[00:34:14 -> 00:34:17] this is what is called trace scheduling. The trace cache was a
+[00:34:17 -> 00:34:21] hardware way of trying to rearrange the code that
+[00:34:21 -> 00:34:28] trace scheduling would do. Okay? And the, you know, basic
+[00:34:28 -> 00:34:31] block, as you all know, is a single entry, single exit
+[00:34:31 -> 00:34:35] instruction sequence. A trace is a set of
+[00:34:35 -> 00:34:41] fused basic blocks, a sequence of fused basic blocks.
+[00:34:41 -> 00:34:45] You create a trace, and then once you have a set of instructions
+[00:34:45 -> 00:34:53] in a trace, you can schedule it. Okay? That's fairly easy. But we will see
+[00:34:53 -> 00:34:57] is to be able to have some flexibility in the scheduling,
+[00:34:57 -> 00:35:00] you may have to create some fix-up code
+[00:35:00 -> 00:35:04] in case the trace doesn't actually equal the
+[00:35:04 -> 00:35:09] actual path, and in case some of the scheduling tricks that you do
+[00:35:09 -> 00:35:17] may cause issues. And we'll see that. Okay? And to be able to carry out all of
+[00:35:17 -> 00:35:21] this, you need ISA support for software
+[00:35:21 -> 00:35:25] speculation. We'll see what that is. Yeah?
+[00:35:25 -> 00:35:30] So for all these branchy behaviors, what if we could have special
+[00:35:30 -> 00:35:34] instructions that could pre-bias the branch history and the
+[00:35:34 -> 00:35:39] branch predictors in a way that
+[00:35:39 -> 00:35:48] that could, like, this is a statically scheduled
+[00:35:48 -> 00:35:55] that they aren't using branch predictors. Everything is done in software.
+[00:35:55 -> 00:36:01] Okay? But let's, what you said is, what if I could
+[00:36:01 -> 00:36:06] actually maybe pre-bias the branch, if I had branch predictors maybe
+[00:36:06 -> 00:36:18] pre-bias them and stuff like that. And actually, so, you know,
+[00:36:18 -> 00:36:21] trying to, there has been a lot of proposals,
+[00:36:21 -> 00:36:25] hey, there's certain branches I can mark that I know of,
+[00:36:25 -> 00:36:30] that don't bother the branch predictor.
+[00:36:30 -> 00:36:34] Another thing that people have proposed is, look, you know, branch
+[00:36:34 -> 00:36:39] predictors learns, and then say I have a context switch
+[00:36:39 -> 00:36:44] when I go to another program. But I've learned all the stuff in the
+[00:36:44 -> 00:36:47] branch predictor and now I have to throw it away and learn stuff from the
+[00:36:47 -> 00:36:50] other program, the branch predictor. They also proposed
+[00:36:50 -> 00:36:55] saving the branch predictor state, just like I said, register state and restore it.
+[00:36:55 -> 00:37:03] They're always trade-offs. Okay? There is no free lunch here. They're always
+[00:37:03 -> 00:37:07] trade-offs. Okay? So, but, you know, I mean, if
+[00:37:07 -> 00:37:09] you came, you know, some people have tried all sorts of, yeah,
+[00:37:09 -> 00:37:12] profile it, this branch I know is going to go this way,
+[00:37:12 -> 00:37:16] why bother the branch predictor, etc. But
+[00:37:16 -> 00:37:21] this, that is for dynamic stuff, not for the static stuff.
+[00:37:21 -> 00:37:28] Okay? Okay, now let's take this piece of code here.
+[00:37:28 -> 00:37:32] You know, what this code does, who cares?
+[00:37:32 -> 00:37:36] It's irrelevant, some nonsense piece of code.
+[00:37:36 -> 00:37:39] Okay? So, what this does, you know, if a is
+[00:37:39 -> 00:37:43] a is equal to yi, a equal to zero, a is wi,
+[00:37:43 -> 00:37:49] yi equal to zero, z of i is a star x, who can learn this?
+[00:37:49 -> 00:37:53] This is the machine code, assembly language code for
+[00:37:53 -> 00:37:59] this piece of code over here. And now this piece of code has four basic blocks.
+[00:37:59 -> 00:38:03] I have instruction zero and one. At the end of
+[00:38:03 -> 00:38:06] the basic block A, I have this branch not equal to,
+[00:38:06 -> 00:38:11] either it goes to block zero or block B or block C.
+[00:38:11 -> 00:38:16] In block B, I have a load followed by a jump to block D, instruction five.
+[00:38:17 -> 00:38:20] And in block four, I have a store, and then
+[00:38:20 -> 00:38:25] after that, I come to block D, where I do a load, a multiply, and a store.
+[00:38:25 -> 00:38:31] Okay? Some nonsense piece of code. And now,
+[00:38:31 -> 00:38:35] instruction six is a floating point multiply,
+[00:38:35 -> 00:38:39] and instruction seven is a store, and say this floating point multiply takes
+[00:38:39 -> 00:38:44] three cycles, I'm going to have a three-cycle stall.
+[00:38:44 -> 00:38:48] Okay? What I'd like to do is, I'd like to somehow
+[00:38:48 -> 00:38:52] schedule this multiply, so that there are,
+[00:38:52 -> 00:38:59] you know, other instructions between instruction six and instruction seven.
+[00:38:59 -> 00:39:06] Okay? So, if I need to move this multiply
+[00:39:06 -> 00:39:10] earlier, I'm going to have to basically schedule this multiply
+[00:39:10 -> 00:39:15] to be execute, you know, be in the code before
+[00:39:15 -> 00:39:19] basic block B over here. So, I have to move it above the if then
+[00:39:19 -> 00:39:28] else over here. All right? So, let us try and see
+[00:39:28 -> 00:39:33] how we can sort of do that. Okay? So, the first trace scheduling
+[00:39:33 -> 00:39:36] concept is what is called a superblock, which is originally
+[00:39:36 -> 00:39:38] also called, this is what was originally called the
+[00:39:38 -> 00:39:43] trace. Okay? So, I'm going to profile
+[00:39:44 -> 00:39:48] this branch here, and say I profile the branch, and the result of the profile
+[00:39:48 -> 00:39:52] said, hey, it's going to be taken 95 percent of the
+[00:39:52 -> 00:39:56] time, and not taken five percent of the time.
+[00:39:56 -> 00:40:01] Okay? Then, I want to say, yeah, hey, this branch is highly biased.
+[00:40:01 -> 00:40:04] So, what I'm going to do is, I'm going to create a superblock or a
+[00:40:04 -> 00:40:10] trace with blocks A, C, and D.
+[00:40:10 -> 00:40:15] Fuse them, those blocks from the most AC, even through the most frequent path,
+[00:40:15 -> 00:40:22] schedule them, and if I go ahead and do,
+[00:40:22 -> 00:40:25] if this branch was not taken, and the real path was
+[00:40:25 -> 00:40:32] A, B, and D, then I'm going to go and execute some repair code, which
+[00:40:32 -> 00:40:41] I'm going to create. Are you with me on this? So, what we
+[00:40:41 -> 00:40:48] do is, we took the instructions of A, C, and D, so 0, 1, 4, 5, 6, 7,
+[00:40:48 -> 00:40:54] and created a block. 0, 1, 4, 5, 6, 7, this is the superblock.
+[00:40:54 -> 00:40:58] Okay? But, what we did do is, now, this, we changed the sense of this
+[00:40:58 -> 00:41:03] branch, because, you know, this path was going to be taken,
+[00:41:03 -> 00:41:06] and this path was not taken. Okay? So, we changed the sense of the
+[00:41:06 -> 00:41:11] branch. So, this branch, if it was taken,
+[00:41:11 -> 00:41:16] if it's not taken, we go here, and if it's taken, we go here. So, we did, we
+[00:41:16 -> 00:41:24] flipped it from not equal to, so this original code, which was in the
+[00:41:24 -> 00:41:33] taken path, is now on the fall-through path. Now, what we have
+[00:41:33 -> 00:41:39] also done is, we have created some repair code,
+[00:41:39 -> 00:41:47] so that, if this branch is taken, this branch taken means,
+[00:41:47 -> 00:41:51] this branch was not taken. So, we're going to have to come and execute this
+[00:41:51 -> 00:41:54] and this. So, we're going to create some repair code.
+[00:41:54 -> 00:42:01] We're going to have instruction 2, 3, 5, 6, 7, but I don't need
+[00:42:01 -> 00:42:05] 3, really, because it's going to 5, then jump into 5.
+[00:42:05 -> 00:42:08] So, I'm going to have some repair code, which is going to be instructions
+[00:42:08 -> 00:42:17] 2, 5, 6, and 7. Okay? 2, 5 prime, 6 prime, 7 prime.
+[00:42:17 -> 00:42:22] Okay? Yeah? Where does this repair code exist?
+[00:42:22 -> 00:42:25] Like, is it somewhere else? At the same place where the other code exists.
+[00:42:25 -> 00:42:28] Okay, so it's like right after the super block or something.
+[00:42:28 -> 00:42:32] It could be, who knows where. Okay, then you, then,
+[00:42:32 -> 00:42:36] okay, so it could be right after the super block.
+[00:42:36 -> 00:42:41] Okay, but since this repair code is rarely executed, that's the whole point,
+[00:42:41 -> 00:42:45] is what you actually do is, you know, you try and put all the code that
+[00:42:45 -> 00:42:49] you're going to be executing lightly, one after the other, so it's going to all
+[00:42:49 -> 00:42:53] be in the cache and act in the cache. You don't want the repair code, you
+[00:42:53 -> 00:42:58] know, trying to mess that up, if you will, so you put it a little further away.
+[00:42:58 -> 00:43:04] Yeah? So, we usually, at times, if the case is
+[00:43:04 -> 00:43:08] prediction is wrong, we go with the repair code, but how do we know,
+[00:43:08 -> 00:43:13] like, how do we prepare the repair code?
+[00:43:13 -> 00:43:16] This repair code is going to be triggered
+[00:43:16 -> 00:43:21] by, when this code executes, in the outcome of this branch.
+[00:43:21 -> 00:43:24] What you want to do is, you're going to check to see if,
+[00:43:24 -> 00:43:31] you know, F2 is equal to zero. Okay? Which is, what we were doing,
+[00:43:31 -> 00:43:34] do is, here we are checking F2, if it was not equal to zero, we were
+[00:43:34 -> 00:43:37] going here, if it was equal to zero, we are going here.
+[00:43:37 -> 00:43:41] So here the code is, if it's equal to zero, if it's not equal to zero, we
+[00:43:41 -> 00:43:46] have to go this, if it's equal to zero, we have to go here.
+[00:43:46 -> 00:43:58] Okay? All right. Now, let us try and schedule this piece of code.
+[00:43:58 -> 00:44:05] So, I have zero, one, four, five, six, seven. What I'd like to do is, I'd like
+[00:44:05 -> 00:44:09] to move this multiply instruction earlier.
+[00:44:09 -> 00:44:12] Okay? So, to move this multiply instruction
+[00:44:12 -> 00:44:16] earlier, I also have to move this load instruction
+[00:44:16 -> 00:44:23] earlier, because this multiply needs the result of this load.
+[00:44:23 -> 00:44:27] Okay? So, to move this load instruction earlier,
+[00:44:27 -> 00:44:32] I have to move it past this store instruction.
+[00:44:32 -> 00:44:36] Okay? So, I move instructions five and six
+[00:44:36 -> 00:44:48] above instruction four. This is fine if this load is loading from a different
+[00:44:48 -> 00:44:54] memory address than this store is writing to.
+[00:44:54 -> 00:44:59] Over here, this is fine, we know that x and y are different.
+[00:44:59 -> 00:45:04] Okay? But in reality, what the compiler has to do is, it has to
+[00:45:04 -> 00:45:10] see what is this address, what would this address be, and what
+[00:45:10 -> 00:45:13] would this address be, and can I guarantee they are different?
+[00:45:13 -> 00:45:18] You know, say this was y from r2, for example.
+[00:45:18 -> 00:45:22] Okay? Then, the compiler has to do x added to r1,
+[00:45:22 -> 00:45:26] I don't know what is in r1, is it the same or different from y added to
+[00:45:26 -> 00:45:34] r2? All right? So, if it's different,
+[00:45:34 -> 00:45:39] then it's fine, otherwise what we need to do is we need to do
+[00:45:39 -> 00:45:47] something. So, now this is where life starts getting interesting.
+[00:45:47 -> 00:45:51] Okay? So, what we need to do is basically
+[00:45:51 -> 00:45:57] we need to be able to speculate that this load is not going to load
+[00:45:57 -> 00:46:01] from an address that this store is going to write.
+[00:46:01 -> 00:46:05] So, that reordering is fine. So, we have to
+[00:46:05 -> 00:46:18] support, have support for load store speculation. Okay? What do we do?
+[00:46:18 -> 00:46:24] This repair code is the same, it's not, this repair code is common.
+[00:46:24 -> 00:46:28] This repair code that we have is common because we constructed a
+[00:46:28 -> 00:46:32] super block in this branch, not because of any scheduling of
+[00:46:32 -> 00:46:41] code. That's not going to change. So, what we're going to do is, this
+[00:46:41 -> 00:46:45] load, we are going to mark it, especially, we call it an
+[00:46:45 -> 00:46:49] advanced load. So, now it's having an up code,
+[00:46:49 -> 00:46:53] previously it was just floating point load, now it's called floating point load.a
+[00:46:53 -> 00:46:56] saying that this is a load that got advanced
+[00:46:56 -> 00:47:03] before another store instruction that I do not know.
+[00:47:03 -> 00:47:09] All right? And then, what I'm going to do is, I'm going to
+[00:47:09 -> 00:47:14] have a piece of hardware, which in the x86, IA64, they call an
+[00:47:14 -> 00:47:19] advanced load alias table, an ALAT, where some of the academic work
+[00:47:19 -> 00:47:28] called it a memory conflict buffer. Okay? So, now what we're going to do is,
+[00:47:28 -> 00:47:33] when we have an advanced load, when this advanced load executes,
+[00:47:33 -> 00:47:40] okay, it's going to put in the ALAT information about the execution of
+[00:47:40 -> 00:47:43] the advanced load. What is it going to put in there? It's going to put the
+[00:47:43 -> 00:47:50] address that it loaded from. It's going to put the register F4,
+[00:47:50 -> 00:47:54] that is the target that I wrote from that address.
+[00:47:54 -> 00:47:58] It's going to put, you know, some other things that are,
+[00:47:58 -> 00:48:01] you know, bytes there, whatever it is, you know, it's like,
+[00:48:01 -> 00:48:07] these are the two important things. Okay?
+[00:48:07 -> 00:48:13] Then, at the original position of the load,
+[00:48:13 -> 00:48:23] I'm going to have a check.a instruction. Okay? This check.a instruction
+[00:48:23 -> 00:48:30] is going to check something with F4, and if this check
+[00:48:30 -> 00:48:35] fails, if check passes, then keep going and do nothing. It's a no-op.
+[00:48:35 -> 00:48:42] If the check fails, it's going to do something. All right?
+[00:48:42 -> 00:48:51] Then, when a store executes, okay, are we having fun yet?
+[00:48:51 -> 00:48:58] It's going to get much more interesting. When the store executes,
+[00:48:58 -> 00:49:01] you know the address the store is storing into.
+[00:49:01 -> 00:49:06] You will present that address to the ALAT.
+[00:49:06 -> 00:49:13] Okay? If the address matches an address in the ALAT,
+[00:49:13 -> 00:49:18] that entry is going to be made invalid.
+[00:49:18 -> 00:49:29] All right? Now, what this check does, this check instruction
+[00:49:29 -> 00:49:38] goes to the ALAT with F4 and says, is there a valid entry for F4?
+[00:49:38 -> 00:49:45] Okay? If there is, then no store occurring between the load and the check
+[00:49:45 -> 00:49:49] invalidated that entry corresponding to F4,
+[00:49:49 -> 00:49:54] which was the entry corresponding to the address that this load loaded from,
+[00:49:54 -> 00:50:01] which means there was no intervening store that wrote to the same address.
+[00:50:01 -> 00:50:04] Okay? Because if it wrote to the same address, it would have invalidated that
+[00:50:04 -> 00:50:12] entry and that check would fail. All right? So again,
+[00:50:12 -> 00:50:16] advance means you advance past some unknown store,
+[00:50:16 -> 00:50:20] processor stores the address and the register number of the advance
+[00:50:20 -> 00:50:27] loads in the ALAT. Later stores source the ALAT. If there is a matching address,
+[00:50:27 -> 00:50:31] invalidate the ALAT entry. This check instruction
+[00:50:31 -> 00:50:35] checks to make sure that the ALAT entry corresponding to,
+[00:50:35 -> 00:50:38] in this case, F4 is still valid. If it is,
+[00:50:38 -> 00:50:42] all is good. This speculation was correct.
+[00:50:42 -> 00:50:51] If it is, now you go and branch to some other repair code, instruction line.
+[00:50:51 -> 00:50:57] What that repair code looks like, I don't know. It's ugly.
+[00:50:57 -> 00:51:00] Yeah. And using things like restrict pointers
+[00:51:00 -> 00:51:04] and C code lets us do this optimization on computers that don't
+[00:51:04 -> 00:51:07] have these advance loads, right?
+[00:51:08 -> 00:51:12] So like using things like restrict pointers and C, which
+[00:51:12 -> 00:51:15] variously say like, oh these two pointers can't be the same, that lets
+[00:51:15 -> 00:51:18] us do this optimization on like a computer that doesn't have the advance
+[00:51:18 -> 00:51:24] load of the load before the store.
+[00:51:24 -> 00:51:31] Yes. Well no, if the compiler can know that
+[00:51:31 -> 00:51:34] the two addresses of a load and store are different, it can do the
+[00:51:34 -> 00:51:40] optimization regardless. How it knows it,
+[00:51:40 -> 00:51:44] if the semantics of the code are saying that's the case,
+[00:51:44 -> 00:51:47] or it actually can do a lot of compiler analysis, a lot of
+[00:51:47 -> 00:51:51] work has been done in compiler analysis to figure out
+[00:51:51 -> 00:51:57] whether two addresses are the same. Yeah.
+[00:51:57 -> 00:52:01] So during the store, we searched for the address on the register and if it
+[00:52:01 -> 00:52:04] is not found, we clear it. That means
+[00:52:04 -> 00:52:07] basically there was a collision, right? Like
+[00:52:07 -> 00:52:11] the ALAT was cleared while the store instruction was executed. So basically
+[00:52:11 -> 00:52:15] we will have to then non-speculatively execute the load
+[00:52:15 -> 00:52:22] again, right? Okay, so if this check did not find that,
+[00:52:22 -> 00:52:26] means that it was invalid in the ALAT,
+[00:52:26 -> 00:52:29] means it was a store of the same address, you don't have to jump to
+[00:52:29 -> 00:52:32] this repair code. This repair code is going to have to
+[00:52:32 -> 00:52:41] do all of that in order. Okay, like you said that if you
+[00:52:41 -> 00:52:45] have a very large program, right, and if it may
+[00:52:45 -> 00:52:49] span like multiple pages, then you might not want to keep your repair
+[00:52:49 -> 00:52:55] code which is by your trace. Trace analysis is not going to be,
+[00:52:55 -> 00:53:01] you know, frequently called. Then when you ever actually do hit these repair
+[00:53:01 -> 00:53:04] codes, that would mean a severe penalty because
+[00:53:04 -> 00:53:08] now you have to go to the OS, the OS will do its page-driven thing.
+[00:53:08 -> 00:53:12] The first time you hit it, you have to do all of that, but then
+[00:53:12 -> 00:53:16] it's there, at least in memory.
+[00:53:16 -> 00:53:24] Yeah, you know, it hurts. So if something hurts, you don't do it.
+[00:53:24 -> 00:53:29] But, you know, that's right.
+[00:53:29 -> 00:53:37] Yes, yes. How do we know that that check A at line A is
+[00:53:37 -> 00:53:40] in reference to five, line five? Couldn't we
+[00:53:40 -> 00:53:45] get ourselves in trouble where we say like we're loading an address, we're
+[00:53:45 -> 00:53:49] done with it, and we bump into the check, but we're
+[00:53:49 -> 00:53:54] really, you know, register for is doing something different now?
+[00:53:54 -> 00:54:04] Or am I... Do you understand this question? What are you saying? How do we know?
+[00:54:04 -> 00:54:09] How do we know the check? What does a check check?
+[00:54:09 -> 00:54:18] Basically. Someone will help me. The check only exists because we are
+[00:54:18 -> 00:54:25] advancing this door. No, but what does a check mean?
+[00:54:25 -> 00:54:32] Someone help me. So below the van stores the address registered pair, right?
+[00:54:32 -> 00:54:36] If there's a store to the address, then that validates the pair.
+[00:54:36 -> 00:54:39] So when you check the register that says no, that register pair is no longer
+[00:54:39 -> 00:54:44] valid. You check F4, which also means then,
+[00:54:44 -> 00:54:50] means that no other instruction can write into F4.
+[00:54:50 -> 00:54:55] But can we get false positives into you? I mean,
+[00:54:55 -> 00:54:58] which would just essentially send us down the repair code,
+[00:54:58 -> 00:55:04] but... No, because you aren't going to have to do
+[00:55:04 -> 00:55:07] instructions writing to the same register.
+[00:55:07 -> 00:55:21] This is also where like the strength of just-in-time compilation comes from,
+[00:55:21 -> 00:55:23] because if our trace is just completely wrong,
+[00:55:23 -> 00:55:27] we're going to be constantly going down the repair code. So being able to
+[00:55:27 -> 00:55:30] redo this when time comes sort of helps a lot.
+[00:55:30 -> 00:55:33] And this has actually been one of the points of
+[00:55:33 -> 00:55:37] just-in-time compilation is to actually change the code
+[00:55:37 -> 00:55:52] dynamically. That also has overrides. Okay. Other questions about this?
+[00:55:52 -> 00:56:04] It's just beginning, by the way. All right. Okay. So what we did do is we
+[00:56:04 -> 00:56:08] moved instruction five and six before four.
+[00:56:08 -> 00:56:18] Now I want to move five and six even before this branch
+[00:56:18 -> 00:56:30] before one. All right. What is it I'm trying to do basically?
+[00:56:30 -> 00:56:39] This is five and six. I'm trying to move it above this branch.
+[00:56:39 -> 00:56:44] Okay. Actually, in this case, this load was executed regardless of which
+[00:56:44 -> 00:56:55] direction the branch went. So executing it before the branch.
+[00:56:55 -> 00:57:03] However, you know, you don't... That is not necessarily the case,
+[00:57:03 -> 00:57:11] and we will see next. Okay. What we don't want to do
+[00:57:11 -> 00:57:21] is we don't want to move this store before this branch. Okay.
+[00:57:21 -> 00:57:26] What am I saying over here is I don't want to move this store before this
+[00:57:26 -> 00:57:30] branch over here. Because if the branch goes up this
+[00:57:30 -> 00:57:37] path, this store is not taken. Importantly, anytime you do a
+[00:57:37 -> 00:57:45] store, it's writing something to memory. So if I want to undo this store,
+[00:57:45 -> 00:57:50] it gets... Once I have written something to memory, it becomes much more complicated.
+[00:57:50 -> 00:57:55] Okay. Further, importantly, when you see many have a multi-process,
+[00:57:55 -> 00:58:01] this store can trigger a coherence event.
+[00:58:01 -> 00:58:04] So we never want to write to memory unless we
+[00:58:04 -> 00:58:10] in a speculative manner. You only want to write to memory when we
+[00:58:10 -> 00:58:15] know that's going to have to happen. Okay. But now if you did all of this,
+[00:58:15 -> 00:58:18] hey, you know, we got three instructions between the multiply and the store.
+[00:58:18 -> 00:58:31] Let us say now the branch had the opposite bias over here.
+[00:58:31 -> 00:58:36] Okay. So this was the path that was taken 95 percent of the time. This was
+[00:58:36 -> 00:58:43] taken 5 percent of the time. So we create a block AVD, and then
+[00:58:43 -> 00:58:50] we have repair code of CD. Okay. So we create the super block
+[00:58:50 -> 00:58:56] of, you know, with 0, 1, 2, 5, 6, 7,
+[00:58:56 -> 00:59:00] and then the repair code will have 4, 5, 6, 7.
+[00:59:00 -> 00:59:07] Okay. But now this branch sense has unchanged because this is now from the...
+[00:59:07 -> 00:59:10] If this branch is taken, you will go and execute the repair code.
+[00:59:10 -> 00:59:24] Okay. Now let us try and schedule this super block. So we want to execute
+[00:59:24 -> 00:59:29] this super block over here. Okay. What's now... We want to move this
+[00:59:29 -> 00:59:34] multiply before the store. Before, you know, separated from the store.
+[00:59:34 -> 00:59:39] This multiply. This load is providing an input to this multiply.
+[00:59:39 -> 00:59:42] This load is providing another input to this multiply.
+[00:59:42 -> 00:59:46] So we also have to move the two loads earlier.
+[00:59:46 -> 00:59:49] And the only place earlier we can move them
+[00:59:49 -> 00:59:55] is before this branch instruction. Okay.
+[00:59:55 -> 01:00:01] So we move the 2, 5, and 6 above instruction 1.
+[01:00:01 -> 01:00:04] And this branch instruction was checking F2.
+[01:00:04 -> 01:00:08] This load was writing into F2. That becomes a write after read hazard.
+[01:00:08 -> 01:00:11] So what we're going to do now is we're going to change the name
+[01:00:11 -> 01:00:19] of this F2 to F8, and this multiply then gets F8 over here.
+[01:00:19 -> 01:00:33] Okay. Is this movement fine? Okay. Store is not writing anything
+[01:00:33 -> 01:00:39] incorrect to memory, so that's okay. Okay. Load is reading something,
+[01:00:39 -> 01:00:44] and if I don't do anything with what I read,
+[01:00:44 -> 01:00:51] that seems okay. Okay. But what if I have a
+[01:00:51 -> 01:01:00] fault in one of the instructions that I had moved before? Okay.
+[01:01:00 -> 01:01:08] So what I'm saying is that, okay, is I am moving at instruction this load
+[01:01:08 -> 01:01:23] to before this branch, and it had a fault.
+[01:01:23 -> 01:01:29] Say you have a software writer. Wrote this piece of code, and you know,
+[01:01:29 -> 01:01:34] you had some assertions over here before you did the load
+[01:01:34 -> 01:01:38] to make sure it wasn't loading from a bad address.
+[01:01:38 -> 01:01:42] Okay. And that's what you do. Hey, you know, make sure that code is correct.
+[01:01:42 -> 01:01:45] This load could load from bad address. Do the checks to make sure the
+[01:01:45 -> 01:01:49] load is not loading from a bad address, just like you do a, you know,
+[01:01:49 -> 01:01:54] check to see if x equal to zero before you do y divided by x.
+[01:01:54 -> 01:02:02] Okay. You've done all of that, and you have a fault. Code's not.
+[01:02:02 -> 01:02:07] Okay. What do you do? You're never going to buy that piece of
+[01:02:07 -> 01:02:14] junk again. So this is, you know, when some of these things are
+[01:02:14 -> 01:02:17] closely saying this, who's going to be responsible for the error
+[01:02:17 -> 01:02:23] when something like that happens? Okay. So what you have to do instead now
+[01:02:23 -> 01:02:30] is you say that this load is, what is it, a
+[01:02:30 -> 01:02:36] speculative load, means it advanced past some unknown branch.
+[01:02:36 -> 01:02:46] All right. So what a speculative load does is it does the load,
+[01:02:46 -> 01:02:52] okay, right into the register. But if it has an exception,
+[01:02:52 -> 01:02:57] the exception is not recognized for that load instruction at that point.
+[01:02:57 -> 01:03:01] Instead, you send a bit in their destination register,
+[01:03:01 -> 01:03:07] saying an exception occurred for this register.
+[01:03:07 -> 01:03:15] Okay. Then at the original position of the load,
+[01:03:15 -> 01:03:19] you have a check speculative instruction
+[01:03:19 -> 01:03:25] which checks F8. If the exception bit of F8 is not set,
+[01:03:25 -> 01:03:30] all is good. If the exception bit is set,
+[01:03:30 -> 01:03:34] then this load caused an exception, and that this is the place where the
+[01:03:34 -> 01:03:46] exception should be recognized. And if there is an exception, then you
+[01:03:46 -> 01:03:56] have to jump to some more repair. I-8-64 also
+[01:03:56 -> 01:04:03] contains a speculative and advanced load, and
+[01:04:03 -> 01:04:07] that's why you need many more outputs too.
+[01:04:07 -> 01:04:15] Okay. Questions about this? Very interesting stuff.
+[01:04:15 -> 01:04:18] So as long as you don't have to do it. Yeah. So then
+[01:04:18 -> 01:04:22] so the exception is checked for first, but
+[01:04:22 -> 01:04:27] if it was there, it was executed later.
+[01:04:27 -> 01:04:30] The exception occurred, remember now, when we even talked about
+[01:04:30 -> 01:04:36] previously in my simple point. You can get an exception, but not
+[01:04:36 -> 01:04:39] recognized until later. That's what we did. Even in the end
+[01:04:39 -> 01:04:43] order pipeline, if I had a bad opcode in decode,
+[01:04:43 -> 01:04:47] I don't recognize it till the end of the pipeline.
+[01:04:47 -> 01:04:51] Okay, if I had an arithmetic overflow or
+[01:04:51 -> 01:04:54] whatever it is, I don't recognize it till the end of the pipeline.
+[01:04:54 -> 01:04:59] So here the exception is occurring in the processing of the load,
+[01:04:59 -> 01:05:15] but it's not recognized until the check instruction.
+[01:05:15 -> 01:05:19] So then this is, you know, dealing with the paper you just reviewed,
+[01:05:19 -> 01:05:24] is what if the branches are not biased in one way? They can happen
+[01:05:24 -> 01:05:28] both ways. Then what you do is you carry out
+[01:05:28 -> 01:05:34] what is called predicated execution. So what you do is instead of this
+[01:05:34 -> 01:05:37] branch instruction over here, you have an instruction which sets a predicate
+[01:05:38 -> 01:05:43] based on this condition. It sets a predicate,
+[01:05:43 -> 01:05:49] zero or one. If the branch is not taken
+[01:05:49 -> 01:05:52] and the predicate is zero, then these instructions
+[01:05:52 -> 01:05:57] are executed subject to the predicate.
+[01:05:57 -> 01:06:01] Subject to the predicate means the instructions are executed,
+[01:06:01 -> 01:06:05] but if the predicate is not true, then that instruction dynamically
+[01:06:05 -> 01:06:13] becomes a no-op, okay? So with predication,
+[01:06:13 -> 01:06:18] I'm going to have basically, you know, set a predicate, compare this condition,
+[01:06:18 -> 01:06:23] set an outcome of the condition in this predicate register over here,
+[01:06:23 -> 01:06:26] okay, P1. Then this load instruction is going to
+[01:06:26 -> 01:06:31] take place. The load is going to be a load. If this predicate is true,
+[01:06:31 -> 01:06:40] the load is going to be a no-op if the predicate is true, okay?
+[01:06:40 -> 01:06:44] And this load is going to happen if this predicate is
+[01:06:44 -> 01:06:48] false, P1 is false, so not predicated is true,
+[01:06:48 -> 01:06:57] and this load is not going to happen if the predicate is true.
+[01:06:57 -> 01:07:00] So you can use what is this predicated execution where you
+[01:07:00 -> 01:07:05] conditionally execute instructions that are fetched
+[01:07:05 -> 01:07:10] unconditionally. So I'm actually going to fetch all the instructions, decode
+[01:07:10 -> 01:07:13] all these instructions, even execute them,
+[01:07:13 -> 01:07:16] but actually maybe only conditionally write back the results of unrecognized
+[01:07:16 -> 01:07:23] extensions. So you can have full predication that
+[01:07:23 -> 01:07:27] every instruction can be executed with a predicate. IA 64 does that,
+[01:07:27 -> 01:07:35] ARM also has that. Okay, and for a while predicated execution
+[01:07:35 -> 01:07:37] was, hey, you know, I have branches, this is a way to
+[01:07:37 -> 01:07:40] try and deal with them. Let me try and actually see
+[01:07:40 -> 01:07:45] how I can bring in predicated execution
+[01:07:45 -> 01:07:52] into a conventional ISA. Okay, so here's how they did that.
+[01:07:52 -> 01:07:56] What they did is, what predicated execution is saying is, look,
+[01:07:56 -> 01:08:02] you are moving, you are executing instructions from both paths.
+[01:08:02 -> 01:08:08] Okay, and so say that I had a add instruction here that wrote
+[01:08:08 -> 01:08:12] into R2 from this path, an add instruction that
+[01:08:12 -> 01:08:18] wrote into R2 on this path. Okay, and then an add instruction that
+[01:08:18 -> 01:08:24] reads R2 over here. Okay, so the R2 that this add
+[01:08:24 -> 01:08:29] instruction reads is either this R2 or this R2.
+[01:08:29 -> 01:08:32] I don't know, based on the predicate. Okay,
+[01:08:32 -> 01:08:37] and I don't have predication. So what I can do is,
+[01:08:37 -> 01:08:42] I can execute this add instruction, have it
+[01:08:42 -> 01:08:53] right into R10 and this instruction right into R11.
+[01:08:53 -> 01:08:59] Okay, and then have a conditional move instruction over here
+[01:08:59 -> 01:09:02] which will conditionally move either R10 or R11
+[01:09:02 -> 01:09:13] to R2 based on this condition over here. Are you with me on that?
+[01:09:14 -> 01:09:18] What's the benefit of this over just having a pipeline that just
+[01:09:18 -> 01:09:22] speculatively executes operations and then knocks them out when the branch is
+[01:09:22 -> 01:09:26] decided? Because both paths are
+[01:09:26 -> 01:09:31] equally likely. So what I'm doing is I'm only
+[01:09:31 -> 01:09:36] executing instructions from one path, so I'll be wrong half the time.
+[01:09:36 -> 01:09:39] In a sense, what predication is saying is, hey, you know, if I'm going
+[01:09:39 -> 01:09:43] to be wrong half the time, just do extra work from both paths
+[01:09:43 -> 01:09:54] and then we'll figure it out later on. Okay?
+[01:09:54 -> 01:10:01] Okay, so, you know, this requires some, you know, code duplication.
+[01:10:01 -> 01:10:03] So like I gave you the example, you know,
+[01:10:03 -> 01:10:09] based on, you can have some, you know, conditional moves over there.
+[01:10:09 -> 01:10:13] And there are different forms of those instruction people.
+[01:10:13 -> 01:10:17] And the technique of basically taking these if
+[01:10:17 -> 01:10:22] then else pieces of code, okay, and creating them into predicated code is
+[01:10:22 -> 01:10:24] what is called if conversion where you are
+[01:10:24 -> 01:10:29] replacing a control dependence with a data
+[01:10:29 -> 01:10:33] dependence. Okay, you're replacing control with
+[01:10:33 -> 01:10:36] predication, and I won't go more into that. The compiler people
+[01:10:36 -> 01:10:42] have, you know, a lot of work on that. So, okay,
+[01:10:42 -> 01:10:45] now let me briefly talk about the ISA support for
+[01:10:45 -> 01:10:51] predicated execution. So, you know, again, this was this piece of code.
+[01:10:51 -> 01:10:55] What I'm going to do is I'm going to have an instruction that sets a
+[01:10:55 -> 01:11:00] predicate register, P1's a predicate register, and IA64 has
+[01:11:00 -> 01:11:06] 64 predicate registers. Okay, and then these instructions,
+[01:11:06 -> 01:11:10] this instruction or this instruction, two or four is going to execute
+[01:11:10 -> 01:11:14] based on the value of this predicate register, whether the predicate is
+[01:11:14 -> 01:11:18] true or predicate is not true, only one of them is going to execute.
+[01:11:18 -> 01:11:22] And these instructions are as simple. So what we've done is
+[01:11:22 -> 01:11:25] we've actually fused all these four blocks
+[01:11:25 -> 01:11:29] and used predication to conditionally execute
+[01:11:29 -> 01:11:32] instructions in either block B or block C.
+[01:11:32 -> 01:11:36] And once I have this fused block then I can use my other techniques that
+[01:11:36 -> 01:11:40] I talked about with advanced loads and particularly
+[01:11:40 -> 01:11:45] executed loads, because not every branch I'm going to necessarily use
+[01:11:45 -> 01:11:49] this is for the, you know, branches that are
+[01:11:49 -> 01:11:57] not biased in one direction. What happens if branches have calls?
+[01:11:57 -> 01:12:06] What happens if branches have calls? Okay, actually
+[01:12:06 -> 01:12:15] let me step back. We can start the conversation now, but we're going to
+[01:12:15 -> 01:12:21] continue next time, so please mind we have this time next time.
+[01:12:21 -> 01:12:23] So we've talked about all this, I'm going to move this code from here,
+[01:12:23 -> 01:12:27] move it there, and advance it past this load, and do this, and so on,
+[01:12:27 -> 01:12:37] yada, yada, yada, okay? Procedures are natural boundaries,
+[01:12:37 -> 01:12:45] outside of which I cannot move code easily.
+[01:12:45 -> 01:12:49] So the branch, you know, I think we can finish this discussion,
+[01:12:49 -> 01:12:52] okay? So that greatly limits, you know,
+[01:12:52 -> 01:12:57] the scope in which I can sketch it. When we talk about dynamic schedule, it
+[01:12:57 -> 01:13:00] won't care if it comes from the procedure, it won't just move on,
+[01:13:00 -> 01:13:03] just another stupid set of bits, that's all, okay?
+[01:13:03 -> 01:13:09] And so if now you have a branch that had a call,
+[01:13:09 -> 01:13:14] well, the brace, the basic block, ends at that call,
+[01:13:14 -> 01:13:18] and it's not going to do anything beyond that call.
+[01:13:18 -> 01:13:21] That kind of limits the compiling, I think.
+[01:13:21 -> 01:13:27] It absolutely limits the compiler, but then, you know, they have come up
+[01:13:27 -> 01:13:32] with clever techniques of doing, and then further, then you also have
+[01:13:32 -> 01:13:37] you know, an interprocedural analysis to try and figure out if the stores are
+[01:13:37 -> 01:13:39] one procedure and the loads are a different procedure,
+[01:13:39 -> 01:13:43] when, you know, with the procedure it's going to be a little more trusty, easier,
+[01:13:43 -> 01:13:48] and, but you know, see, the one thing that you will learn
+[01:13:48 -> 01:13:55] over the years is the last one, okay?
+[01:13:55 -> 01:13:59] And when you're saying, oh yeah, the procedure limits the boundary, and
+[01:13:59 -> 01:14:02] yeah, maybe it does, they'll come up with some clever
+[01:14:02 -> 01:14:05] techniques where you can do it in certain cases,
+[01:14:05 -> 01:14:09] and they have. But otherwise, the procedure is a natural
+[01:14:09 -> 01:14:13] one.

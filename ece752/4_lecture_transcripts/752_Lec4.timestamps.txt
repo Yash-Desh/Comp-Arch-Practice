@@ -1,0 +1,1094 @@
+Title: 752_Lec4
+Source file: 752_Lec4.m4a
+Detected language: en
+------------------------------------------------------------
+
+[00:00:01 -> 00:00:16] So, we can reduce this VDD, and C is reducing the number of transistors, what's the point
+[00:00:16 -> 00:00:23] of having more transistors if you want to just not use even fewer than you were using.
+[00:00:23 -> 00:00:28] The third option is F, if you reduce the clock frequencies, it's going to reduce this
+[00:00:28 -> 00:00:31] term linearly, static power, dynamic power linearly.
+[00:00:31 -> 00:00:38] It doesn't know anything about reducing the static power, but it also then reduces performance
+[00:00:38 -> 00:00:41] sort of linearly.
+[00:00:41 -> 00:00:47] The same circuit with the same CPI, same design with the same CPI, if you reduce the frequency
+[00:00:47 -> 00:00:54] linearly, then the performance is coming up.
+[00:00:54 -> 00:01:00] So typically, if you want to reduce F, you also try and reduce this VDD, so you
+[00:01:00 -> 00:01:07] actually get the multiplicative reduction of power.
+[00:01:07 -> 00:01:13] So what this leads to then is now a technique that is very widely used, which is called
+[00:01:13 -> 00:01:17] dynamic voltage frequency scaling.
+[00:01:17 -> 00:01:25] So when you need the performance, you run with a high voltage and a high frequency,
+[00:01:25 -> 00:01:31] and then when you don't need the performance, you reduce the voltage, go down to low
+[00:01:31 -> 00:01:35] power and you reduce the frequency.
+[00:01:35 -> 00:01:44] So this is just some example of processors where you can have the designs allow the
+[00:01:44 -> 00:01:51] frequency to be varied in a certain range and get it 50 MHz steps, and the voltage
+[00:01:51 -> 00:02:00] also to be varied, and you can operate in a high speed mode at such performance
+[00:02:00 -> 00:02:07] and so many watts or a low power mode at this performance and so many watts over here.
+[00:02:07 -> 00:02:14] This kind of, you know, DVFS as they call it, dynamic voltage scaling is also frequency,
+[00:02:14 -> 00:02:20] so it's DVFS, dynamic voltage frequency scaling is routinely used to try and control
+[00:02:20 -> 00:02:25] the power.
+[00:02:25 -> 00:02:32] So what else now you can use is you can, you know, reduce the power by having other
+[00:02:32 -> 00:02:33] modes.
+[00:02:33 -> 00:02:37] There's a, you know, common as a standby mode where what you're turning off the
+[00:02:37 -> 00:02:41] internal clock, so you know, the F goes to zero, the circuit, that circuit is
+[00:02:41 -> 00:02:44] not having the dynamic swings, okay.
+[00:02:44 -> 00:02:50] It cuts dynamic power linearly, but it doesn't affect static power, and you know,
+[00:02:50 -> 00:02:55] you see in machines, you know, every laptop has these standby modes, or you can
+[00:02:55 -> 00:03:00] actually have a sleep mode where you actually turn off power, where you also
+[00:03:00 -> 00:03:06] then stop the consumption of static power, okay.
+[00:03:06 -> 00:03:09] So you know, these kind of modes are, you know, frequently used, and you
+[00:03:09 -> 00:03:15] know, one of the things that we, when we talk about, when we talk about
+[00:03:15 -> 00:03:20] execution and speculation and branch prediction and something like that, you know, we'll
+[00:03:20 -> 00:03:27] see there's a fair amount of extra work done that you throw away, okay, and the
+[00:03:27 -> 00:03:33] first thing that comes to your mind is, oh, you know, okay, if I'm throwing away
+[00:03:33 -> 00:03:41] work and it took, you know, energy to carry out that work, I'm wasting energy
+[00:03:41 -> 00:03:49] you know, you know, having a worse power outcome, okay, but the whole point of all
+[00:03:49 -> 00:03:53] that speculation and so on is going to be able to go faster, reduce the time,
+[00:03:53 -> 00:04:02] increase the IPC, reduce the CPI, to get the program finished faster, okay,
+[00:04:02 -> 00:04:08] and so, you know, when for mobile devices, where you know, power and
+[00:04:08 -> 00:04:13] energy are a big deal, okay, there was a lot of, you know, debate about, hey, do I
+[00:04:13 -> 00:04:17] want to have this out-of-order execution and speculation when I'm
+[00:04:17 -> 00:04:22] throwing away, given that I have a very small energy budget, okay, in my
+[00:04:22 -> 00:04:28] battery, and the counter argument which prevailed was, okay, no, but you
+[00:04:28 -> 00:04:33] know, I'm getting out speculation, maybe throwing out stuff, but getting the
+[00:04:33 -> 00:04:39] program executed faster, so, you know, I can do what is called run to stop, run and
+[00:04:39 -> 00:04:43] get it done faster, and then go into low power mode and also put my other
+[00:04:43 -> 00:04:49] components in low power mode, okay, so the overall energy consumed is going to be
+[00:04:49 -> 00:05:03] less, okay, so another parameter that, you know, in certain environments we have
+[00:05:03 -> 00:05:08] to take into consideration is reliability, and you know, reliability
+[00:05:08 -> 00:05:12] is, you know, whether a device is, you know, good or bad, operating correctly or
+[00:05:12 -> 00:05:17] not, but, you know, you know, more interesting is what is called
+[00:05:17 -> 00:05:23] availability is, do I have some device to be, you know, can I, is there
+[00:05:23 -> 00:05:29] resource availability for me to actually carry out work, okay, now, you know,
+[00:05:29 -> 00:05:37] you know, this is a very common, you know, important metric in large data
+[00:05:37 -> 00:05:42] centers and the like, where, you know, for reliability, the metrics you use,
+[00:05:42 -> 00:05:46] there are two metrics, one is sort of the, an availability is mean time to
+[00:05:46 -> 00:05:55] failure MTTF, and then there's also mean time to repair MTTR, okay, so if I
+[00:05:55 -> 00:05:58] have an environment where I have only one device, if it fails, okay, you know,
+[00:05:58 -> 00:06:04] I'm out of luck in some sense, okay, but if I have two devices and one fails, the
+[00:06:04 -> 00:06:10] other one's still available, and if I can repair it and get back to having two,
+[00:06:10 -> 00:06:16] then I have those two available and I only don't have something available
+[00:06:16 -> 00:06:23] when both of them have failed, okay, so, you know, this redundancy, having a
+[00:06:23 -> 00:06:29] second device is critical for masking failures and allowing, allowing, you
+[00:06:29 -> 00:06:38] know, allowing to have the availability of functioning devices, so, you know, if I
+[00:06:38 -> 00:06:42] have a mean time to failure of one unit of three years and a mean time to
+[00:06:42 -> 00:06:46] repair of one day, if something goes bad and only takes me a day to fix it,
+[00:06:46 -> 00:06:51] okay, the mean time to failure of one of two units is going to be, you
+[00:06:51 -> 00:06:58] know, one of those two is going to fail one and a half years, okay, but if I can
+[00:06:58 -> 00:07:03] repair the one that failed in a day, then the mean time to failure of both is
+[00:07:03 -> 00:07:07] actually, you know, the mean time to failure of one divided by, you know, this mean time to
+[00:07:07 -> 00:07:13] repair divided by the mean time to failure, it ends up being quite large. The point being is if I have
+[00:07:13 -> 00:07:21] redundancy, okay, I can continue to have a fair amount of availability and, you know,
+[00:07:21 -> 00:07:27] what availability that I have depends upon how many to one, MTTR, MTTF, and the
+[00:07:27 -> 00:07:33] number of devices, etc, etc. This is again, you're just sort of giving your bird's
+[00:07:33 -> 00:07:38] eye view of one of the, you know, of some other metrics that get considered in
+[00:07:38 -> 00:07:49] design, especially of big systems. Okay, so, for, you know, how is
+[00:07:49 -> 00:08:00] technology scaling impacting reliability? Now, you know, see, as I have
+[00:08:00 -> 00:08:08] smaller and smaller devices, okay, the probability of failure increases, okay,
+[00:08:08 -> 00:08:17] and, you know, one is the device is defective, okay, and we are not, you
+[00:08:17 -> 00:08:23] know, that's a separate issue, okay, but, you know, redundancy is also going to be
+[00:08:23 -> 00:08:28] used to deal with some of that, and I can give you some examples as you go along,
+[00:08:28 -> 00:08:37] but more interestingly is transient failures, where something is temporarily
+[00:08:37 -> 00:08:46] incorrect and comes back working, okay, so the more devices I have, the
+[00:08:46 -> 00:08:53] higher the probability of getting a failure, okay. The closer the device is
+[00:08:53 -> 00:09:00] operating to a margin, the higher the probability of getting a failure, okay. So,
+[00:09:00 -> 00:09:06] DRAMs are filled with lots and lots of transistors, small transistors, and
+[00:09:06 -> 00:09:11] the capacitance that I'm using over there, you know, the charge at that
+[00:09:11 -> 00:09:16] capacitance is not very different from the charge of maybe, you know,
+[00:09:16 -> 00:09:25] particle strike in it, so DRAMs were first to try and basically, you know, it
+[00:09:25 -> 00:09:29] was known that if I had DRAMs in a space environment where there's a lot
+[00:09:29 -> 00:09:34] of, you know, alpha particles and so on, I need to have reliability, but, you
+[00:09:34 -> 00:09:37] know, these days, even in just ordinary, you know, down-to-earth
+[00:09:37 -> 00:09:43] environments, okay, you can have these particle strikes that can knock out a
+[00:09:43 -> 00:09:51] bit in a DRAM, okay. Also, because the power density increases the temperature,
+[00:09:51 -> 00:09:56] okay, so the temperature also, you know, you can make the devices less
+[00:09:56 -> 00:10:02] reliable. So, DRAMs, even when they are built, you know, they already have
+[00:10:02 -> 00:10:07] phenomena defects, and inside the chip they are built with redundancy, and
+[00:10:07 -> 00:10:10] when we talk a little bit about memory, I'll talk a little bit about, you
+[00:10:10 -> 00:10:19] know, the example redundancy you can use, okay, but, you know, other logic elements
+[00:10:19 -> 00:10:24] are getting to be less and less reliable these days. So, you know, in the last
+[00:10:24 -> 00:10:29] few years, one of the big things that people, you know, people operating big
+[00:10:29 -> 00:10:34] data centers have been talking about is they say, hey, we have these silent
+[00:10:34 -> 00:10:40] data errors that are happening where the hardware, you know, does something
+[00:10:40 -> 00:10:46] wrong, but it does it, you know, temporarily, and then the error goes
+[00:10:46 -> 00:10:55] away, but you have a silent data error, okay. No one understands when they
+[00:10:55 -> 00:11:00] occur, how they occur, and my response when I first heard that, you
+[00:11:00 -> 00:11:06] probably have a software bug that you don't know about, okay, but, you know, they say,
+[00:11:06 -> 00:11:10] no, we have these silent hardware data errors, we don't know, that's what they
+[00:11:10 -> 00:11:15] are, but they are manifesting as silent hardware data errors because we have just so many
+[00:11:15 -> 00:11:25] devices back in a, you know, relatively small environment, operating in, you
+[00:11:25 -> 00:11:32] know, quite extremes, if you will. Okay, so, you know, the key to providing a
+[00:11:32 -> 00:11:38] reliable release is to have redundancy, and the scaling that makes the device less
+[00:11:38 -> 00:11:43] reliable also gives us more devices, okay, and I can use those additional
+[00:11:43 -> 00:11:50] devices also to improve the reliability, and you probably all have
+[00:11:50 -> 00:11:55] seen error-correcting codes for DRAMs, and, you know, people are
+[00:11:55 -> 00:11:59] employing error-correcting codes even for caches and even, you know, record
+[00:11:59 -> 00:12:09] profiles and so on. Okay, so this is just to sort of summarize what we looked
+[00:12:09 -> 00:12:16] at in this chapter, is, you know, device scaling increases performance by
+[00:12:16 -> 00:12:21] reducing transistor and wire delay having faster transistors, and giving
+[00:12:21 -> 00:12:27] us more transistors with which to reduce the CPI. This part reduces the
+[00:12:27 -> 00:12:34] clock frequency, increases the clock frequency, sorry, reduces the clock cycle. It reduces
+[00:12:34 -> 00:12:38] local power consumption, but that is quickly undone by increased number of
+[00:12:38 -> 00:12:45] devices. It aggravates the power density and temperature problems. It aggravates
+[00:12:45 -> 00:12:49] the reliability problem, but gives us more transistors to solve it by
+[00:12:49 -> 00:12:58] redundancy. It reduces unit cost, but it increases startup cost, okay. Now, you know,
+[00:12:58 -> 00:13:03] I've been around for quite a while, and I've been hearing about the end of Moore's
+[00:13:03 -> 00:13:11] law for at least 20 years, okay, and it seems to keep going, and now people
+[00:13:11 -> 00:13:18] are convinced, now it's really going to end. We'll see. Okay, we'll probably go on for a few years, okay,
+[00:13:18 -> 00:13:29] because, because what comes after that, that's not clear, okay, but, you know,
+[00:13:29 -> 00:13:33] if it does go, you know, if it does, it is definitely slowing down. If it does stop,
+[00:13:33 -> 00:13:40] then we just have to come up with more clever ways to try and get performance
+[00:13:40 -> 00:13:54] improvement and energy reductions and so on. Questions? I know you said we
+[00:13:54 -> 00:13:58] don't really need to know, but why is the static power grow exponentially?
+[00:13:58 -> 00:14:06] Is it, like, leaks across the transistor? Is it sending more current through, or? No, no, no, no, no.
+[00:14:06 -> 00:14:25] We had an order paper a few, a couple of decades ago on the back-up static power, it's been alive.
+[00:14:25 -> 00:14:32] That's, yes, the characteristics of the device. I'm cool with that. Yeah.
+[00:14:32 -> 00:14:36] Adam Butzen, I had an order paper on this too, on actually the implications,
+[00:14:36 -> 00:14:43] we actually had orders to, you know, assess the impact and so on like that.
+[00:14:43 -> 00:15:02] So, okay, now let's go into the next unit where we talk a little bit about
+[00:15:02 -> 00:15:12] instruction set architecture. So what is an instruction set? The instruction set is the
+[00:15:12 -> 00:15:19] interface between the software and the hardware, okay. It's very well defined,
+[00:15:19 -> 00:15:25] okay. It's the contract between the software and the hardware. It's basically, you know,
+[00:15:25 -> 00:15:32] the software is saying, hey, hardware, do this, and the hardware is saying, I'm going to do that,
+[00:15:32 -> 00:15:40] okay. And if the hardware does what it's supposed to, the instruction set, correctly,
+[00:15:40 -> 00:15:50] okay, then the software is going to work correctly, okay. So this is the contract,
+[00:15:50 -> 00:15:58] and it's just a functional definition, and a very precise description of what to do,
+[00:15:58 -> 00:16:08] but no guarantees as to how to do it, okay. And so the instruction set does not tell you
+[00:16:08 -> 00:16:16] how the operation is implemented, which operations are fast and which are slow, okay,
+[00:16:16 -> 00:16:22] or which operations take more power and which operations take less power, okay.
+[00:16:22 -> 00:16:27] You know, you could have a instruction set that has an integer addition and has a floating
+[00:16:27 -> 00:16:35] point addition, okay, and there is no guarantee that the integer addition instruction
+[00:16:35 -> 00:16:41] will be faster than the floating point addition instruction. Probably it is, okay,
+[00:16:41 -> 00:16:45] but there is no guarantee, because the hardware could decide, oh, I'm going to implement the
+[00:16:45 -> 00:16:50] floating point instruction set this way, and oh, for integer addition, I'll take my own sweet
+[00:16:50 -> 00:16:56] time doing it bit by bit. It would be a nonsensical thing to do, but it could do it.
+[00:16:56 -> 00:17:05] There is no guarantee of it, okay. And instruction set, it's, you know, there's a language
+[00:17:05 -> 00:17:13] analogy analogous to languages of human communication. So the, you know, human
+[00:17:13 -> 00:17:19] language, you are communicating person to person, and ISA is communicating hardware
+[00:17:19 -> 00:17:28] to software, okay, or vice versa. And you need to be able to speak the same language
+[00:17:28 -> 00:17:32] to understand each other. You can drive it this way, that way, you know, you may
+[00:17:32 -> 00:17:38] get a little understanding, but not quite, okay, a full understanding. And so very
+[00:17:38 -> 00:17:46] similarly, the hardware and the software need to talk the same ISA. There are many
+[00:17:46 -> 00:17:51] aspects that are common amongst different languages. Different languages have verbs,
+[00:17:51 -> 00:17:58] nouns, adjectives, adverbs, very similarly, different ISAs have operations for common
+[00:17:58 -> 00:18:06] calculation, operations of control, branch, operations for memory. And you have many
+[00:18:06 -> 00:18:12] different languages and ISAs, they have many similarities, many differences, okay,
+[00:18:12 -> 00:18:19] but, you know, they also have different structures. They both evolve over time,
+[00:18:19 -> 00:18:27] okay. You know, the Oxford Dictionary, the good old, you know, it's not online,
+[00:18:27 -> 00:18:35] but keeps getting new words added to it all the time. The key difference is that
+[00:18:35 -> 00:18:40] ISAs must be unambiguous, and of course, they're going to be explicitly
+[00:18:40 -> 00:18:46] engineered and extended languages, you know, whatever. They evolve in
+[00:18:46 -> 00:18:58] arbitrary ways. Okay, so this is our performance equation, instruction per
+[00:18:58 -> 00:19:04] program times cycles, but instruction times seconds per cycle. And we will see
+[00:19:04 -> 00:19:13] when instruction sets started out early on, and why they evolved that way, is
+[00:19:13 -> 00:19:19] that the instruction, each instruction in the ISA was complex. It had many
+[00:19:19 -> 00:19:29] operations, okay, and what this, you know, complex instruction did is it allowed
+[00:19:29 -> 00:19:36] for one, the program written in the instruction set to be quite close to a
+[00:19:36 -> 00:19:44] high-level language program, if you will, okay, and it was easier for
+[00:19:44 -> 00:19:49] people writing, you know, who was writing programs, it was humans writing
+[00:19:49 -> 00:19:54] maybe assembly language programs and so on like that. In a sense, it was easier
+[00:19:54 -> 00:20:04] for that. It was also good for code density, okay. And then as you had more
+[00:20:04 -> 00:20:16] devices, as you had more devices, then, you know, the intention was to, as
+[00:20:16 -> 00:20:24] you had more devices, you could have more space for instructions in your memory,
+[00:20:24 -> 00:20:33] okay. So the code density became less of a concern, all right, and the
+[00:20:33 -> 00:20:39] programs were being written not by humans in assembly language, but by
+[00:20:39 -> 00:20:48] created not by humans, but by compiler, okay. And the intention was, okay, you
+[00:20:48 -> 00:20:54] know, I'm going to, what I want to do is improve performance, so I want to
+[00:20:54 -> 00:21:00] try and improve these cycles for instruction, and the increase, you know,
+[00:21:00 -> 00:21:06] by having many smaller, simpler instructions that did less work, okay.
+[00:21:06 -> 00:21:11] But I increased the number of instructions. Hopefully, this increase
+[00:21:11 -> 00:21:16] wasn't enough to negate this improvement in the cycles for
+[00:21:16 -> 00:21:22] instruction, and hopefully this also reduced the, you know, clock cycle time,
+[00:21:22 -> 00:21:29] okay. So we'll, you know, what I just talked about, we'll see it in more
+[00:21:29 -> 00:21:39] detail in just a little while, each aspect of that, okay. So you're designing
+[00:21:39 -> 00:21:47] an instruction set, okay, and you know, I mean, like I said a couple of
+[00:21:47 -> 00:21:53] lectures ago, people think, hey, you know, there's an instruction set, and
+[00:21:53 -> 00:21:57] nobody else is going to ever design a new instruction set, because there's
+[00:21:57 -> 00:22:06] no need until someone, until there is a need, okay, all right. And in fact, you
+[00:22:06 -> 00:22:10] know, one of you had a homework one question, the last is ask you about the
+[00:22:10 -> 00:22:17] RISC-V ISA, which sort of came about very recently, you know, and, you
+[00:22:17 -> 00:22:21] know, why did it come about? Simply because a lot of people didn't want to
+[00:22:21 -> 00:22:26] pay the licensing fees to ARM to license their ISA, and a variety of
+[00:22:26 -> 00:22:36] other reasons to, okay. So what are the issues that go into the design of an
+[00:22:36 -> 00:22:43] ISA? What makes a good ISA? There's programmability, implementability,
+[00:22:43 -> 00:22:50] and compatibility. Programmability means how easy it is for whoever's writing
+[00:22:50 -> 00:22:56] the program in the instruction set, how easy is it for them to create
+[00:22:56 -> 00:23:07] the program, okay. Implementability is how easy is it to design a higher
+[00:23:07 -> 00:23:13] performance implementation. I shouldn't say how easy, nothing is easy, okay, but,
+[00:23:13 -> 00:23:17] you know, one ISA can make it harder to design a high performance
+[00:23:17 -> 00:23:22] implementation than another one. Not saying it's not possible, it's harder.
+[00:23:22 -> 00:23:30] It takes more resources, okay. People have also talked about, you know,
+[00:23:30 -> 00:23:36] instruction sets for low power, high reliability, and low cost, or other
+[00:23:36 -> 00:23:41] metrics that we talked about a little while, but really, you know, not much.
+[00:23:41 -> 00:23:45] You know, headway over here, there's been some research perhaps, but, you
+[00:23:45 -> 00:23:52] know, this is really is what implementability boils down to. How easy
+[00:23:52 -> 00:23:58] it is to build a piece of hardware that executes that instruction set,
+[00:23:58 -> 00:24:10] okay. And the third aspect is compatibility, okay. And what compatibility
+[00:24:10 -> 00:24:17] is is the ease to maintain the programmability and implementability
+[00:24:17 -> 00:24:23] over time as the languages, high level languages, and programs, and
+[00:24:24 -> 00:24:36] technology evolve, okay. Now, this is not something that is intellectually,
+[00:24:36 -> 00:24:42] I would say, you know, it's not very academic, or, you know, hey, you know,
+[00:24:42 -> 00:24:48] why is this even a consideration in what the instruction set looks like,
+[00:24:48 -> 00:24:56] okay. Well, real world, this is very, very important. And I'm going to
+[00:24:56 -> 00:25:00] spend a fair amount of time on this, okay. What this is, and how we deal
+[00:25:00 -> 00:25:05] with it, and what are the issues, and what are the consequences of that
+[00:25:05 -> 00:25:13] for a good night, all right. So we'll take a look at these one by one.
+[00:25:13 -> 00:25:18] Spend a fair amount of time on each one of these upcoming slides. Please
+[00:25:18 -> 00:25:24] ask questions, all right. Okay, so programmability, how easy is it to
+[00:25:24 -> 00:25:31] express a program efficiently? The question is, for whom? Okay. When
+[00:25:31 -> 00:25:37] earlier on, compilers were not very good, and most code was
+[00:25:37 -> 00:25:42] hand assembled. So what you wanted to do is you wanted to have, you
+[00:25:42 -> 00:25:46] wanted to be able to write your program with as few instructions as
+[00:25:46 -> 00:25:53] you would, okay. So each instruction was as similar to a high-level
+[00:25:53 -> 00:25:59] language construct as is possible. Okay, we'll see examples of that,
+[00:25:59 -> 00:26:12] okay. But then what happened is that, hey, you know, these programs
+[00:26:12 -> 00:26:17] are being created by a compiler, and, you know, the capabilities of
+[00:26:17 -> 00:26:22] the compilers evolve over time. They keep getting better too, okay.
+[00:26:22 -> 00:26:26] And what compilers want is they want something very different from
+[00:26:26 -> 00:26:33] others, okay. They, you know, a compiler wants basically some very
+[00:26:33 -> 00:26:37] regimented sort of things to do, and we'll talk a little bit about
+[00:26:37 -> 00:26:45] that, okay. And for that, you know, a compiler is going to want
+[00:26:45 -> 00:26:48] low-level fine-grained instructions, and we'll talk a little bit
+[00:26:48 -> 00:26:58] about this. So what makes an ISA, at least the thinking of some, is
+[00:26:58 -> 00:27:04] what makes an ISA easy for a human to program, and it is, you
+[00:27:04 -> 00:27:07] know, the thinking was, hey, you have to be very close to the
+[00:27:07 -> 00:27:11] high-level language. So you're writing in a high-level language,
+[00:27:11 -> 00:27:16] okay. And here's the hardware, okay. What you want to do is you
+[00:27:17 -> 00:27:22] want to say the hardware is doing instructions much closer to this
+[00:27:22 -> 00:27:25] high-level language, because between the high-level language and
+[00:27:25 -> 00:27:28] the hardware is what is called the semantic gap, okay. You are
+[00:27:28 -> 00:27:32] writing programs here, and the hardware wants programs over here,
+[00:27:32 -> 00:27:43] okay. So the thinking was that, hey, what you need to do is it's
+[00:27:43 -> 00:27:47] easy, you know, it's easy to write a program if you have an
+[00:27:47 -> 00:27:50] instruction that matches a construct in the high-level
+[00:27:50 -> 00:27:55] language. So what do you do in high-level languages, okay? You
+[00:27:55 -> 00:28:00] have loops. You have procedure calls. You know, you have, you
+[00:28:00 -> 00:28:06] know, access array elements. So, you know, you have, you
+[00:28:06 -> 00:28:10] move a string of characters from one region of memory to
+[00:28:10 -> 00:28:16] another region of memory, okay. You have a queue. You insert
+[00:28:16 -> 00:28:19] something into the queue. These are all things that, you know,
+[00:28:19 -> 00:28:22] you do in your high-level language contract over there,
+[00:28:22 -> 00:28:26] okay. So people say, hey, of course then what it means is I
+[00:28:26 -> 00:28:31] should have an instruction that does the same, okay. So
+[00:28:31 -> 00:28:36] then, you know, so, you know, I'm going to have an
+[00:28:36 -> 00:28:41] instruction that makes it procedure call just be one
+[00:28:41 -> 00:28:47] instruction, okay. So what happens when you go and, you
+[00:28:47 -> 00:28:53] know, make a procedure call, you save a return address where
+[00:28:53 -> 00:28:59] you're going to come back to. You go to the target address
+[00:28:59 -> 00:29:05] of the procedure. You save the registers you were using,
+[00:29:05 -> 00:29:10] okay. And then before you go, and then when you come
+[00:29:10 -> 00:29:15] back, you restore the right registers, okay, from there.
+[00:29:15 -> 00:29:20] We are going to do it in one instruction. So when you're
+[00:29:20 -> 00:29:25] writing a, you know, program, that's one instruction.
+[00:29:25 -> 00:29:31] The work that I just talked about of calling procedure
+[00:29:31 -> 00:29:37] doesn't go away. You didn't write instructions to do
+[00:29:37 -> 00:29:41] that work. Hardware has to do the work, okay. So the
+[00:29:41 -> 00:29:46] hardware has to implement all of that, okay. You know,
+[00:29:46 -> 00:29:51] x86, you know, has a single instruction where you give
+[00:29:51 -> 00:29:57] it a starting address, you know, of a source of the,
+[00:29:57 -> 00:30:02] where the string of characters is. Destination address,
+[00:30:02 -> 00:30:07] starting address, number of characters. It will read
+[00:30:07 -> 00:30:10] these memory locations, write those memory locations,
+[00:30:10 -> 00:30:16] and get into one instruction, okay, instead of
+[00:30:16 -> 00:30:21] writing a loop of simpler instructions, okay. And you
+[00:30:21 -> 00:30:26] are asking, why is that a bad idea? One is that,
+[00:30:26 -> 00:30:30] you know, the hardware is going to have to implement
+[00:30:30 -> 00:30:33] it. And once you have that instruction set in the
+[00:30:33 -> 00:30:39] ISA, it is there until it hurts you bad enough that
+[00:30:39 -> 00:30:42] you say, I've had enough of this, and I'm going to try
+[00:30:42 -> 00:30:44] and get, figure out a way to get, not do this
+[00:30:44 -> 00:30:51] anymore. Oh, just like it came up, okay. And so,
+[00:30:51 -> 00:30:54] and then, then there's the other issue. It's like,
+[00:30:54 -> 00:30:58] you know, I can have this, so, you know, Max had
+[00:30:58 -> 00:31:01] an instruction to insert something into a queue.
+[00:31:01 -> 00:31:09] And instruction is only good if it actually gets
+[00:31:09 -> 00:31:15] used, okay. If the creator of the program is not
+[00:31:15 -> 00:31:19] going to use that instruction, it's going to be
+[00:31:19 -> 00:31:23] a problem because you have to implement it, okay.
+[00:31:23 -> 00:31:25] You're going to implement an instruction that's
+[00:31:25 -> 00:31:32] never going to get used, or very rarely used.
+[00:31:32 -> 00:31:36] The problem is, it's very rarely used, but if
+[00:31:36 -> 00:31:42] someone uses it, they'll keep supporting it for
+[00:31:42 -> 00:31:45] quite a while. And you'll see what you have to
+[00:31:45 -> 00:31:52] do to get out of that, okay. So, you know,
+[00:31:52 -> 00:31:56] I mean, there were actually, you know, proposals
+[00:31:56 -> 00:31:58] where you could execute high-level languages
+[00:31:58 -> 00:32:02] directly in the hardware. And, you know, there
+[00:32:02 -> 00:32:06] was a company called Burrows that, you know,
+[00:32:06 -> 00:32:09] would sell a machine that, hey, you know,
+[00:32:09 -> 00:32:14] this is a machine that is going to run, I forget
+[00:32:14 -> 00:32:16] the name, Symbol or whatever it was, you know,
+[00:32:16 -> 00:32:18] some other, you know, one language. You write
+[00:32:18 -> 00:32:22] programs. Oh, by the way, you know, now,
+[00:32:22 -> 00:32:25] we also have the hardware do another language.
+[00:32:25 -> 00:32:28] We just have to change all the microcode and
+[00:32:28 -> 00:32:31] so on like that for that. But, you know,
+[00:32:31 -> 00:32:36] take your high-level language and run that
+[00:32:36 -> 00:32:40] directly in the hardware. Not very efficient,
+[00:32:40 -> 00:32:45] but, you know, I mean, that's the, you know,
+[00:32:45 -> 00:32:47] that was sort of, in a sense, you know,
+[00:32:47 -> 00:32:52] a starting point, all right. Okay.
+[00:32:52 -> 00:32:57] So, now, if you're going to have a compiler
+[00:32:57 -> 00:33:05] try and generate the code for a program in
+[00:33:05 -> 00:33:09] the construction set, then let us just take a
+[00:33:09 -> 00:33:13] look at what a compiler would have to do
+[00:33:13 -> 00:33:16] and the implications of that for the
+[00:33:16 -> 00:33:19] construction set. Okay. And a fair amount
+[00:33:19 -> 00:33:21] of what we're going to talk about is
+[00:33:21 -> 00:33:23] discussed in the paper by Wolf that you're
+[00:33:23 -> 00:33:30] going to do a review, do one Monday.
+[00:33:30 -> 00:33:33] So, what are the goals of the compiler?
+[00:33:33 -> 00:33:35] Very first thing that if you have a
+[00:33:35 -> 00:33:38] correct program, you're in the correct
+[00:33:38 -> 00:33:40] high-level language program, the compiler
+[00:33:40 -> 00:33:43] must compile it correctly in the ISA,
+[00:33:43 -> 00:33:45] so it runs correctly in the hardware.
+[00:33:45 -> 00:33:52] Okay. You would like most of your
+[00:33:52 -> 00:34:00] compiled programs to execute fast. You'd
+[00:34:00 -> 00:34:02] also like to be able to compile fast,
+[00:34:02 -> 00:34:13] you know. And, you know, in a couple of
+[00:34:13 -> 00:34:15] units, we're going to talk about
+[00:34:15 -> 00:34:17] statically scheduled wide instruction
+[00:34:17 -> 00:34:23] machines. Okay. And those are basically
+[00:34:23 -> 00:34:26] your, you know, building very simple,
+[00:34:26 -> 00:34:28] dumb hardware, if you will, except that
+[00:34:28 -> 00:34:30] it also then couldn't evolve to not
+[00:34:30 -> 00:34:35] being dumb, you know. But a lot of the
+[00:34:35 -> 00:34:38] work was done in the compiler. Okay.
+[00:34:38 -> 00:34:41] So, okay, fine. You would start your
+[00:34:41 -> 00:34:48] compile, go off to lunch, still compile.
+[00:34:48 -> 00:34:52] Come back, afternoon coffee, still compile.
+[00:34:52 -> 00:34:56] Go have dinner, maybe the compile
+[00:34:56 -> 00:34:58] compilation is finished by then, or
+[00:34:58 -> 00:35:00] maybe by next morning it's done.
+[00:35:00 -> 00:35:05] Doesn't work that well. Okay. You know.
+[00:35:05 -> 00:35:07] And, you know, people, if you're right,
+[00:35:07 -> 00:35:09] people write and say, hell, you know,
+[00:35:09 -> 00:35:13] I want my program compiled before I even
+[00:35:13 -> 00:35:16] hit the return. It should have compiled.
+[00:35:16 -> 00:35:18] You know. So, if it's going to take it,
+[00:35:18 -> 00:35:22] you know, that long, it's no good.
+[00:35:22 -> 00:35:25] You want it to compile fast. And, of
+[00:35:25 -> 00:35:27] course, do, you know, other things,
+[00:35:27 -> 00:35:33] game, et cetera, et cetera. So, the way
+[00:35:33 -> 00:35:35] what compilers are going to handle
+[00:35:35 -> 00:35:39] this beast is of taking the program
+[00:35:39 -> 00:35:42] and compiling it down to the ISA is
+[00:35:42 -> 00:35:44] there are multiple phases, there's a
+[00:35:44 -> 00:35:47] lexical analysis phase, figuring out
+[00:35:47 -> 00:35:49] what the different symbols mean,
+[00:35:49 -> 00:35:53] parsing it to figure out exactly
+[00:35:53 -> 00:35:56] what to do, okay, create an
+[00:35:56 -> 00:35:59] intermediate representation, then
+[00:35:59 -> 00:36:02] carry out a variety of optimization
+[00:36:02 -> 00:36:06] and code generation phases, okay,
+[00:36:06 -> 00:36:09] where, you know, you do multiple
+[00:36:09 -> 00:36:11] things and there are ordering issues
+[00:36:11 -> 00:36:13] over here, which, you know, like,
+[00:36:13 -> 00:36:15] you won't go until you take class
+[00:36:15 -> 00:36:17] like 536, you know, you learn more
+[00:36:17 -> 00:36:19] about that or 701. And then you
+[00:36:19 -> 00:36:24] generate the assembly code. Okay.
+[00:36:24 -> 00:36:27] Now, again, multiple phases with
+[00:36:27 -> 00:36:29] information being passed from one
+[00:36:29 -> 00:36:32] phase to the next, the phases being
+[00:36:32 -> 00:36:35] kept reasonably separate, okay,
+[00:36:35 -> 00:36:37] having an intermediate representation
+[00:36:37 -> 00:36:40] that goes from the phases and you
+[00:36:40 -> 00:36:42] eventually want to generate some
+[00:36:42 -> 00:36:47] assembly code. Okay. And, you know,
+[00:36:47 -> 00:36:49] Bill Wolf, who wrote that paper,
+[00:36:49 -> 00:36:51] who was exactly one of the people
+[00:36:51 -> 00:36:53] who actually was one of the first
+[00:36:53 -> 00:36:55] faculty members of the Carnegie Mellon
+[00:36:55 -> 00:36:58] CNU, you know, CS department and
+[00:36:58 -> 00:37:00] built that department and, you
+[00:37:00 -> 00:37:02] know, which is now one of the
+[00:37:02 -> 00:37:07] powerhouses, okay. And so what his
+[00:37:07 -> 00:37:09] argument is is look, an
+[00:37:09 -> 00:37:15] instruction set should not have
+[00:37:15 -> 00:37:20] solutions. So, you know, an
+[00:37:20 -> 00:37:22] instruction which says insert an
+[00:37:22 -> 00:37:24] element into a queue is a solution,
+[00:37:24 -> 00:37:28] all right, and if you can use
+[00:37:28 -> 00:37:30] it, if you can match what you're
+[00:37:30 -> 00:37:34] trying to do into this solution,
+[00:37:34 -> 00:37:38] maybe that works. Or mapping an
+[00:37:38 -> 00:37:41] arbitrary program with what you're
+[00:37:41 -> 00:37:43] doing, different things you're
+[00:37:43 -> 00:37:46] doing into solutions that have been
+[00:37:46 -> 00:37:53] provided is very hard. Okay. So
+[00:37:53 -> 00:37:57] what you want to do is to provide
+[00:37:57 -> 00:38:02] primitive operations from which you
+[00:38:02 -> 00:38:07] can build the solution. The
+[00:38:07 -> 00:38:09] compiler can construct the
+[00:38:09 -> 00:38:16] solution. So if I wanted to, you
+[00:38:16 -> 00:38:21] know, insert something into a queue,
+[00:38:21 -> 00:38:25] okay, then, you know, I'll have the
+[00:38:25 -> 00:38:27] head of the queue somewhere and
+[00:38:27 -> 00:38:30] memory out of register. So what I
+[00:38:30 -> 00:38:32] want to do is I want to provide a
+[00:38:32 -> 00:38:36] primitive into, you know, taking
+[00:38:36 -> 00:38:39] some data and writing it into a
+[00:38:39 -> 00:38:41] memory location that is pointed to
+[00:38:41 -> 00:38:45] by this register, the head of the
+[00:38:45 -> 00:38:47] queue. And then I want to provide
+[00:38:47 -> 00:38:50] another primitive to increment a
+[00:38:50 -> 00:38:53] value which would be implementing the
+[00:38:53 -> 00:39:02] queue. Okay. Updating. So what I
+[00:39:02 -> 00:39:06] want to do is, compilers, you know, I
+[00:39:06 -> 00:39:08] have a complex task to do. They are
+[00:39:08 -> 00:39:10] good at breaking the task into simpler
+[00:39:10 -> 00:39:12] ones because you're decomposing
+[00:39:12 -> 00:39:16] something into, you know, simpler
+[00:39:16 -> 00:39:21] components. They are less good at
+[00:39:21 -> 00:39:23] combining simple structures into
+[00:39:23 -> 00:39:27] complex ones. Okay. So it is, hey,
+[00:39:27 -> 00:39:30] you know, you know, I want to, you
+[00:39:30 -> 00:39:34] know, I'm doing A, B, and C, oh, and
+[00:39:34 -> 00:39:36] this is matching into this solution
+[00:39:36 -> 00:39:39] that I have. But if I do A, B, and
+[00:39:39 -> 00:39:42] D, can I use this solution, not use
+[00:39:42 -> 00:39:45] this solution? It's, you know, that
+[00:39:45 -> 00:39:47] kind of reasoning and pattern
+[00:39:47 -> 00:39:50] matching and searching, it's complex
+[00:39:50 -> 00:39:53] for the compiler to do. So it's much
+[00:39:53 -> 00:39:56] easier to synthesize complex
+[00:39:56 -> 00:39:58] instructions than to actually
+[00:39:58 -> 00:40:00] compare them to figure out which one
+[00:40:00 -> 00:40:09] to use. So what Wolf proposes that
+[00:40:09 -> 00:40:11] the instruction set, there are certain
+[00:40:11 -> 00:40:13] rules of thumb and principles that
+[00:40:13 -> 00:40:15] you should follow for the instruction
+[00:40:15 -> 00:40:17] set. So I'm going to, you know,
+[00:40:17 -> 00:40:19] talk about each one of these and try
+[00:40:19 -> 00:40:21] and, let's try and understand what
+[00:40:21 -> 00:40:28] each one of these is. Okay. So the
+[00:40:28 -> 00:40:39] first is regularity. So if I have
+[00:40:39 -> 00:40:42] some high level construct that I'm
+[00:40:42 -> 00:40:47] doing in the program here, okay, and
+[00:40:47 -> 00:40:50] I'm doing the same thing somewhere
+[00:40:50 -> 00:40:55] else, okay, I want to be able to
+[00:40:55 -> 00:40:58] basically do, if I'm doing
+[00:40:58 -> 00:41:01] something, I want to be doing it in
+[00:41:01 -> 00:41:04] a regular manner so I do it the same
+[00:41:04 -> 00:41:06] way every place that I do it. So
+[00:41:06 -> 00:41:13] then you just have to figure out,
+[00:41:13 -> 00:41:15] well, this is what I'm doing and
+[00:41:15 -> 00:41:18] this is how I'm going to do it. Okay.
+[00:41:18 -> 00:41:20] And so the next time around, if you
+[00:41:20 -> 00:41:21] are doing the same thing, you do it
+[00:41:21 -> 00:41:23] the same way, rather than the next
+[00:41:23 -> 00:41:24] time around you're going to do it
+[00:41:24 -> 00:41:35] something different. So, you know, if
+[00:41:35 -> 00:41:40] I am, you know, you know, carrying
+[00:41:40 -> 00:41:44] out an additional operation on, you
+[00:41:44 -> 00:41:51] know, if I'm carrying out an
+[00:41:51 -> 00:41:54] additional operation on two different
+[00:41:54 -> 00:41:56] operands in one place and storing
+[00:41:56 -> 00:41:59] the results somewhere else, okay,
+[00:41:59 -> 00:42:03] then the next time I want to, if
+[00:42:03 -> 00:42:05] I'm doing the same thing somewhere
+[00:42:05 -> 00:42:06] else, I'm going to do it in the
+[00:42:06 -> 00:42:08] same way rather than a different
+[00:42:08 -> 00:42:10] way. That's what I want to be able
+[00:42:10 -> 00:42:13] to do, regular, regularity. So
+[00:42:13 -> 00:42:15] basically, it's, it's, you know,
+[00:42:15 -> 00:42:17] what he refers to as the principle
+[00:42:17 -> 00:42:19] of least astonishment is like, okay,
+[00:42:19 -> 00:42:21] I shouldn't be astonished. Look,
+[00:42:21 -> 00:42:22] this is what I'm trying to do over
+[00:42:22 -> 00:42:24] here. I'm not, you know, it's,
+[00:42:24 -> 00:42:26] you know, if I'm doing the same
+[00:42:26 -> 00:42:28] thing the same way every time, I'm
+[00:42:28 -> 00:42:30] not astonished when I see something.
+[00:42:30 -> 00:42:39] The next principle or rule of thumb
+[00:42:39 -> 00:42:40] is, you know, what he calls
+[00:42:40 -> 00:42:46] orthogonal. So what has an
+[00:42:46 -> 00:42:50] instruction, okay, what you have is
+[00:42:50 -> 00:42:54] you have the opcode for an operation
+[00:42:54 -> 00:42:56] that you're doing and then you
+[00:42:56 -> 00:43:01] have the operand, okay, and then
+[00:43:01 -> 00:43:06] you have data type. What he's
+[00:43:06 -> 00:43:10] saying is that the specification
+[00:43:10 -> 00:43:12] of the operation should be
+[00:43:12 -> 00:43:17] orthogonal to how I specify the
+[00:43:17 -> 00:43:29] operand. If I had an add operation,
+[00:43:29 -> 00:43:34] you know, I should be able to
+[00:43:34 -> 00:43:36] specify the add operation in the
+[00:43:36 -> 00:43:38] instruction set and a subtract
+[00:43:38 -> 00:43:40] operation in the instruction set
+[00:43:40 -> 00:43:42] separate from how I specify the
+[00:43:42 -> 00:43:46] operands in the instruction set,
+[00:43:46 -> 00:43:53] okay, and if I do that, then,
+[00:43:53 -> 00:43:56] you know, if I have regularity and
+[00:43:56 -> 00:43:58] orthogonality, I should be able to
+[00:43:58 -> 00:44:01] compose an instruction by specifying
+[00:44:01 -> 00:44:03] the, figuring out what is the
+[00:44:03 -> 00:44:05] operation I'm carrying out and what
+[00:44:05 -> 00:44:07] are the operands that are being
+[00:44:07 -> 00:44:14] put separately. So let me give an
+[00:44:14 -> 00:44:16] example of something that is not
+[00:44:16 -> 00:44:20] orthogonal, okay. So if I want to
+[00:44:20 -> 00:44:23] have an, if I have an add
+[00:44:23 -> 00:44:26] operation and my operands are,
+[00:44:26 -> 00:44:30] say, in registers, okay, then I
+[00:44:30 -> 00:44:32] should be able to say, oh yeah,
+[00:44:32 -> 00:44:34] you know, I'm doing an add
+[00:44:34 -> 00:44:36] operation and I'm doing it on,
+[00:44:36 -> 00:44:39] you know, register X and register
+[00:44:39 -> 00:44:42] Y and putting the result in wherever
+[00:44:42 -> 00:44:44] the register is, Z over there,
+[00:44:44 -> 00:44:48] okay, so the operation and the operands
+[00:44:48 -> 00:44:50] are specified, so I can figure out,
+[00:44:50 -> 00:44:52] you know, put an operand in X and
+[00:44:52 -> 00:44:56] register Y and register Z, okay.
+[00:44:56 -> 00:45:00] What is something that is not
+[00:45:00 -> 00:45:03] orthogonal? It is, hey, if I have an
+[00:45:03 -> 00:45:06] add operation, the first operand has
+[00:45:06 -> 00:45:08] to be in register three, the second
+[00:45:08 -> 00:45:10] one in register four, and the
+[00:45:10 -> 00:45:12] second one in register five. If it's
+[00:45:12 -> 00:45:14] subtract, then first one has to be in
+[00:45:14 -> 00:45:17] R1, next one R2, and then an R3,
+[00:45:17 -> 00:45:21] okay. Where the operands are tied
+[00:45:21 -> 00:45:24] are not orthogonal to the operand.
+[00:45:24 -> 00:45:30] So now, if I did not have an
+[00:45:30 -> 00:45:32] orthogonal instruction set, I'm
+[00:45:32 -> 00:45:35] compiling it right this way, okay.
+[00:45:35 -> 00:45:37] Oh, I have an add operation.
+[00:45:37 -> 00:45:39] What if I have an add operation?
+[00:45:39 -> 00:45:41] I have to have this first operand
+[00:45:41 -> 00:45:43] here, and the second here, and this
+[00:45:43 -> 00:45:46] here, okay. I cannot specify them
+[00:45:46 -> 00:45:49] independently. It makes it much,
+[00:45:49 -> 00:45:52] much, much more difficult to create
+[00:45:52 -> 00:45:55] an instruction like that. Are you
+[00:45:55 -> 00:46:01] with me on this? Okay. So, then he
+[00:46:01 -> 00:46:03] further goes and says, says, look,
+[00:46:03 -> 00:46:07] you should have one or all, okay.
+[00:46:07 -> 00:46:12] So, for a particular instance, provide
+[00:46:12 -> 00:46:17] only one solution, or provide all
+[00:46:17 -> 00:46:21] possible solutions, okay. So, there's
+[00:46:21 -> 00:46:23] only one thing you can do, or, hey,
+[00:46:23 -> 00:46:25] you know, you do all these things
+[00:46:25 -> 00:46:27] separately, everything's going to be
+[00:46:27 -> 00:46:29] fine. It should not be the case that
+[00:46:29 -> 00:46:32] you say, hey, you know, you can only
+[00:46:32 -> 00:46:35] do one of these three things, okay,
+[00:46:35 -> 00:46:37] if I have an add. If I have subtract,
+[00:46:37 -> 00:46:39] it should not be one of these four
+[00:46:39 -> 00:46:42] things. It becomes much, much harder
+[00:46:42 -> 00:46:45] for the compiler to figure out what
+[00:46:45 -> 00:46:54] exactly to do. Okay. Are you with me
+[00:46:54 -> 00:47:02] on these principles here? So, that
+[00:47:02 -> 00:47:04] goes in the creation of the
+[00:47:04 -> 00:47:06] instruction set, and okay, I'm just
+[00:47:06 -> 00:47:08] going to move ahead a little bit,
+[00:47:08 -> 00:47:11] and, you know, just talk a little bit
+[00:47:11 -> 00:47:13] about MIPS instruction set, which has
+[00:47:13 -> 00:47:16] a lot of similarities to the ARM
+[00:47:16 -> 00:47:18] instruction set and RISC-V, you know,
+[00:47:18 -> 00:47:20] they have more in common than their
+[00:47:20 -> 00:47:24] differences, okay. So, what, you know,
+[00:47:24 -> 00:47:26] in this instruction set, you have
+[00:47:26 -> 00:47:28] three types of instructions, one for,
+[00:47:28 -> 00:47:31] you know, what is called an R type
+[00:47:31 -> 00:47:33] and an I type, J type. Let's talk
+[00:47:33 -> 00:47:35] about this. This is, you know, you
+[00:47:35 -> 00:47:37] have an opcode, which is specifying
+[00:47:37 -> 00:47:39] the, you know, some sort of bit
+[00:47:39 -> 00:47:41] specifying the opcode you're carrying
+[00:47:41 -> 00:47:43] out, and then these are the operands
+[00:47:43 -> 00:47:46] over here, okay. And so, what
+[00:47:46 -> 00:47:48] orthogonality says is, look, I'm
+[00:47:48 -> 00:47:50] specifying these bits of the opcode
+[00:47:50 -> 00:47:52] bits of the instruction separately
+[00:47:52 -> 00:47:55] from the operand bits, and these
+[00:47:55 -> 00:47:57] could be anything the operation will
+[00:47:57 -> 00:48:15] still work. Okay. Now, you know,
+[00:48:15 -> 00:48:18] any instructions that I have, you
+[00:48:18 -> 00:48:20] can build hardware to implement them,
+[00:48:20 -> 00:48:26] okay. It may not be efficient,
+[00:48:26 -> 00:48:37] but you can do that. What I want to
+[00:48:37 -> 00:48:41] do to be able to implement it
+[00:48:41 -> 00:48:44] efficiently is I want to be able to
+[00:48:44 -> 00:48:48] use a variety of techniques to
+[00:48:48 -> 00:48:56] improve the performance, okay. I want
+[00:48:56 -> 00:48:58] to be able to do pipelining,
+[00:48:58 -> 00:49:00] parallel execution, out of order
+[00:49:00 -> 00:49:03] execution, and so on like that,
+[00:49:03 -> 00:49:08] okay. Certain features in the
+[00:49:08 -> 00:49:10] instruction set can make it
+[00:49:10 -> 00:49:13] difficult to do these techniques.
+[00:49:13 -> 00:49:16] Not impossible, but much more
+[00:49:16 -> 00:49:27] difficult. So, for example, if I
+[00:49:27 -> 00:49:32] have a instruction set, you know,
+[00:49:32 -> 00:49:34] here was a MIPS instruction set,
+[00:49:34 -> 00:49:37] you know, and I said the opcodes
+[00:49:37 -> 00:49:39] are all going to be six bits over
+[00:49:39 -> 00:49:43] here. Turns out that, you know,
+[00:49:43 -> 00:49:46] you do actually have some more bits
+[00:49:46 -> 00:49:48] that specify what operation to carry
+[00:49:48 -> 00:49:50] out over here, but the main opcode
+[00:49:50 -> 00:49:57] bits are, if I had an instruction set
+[00:49:57 -> 00:50:01] which some opcodes were six bits,
+[00:50:01 -> 00:50:03] other opcodes were eight bits or
+[00:50:03 -> 00:50:14] whatever it is, some were four bits,
+[00:50:14 -> 00:50:17] then what it does is it complicates
+[00:50:17 -> 00:50:21] the decoding of the instruction. I
+[00:50:21 -> 00:50:24] first have to, you know, figure out,
+[00:50:24 -> 00:50:26] hey, is the opcode four bits or six
+[00:50:26 -> 00:50:28] bits or eight bits, and how do I
+[00:50:28 -> 00:50:30] do that? I have to take a look at
+[00:50:30 -> 00:50:36] those bits, okay, or, you know,
+[00:50:36 -> 00:50:38] what do I do in a pipeline? A
+[00:50:38 -> 00:50:40] typical pipeline, you know, you've
+[00:50:40 -> 00:50:42] seen a five-stage pipeline before,
+[00:50:42 -> 00:50:44] we'll see it again. In your first
+[00:50:44 -> 00:50:47] stage, you fetch an instruction,
+[00:50:47 -> 00:50:50] okay, and what do you have to do
+[00:50:50 -> 00:50:52] to fetch an instruction? You have
+[00:50:52 -> 00:50:54] to know where the instruction
+[00:50:54 -> 00:50:56] starts, what the program number value
+[00:50:56 -> 00:50:58] is, if you will, or if you want to
+[00:50:58 -> 00:51:00] use the x86 parlance, the
+[00:51:00 -> 00:51:03] instruction port value. In the
+[00:51:03 -> 00:51:07] next stage, you decode the
+[00:51:07 -> 00:51:13] instruction, okay? So, in the
+[00:51:13 -> 00:51:15] first stage, I'm fetching
+[00:51:15 -> 00:51:19] instruction one, okay, and in one
+[00:51:19 -> 00:51:21] cycle, in the next cycle,
+[00:51:21 -> 00:51:23] instruction one is being decoded,
+[00:51:23 -> 00:51:25] and I'm going to start fetching
+[00:51:25 -> 00:51:28] instruction two. How do I, you
+[00:51:28 -> 00:51:30] know, what do I have to do to
+[00:51:30 -> 00:51:32] fetch instruction two? I need to
+[00:51:32 -> 00:51:34] know the program number value of
+[00:51:34 -> 00:51:36] instruction two. What is the
+[00:51:36 -> 00:51:38] program number value of
+[00:51:38 -> 00:51:40] instruction two? It's the
+[00:51:40 -> 00:51:41] program number value of
+[00:51:41 -> 00:51:43] instruction one plus the length
+[00:51:43 -> 00:51:48] of the instruction, alright? What
+[00:51:48 -> 00:51:49] is the length of the
+[00:51:49 -> 00:51:52] instruction? I don't know until
+[00:51:52 -> 00:51:54] I've decoded it, unless the
+[00:51:54 -> 00:51:59] lengths are the same. Then I
+[00:51:59 -> 00:52:01] just say, hey, fetch 32 bytes
+[00:52:01 -> 00:52:03] and some instruction, I don't
+[00:52:03 -> 00:52:05] know what they are, throw it
+[00:52:05 -> 00:52:07] to decode, I'll fetch the
+[00:52:07 -> 00:52:09] next, I'll take my program
+[00:52:09 -> 00:52:10] counter and increment it by
+[00:52:10 -> 00:52:12] four, I'll get to the next
+[00:52:12 -> 00:52:14] instruction after, because it's
+[00:52:14 -> 00:52:16] going to be four bytes after
+[00:52:16 -> 00:52:23] this current one, okay? So,
+[00:52:23 -> 00:52:27] you know, variable instruction
+[00:52:27 -> 00:52:29] lets the formats complicate the
+[00:52:29 -> 00:52:32] decoding and make it more
+[00:52:32 -> 00:52:39] difficult to pipeline. And then
+[00:52:39 -> 00:52:42] you say, hey, why do we not
+[00:52:42 -> 00:52:44] have all the instructions the
+[00:52:44 -> 00:52:47] same size? You know, life is
+[00:52:47 -> 00:52:53] never simple. It would be good
+[00:52:53 -> 00:52:55] if it was simple, okay?
+[00:52:55 -> 00:52:58] There's always pros and cons,
+[00:52:58 -> 00:53:03] okay? And, you know, if I
+[00:53:03 -> 00:53:05] have all instructions the same
+[00:53:05 -> 00:53:07] size, all instructions the
+[00:53:07 -> 00:53:11] same size, we'll talk a
+[00:53:11 -> 00:53:13] little bit more about that.
+[00:53:13 -> 00:53:20] Another ISA feature is, you
+[00:53:20 -> 00:53:22] know, some instructions can have
+[00:53:22 -> 00:53:24] implicit state, okay? If I'm
+[00:53:24 -> 00:53:26] adding R1 to R2 and then
+[00:53:26 -> 00:53:28] putting the result in R3, R1,
+[00:53:28 -> 00:53:31] R2, R3 are explicit. I know
+[00:53:31 -> 00:53:35] what data updated. But, if
+[00:53:35 -> 00:53:38] as a side effect of that, I
+[00:53:38 -> 00:53:42] update some register somewhere
+[00:53:42 -> 00:53:46] or some bit somewhere, okay?
+[00:53:46 -> 00:53:49] That is, you know, that is
+[00:53:49 -> 00:53:52] implicit, okay? And you're
+[00:53:52 -> 00:53:54] saying, who cares? My program
+[00:53:54 -> 00:53:56] doesn't know anything about
+[00:53:56 -> 00:53:58] it. Everything is good. Why
+[00:53:58 -> 00:54:00] you? What are the
+[00:54:00 -> 00:54:03] problems in the hardware? Okay?
+[00:54:03 -> 00:54:07] So it turns out that when we
+[00:54:07 -> 00:54:09] see dynamic scheduling we will
+[00:54:09 -> 00:54:15] see that, that, let me, okay,
+[00:54:15 -> 00:54:18] let me step back a little.
+[00:54:18 -> 00:54:21] See I have an instruction over
+[00:54:21 -> 00:54:24] here that is adding R1, R2,
+[00:54:24 -> 00:54:26] R3 and putting the result in
+[00:54:26 -> 00:54:29] R3 and changing some bit,
+[00:54:29 -> 00:54:31] say like a zero register
+[00:54:31 -> 00:54:34] value, flag value. Then a
+[00:54:34 -> 00:54:37] later instruction, which is
+[00:54:37 -> 00:54:39] actually checking the value of
+[00:54:39 -> 00:54:42] this implicit state somehow,
+[00:54:42 -> 00:54:44] branch or something like that.
+[00:54:44 -> 00:54:48] Okay. Now, if I want to
+[00:54:48 -> 00:54:51] execute these instructions out
+[00:54:51 -> 00:54:54] of order, I can't do that.
+[00:54:54 -> 00:54:59] So in order to be able to
+[00:54:59 -> 00:55:01] determine whether I can do
+[00:55:01 -> 00:55:03] this instruction before this
+[00:55:03 -> 00:55:05] instruction, I need to
+[00:55:05 -> 00:55:07] understand, to check, to make
+[00:55:07 -> 00:55:09] sure that this instruction is
+[00:55:09 -> 00:55:11] not using any implicit state
+[00:55:11 -> 00:55:12] that this instruction has
+[00:55:12 -> 00:55:14] created. I know about the
+[00:55:14 -> 00:55:16] explicit state, R1, R2, R3. I
+[00:55:16 -> 00:55:18] don't know about the other
+[00:55:18 -> 00:55:20] thing. Okay. And when I want
+[00:55:20 -> 00:55:22] to dynamically schedule, I
+[00:55:22 -> 00:55:24] have to figure that out. It's
+[00:55:24 -> 00:55:26] going to make my dynamic
+[00:55:26 -> 00:55:32] scheduling complicated. Okay.
+[00:55:32 -> 00:55:34] Now, you know, another sort of
+[00:55:34 -> 00:55:36] implicit state, if you will,
+[00:55:36 -> 00:55:38] not relevant to the
+[00:55:38 -> 00:55:40] instruction set is, hey, you
+[00:55:40 -> 00:55:42] know, you know, my instruction
+[00:55:42 -> 00:55:44] is loading something from
+[00:55:44 -> 00:55:46] memory. Bring it into a
+[00:55:46 -> 00:55:48] register. That's all I know
+[00:55:48 -> 00:55:50] about when I write the
+[00:55:50 -> 00:55:52] program, right? You know,
+[00:55:52 -> 00:55:54] what the hardware does, it
+[00:55:54 -> 00:55:56] brings this from memory into
+[00:55:56 -> 00:55:58] something that the program has
+[00:55:58 -> 00:56:00] no idea about. It just makes
+[00:56:00 -> 00:56:02] the program run faster.
+[00:56:02 -> 00:56:04] Brings it into its cache.
+[00:56:04 -> 00:56:06] Okay. So the latency, next
+[00:56:06 -> 00:56:08] time I see it, is much
+[00:56:08 -> 00:56:10] faster. Okay. Good. I don't
+[00:56:10 -> 00:56:12] care. But it turns out,
+[00:56:12 -> 00:56:14] that implicit side effect now
+[00:56:14 -> 00:56:16] becomes a channel for a
+[00:56:16 -> 00:56:18] security attack. Okay.
+[00:56:18 -> 00:56:20] So, you know, I mean, a few
+[00:56:20 -> 00:56:24] years ago, there was this big
+[00:56:24 -> 00:56:26] Spectre meltdown stuff. They
+[00:56:26 -> 00:56:28] keep talking about it a
+[00:56:28 -> 00:56:30] little bit. They keep
+[00:56:30 -> 00:56:32] bothering the cloud vendors.
+[00:56:32 -> 00:56:34] Hey, your cloud is insecure
+[00:56:34 -> 00:56:36] and yada, yada, yada,
+[00:56:36 -> 00:56:38] whatever. You know, buy my
+[00:56:38 -> 00:56:40] new solution. But, you
+[00:56:40 -> 00:56:42] know, that's the
+[00:56:42 -> 00:56:44] you know, that now
+[00:56:44 -> 00:56:46] becomes perhaps, you know, something else
+[00:56:46 -> 00:56:50] to worry about. Okay.
+[00:56:50 -> 00:56:54] If I have instructions
+[00:56:54 -> 00:56:56] with variable lengths,
+[00:56:56 -> 00:56:58] it actually complicates the
+[00:56:58 -> 00:57:01] instruction scheduling. You'll see.
+[00:57:01 -> 00:57:03] If I have an instruction
+[00:57:03 -> 00:57:05] that is difficult to interrupt,
+[00:57:05 -> 00:57:07] that complicates
+[00:57:07 -> 00:57:12] many, many things. Let me give you an example
+[00:57:12 -> 00:57:16] here. I have one instruction
+[00:57:16 -> 00:57:20] you know, that's moving.
+[00:57:20 -> 00:57:22] I have a 100 character
+[00:57:22 -> 00:57:24] string to move from one memory
+[00:57:24 -> 00:57:26] area to another memory area
+[00:57:26 -> 00:57:28] done in one instruction.
+[00:57:28 -> 00:57:30] Life could be simpler.
+[00:57:30 -> 00:57:32] Why should I
+[00:57:32 -> 00:57:34] write a loop to do this and that
+[00:57:34 -> 00:57:40] and who knows what I'm doing?
+[00:57:40 -> 00:57:42] Say after I've moved 99
+[00:57:42 -> 00:57:44] bytes, or maybe 90
+[00:57:44 -> 00:57:46] bytes, there's a page fault.
+[00:57:46 -> 00:57:53] How do you handle a page fault?
+[00:57:53 -> 00:57:55] Stop doing what you're doing.
+[00:57:55 -> 00:57:57] Go to the operating system.
+[00:57:57 -> 00:57:59] Operating system
+[00:57:59 -> 00:58:01] takes relatively days.
+[00:58:01 -> 00:58:03] Okay.
+[00:58:03 -> 00:58:05] Millisecond compared to nanosecond.
+[00:58:05 -> 00:58:07] Do its thing.
+[00:58:07 -> 00:58:09] During that time you run
+[00:58:09 -> 00:58:11] something else on the processor.
+[00:58:11 -> 00:58:13] Including the code of
+[00:58:13 -> 00:58:15] the operating system that's handling that
+[00:58:15 -> 00:58:17] page fault.
+[00:58:17 -> 00:58:22] And then come back. Come back where?
+[00:58:22 -> 00:58:24] Start moving from the
+[00:58:24 -> 00:58:26] first byte
+[00:58:26 -> 00:58:28] or the 91st.
+[00:58:28 -> 00:58:30] How do I know I stopped at
+[00:58:30 -> 00:58:32] the 91st?
+[00:58:32 -> 00:58:36] Point.
+[00:58:36 -> 00:58:38] Life becomes
+[00:58:38 -> 00:58:40] interesting
+[00:58:40 -> 00:58:42] for a hardware designer.
+[00:58:42 -> 00:58:44] Software guy doesn't care.
+[00:58:44 -> 00:58:46] Figure it out.
+[00:58:46 -> 00:58:48] Hardware person makes my life
+[00:58:48 -> 00:58:50] much more complicated
+[00:58:50 -> 00:58:52] if I have difficult
+[00:58:52 -> 00:58:58] to interact instructions.
+[00:58:58 -> 00:59:04] These
+[00:59:04 -> 00:59:06] high-level constructs of
+[00:59:06 -> 00:59:08] instructions
+[00:59:08 -> 00:59:10] would also
+[00:59:10 -> 00:59:12] trouble the compiler as well.
+[00:59:12 -> 00:59:14] Yes, yes, yes.
+[00:59:14 -> 00:59:16] That is the point of
+[00:59:16 -> 00:59:18] wallpaper.
+[00:59:18 -> 00:59:20] If the compiler can see
+[00:59:20 -> 00:59:22] it's a 48 character
+[00:59:22 -> 00:59:24] instruction, a 48 character
+[00:59:24 -> 00:59:26] string, and my cache line
+[00:59:26 -> 00:59:28] perfectly fits there, so
+[00:59:28 -> 00:59:30] I could just use 48 and 48.
+[00:59:30 -> 00:59:32] But if you
+[00:59:32 -> 00:59:34] cannot see that, then it might
+[00:59:34 -> 00:59:36] have a lot of cache
+[00:59:36 -> 00:59:38] space. Exactly. Exactly.
+[00:59:38 -> 00:59:40] So complex instructions like that
+[00:59:40 -> 00:59:42] make it
+[00:59:42 -> 00:59:44] difficult for the
+[00:59:44 -> 00:59:46] compiler, but also
+[00:59:46 -> 00:59:48] that's different. Complex instructions
+[00:59:48 -> 00:59:50] are different from a difficult to
+[00:59:50 -> 00:59:55] interrupt instruction.
+[01:00:01 -> 01:00:06] This instruction,
+[01:00:06 -> 01:00:08] simple move instruction,
+[01:00:08 -> 01:00:10] not simple,
+[01:00:10 -> 01:00:12] a move instruction like that,
+[01:00:12 -> 01:00:14] is not necessarily difficult for the hardware
+[01:00:14 -> 01:00:17] to implement.
+[01:00:17 -> 01:00:19] It's only
+[01:00:19 -> 01:00:21] if it has to be
+[01:00:21 -> 01:00:23] if
+[01:00:23 -> 01:00:25] it throws an exception
+[01:00:25 -> 01:00:27] in the middle of the execution
+[01:00:27 -> 01:00:29] of the instruction
+[01:00:29 -> 01:00:31] is it difficult.
+[01:00:31 -> 01:00:33] So now what you could say
+[01:00:33 -> 01:00:35] software, make sure you don't do it
+[01:00:35 -> 01:00:37] do it in a way that you never throw
+[01:00:37 -> 01:00:39] an exception with software.
+[01:00:39 -> 01:00:41] No.
+[01:00:41 -> 01:00:43] I want to do what I'm doing.
+[01:00:43 -> 01:00:45] Okay.
+[01:00:45 -> 01:00:47] Okay.
+[01:00:47 -> 01:00:49] Alright.
+[01:00:49 -> 01:00:51] We'll come back to the length of the instruction
+[01:00:51 -> 01:00:53] and the variable length instructions again
+[01:00:53 -> 01:00:55] because, you know,
+[01:00:55 -> 01:00:57] they started
+[01:00:57 -> 01:00:59] out with instructions with
+[01:00:59 -> 01:01:01] having
+[01:01:01 -> 01:01:03] two or three
+[01:01:03 -> 01:01:05] lengths in IBM
+[01:01:05 -> 01:01:07] 360, then we went to any length instructions
+[01:01:07 -> 01:01:09] and then we went to fixed length,
+[01:01:09 -> 01:01:11] four byte instructions and
+[01:01:11 -> 01:01:13] Spark and ARM
+[01:01:13 -> 01:01:15] and then once it went into
+[01:01:15 -> 01:01:17] hey, no, I want to go into mobile phone world
+[01:01:17 -> 01:01:19] mobile phone, small
+[01:01:19 -> 01:01:21] amount of memory, small amount of memory
+[01:01:21 -> 01:01:23] I want to have my code size small
+[01:01:23 -> 01:01:25] and I want to have my code size small
+[01:01:25 -> 01:01:27] I have to have small instructions.
+[01:01:27 -> 01:01:29] So that's what then led
+[01:01:29 -> 01:01:31] to the creating of the ARM
+[01:01:31 -> 01:01:33] instructions, which are two bytes.
+[01:01:33 -> 01:01:35] 16 bits rather than the standard ARM
+[01:01:35 -> 01:01:37] instructions.
+[01:01:37 -> 01:01:39] We'll talk a little bit about that.
+[01:01:39 -> 01:01:44] The real world getting in the way.
+[01:01:44 -> 01:01:46] Alright.
+[01:01:46 -> 01:01:48] Now let me talk about
+[01:01:48 -> 01:01:50] compatibility, which is
+[01:01:50 -> 01:01:52] a critical part
+[01:01:52 -> 01:01:56] in the ARM way.
+[01:01:56 -> 01:01:58] What is, you know, compatibility?
+[01:01:58 -> 01:02:00] Very simple real
+[01:02:00 -> 01:02:02] world situation.
+[01:02:02 -> 01:02:04] Which is no one's going to buy
+[01:02:04 -> 01:02:06] new hardware
+[01:02:06 -> 01:02:11] if you're going to make and do new software.
+[01:02:11 -> 01:02:13] And, you know,
+[01:02:13 -> 01:02:15] the, you know,
+[01:02:15 -> 01:02:17] people just, hey, the code is written
+[01:02:17 -> 01:02:19] why are you bothering me with a long effort
+[01:02:19 -> 01:02:21] to get it right?
+[01:02:21 -> 01:02:23] And the person who wrote the code
+[01:02:23 -> 01:02:25] who knows where they are?
+[01:02:25 -> 01:02:27] It's like
+[01:02:27 -> 01:02:29] you know
+[01:02:29 -> 01:02:31] one of our faculty members
+[01:02:31 -> 01:02:34] is why she was
+[01:02:34 -> 01:02:36] the founder
+[01:02:36 -> 01:02:38] of a
+[01:02:38 -> 01:02:40] database company
+[01:02:40 -> 01:02:42] a few decades ago.
+[01:02:42 -> 01:02:44] And
+[01:02:44 -> 01:02:46] that company got bought out
+[01:02:46 -> 01:02:48] by Microsoft later on.
+[01:02:48 -> 01:02:50] And one of the Microsoft folks was saying,
+[01:02:50 -> 01:02:52] hey, you know, there's a
+[01:02:52 -> 01:02:54] comment
+[01:02:54 -> 01:02:56] and that piece of code which says
+[01:02:56 -> 01:02:58] don't touch this without getting approved by Jane.
+[01:02:58 -> 01:03:00] Jane long left the company
+[01:03:00 -> 01:03:02] three, thirty years ago.
+[01:03:02 -> 01:03:04] Okay.
+[01:03:04 -> 01:03:06] So you know,
+[01:03:06 -> 01:03:08] it's like, you know,
+[01:03:08 -> 01:03:11] software folks
+[01:03:11 -> 01:03:13] I don't want to be bothering
+[01:03:13 -> 01:03:15] I just want it to go faster.
+[01:03:15 -> 01:03:17] You don't have something to
+[01:03:17 -> 01:03:19] give me to make it go faster
+[01:03:19 -> 01:03:21] or go away. I'm not spending
+[01:03:21 -> 01:03:23] money.
+[01:03:23 -> 01:03:25] Which means
+[01:03:25 -> 01:03:27] and of course, what is the
+[01:03:27 -> 01:03:29] it's not the high level language program anymore.
+[01:03:29 -> 01:03:31] Who knows what the compiler was to compile
+[01:03:31 -> 01:03:33] it, you know, written by
+[01:03:33 -> 01:03:35] some individual
+[01:03:35 -> 01:03:37] assembly language, assemble.
+[01:03:37 -> 01:03:39] Okay. What you have is the
+[01:03:39 -> 01:03:41] executable code.
+[01:03:41 -> 01:03:43] Okay. So the new
+[01:03:43 -> 01:03:45] hardware must continue
+[01:03:45 -> 01:03:47] to run, you know,
+[01:03:47 -> 01:03:49] the code that was
+[01:03:49 -> 01:03:51] written.
+[01:03:51 -> 01:03:53] You know, IBM
+[01:03:53 -> 01:03:55] you know,
+[01:03:55 -> 01:03:57] was king for a long time.
+[01:03:57 -> 01:03:59] Had the 360, 370
+[01:03:59 -> 01:04:01] architecture. 360
+[01:04:01 -> 01:04:03] started out and then these are variations
+[01:04:03 -> 01:04:05] that add on to the basic
+[01:04:05 -> 01:04:07] instructions that they sold their money
+[01:04:07 -> 01:04:09] into banks.
+[01:04:09 -> 01:04:11] I was there, sold their machines into banks
+[01:04:11 -> 01:04:13] and banks are not going to
+[01:04:13 -> 01:04:15] change their codes. That's why IBM is still
+[01:04:15 -> 01:04:17] around, you know, because no one else
+[01:04:17 -> 01:04:19] is running their stuff. Or actually casinos.
+[01:04:19 -> 01:04:21] Casinos are the other big customer.
+[01:04:21 -> 01:04:23] Okay. And they aren't
+[01:04:23 -> 01:04:25] going to trust new software that's going to
+[01:04:25 -> 01:04:27] steal money from them or whatever.
+[01:04:27 -> 01:04:29] Okay.
+[01:04:29 -> 01:04:31] So the situation now you have
+[01:04:31 -> 01:04:33] is you have, you know,
+[01:04:33 -> 01:04:35] new instruction set programs that are being
+[01:04:35 -> 01:04:39] written into it. And
+[01:04:39 -> 01:04:43] two things.
+[01:04:43 -> 01:04:45] One is, as you
+[01:04:45 -> 01:04:47] have new hardware,
+[01:04:47 -> 01:04:49] you want to run
+[01:04:49 -> 01:04:51] the new instruction set.
+[01:04:51 -> 01:04:53] Or programs
+[01:04:53 -> 01:04:56] in your instruction set.
+[01:04:56 -> 01:04:58] But you also want to keep enhancing
+[01:04:58 -> 01:05:00] the instruction set.
+[01:05:00 -> 01:05:02] And the new hardware
+[01:05:02 -> 01:05:04] is going to now run the enhanced version
+[01:05:04 -> 01:05:06] of the instruction set.
+[01:05:06 -> 01:05:08] And the whole selling
+[01:05:08 -> 01:05:10] point is to, hey, if you use
+[01:05:10 -> 01:05:12] my new instruction set, you're going to run
+[01:05:12 -> 01:05:16] your program there.
+[01:05:16 -> 01:05:21] Old program, new program.
+[01:05:21 -> 01:05:25] I have a big data center.
+[01:05:25 -> 01:05:27] That's going to have some machines with
+[01:05:27 -> 01:05:29] old instruction set.
+[01:05:29 -> 01:05:31] Some
+[01:05:31 -> 01:05:33] machines with the newer version. It's never going to
+[01:05:33 -> 01:05:35] be the case where, hey,
+[01:05:35 -> 01:05:37] buy my new hardware and throw out all your
+[01:05:37 -> 01:05:39] old machines. Never going to happen.
+[01:05:39 -> 01:05:42] So now
+[01:05:42 -> 01:05:44] you must be able to run
+[01:05:44 -> 01:05:48] your old programs on the
+[01:05:48 -> 01:05:51] old machines, your old
+[01:05:51 -> 01:05:53] programs on the new machines,
+[01:05:53 -> 01:05:55] new programs on the
+[01:05:55 -> 01:05:57] new machines, and new
+[01:05:57 -> 01:06:01] programs on the old machines. Okay?
+[01:06:01 -> 01:06:03] So,
+[01:06:03 -> 01:06:05] what you want to be able to do
+[01:06:05 -> 01:06:07] is you want to be able to have
+[01:06:07 -> 01:06:09] backward compatibility where
+[01:06:09 -> 01:06:11] the new processors
+[01:06:11 -> 01:06:13] must support old programs.
+[01:06:13 -> 01:06:15] Very, very important.
+[01:06:15 -> 01:06:19] Okay?
+[01:06:19 -> 01:06:21] And you must have
+[01:06:21 -> 01:06:23] forward or upward compatibility
+[01:06:23 -> 01:06:25] where the old processors
+[01:06:25 -> 01:06:27] must support new
+[01:06:27 -> 01:06:30] programs. Okay?
+[01:06:30 -> 01:06:32] So, let's
+[01:06:32 -> 01:06:34] talk about this.
+[01:06:34 -> 01:06:36] New programs
+[01:06:36 -> 01:06:38] must support
+[01:06:38 -> 01:06:40] new
+[01:06:40 -> 01:06:42] processors must support old programs.
+[01:06:42 -> 01:06:44] Okay?
+[01:06:44 -> 01:06:49] My instruction set
+[01:06:49 -> 01:06:56] has this insert queue.
+[01:06:56 -> 01:06:58] You know, old guy did it.
+[01:06:58 -> 01:07:00] Retired.
+[01:07:00 -> 01:07:02] He hot shots down saying, I don't want to support
+[01:07:02 -> 01:07:04] this instruction set. It's too complex.
+[01:07:04 -> 01:07:06] It might can't do whatever. I don't want people
+[01:07:06 -> 01:07:08] just making the processor design
+[01:07:08 -> 01:07:10] more complicated. Let me just get rid of it.
+[01:07:10 -> 01:07:12] The processor doesn't have to
+[01:07:12 -> 01:07:16] support this instruction set.
+[01:07:16 -> 01:07:18] But there is some program that could have used
+[01:07:18 -> 01:07:20] that instruction set. And that program
+[01:07:20 -> 01:07:22] doesn't work on my new processor
+[01:07:22 -> 01:07:24] better.
+[01:07:24 -> 01:07:27] What I can do is I can
+[01:07:27 -> 01:07:34] I want to get rid of that
+[01:07:34 -> 01:07:36] instruction set. Okay?
+[01:07:36 -> 01:07:38] What I can do is I can say, look
+[01:07:38 -> 01:07:40] I'm going to make it run really slow.
+[01:07:40 -> 01:07:42] And eventually
+[01:07:42 -> 01:07:44] if I make it run really slow
+[01:07:44 -> 01:07:46] whoever may use my
+[01:07:46 -> 01:07:48] new hardware. Okay?
+[01:07:48 -> 01:07:50] And how do I make it run really slow?
+[01:07:50 -> 01:07:52] Don't implement it in hardware.
+[01:07:52 -> 01:07:54] Implement it in software.
+[01:07:54 -> 01:07:56] Okay?
+[01:07:56 -> 01:07:58] So,
+[01:07:58 -> 01:08:00] you know, what you can do is you can
+[01:08:00 -> 01:08:02] emulate that instruction
+[01:08:02 -> 01:08:04] and make it run really slow.
+[01:08:04 -> 01:08:06] But I don't have to waste my time
+[01:08:06 -> 01:08:08] and resource and mental energy on trying to
+[01:08:08 -> 01:08:13] get it fast and implement it. Okay.
+[01:08:13 -> 01:08:15] We'll talk more about this in detail
+[01:08:15 -> 01:08:17] on 12.
+[01:08:17 -> 01:08:19] Again,
+[01:08:19 -> 01:08:21] this is a very, very important issue.
+[01:08:21 -> 01:08:23] And that shows up in
+[01:08:23 -> 01:08:25] many situations.
+[01:08:25 -> 01:08:27] You start off with a clean slate. Everything is good.
+[01:08:27 -> 01:08:29] You don't need to worry about anything.
+[01:08:29 -> 01:08:31] But if you want to have
+[01:08:31 -> 01:08:33] longevity, if you want to survive
+[01:08:33 -> 01:08:35] for a much longer time,
+[01:08:35 -> 01:08:40] then the real world.
+[01:08:40 -> 01:08:42] Okay.

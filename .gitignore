@@ -3,3 +3,25 @@
 *.mp3
 *.m4a
 *.wav
+
+# Lecture video is kept locally only; the .srt captions next to each recording are what gets tracked.
+*.mp4
+*.mov
+
+# The ece552 project phase archives are small course material, so they override the *.zip rule.
+# project-phase3.zip stays ignored: it duplicates the extracted project-phase3/ folder and still
+# holds the 193 MB of simulation output that was stripped from that folder.
+!ece552/Project/*.zip
+ece552/Project/project-phase3.zip
+
+# Verilog simulation output does not belong in the mirror. The compiled iverilog binaries have no
+# extension, so they cannot be matched here -- delete them by hand if a project is rebuilt.
+*.vcd
+*.wlf
+*.fst
+wlft*
+work/
+
+# Office lock/recovery files left behind in the course material dump.
+~$*
+~WRL*.tmp

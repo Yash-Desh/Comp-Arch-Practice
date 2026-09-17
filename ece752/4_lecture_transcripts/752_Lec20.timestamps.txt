@@ -1,0 +1,1163 @@
+Title: 752_Lec20
+Source file: 752_Lec20.mp3
+Detected language: en
+------------------------------------------------------------
+
+[00:00:00 -> 00:00:10] accesses to the page table so that you aren't going and accessing the page table all the time, all right?
+[00:00:10 -> 00:00:17] So, you know, if you have to carry out an address translation for every load or every store,
+[00:00:17 -> 00:00:23] you don't want to be walking through five levels of the page table and just making five other memory accesses
+[00:00:23 -> 00:00:27] to carry out the translation for this address.
+[00:00:27 -> 00:00:34] So what you're going to do is you're going to walk through those, you know,
+[00:00:34 -> 00:01:03] figure out what page table entry you want and then you're going to want to cache it in a special cache
+[00:01:03 -> 00:01:10] and that cache we're going to call a translation look-aside buffer or a translation buffer.
+[00:01:10 -> 00:01:15] Okay, and what this translation buffer is going to be, TLB is going to be,
+[00:01:15 -> 00:01:20] the data in the TLB is going to be the page table entry.
+[00:01:20 -> 00:01:27] Okay, for the time being, it's going to be a physical page frame, but in addition, it's going to be some additional bits.
+[00:01:27 -> 00:01:32] And you're going to access this cache, the address you're going to give to this cache is going to be
+[00:01:32 -> 00:01:36] the virtual page number to see if this virtual page number,
+[00:01:36 -> 00:01:41] the translation for that virtual page number is there in the TLB.
+[00:01:41 -> 00:01:51] Okay, it's typically small and you want it to hit a lot, so it's going to be fully associative typically.
+[00:01:51 -> 00:01:58] All right, or high associativity, and we'll see examples in a little while.
+[00:01:58 -> 00:02:07] Okay, and, you know, it exploits the fact that, you know, we saw there was spatial locality in a block of 64 bytes
+[00:02:07 -> 00:02:11] or 128 bytes, okay.
+[00:02:11 -> 00:02:17] A page size is going to be 4 kilobytes or more than 4 kilobytes, 4 kilobytes is typical,
+[00:02:17 -> 00:02:26] so there is a fair amount of spatial locality that you can exploit and get, you know, want to get very high hit rates.
+[00:02:26 -> 00:02:33] If you do not find an entry in the TLB, then you have to go back and go through the page table
+[00:02:33 -> 00:02:39] and get to the correct entry, and then end up caching it.
+[00:02:39 -> 00:02:47] Okay, the TLB miss, basically, you know, going and walking through that page table, you can either do it
+[00:02:47 -> 00:02:52] software people have, you know, suggested doing it in software,
+[00:02:52 -> 00:02:59] where you write a small, TLB miss handler, a small routine to, you know, do that,
+[00:02:59 -> 00:03:04] unlike some other exception handlers that you call the operating system,
+[00:03:04 -> 00:03:11] this one, you don't bother the operating system, you just have a very quick call to this TLB handler
+[00:03:11 -> 00:03:16] without bothering the operating system too much, in some sense.
+[00:03:16 -> 00:03:20] You bother the operating system a little bit, but not too much over here.
+[00:03:20 -> 00:03:30] Okay, but, you know, alternatively, you can actually, you know, what the TLB miss handler is doing
+[00:03:30 -> 00:03:39] is basically, you know, going and going to this memory address, adding an offset, reading something from here,
+[00:03:39 -> 00:03:45] going to some other memory, adding an offset, reading something, et cetera, et cetera.
+[00:03:45 -> 00:03:52] Okay, until you get to the root entry and get that TLB entry.
+[00:03:52 -> 00:03:58] So that can also be done in a hardware finite state machine.
+[00:03:58 -> 00:04:11] So what the hardware finite state machine does is the address, root address of the root page table over here.
+[00:04:11 -> 00:04:15] Okay, it stores in a hardware register.
+[00:04:15 -> 00:04:22] Okay, and then this part is also stored, you know, this is one page.
+[00:04:22 -> 00:04:31] This page is kept around, okay, and you store the page table root in a hardware register,
+[00:04:31 -> 00:04:40] and this page table root and all the table pointers, all these pointers over here are maintained as physical addresses.
+[00:04:40 -> 00:04:50] So even though those are memory references, you don't have to carry out a, you know, virtual to physical translation.
+[00:04:50 -> 00:05:02] All right, so, you know, the actual page table, this actual entries of this page table, you know,
+[00:05:02 -> 00:05:07] as this, these are just normal memory addresses.
+[00:05:07 -> 00:05:16] Okay, they are virtual addresses, but you are keeping around the actual physical addresses that those virtual addresses be transferred to.
+[00:05:16 -> 00:05:23] These are going to be there, they start out on the disk, end up in memory, end up in the caches.
+[00:05:23 -> 00:05:27] Okay, they are just like any other memory location.
+[00:05:27 -> 00:05:34] Okay, so, you know, the reads of that page table are going to use the standard cache hierarchy,
+[00:05:34 -> 00:05:43] and so it allows the, you know, the caching to speed up the search of that page table.
+[00:05:43 -> 00:05:53] Question to ask is, hey, if this, you know, in a TLB mess, you are going through making repeated memory accesses to actually get to that root,
+[00:05:53 -> 00:05:59] what if those have a TLB mess? One of those accesses have a TLB mess.
+[00:05:59 -> 00:06:07] Okay, so, you know, several options, you can actually allow recursive TLB messes.
+[00:06:07 -> 00:06:10] You know, it's a little tricky, but you could do it.
+[00:06:10 -> 00:06:18] Okay, another potential solution is you can actually lock the TLB entries for the page table into the TLB.
+[00:06:18 -> 00:06:22] Okay, make sure they are not evicted, so there is no TLB mess for them.
+[00:06:22 -> 00:06:29] And, you know, all these solutions that I talk about, people have tried in different situations, it depends on your situation.
+[00:06:29 -> 00:06:39] And the alternative that is, you know, use is to, hey, for those walking to the page table,
+[00:06:39 -> 00:06:44] the accesses you make are actually physical addresses, so you are storing the physical addresses,
+[00:06:44 -> 00:06:50] so you don't have to carry out a virtual to physical address translation as you are handling the TLBs.
+[00:06:50 -> 00:07:01] Okay, and so, you know, when things started out, when things started out, you know, people said,
+[00:07:01 -> 00:07:09] look, you know, TLB messes, I can have a little software team, and so, you know,
+[00:07:09 -> 00:07:15] when I am going to stop my running my program, if you will, go handle this handler and come back.
+[00:07:15 -> 00:07:24] Okay, and that is fine if you had a simple five-stage pipeline, okay, where you want that many instructions in flight.
+[00:07:24 -> 00:07:32] Now, if you have now, you know, like two, three, four, five hundred instructions in flight, okay,
+[00:07:32 -> 00:07:41] you cannot stall everything, in a sense, and go handle that TLB mess and, you know, come back.
+[00:07:41 -> 00:07:51] So that pushes more towards sort of having a little hardware solution, the hardware TLB walker
+[00:07:51 -> 00:07:56] that allows the other stuff to just keep happening as it is, okay, and, you know,
+[00:07:56 -> 00:08:01] some of the other things that you have to worry about in doing things like this is, you know,
+[00:08:01 -> 00:08:07] you are using certain control registers over here, you know, and the state needs to,
+[00:08:07 -> 00:08:12] how the state gets spread out, et cetera, et cetera, it gets a little more complicated,
+[00:08:12 -> 00:08:16] and so these days the push has been, especially for the big out of order machines,
+[00:08:16 -> 00:08:22] to carry out the TLB mishandling in a hardware financing machine, and as I showed you,
+[00:08:22 -> 00:08:29] you know, in some of the current process of you actually can handle multiple TLB,
+[00:08:29 -> 00:08:35] what was it, eight or something, then I showed you that the Qualcomm process.
+[00:08:39 -> 00:08:43] Okay, any questions so far?
+[00:08:43 -> 00:08:48] Okay, so now let's step back a little bit and see, I have a TLB, I have a cache,
+[00:08:48 -> 00:08:53] I have some number of entries in the TLB, I have some base odds, okay,
+[00:08:53 -> 00:08:59] and what I'd like to do is, you know, if I'm going to access some data,
+[00:08:59 -> 00:09:04] if it's in my cache, I'd like to be able to just simply get it out of the cache
+[00:09:04 -> 00:09:12] and nothing else gets in the way anymore, okay, but now we know that we are making a virtual address,
+[00:09:12 -> 00:09:17] that has to be translated to a physical address, how is that going to be done?
+[00:09:17 -> 00:09:22] It's going to be, I'm going to access the TLB, and if I have a hint in the TLB,
+[00:09:22 -> 00:09:29] things are good, if I have a miss in the TLB, I have to go through some other stuff, okay,
+[00:09:29 -> 00:09:36] excuse me a minute, so what I'd like to do is, I'd like to make sure that somehow,
+[00:09:36 -> 00:09:43] if my data is going to be in the cache, I don't want to get a TLB miss,
+[00:09:43 -> 00:09:47] I'd like to get a TLB hit, otherwise the TLB is just, the data is there in the cache,
+[00:09:47 -> 00:09:53] I just can't get to it because of the TLB miss, okay,
+[00:09:53 -> 00:10:00] so that brings up the notion of TLB reach, the TLB reach is how many entries,
+[00:10:00 -> 00:10:09] how much memory can the TLB keep the virtual to physical address translation for, okay,
+[00:10:09 -> 00:10:15] if I have a 64 entry TLB and I have a 4K page size, okay,
+[00:10:15 -> 00:10:24] that TLB can basically keep mappings for 264 kilobytes of memory, okay,
+[00:10:24 -> 00:10:29] and these days that's less than a L2 cache size,
+[00:10:29 -> 00:10:34] so if I have a 64 entry TLB with 4 kilobyte pages,
+[00:10:34 -> 00:10:39] I can have data in the cache that I don't have an active translation for in the TLB,
+[00:10:39 -> 00:10:44] so that's not necessarily good, so you know, what do we do, okay,
+[00:10:44 -> 00:10:51] so one of the things that people propose is they propose having page sizes that are much bigger, okay,
+[00:10:52 -> 00:11:01] so if I had 4 megabyte page sizes, then the TLB reach is 256 megabytes,
+[00:11:01 -> 00:11:06] but now, you know, if I have a single 4 megabyte page,
+[00:11:06 -> 00:11:13] that basically means I must be allocating memory at least in 4 megabyte chunks,
+[00:11:13 -> 00:11:20] and there ends up being a lot of internal fragmentation, memory that is wasted does not use, okay,
+[00:11:20 -> 00:11:30] and then people propose that, hey, I can have multiple different page sizes, okay,
+[00:11:30 -> 00:11:36] I can have 4 kilobyte page size, you know, 2 megabyte page size, you know, whatever it is,
+[00:11:36 -> 00:11:40] you know, 128 kilobyte page size, whatever, okay,
+[00:11:40 -> 00:11:47] in fact RISC-V I think is proposing we use all powers of 2 page sizes, okay,
+[00:11:47 -> 00:11:52] and, you know, at least for 30 years I've been seeing people say,
+[00:11:52 -> 00:12:00] hey, the 4 kilobyte page size is too small because of the TLB reach problem, et cetera, okay,
+[00:12:00 -> 00:12:04] we'd like to have larger page sizes, okay,
+[00:12:04 -> 00:12:09] but then, you know, the software has to use a lot of page sizes,
+[00:12:09 -> 00:12:12] the operating system doesn't use a lot of page sizes,
+[00:12:12 -> 00:12:17] and so people have been trying to get rid of these 4 kilobyte page sizes,
+[00:12:17 -> 00:12:21] haven't been able to so far, okay,
+[00:12:21 -> 00:12:26] because a lot of software built that is using 4 kilobyte page sizes, okay,
+[00:12:26 -> 00:12:30] so, you know, what seems to be common is like, you know, okay,
+[00:12:30 -> 00:12:33] I'll give you 2 page sizes, 4 kilobyte which you,
+[00:12:33 -> 00:12:37] sorry, the software has to use, a lot of software has built with that,
+[00:12:37 -> 00:12:44] and maybe if you can you use a 2 megabyte page size, okay,
+[00:12:44 -> 00:12:47] so say I only have 2 different page sizes,
+[00:12:47 -> 00:12:56] now when I go and access the TLB I have to know what the page size is, okay,
+[00:12:56 -> 00:12:59] so what they do is, you know,
+[00:12:59 -> 00:13:03] and that increases you have to have a much different associativity,
+[00:13:03 -> 00:13:06] accessing different tags, et cetera, et cetera,
+[00:13:06 -> 00:13:10] so what a lot of machines do that support 2 different page sizes,
+[00:13:10 -> 00:13:12] they'll have 2 TLBs,
+[00:13:12 -> 00:13:16] say a 64 entry TLB for 4 kilobyte page sizes,
+[00:13:16 -> 00:13:20] and maybe a 4 entry TLB for 2 megabyte page sizes,
+[00:13:20 -> 00:13:23] you can access both of them at the same time,
+[00:13:23 -> 00:13:29] and then figure out what is the correct page size, okay,
+[00:13:29 -> 00:13:39] another thing people use is to basically now have 2 levels of TLB,
+[00:13:39 -> 00:13:45] okay, a small fast one backed up with a bigger one, okay,
+[00:13:45 -> 00:13:50] and many a times you can access both of them at the same time, all right,
+[00:13:50 -> 00:13:58] and so these days second level TLBs of 2K, 3K, 4K are reasonably common,
+[00:13:58 -> 00:14:01] that now gets you more entries,
+[00:14:01 -> 00:14:08] so say I had a 1K entry level 2 TLB with a 4K page size,
+[00:14:08 -> 00:14:10] that's 4 megabytes the record map,
+[00:14:10 -> 00:14:16] so that's going to maybe cover my L2 caches if you will, okay,
+[00:14:16 -> 00:14:22] another solution people have posed is to actually keep a software version of the TLB,
+[00:14:22 -> 00:14:26] a software cache, okay,
+[00:14:26 -> 00:14:32] and you know it's smaller and much faster than page table access,
+[00:14:32 -> 00:14:42] but you know this is really in a sense the solution that is more common today.
+[00:14:42 -> 00:14:44] Questions? Yeah?
+[00:14:44 -> 00:14:47] In regards to larger page sizes,
+[00:14:47 -> 00:14:49] it was my understanding that a lot of languages nowadays,
+[00:14:49 -> 00:14:55] they have their runtime only get the operating system to give them new pages when it's absolutely necessary,
+[00:14:55 -> 00:14:58] they try to be very conservative with it where they only get one page
+[00:14:58 -> 00:15:02] and they split it up into sort of like micro pages in a sense,
+[00:15:02 -> 00:15:04] like every time you would call a memory allocate,
+[00:15:04 -> 00:15:06] it would just give you a little bit of a page
+[00:15:06 -> 00:15:10] and just keep track of how much data for that page has taken up.
+[00:15:10 -> 00:15:14] What you said, several languages and runtimes try and do that,
+[00:15:14 -> 00:15:18] most common software doesn't mind.
+[00:15:18 -> 00:15:24] If you can try and basically do your allocation
+[00:15:24 -> 00:15:30] so there is less fragmentation in the page regardless of the page size, that's a win, okay,
+[00:15:32 -> 00:15:38] but you know some people are studying this more,
+[00:15:38 -> 00:15:42] actually it would be interesting if you're doing a project on some of that related to page size,
+[00:15:42 -> 00:15:51] actually do an analysis of how much data on the page that you actually end up accessing,
+[00:15:51 -> 00:16:00] it's not that big, okay, 10% or something like that.
+[00:16:00 -> 00:16:04] Okay, so we all know what page faults, you heard about them,
+[00:16:04 -> 00:16:07] a page fault means that page table entry is not in the page table
+[00:16:07 -> 00:16:10] because the page is not there in memory.
+[00:16:10 -> 00:16:14] You start out as a TLB miss, it's going to be detected by the,
+[00:16:14 -> 00:16:20] and then you go to the, the finite state machine detects the miss,
+[00:16:20 -> 00:16:25] and then you call the operating system which will do a fair amount of work
+[00:16:25 -> 00:16:29] to figure out which page should be replaced,
+[00:16:30 -> 00:16:34] and if that page is dirty, write it to your desk,
+[00:16:34 -> 00:16:36] read the missing page from the desk,
+[00:16:36 -> 00:16:40] and it takes a few milliseconds these days.
+[00:16:40 -> 00:16:45] In the meantime, the operating system can swap out,
+[00:16:45 -> 00:16:51] schedule another task on the CPU because it's millions of clock cycles.
+[00:16:51 -> 00:16:55] And when the page gets the returns,
+[00:16:55 -> 00:16:58] and you get the page from the memory and put it in the,
+[00:16:58 -> 00:17:01] from the desk and put it in the memory, update the page table,
+[00:17:01 -> 00:17:13] then you treat it as a fair amount of that you've seen,
+[00:17:13 -> 00:17:17] but now let's make things a little more interesting, okay,
+[00:17:17 -> 00:17:21] given our knowledge about caches, et cetera, so far.
+[00:17:21 -> 00:17:26] So the memory hierarchy that we've been documenting so far
+[00:17:26 -> 00:17:29] assumes what are called physical caches.
+[00:17:29 -> 00:17:31] What does that mean?
+[00:17:31 -> 00:17:37] The cache that is accessed using physical addresses, okay?
+[00:17:37 -> 00:17:43] The index to access into the cache is bits from a physical address.
+[00:17:43 -> 00:17:53] The tag that is stored in the cache is bits from the physical address, all right?
+[00:17:53 -> 00:17:59] So here's my level one cache, level two cache, whatever, okay?
+[00:17:59 -> 00:18:03] The main memory is being accessed by physical addresses,
+[00:18:03 -> 00:18:05] level two cache is being accessed by physical address,
+[00:18:05 -> 00:18:09] the level one cache is also being accessed by physical addresses,
+[00:18:09 -> 00:18:13] and so I have to have TLVs to convert from the virtual address,
+[00:18:13 -> 00:18:22] translate from the virtual address to the physical address, as we just saw, okay?
+[00:18:22 -> 00:18:26] The nice thing about this structure is that, you know,
+[00:18:26 -> 00:18:32] there is only one copy of data at a given physical address in memory,
+[00:18:32 -> 00:18:35] and if I'm caching that data with the physical address,
+[00:18:35 -> 00:18:42] there's only going to be one place in each level of the cache that it's going to end up, okay?
+[00:18:42 -> 00:18:46] If I have, you know, inclusion, by the way, multi-level inclusion,
+[00:18:46 -> 00:18:51] you know, the data could be, if the data is in the level one cache,
+[00:18:51 -> 00:18:53] it's going to be the L2 cache,
+[00:18:53 -> 00:18:55] and if I replace something from the L2 cache,
+[00:18:55 -> 00:19:00] then I have to go and evict that corresponding data from the L1 cache, okay?
+[00:19:00 -> 00:19:04] So there is only one place a particular address,
+[00:19:04 -> 00:19:12] data from a particular address could be in the L2 cache or in the L1 cache, okay?
+[00:19:12 -> 00:19:16] The problem is now I have to translate the virtual address to the physical address
+[00:19:16 -> 00:19:22] before I access the cache, and that is going to increase the latency,
+[00:19:22 -> 00:19:26] and remember, this is the latency I wanted to be very fast, right?
+[00:19:26 -> 00:19:30] Here, now I'm carrying out the ELB access before I access this,
+[00:19:30 -> 00:19:35] I'm slowing down every accessor.
+[00:19:35 -> 00:19:44] So what people have proposed is what are called virtually address caches,
+[00:19:44 -> 00:19:48] which are, you know, or virtual caches,
+[00:19:48 -> 00:19:52] where you access the cache using a virtual address,
+[00:19:52 -> 00:19:54] you index into the cache the virtual address,
+[00:19:54 -> 00:19:58] it's tagged also with a virtual address,
+[00:19:59 -> 00:20:05] and only when you have a miss do you need to access the ELB to get a physical address,
+[00:20:05 -> 00:20:08] because the L2 cache you're going to access with the,
+[00:20:08 -> 00:20:14] or the main memory you're going to access with a physical address, okay?
+[00:20:14 -> 00:20:17] Are you with me on this? Okay.
+[00:20:17 -> 00:20:22] So this is something that people have proposed for a long time,
+[00:20:22 -> 00:20:26] and people have repeated interest in this these days.
+[00:20:26 -> 00:20:30] Why do they have repeated interest in this these days, okay?
+[00:20:30 -> 00:20:33] The reason why they have repeated interest in these days,
+[00:20:33 -> 00:20:37] if you compare this picture and this picture, you know,
+[00:20:37 -> 00:20:44] the latency over here is going to be higher than the latency over here, okay?
+[00:20:44 -> 00:20:48] When people say, okay, yeah, latency of cache access fine,
+[00:20:48 -> 00:20:50] if I have my out of order process of this way,
+[00:20:50 -> 00:20:53] maybe I can tolerate one more cycle of latency,
+[00:20:53 -> 00:21:05] but here I'm accessing the ELB or expending the energy to access the ELB on every access,
+[00:21:05 -> 00:21:12] here I'm expending energy to access the ELB only on every miss,
+[00:21:12 -> 00:21:18] and the ELBs actually end up taking a fair amount of energy,
+[00:21:18 -> 00:21:20] they're highly associative, okay?
+[00:21:20 -> 00:21:23] So I'm reducing the energy access over here,
+[00:21:23 -> 00:21:26] so this virtual cache is something that, you know,
+[00:21:27 -> 00:21:30] there's a lot of interest, more interest, et cetera,
+[00:21:30 -> 00:21:33] and, you know, these days people are doing some of the virtual caches,
+[00:21:33 -> 00:21:42] but it causes problems, and let us see what problems it causes, okay?
+[00:21:42 -> 00:21:46] Are you doing this, what are virtual,
+[00:21:46 -> 00:21:52] will you take quickly time caches?
+[00:21:52 -> 00:21:59] Okay, so, you know, say I have some process B1 and some process B2, okay?
+[00:21:59 -> 00:22:03] And, you know, I'm going to run them on the same processor,
+[00:22:03 -> 00:22:07] you know, in a different time slot, you know,
+[00:22:07 -> 00:22:14] doing a, you know, running different processes at different times on the machine, okay?
+[00:22:14 -> 00:22:18] And this process has access to the whole 2DN address space,
+[00:22:18 -> 00:22:22] this has access to the whole 2DN address space,
+[00:22:22 -> 00:22:27] this process has its own stack starting at some memory address x,
+[00:22:27 -> 00:22:30] this process has its own stack, you know,
+[00:22:30 -> 00:22:35] starting at some memory address, the same memory address, okay?
+[00:22:35 -> 00:22:39] All right?
+[00:22:39 -> 00:22:45] When this process is running, say this memory address gets mapped to,
+[00:22:45 -> 00:22:47] this is the virtual address,
+[00:22:47 -> 00:22:53] virtual address x gets mapped to physical address y, okay?
+[00:22:53 -> 00:22:56] And when this process is running, okay,
+[00:22:56 -> 00:23:01] this virtual address x gets mapped to physical address.
+[00:23:01 -> 00:23:13] What's going to happen now is that virtual addresses, okay,
+[00:23:13 -> 00:23:20] from different processes are going to end up in the,
+[00:23:20 -> 00:23:23] if I'm accessing the cache with the virtual address,
+[00:23:23 -> 00:23:28] they are going to end up in the cache corresponding to address x,
+[00:23:28 -> 00:23:30] but these are different physical locations.
+[00:23:30 -> 00:23:38] So in the same location, the virtual address cache,
+[00:23:38 -> 00:23:44] I can have mapped data from two different physical address locations
+[00:23:44 -> 00:23:54] if that corresponds to the same virtual address in two different processes, okay?
+[00:23:54 -> 00:24:01] And that is what is called a homonym in a virtual address cache,
+[00:24:01 -> 00:24:07] where the data from different physical addresses
+[00:24:07 -> 00:24:12] is going to end up in the same virtual address in the cache
+[00:24:12 -> 00:24:21] if I'm only accessing the cache only with the virtual address, okay?
+[00:24:21 -> 00:24:23] So what to do?
+[00:24:23 -> 00:24:25] What you can do is you can say is,
+[00:24:25 -> 00:24:28] look, every time I do a context switch,
+[00:24:28 -> 00:24:31] I go from one process to the next process,
+[00:24:31 -> 00:24:36] I just clean out the cache, flush the cache, okay?
+[00:24:36 -> 00:24:38] Then I don't have this problem.
+[00:24:38 -> 00:24:44] That ends up being too much, you know,
+[00:24:44 -> 00:24:46] flushing the cache, you know, whatever it is,
+[00:24:46 -> 00:24:49] bringing stuff back, et cetera, et cetera.
+[00:24:49 -> 00:24:55] Another solution is to basically, you know,
+[00:24:55 -> 00:25:00] access the cache with the PID,
+[00:25:00 -> 00:25:07] add the process ID to that virtual address, okay?
+[00:25:07 -> 00:25:11] So you're going to access the cache not only with the virtual address bits,
+[00:25:11 -> 00:25:15] but attach to that the process ID, okay?
+[00:25:15 -> 00:25:20] So now this X of process one
+[00:25:20 -> 00:25:24] will be accessed with process one, address X.
+[00:25:24 -> 00:25:29] This will be process two, address X.
+[00:25:29 -> 00:25:32] And these are different addresses,
+[00:25:32 -> 00:25:35] different ways of accessing the cache.
+[00:25:35 -> 00:25:43] So these data will end up at different places.
+[00:25:43 -> 00:25:49] So homonyms are, homonyms are,
+[00:25:49 -> 00:25:52] it takes, so the tag size increases.
+[00:25:52 -> 00:25:54] You have to add the process ID,
+[00:25:54 -> 00:25:58] so the number of, you know, the tag size increases.
+[00:25:58 -> 00:26:02] But, you know, you can handle homonyms
+[00:26:02 -> 00:26:04] in a virtual address with the tag cache
+[00:26:04 -> 00:26:11] without having to flush the cache.
+[00:26:11 -> 00:26:13] Any questions on this?
+[00:26:13 -> 00:26:27] Any questions?
+[00:26:27 -> 00:26:33] What becomes a problem is not homonyms, but synonyms, okay?
+[00:26:33 -> 00:26:41] So say I have, you know, two processes sharing data,
+[00:26:41 -> 00:26:45] where one is trying to pass data to another one, okay?
+[00:26:45 -> 00:26:52] So, you know, process one is writing to virtual address X, okay?
+[00:26:52 -> 00:27:00] That gets mapped to physical address Z, okay?
+[00:27:00 -> 00:27:07] Process two is reading the data that this process passed,
+[00:27:07 -> 00:27:15] but it doesn't read from virtual address Y.
+[00:27:15 -> 00:27:18] And what the operating system will do is
+[00:27:18 -> 00:27:21] it will also map virtual address Y
+[00:27:21 -> 00:27:23] to the same physical address.
+[00:27:23 -> 00:27:26] So as this process is writing from X,
+[00:27:26 -> 00:27:28] it's writing to Z.
+[00:27:28 -> 00:27:32] This process is reading from Y, it's reading from Z, okay?
+[00:27:32 -> 00:27:39] So that communication is happening.
+[00:27:39 -> 00:27:43] If I use a virtual address cache, okay,
+[00:27:43 -> 00:27:47] this data is the common data
+[00:27:47 -> 00:27:51] between this process and this process, X and Y.
+[00:27:51 -> 00:27:55] This data will end up in the virtual address cache
+[00:27:55 -> 00:27:59] and address X for this process
+[00:27:59 -> 00:28:03] and address Y for this process, okay?
+[00:28:03 -> 00:28:06] So, you know, here is my virtual address cache,
+[00:28:06 -> 00:28:10] here is address X, virtual address Y, okay?
+[00:28:10 -> 00:28:15] The same data is now present in multiple locations.
+[00:28:15 -> 00:28:20] So if I do a write to X, the data will go here.
+[00:28:20 -> 00:28:23] If I do a write to read from Y, I'll read from here,
+[00:28:23 -> 00:28:27] which is not the data that got written over here.
+[00:28:27 -> 00:28:38] And this is a problem to deal with.
+[00:28:38 -> 00:28:44] And so because of the synonym problem,
+[00:28:44 -> 00:28:47] so I'm talking about, you know, like sharing,
+[00:28:47 -> 00:28:50] but there are other scenarios that can happen.
+[00:28:50 -> 00:28:52] Like if you're doing some I.O.
+[00:28:52 -> 00:28:57] and you're doing a DMA access to memory, okay?
+[00:28:57 -> 00:29:01] You know, where multiple virtual addresses
+[00:29:01 -> 00:29:04] map to the same physical address,
+[00:29:04 -> 00:29:10] they're going to end up in different places.
+[00:29:10 -> 00:29:14] So this is, you know, the most important reason.
+[00:29:14 -> 00:29:18] It's quite complex to handle, okay?
+[00:29:18 -> 00:29:21] We had, we proposed this solution a few years ago
+[00:29:21 -> 00:29:23] that is much simpler, but, you know,
+[00:29:23 -> 00:29:26] but in general it's quite complex to handle.
+[00:29:26 -> 00:29:29] Okay, it means you need to detect
+[00:29:29 -> 00:29:32] whether X and Z and Y are the same and whatever, okay?
+[00:29:32 -> 00:29:36] And then move things around or, you know, it's complicated.
+[00:29:36 -> 00:29:40] So this is one of the reasons why, you know,
+[00:29:40 -> 00:29:42] virtually indexed, virtually tagged caches
+[00:29:42 -> 00:29:46] haven't been found in place.
+[00:29:46 -> 00:29:52] Okay, what does happen is the problem.
+[00:29:52 -> 00:29:57] So what I'd like to do is I'd like to maybe
+[00:29:57 -> 00:30:02] not access the, you know, in the physical address cache
+[00:30:02 -> 00:30:07] I have to access the DLB before I access the cache,
+[00:30:07 -> 00:30:09] you know, and that is an issue.
+[00:30:09 -> 00:30:12] Virtually indexed cache, you know,
+[00:30:12 -> 00:30:15] I can access the DLB after the cache,
+[00:30:15 -> 00:30:17] which is going to be a mess,
+[00:30:17 -> 00:30:21] but getting that to work right is complicated.
+[00:30:21 -> 00:30:24] Maybe I can have a design that I can access the DLB
+[00:30:24 -> 00:30:27] and the cache in parallel at the same time.
+[00:30:27 -> 00:30:33] Then I am not increasing the latency of a hit for the cache.
+[00:30:33 -> 00:30:40] Alright, so, you know, I'm going to access the DLB
+[00:30:40 -> 00:30:44] in parallel and I can do that in small caches
+[00:30:44 -> 00:30:46] and I'll see it in gory detail.
+[00:30:46 -> 00:30:48] Okay, next couple of slides.
+[00:30:48 -> 00:30:53] If the, you know, the index that I'm using
+[00:30:53 -> 00:30:57] to access the cache in a physically address cache
+[00:30:57 -> 00:31:01] and the index bits in the virtual are the same,
+[00:31:01 -> 00:31:04] then I can actually use the virtual address
+[00:31:04 -> 00:31:10] to index into the cache, read the data in the tags,
+[00:31:10 -> 00:31:12] carry out the translation,
+[00:31:12 -> 00:31:19] but the tags are tagged with physical addresses, okay?
+[00:31:19 -> 00:31:23] So in a sense, I am doing effectively an access
+[00:31:23 -> 00:31:27] which corresponds to accessing with the physical address,
+[00:31:27 -> 00:31:33] but not the entire physical address, okay?
+[00:31:33 -> 00:31:36] And there is no context switching areas and problems,
+[00:31:36 -> 00:31:39] you know, data is only ending up in one place
+[00:31:39 -> 00:31:43] and it's also no additional hit cycles,
+[00:31:43 -> 00:31:45] which is very commonly used.
+[00:31:45 -> 00:31:47] How does this work?
+[00:31:47 -> 00:31:49] How does this work?
+[00:31:49 -> 00:31:52] I'm going to skip this in every text, okay?
+[00:31:52 -> 00:31:59] So the way this works is the following, okay?
+[00:31:59 -> 00:32:04] An address has a set of bits, 32 bits, okay?
+[00:32:04 -> 00:32:09] If you're using the address to access the cache,
+[00:32:09 -> 00:32:11] some number of bits are as wide offset,
+[00:32:11 -> 00:32:15] some are the index into the cache to select the set,
+[00:32:15 -> 00:32:19] and the remainder are the tag that gets stored
+[00:32:19 -> 00:32:25] in that selected block frame.
+[00:32:25 -> 00:32:28] Forget the cache, okay?
+[00:32:28 -> 00:32:32] What we just talked about is to access a TLB,
+[00:32:32 -> 00:32:35] it's the same 32 bits of address,
+[00:32:35 -> 00:32:37] but instead what I'm doing is I'm saying,
+[00:32:37 -> 00:32:41] hey, you know, let's just say I have a 64 kilobyte page,
+[00:32:41 -> 00:32:45] some number of bits are a byte within the page,
+[00:32:45 -> 00:32:52] and the remaining bits are a virtual page number, okay?
+[00:32:52 -> 00:32:57] You know, so I'm using those bits to access these structures.
+[00:32:57 -> 00:33:03] I can access, and I get a TLB hit in a mess, okay?
+[00:33:03 -> 00:33:11] I can access, I can access the cache in parallel
+[00:33:11 -> 00:33:14] and get to the right place in parallel, okay?
+[00:33:14 -> 00:33:16] So again, these are the bits,
+[00:33:16 -> 00:33:19] the red bits are the ones I'm using to access the TLB,
+[00:33:19 -> 00:33:28] the green bits, the address I'm using to access the cache, okay?
+[00:33:28 -> 00:33:34] So if there is no intersection between the red and green bits,
+[00:33:34 -> 00:33:45] okay, I can access the TLB and the cache in parallel, okay?
+[00:33:45 -> 00:33:49] Or in other words, if the index bits,
+[00:33:49 -> 00:33:52] so remember that when I go from a virtual address
+[00:33:52 -> 00:33:54] to a physical address,
+[00:33:54 -> 00:33:56] virtual page gets transferred to a physical page,
+[00:33:56 -> 00:33:59] the page offset bits stay the same.
+[00:33:59 -> 00:34:01] So if my index into the cache
+[00:34:01 -> 00:34:06] can be derived from these page offset bits,
+[00:34:06 -> 00:34:11] I can use the page offset bits from the virtual address,
+[00:34:11 -> 00:34:13] start the cache access,
+[00:34:13 -> 00:34:16] and then check to see if I hit,
+[00:34:16 -> 00:34:19] by that time I'll have the physical address,
+[00:34:19 -> 00:34:23] the tag will be a physical address, okay?
+[00:34:23 -> 00:34:26] Again, what I'm doing is I'm trying to make sure
+[00:34:26 -> 00:34:33] that the index bits still stay within these page offset bits.
+[00:34:33 -> 00:34:38] I do not want to have the index bits overlap
+[00:34:38 -> 00:34:42] with the virtual page number bits,
+[00:34:42 -> 00:34:44] because those virtual page number bits
+[00:34:44 -> 00:34:51] are going to get transferred to physical page number bits, okay?
+[00:34:51 -> 00:34:58] And I can do that by selecting
+[00:34:58 -> 00:35:01] the associativity of the cache appropriately
+[00:35:01 -> 00:35:05] so that these index bits are a subset
+[00:35:05 -> 00:35:10] of the page offset bits, okay?
+[00:35:10 -> 00:35:14] And the rule basically is if I have a cache
+[00:35:14 -> 00:35:17] of a certain size,
+[00:35:17 -> 00:35:20] I divide it by the associativity of the cache.
+[00:35:20 -> 00:35:26] That has to be less than or equal to the page size, okay?
+[00:35:26 -> 00:35:29] Again, you know, this is the page size.
+[00:35:29 -> 00:35:31] This is the page size,
+[00:35:31 -> 00:35:34] and the index bits are going to be
+[00:35:34 -> 00:35:41] basically the number of sets I have in the cache, okay?
+[00:35:41 -> 00:35:44] And the number of sets I have in the cache
+[00:35:44 -> 00:35:48] is the cache size divided by the number of ways.
+[00:35:48 -> 00:35:50] Or alternatively, the number of sets times
+[00:35:50 -> 00:35:52] the number of ways is the cache size,
+[00:35:52 -> 00:35:57] and the number of ways is the associativity, okay?
+[00:35:57 -> 00:36:02] And so, you know, basically the, you know,
+[00:36:02 -> 00:36:04] associativity times page size
+[00:36:04 -> 00:36:07] is going to be the cache size, or the cache size,
+[00:36:07 -> 00:36:10] or the associativity is going to be the cache size
+[00:36:10 -> 00:36:14] divided by the page size.
+[00:36:14 -> 00:37:01] Are you with me on this?
+[00:37:01 -> 00:37:03] This is the ZenPythe.
+[00:37:03 -> 00:37:05] We have the instruction cache,
+[00:37:05 -> 00:37:09] and this is the Dane's 4 kilobyte pages, okay?
+[00:37:09 -> 00:37:13] Instruction cache, 32 kilobytes.
+[00:37:13 -> 00:37:18] Associativity is 32 divided by 4 kilobytes.
+[00:37:18 -> 00:37:21] 8-bit, okay?
+[00:37:21 -> 00:37:24] The data cache is, you know,
+[00:37:24 -> 00:37:28] 48 kilobytes in size.
+[00:37:28 -> 00:37:30] Page size is 4 kilobytes,
+[00:37:30 -> 00:37:33] so 48 divided by 4, 12-bit.
+[00:37:33 -> 00:37:38] So they can carry out that parallel,
+[00:37:38 -> 00:37:45] you know, tag TLB access, all right?
+[00:37:45 -> 00:37:59] If I go to this, the Qualcomm one,
+[00:37:59 -> 00:38:09] instruction cache is 192 kilobytes, 6-way,
+[00:38:09 -> 00:38:14] and they have 4K pages, all right?
+[00:38:14 -> 00:38:25] So this, 192 by 4, is more than 6.
+[00:38:25 -> 00:38:30] So they aren't doing that parallel trick here, okay?
+[00:38:30 -> 00:38:43] The data cache is, very similarly,
+[00:38:43 -> 00:38:49] data cache, 96 kilobytes, 6-way, 4K pages, okay?
+[00:38:49 -> 00:38:56] So they aren't also necessarily doing that trick over here, okay?
+[00:38:56 -> 00:39:08] So for kids, why not, in some sense?
+[00:39:08 -> 00:39:12] Well, I mean, for one, in different use cases,
+[00:39:12 -> 00:39:18] but also, you know, the tricks.
+[00:39:18 -> 00:39:21] Not the trick, I mean, what they do is,
+[00:39:21 -> 00:39:24] and I don't know whether they do it in tech or not.
+[00:39:24 -> 00:39:26] I do not know what's in there, okay?
+[00:39:26 -> 00:39:29] So I know what does the tricks people play,
+[00:39:29 -> 00:39:34] and it's likely that's what's happening over there, too.
+[00:39:34 -> 00:39:45] And what they do is, they have a micro TLB,
+[00:39:45 -> 00:39:49] you know, four, eight entries, whatever it is,
+[00:39:49 -> 00:39:51] that they can start accessing
+[00:39:51 -> 00:39:55] when they do the address calculation.
+[00:39:55 -> 00:39:58] And so, you know, there may be,
+[00:39:58 -> 00:40:01] you pay a little latency over here,
+[00:40:01 -> 00:40:06] but it's a micro TLB, a very small TLB, okay?
+[00:40:06 -> 00:40:08] And it's, and they, you know,
+[00:40:08 -> 00:40:12] I think they also would access the regular TLB in parallel,
+[00:40:12 -> 00:40:14] and do, just like they had the, you know,
+[00:40:14 -> 00:40:17] big and small branch predictors, one correcting the BTBs,
+[00:40:17 -> 00:40:22] and, you know, they would correct where they missed over there.
+[00:40:22 -> 00:40:25] And then you may say, look, you know, okay, you know,
+[00:40:25 -> 00:40:27] help me out a little bit, can you,
+[00:40:27 -> 00:40:30] why is such a small TLB going to work, too?
+[00:40:30 -> 00:40:39] For instructions, consider instructions.
+[00:40:39 -> 00:40:42] If I'm just doing instructions,
+[00:40:42 -> 00:40:46] and I have only a one entry TLB for instructions,
+[00:40:46 -> 00:40:49] which basically means it's just keeping the translation
+[00:40:49 -> 00:40:53] of the last, same translation as last time,
+[00:40:53 -> 00:40:54] which would work fine,
+[00:40:54 -> 00:40:57] as long as the instructions are on the same page,
+[00:40:57 -> 00:41:02] which ends up more than 90% of the time.
+[00:41:02 -> 00:41:08] And very similarly, you know, you know, if you had,
+[00:41:08 -> 00:41:11] you know, you access a data structure, you know,
+[00:41:11 -> 00:41:14] you're making access to fields on the data structure,
+[00:41:14 -> 00:41:18] it's going to be in the same page, okay?
+[00:41:18 -> 00:41:20] So they can, they make that trade-off,
+[00:41:20 -> 00:41:23] and they get by with that, a little bit over there,
+[00:41:23 -> 00:41:26] but this, in general, you know,
+[00:41:26 -> 00:41:31] doing this parallel access is very, very common.
+[00:41:31 -> 00:41:38] And we saw it with the Z5, it's using it.
+[00:41:38 -> 00:41:41] And further also, actually, you know, I mean,
+[00:41:41 -> 00:41:43] another motivation for that is if I do have
+[00:41:43 -> 00:41:47] larger page sizes, the offset bits are bigger,
+[00:41:47 -> 00:41:50] then I have more, I can have larger caches, too.
+[00:41:50 -> 00:41:55] Are you with me on this?
+[00:41:55 -> 00:42:06] We like a very non-operating system.
+[00:42:06 -> 00:42:10] They could have just seen that 99% of the market
+[00:42:10 -> 00:42:13] is just this, and I looked at Android,
+[00:42:13 -> 00:42:14] I talked with them.
+[00:42:14 -> 00:42:21] I don't, their design was intended for servers.
+[00:42:21 -> 00:42:23] At least, you know, that's until they,
+[00:42:23 -> 00:42:25] and then they got no litigation, okay?
+[00:42:25 -> 00:42:29] But no, no, the ARM processor,
+[00:42:29 -> 00:42:31] they seem to like having these,
+[00:42:31 -> 00:42:34] the micro-Nano-TLBs, as they call them.
+[00:42:34 -> 00:42:38] So basically, the same old, you know,
+[00:42:38 -> 00:42:41] have risk, go fast, do more?
+[00:42:41 -> 00:42:43] No, no, no, no, you know,
+[00:42:43 -> 00:42:45] it's not necessarily that.
+[00:42:45 -> 00:42:49] It's, you know, how the exact, you know,
+[00:42:49 -> 00:42:52] which sub-cycle, the access happens,
+[00:42:52 -> 00:42:56] this happens, which circuit trick you use over here,
+[00:42:56 -> 00:42:59] you know, it depends on your particular situation, okay?
+[00:42:59 -> 00:43:02] But this Nano-TLB trick,
+[00:43:02 -> 00:43:04] actually even the Intel processors
+[00:43:04 -> 00:43:06] are bad in some situations, okay?
+[00:43:06 -> 00:43:09] So sometimes you use it,
+[00:43:09 -> 00:43:13] but, you know, otherwise, that's not it.
+[00:43:13 -> 00:43:16] Okay, other questions?
+[00:43:16 -> 00:43:19] Now let me actually throw out something else, too.
+[00:43:19 -> 00:43:27] Here's a virtual page number.
+[00:43:27 -> 00:43:31] Here's the page offset, okay?
+[00:43:31 -> 00:43:42] And translating it to some physical page number,
+[00:43:42 -> 00:43:46] same page offset, okay?
+[00:43:46 -> 00:43:50] And then what I also just said is,
+[00:43:50 -> 00:43:55] hey, you know, I have, you know,
+[00:43:55 -> 00:43:57] I'm accessing the cache,
+[00:43:57 -> 00:43:59] and here's the index of the cache,
+[00:43:59 -> 00:44:02] and here is the, you know, the, whatever it is,
+[00:44:02 -> 00:44:06] you know, offset by, you know, block offset over here.
+[00:44:06 -> 00:44:08] And what I want to make sure is now,
+[00:44:08 -> 00:44:12] these bits are a subset of these bits.
+[00:44:12 -> 00:44:13] Why so?
+[00:44:13 -> 00:44:18] Because then these bits are going to be the same
+[00:44:18 -> 00:44:20] as these bits,
+[00:44:20 -> 00:44:24] and so I can use the bits from the virtual address
+[00:44:24 -> 00:44:26] and start accessing the cache.
+[00:44:26 -> 00:44:38] The other thing that I could potentially do
+[00:44:38 -> 00:44:42] is tell the operating system that, hey,
+[00:44:42 -> 00:44:45] normally the virtual and physical page mapping,
+[00:44:45 -> 00:44:47] we said it's fully associated, okay?
+[00:44:47 -> 00:44:48] Why so?
+[00:44:48 -> 00:44:53] Because the iterative is if you want it to be,
+[00:44:53 -> 00:44:56] you know, as low as possible.
+[00:44:56 -> 00:44:58] Oh, sorry, misread as low as possible.
+[00:44:58 -> 00:45:03] What I could do is I could say,
+[00:45:03 -> 00:45:09] do the mapping between virtual pages and physical pages
+[00:45:09 -> 00:45:11] so that some number of bits,
+[00:45:11 -> 00:45:15] lower order bits, say two bits, is the same.
+[00:45:15 -> 00:45:22] So I'm not restricting.
+[00:45:22 -> 00:45:24] I'm not allowing any virtual page
+[00:45:24 -> 00:45:29] to be mapped onto any physical page, okay?
+[00:45:29 -> 00:45:33] I have different colors of virtual pages,
+[00:45:33 -> 00:45:34] and I have, you know,
+[00:45:34 -> 00:45:37] I have four different colors of virtual pages,
+[00:45:37 -> 00:45:38] and I have four different colors
+[00:45:38 -> 00:45:41] of physical page frames in the memory.
+[00:45:41 -> 00:45:44] And I'm only going to allow, you know,
+[00:45:44 -> 00:45:46] a page of a certain color
+[00:45:46 -> 00:45:49] to be in a page frame of the same color, okay?
+[00:45:49 -> 00:45:54] So the bottom bits don't change, okay?
+[00:45:54 -> 00:46:00] And this is a technique called page covering
+[00:46:00 -> 00:46:03] that, you know, BITS had originally proposed.
+[00:46:03 -> 00:46:06] What this lets you do now is it gives you
+[00:46:06 -> 00:46:09] a few more bits that don't change
+[00:46:09 -> 00:46:11] as part of the translation.
+[00:46:11 -> 00:46:13] So I can start accessing the cache
+[00:46:13 -> 00:46:14] with the virtual address bits,
+[00:46:14 -> 00:46:16] and I get a few more, you know,
+[00:46:16 -> 00:46:18] in this case, two more bits.
+[00:46:18 -> 00:46:20] Two more bits doesn't seem like a big deal,
+[00:46:20 -> 00:46:26] but it's four X the cache size, okay?
+[00:46:26 -> 00:46:27] Now you're going to do this
+[00:46:27 -> 00:46:29] if you completely control
+[00:46:29 -> 00:46:30] the whole ecosystem,
+[00:46:30 -> 00:46:33] hardware, software ecosystem.
+[00:46:33 -> 00:46:35] And, but then, you know,
+[00:46:35 -> 00:46:36] what gives, you know,
+[00:46:36 -> 00:46:38] I'm saying, hey, you know,
+[00:46:38 -> 00:46:40] the whole point of this translation
+[00:46:40 -> 00:46:43] is to reduce the number of misses.
+[00:46:43 -> 00:46:47] Well, memory sizes have been increasing too,
+[00:46:47 -> 00:46:50] significantly, okay?
+[00:46:50 -> 00:46:53] So if my memory sizes are getting bigger and bigger,
+[00:46:53 -> 00:46:57] then if I go from a fully associative mapping
+[00:46:57 -> 00:46:59] to a slightly, you know,
+[00:46:59 -> 00:47:01] a highly set associative mapping
+[00:47:01 -> 00:47:04] that is not fully associative,
+[00:47:04 -> 00:47:10] it's not going to make that much of a difference.
+[00:47:10 -> 00:47:11] Also something that, you know,
+[00:47:11 -> 00:47:14] people have played with.
+[00:47:14 -> 00:47:15] Questions?
+[00:47:15 -> 00:47:23] So in a sense, to summarize it, you know,
+[00:47:23 -> 00:47:25] the PLB organization,
+[00:47:25 -> 00:47:28] you have, you know, ABCs over there.
+[00:47:28 -> 00:47:30] They can be Level 2 TLBs,
+[00:47:30 -> 00:47:31] and we talked about, you know,
+[00:47:31 -> 00:47:33] the rule of thumb that TLBs should try
+[00:47:33 -> 00:47:36] and at least cover the L2 cache.
+[00:47:36 -> 00:47:41] So if now you have
+[00:47:41 -> 00:47:44] an address translation that you have to do,
+[00:47:44 -> 00:47:48] then, you know,
+[00:47:48 -> 00:47:51] you can do other things with that.
+[00:47:51 -> 00:47:52] So, you know, what's your memories?
+[00:47:52 -> 00:47:55] If you put us today, these days,
+[00:47:55 -> 00:47:56] paging is the most common.
+[00:47:56 -> 00:47:58] People talk about segmentation.
+[00:47:58 -> 00:47:59] I'm not going to go into any of that.
+[00:47:59 -> 00:48:02] It's like you take 537, you learn more about that.
+[00:48:02 -> 00:48:03] Okay?
+[00:48:03 -> 00:48:09] But once you now have a translation process
+[00:48:09 -> 00:48:12] that you have to carry out anyway,
+[00:48:12 -> 00:48:15] then can I overload that process
+[00:48:15 -> 00:48:19] to bring in some other functionality?
+[00:48:19 -> 00:48:20] Okay?
+[00:48:20 -> 00:48:24] And that other functionality these days
+[00:48:24 -> 00:48:26] is actually even more important
+[00:48:26 -> 00:48:29] than the translation process.
+[00:48:29 -> 00:48:30] Okay?
+[00:48:30 -> 00:48:32] And that other functionality
+[00:48:32 -> 00:48:36] is going to basically allow memory protection
+[00:48:36 -> 00:48:38] and isolation.
+[00:48:38 -> 00:48:41] And let me briefly talk about what this is.
+[00:48:41 -> 00:48:43] And for our purposes,
+[00:48:43 -> 00:48:46] all that it means is in the page table,
+[00:48:46 -> 00:48:48] in the page table entry,
+[00:48:48 -> 00:48:50] rather than just simply the physical address,
+[00:48:50 -> 00:48:54] there is going to be some more bits of information.
+[00:48:54 -> 00:48:59] And when you bring in the whole page table entry
+[00:48:59 -> 00:49:00] into the TLB,
+[00:49:00 -> 00:49:02] it's going to be the physical address
+[00:49:02 -> 00:49:05] and some other bits.
+[00:49:05 -> 00:49:07] Okay?
+[00:49:07 -> 00:49:12] So, you know, the virtual memory
+[00:49:12 -> 00:49:14] is going to protect applications.
+[00:49:14 -> 00:49:17] So what you don't want to do is, you know,
+[00:49:17 -> 00:49:20] running different programs, different processes,
+[00:49:20 -> 00:49:23] and they are all sharing the same physical memory.
+[00:49:23 -> 00:49:27] What you don't want is one process to go
+[00:49:27 -> 00:49:30] and access data of the other process
+[00:49:30 -> 00:49:33] or, you know, read it or write it or whatever it is.
+[00:49:33 -> 00:49:39] You actually want to isolate those two.
+[00:49:39 -> 00:49:42] And, you know, these days also, you know,
+[00:49:42 -> 00:49:45] trying to, you know, protect from worms
+[00:49:45 -> 00:49:47] and, you know, stuff like that.
+[00:49:47 -> 00:49:49] So, viruses.
+[00:49:49 -> 00:49:51] Let me just briefly talk a little bit about,
+[00:49:51 -> 00:49:56] you know, one of the most canonical ways
+[00:49:56 -> 00:50:01] of introducing viruses into COVID has-been
+[00:50:01 -> 00:50:05] and how you provide protection against that
+[00:50:05 -> 00:50:07] using the virtual memory system.
+[00:50:07 -> 00:50:12] Okay?
+[00:50:12 -> 00:50:19] So, you know, a very common idiom
+[00:50:19 -> 00:50:25] for exploiting, for doing attacks
+[00:50:25 -> 00:50:27] as the following is, you know,
+[00:50:27 -> 00:50:28] there was a piece of code.
+[00:50:28 -> 00:50:30] If you have a piece of code, an application
+[00:50:30 -> 00:50:34] that is, you know, putting, you know,
+[00:50:34 -> 00:50:39] what functional, you know, function calling,
+[00:50:39 -> 00:50:41] you know, conventions and so on like that.
+[00:50:41 -> 00:50:44] You push the return address when you call a function.
+[00:50:44 -> 00:50:46] You push the return address in the stack,
+[00:50:46 -> 00:50:49] and then you pass parameter on the stack,
+[00:50:49 -> 00:50:52] read, you know, return values from the stack,
+[00:50:52 -> 00:50:54] et cetera, et cetera.
+[00:50:54 -> 00:50:55] Okay?
+[00:50:55 -> 00:51:00] So, you know, here is, you know,
+[00:51:00 -> 00:51:05] a function where, you know, it's pushing,
+[00:51:05 -> 00:51:10] you know, it's putting some data,
+[00:51:10 -> 00:51:14] say, a 128-character buffer, okay?
+[00:51:14 -> 00:51:16] And there's a return address.
+[00:51:16 -> 00:51:22] And the code is just simply putting the data
+[00:51:22 -> 00:51:25] up to 128 characters on the buffer
+[00:51:25 -> 00:51:27] until it sees an end of line, okay?
+[00:51:27 -> 00:51:28] All right?
+[00:51:28 -> 00:51:33] But it doesn't check to see that the input string
+[00:51:33 -> 00:51:41] that is getting passed is limited to 128 characters.
+[00:51:41 -> 00:51:42] Okay?
+[00:51:42 -> 00:51:47] So you can actually pass it a length unchecked,
+[00:51:47 -> 00:51:51] you know, a character string
+[00:51:51 -> 00:51:53] that is the attack code,
+[00:51:53 -> 00:51:56] and then basically, you know,
+[00:51:56 -> 00:52:00] a return address to that attack code.
+[00:52:00 -> 00:52:06] And so you wipe out the return address
+[00:52:06 -> 00:52:08] that you pushed when you call the function.
+[00:52:08 -> 00:52:11] So when this returns,
+[00:52:11 -> 00:52:13] you overwritten that return address
+[00:52:13 -> 00:52:20] with the address of the attack code, okay?
+[00:52:20 -> 00:52:22] And then you execute the attack code,
+[00:52:22 -> 00:52:25] the attacker gets to execute the attack code
+[00:52:25 -> 00:52:29] at the caller's privilege level, okay?
+[00:52:29 -> 00:52:32] So this was a very, very common way
+[00:52:32 -> 00:52:37] of, you know, introducing YSS and more.
+[00:52:37 -> 00:52:41] So again, you know, I have a stack.
+[00:52:41 -> 00:52:45] This is also called, you know, stack smashing attack.
+[00:52:45 -> 00:52:48] So my stack is theta.
+[00:52:48 -> 00:52:52] And what gets, what happens is
+[00:52:52 -> 00:52:56] the attacker pushes on your stack,
+[00:52:56 -> 00:52:57] succeeds in pushing on your stack
+[00:52:57 -> 00:53:00] the code to carry out the attack
+[00:53:00 -> 00:53:02] and overwrites this return address,
+[00:53:02 -> 00:53:05] so it jumps through and executes this attack code.
+[00:53:05 -> 00:53:15] So that brings in the notion of page level protection.
+[00:53:15 -> 00:53:19] So what you have now, here's my page table entry,
+[00:53:19 -> 00:53:23] you know, physical page number,
+[00:53:23 -> 00:53:25] a disk block, if the entry is valid,
+[00:53:25 -> 00:53:28] it has the physical page number
+[00:53:28 -> 00:53:30] or it has a dirty bit.
+[00:53:30 -> 00:53:33] And now it also has, so it's a valid bit,
+[00:53:33 -> 00:53:36] a dirty bit, physical page number,
+[00:53:36 -> 00:53:39] and also a set of permissions.
+[00:53:39 -> 00:53:48] So very early, not very early, you know,
+[00:53:48 -> 00:53:50] shortly after people decided to use
+[00:53:50 -> 00:53:52] virtual memory for protection, they said,
+[00:53:52 -> 00:53:54] hey, I could have permission bits
+[00:53:54 -> 00:53:58] with each page saying whether, you know,
+[00:53:58 -> 00:54:02] that page has read-only data
+[00:54:02 -> 00:54:04] or it has read-write data,
+[00:54:04 -> 00:54:08] and after these stack smashing attacks happen,
+[00:54:08 -> 00:54:10] Intel also introduced another permission bit
+[00:54:10 -> 00:54:14] saying, hey, can I, you know,
+[00:54:14 -> 00:54:16] the bytes, the bits on that page,
+[00:54:16 -> 00:54:19] can it actually be code that can be executed?
+[00:54:22 -> 00:54:23] Okay?
+[00:54:23 -> 00:54:26] And, you know, so when you go and try
+[00:54:26 -> 00:54:30] and do a instruction access, all right,
+[00:54:30 -> 00:54:33] do the translation, check the permission bits.
+[00:54:33 -> 00:54:35] If you do not have an execute permission
+[00:54:35 -> 00:54:38] and you are making an instruction access,
+[00:54:38 -> 00:54:40] that is a problem.
+[00:54:40 -> 00:54:42] You throw an exception, okay?
+[00:54:42 -> 00:54:45] Or you try and write into a page,
+[00:54:45 -> 00:54:49] you do a store, do a store does address translation,
+[00:54:49 -> 00:54:52] it checks to see whether it has the right permission.
+[00:54:52 -> 00:54:54] If so, it can do the store,
+[00:54:54 -> 00:55:00] otherwise it has an exception, okay?
+[00:55:00 -> 00:55:03] So, you know, for the stack smashing attack,
+[00:55:03 -> 00:55:05] you can set the stack permissions
+[00:55:05 -> 00:55:08] to be read-write and not execute.
+[00:55:08 -> 00:55:10] So if you are now trying to actually,
+[00:55:10 -> 00:55:13] the attacker is actually trying to execute
+[00:55:13 -> 00:55:17] this code, which is now in a page,
+[00:55:17 -> 00:55:19] which is on the stack,
+[00:55:19 -> 00:55:21] and that only has read-write permissions,
+[00:55:21 -> 00:55:23] it's not going to execute.
+[00:55:23 -> 00:55:30] So these permission bits are, you know,
+[00:55:30 -> 00:55:32] very, very widely used,
+[00:55:32 -> 00:55:35] and these permission bits migrate from the page table,
+[00:55:35 -> 00:55:37] they're in the page table,
+[00:55:37 -> 00:55:41] they migrate along with the physical page number
+[00:55:41 -> 00:55:45] into the TLBs, so every access you make,
+[00:55:45 -> 00:55:47] you also check the permissions to see
+[00:55:47 -> 00:55:54] whether you can carry out that operation correctly.
+[00:55:54 -> 00:55:59] The stack area is executed.
+[00:55:59 -> 00:56:03] How do recursive functions work in the stack area?
+[00:56:03 -> 00:56:05] You should, the recursive function,
+[00:56:05 -> 00:56:08] any function, what it's putting on the stack
+[00:56:08 -> 00:56:11] is its correct text, yeah.
+[00:56:11 -> 00:56:14] And that is the return address,
+[00:56:14 -> 00:56:17] you know, any register values you're saving,
+[00:56:17 -> 00:56:21] you know, the return values, maybe,
+[00:56:21 -> 00:56:23] that are getting passed, and you know,
+[00:56:23 -> 00:56:26] the calls, the parameters that you have put in there,
+[00:56:26 -> 00:56:29] et cetera, you're never putting code.
+[00:56:29 -> 00:56:32] The code is sitting off in some other page.
+[00:56:32 -> 00:56:35] The stack pages, those are data pages.
+[00:56:35 -> 00:56:38] They're sitting elsewhere.
+[00:56:38 -> 00:56:47] You should never be executing stuff from them.
+[00:56:47 -> 00:56:51] Well, in the good old days,
+[00:56:51 -> 00:56:53] in the good old days,
+[00:56:53 -> 00:56:55] the other thing you should never be doing
+[00:56:55 -> 00:57:01] is you should be never writing into code.
+[00:57:01 -> 00:57:03] In the good old days, actually,
+[00:57:03 -> 00:57:06] you could actually write into the code
+[00:57:06 -> 00:57:18] as it was executing to create new code.
+[00:57:18 -> 00:57:20] They gave people many opportunities
+[00:57:20 -> 00:57:22] to show how smart they were.
+[00:57:22 -> 00:57:25] I read an account from the 60s.
+[00:57:25 -> 00:57:27] They were on this terrible little mainframe,
+[00:57:27 -> 00:57:29] and someone had wrote a card program in,
+[00:57:29 -> 00:57:31] and he didn't figure out how it worked
+[00:57:31 -> 00:57:33] until 10 years later.
+[00:57:33 -> 00:57:35] It was incrementing the instruction field
+[00:57:35 -> 00:57:37] of a particular opcode
+[00:57:37 -> 00:57:39] and the next opcode.
+[00:57:39 -> 00:57:43] It completely changed the flow.
+[00:57:43 -> 00:57:48] When we were talking about the instruction set
+[00:57:48 -> 00:57:50] in the early lectures,
+[00:57:50 -> 00:57:52] we talked about if you have unused bits,
+[00:57:52 -> 00:57:54] make sure they are zero.
+[00:57:54 -> 00:57:58] The reason for that is, again,
+[00:57:58 -> 00:58:01] the unused bits over there,
+[00:58:01 -> 00:58:03] people were smart enough to store
+[00:58:03 -> 00:58:08] a six-bit constant.
+[00:58:08 -> 00:58:12] Now, when you use that unused bits
+[00:58:12 -> 00:58:14] for a new instruction,
+[00:58:14 -> 00:58:16] then your code broke
+[00:58:16 -> 00:58:18] because it was an instruction,
+[00:58:18 -> 00:58:23] not a six-bit constant or whatever.
+[00:58:23 -> 00:58:27] Six bits was expensive at that time.
+[00:58:30 -> 00:58:37] With the System 370,
+[00:58:37 -> 00:58:39] were they advanced enough?
+[00:58:39 -> 00:58:41] Were the people then advanced enough
+[00:58:41 -> 00:58:43] to have all these concepts?
+[00:58:43 -> 00:58:45] Do you remember if they didn't have
+[00:58:45 -> 00:58:47] the hardware support?
+[00:58:47 -> 00:58:49] The virtual memory
+[00:58:49 -> 00:58:52] was first done in 370.
+[00:58:52 -> 00:58:54] Absolutely.
+[00:58:54 -> 00:58:57] I forget which model number.
+[00:58:57 -> 00:59:01] It was in the 60s.
+[00:59:01 -> 00:59:03] You know, humans have been
+[00:59:03 -> 00:59:05] smart always.
+[00:59:05 -> 00:59:07] One of the other things
+[00:59:07 -> 00:59:09] that you see a lot
+[00:59:09 -> 00:59:11] is we talked a little bit
+[00:59:11 -> 00:59:13] last time about
+[00:59:13 -> 00:59:15] computing and memory.
+[00:59:15 -> 00:59:17] We'll talk a little bit
+[00:59:17 -> 00:59:23] about SIMD instructions
+[00:59:23 -> 00:59:26] in the next unit.
+[00:59:26 -> 00:59:28] We'll get to vectors, okay?
+[00:59:28 -> 00:59:30] We'll talk a little bit
+[00:59:30 -> 00:59:32] about the memory.
+[00:59:32 -> 00:59:36] We'll talk a little bit
+[00:59:36 -> 00:59:38] about SIMD instructions
+[00:59:38 -> 00:59:40] in the next unit.
+[00:59:40 -> 00:59:42] We'll get to vectors, okay?
+[00:59:42 -> 00:59:44] These are all concepts
+[00:59:44 -> 00:59:46] that people built
+[00:59:46 -> 00:59:48] with big machines.
+[00:59:48 -> 00:59:50] One of the first machines
+[00:59:50 -> 00:59:52] that did
+[00:59:54 -> 00:59:56] these big-level,
+[00:59:56 -> 00:59:58] massively parallel
+[00:59:58 -> 01:00:00] big-level operations
+[01:00:00 -> 01:00:02] for images
+[01:00:02 -> 01:00:04] was built by
+[01:00:04 -> 01:00:06] you'll never guess
+[01:00:06 -> 01:00:08] what company built it.
+[01:00:08 -> 01:00:10] If you watch TV, you've seen ads
+[01:00:10 -> 01:00:12] of the Goodyear Blue.
+[01:00:12 -> 01:00:14] Goodyear, Goodyear.
+[01:00:14 -> 01:00:16] It's a dire company.
+[01:00:16 -> 01:00:18] So, Starin was built
+[01:00:18 -> 01:00:20] by Goodyear, a dire company.
+[01:00:20 -> 01:00:23] Everyone was building
+[01:00:23 -> 01:00:25] to do image processing.
+[01:00:25 -> 01:00:27] Some of those same ideas.
+[01:00:27 -> 01:00:29] You know, forgotten.
+[01:00:29 -> 01:00:31] When you start doing these
+[01:00:31 -> 01:00:33] when it was done
+[01:00:33 -> 01:00:35] in the 60s, 70s, okay?
+[01:00:35 -> 01:00:37] And very high-end, okay?
+[01:00:37 -> 01:00:39] But then, in the 90s,
+[01:00:39 -> 01:00:41] we'll talk a little bit about
+[01:00:41 -> 01:00:43] these people figured out, hey,
+[01:00:43 -> 01:00:45] what I have in my
+[01:00:45 -> 01:00:47] computing
+[01:00:47 -> 01:00:49] is not only character
+[01:00:49 -> 01:00:51] but, you know,
+[01:00:51 -> 01:00:53] it started out with integers
+[01:00:53 -> 01:00:55] and floating points, right?
+[01:00:55 -> 01:00:57] I can do some business
+[01:00:57 -> 01:00:59] stuff with it, okay?
+[01:00:59 -> 01:01:01] So, like, characters and all the other stuff.
+[01:01:01 -> 01:01:03] And then, people start
+[01:01:03 -> 01:01:05] saying, hey, maybe we can do a little
+[01:01:05 -> 01:01:10] audio stuff.
+[01:01:10 -> 01:01:12] Video stuff.
+[01:01:12 -> 01:01:14] Okay? And then those all
+[01:01:14 -> 01:01:16] become, you know,
+[01:01:16 -> 01:01:18] audio characters
+[01:01:18 -> 01:01:20] of, you know, video
+[01:01:20 -> 01:01:22] pixels and, you know,
+[01:01:22 -> 01:01:24] they're different. They're black and white
+[01:01:24 -> 01:01:26] in different colors and lots of processing.
+[01:01:26 -> 01:01:28] And so, you know,
+[01:01:28 -> 01:01:30] you start doing that as
+[01:01:30 -> 01:01:32] your new applications come.
+[01:01:32 -> 01:01:34] But many a time,
+[01:01:34 -> 01:01:36] you know, some of the concepts are developed
+[01:01:36 -> 01:01:38] from the high end, and then the low end
+[01:01:38 -> 01:01:40] borders, or the mid end borders from the high end,
+[01:01:40 -> 01:01:42] they all float around.
+[01:01:42 -> 01:01:44] And then what happens
+[01:01:44 -> 01:01:46] is that because the volumes
+[01:01:46 -> 01:01:48] at the
+[01:01:48 -> 01:01:50] lower ends are so much
+[01:01:50 -> 01:01:52] more, so much more,
+[01:01:52 -> 01:01:54] you can actually advertise.
+[01:01:54 -> 01:02:00] Okay, so
+[01:02:00 -> 01:02:02] that's all I want to talk about,
+[01:02:02 -> 01:02:04] you know, what your memory
+[01:02:04 -> 01:02:06] at this point
+[01:02:06 -> 01:02:08] and memory. Anybody
+[01:02:08 -> 01:02:12] have any questions about this stuff?
+[01:02:12 -> 01:02:14] It's actually, you know,
+[01:02:14 -> 01:02:16] so, getting back
+[01:02:16 -> 01:02:18] a little bit to the TLBs.
+[01:02:18 -> 01:02:20] So we talked about TLBs and
+[01:02:20 -> 01:02:22] you know, hey,
+[01:02:22 -> 01:02:24] 64,
+[01:02:24 -> 01:02:26] whatever it is, this TLB is good,
+[01:02:26 -> 01:02:28] et cetera, et cetera.
+[01:02:28 -> 01:02:30] And things are working fine, you know,
+[01:02:30 -> 01:02:32] desktops work fine.
+[01:02:32 -> 01:02:34] But then all of these other applications
+[01:02:34 -> 01:02:36] come around
+[01:02:36 -> 01:02:41] like
+[01:02:41 -> 01:02:43] instant time application.
+[01:02:43 -> 01:02:45] Social media.
+[01:02:45 -> 01:02:47] Okay.
+[01:02:47 -> 01:02:49] Where you just have
+[01:02:49 -> 01:02:51] enormous amounts of data
+[01:02:51 -> 01:02:53] and you just go through a pointer
+[01:02:53 -> 01:02:55] from here to there, whatever it is.
+[01:02:55 -> 01:02:57] Okay. We'll get to that
+[01:02:57 -> 01:02:59] a little bit when we talk about multi-threading too.
+[01:02:59 -> 01:03:01] Okay. And
+[01:03:01 -> 01:03:03] you know, huge data sets
+[01:03:03 -> 01:03:05] and then they are
+[01:03:05 -> 01:03:07] just, they start, you know,
+[01:03:07 -> 01:03:09] you need bigger and bigger TLBs
+[01:03:09 -> 01:03:11] and people then even talk about bigger
+[01:03:11 -> 01:03:13] and bigger pages for those applications.
+[01:03:13 -> 01:03:15] But, you know,
+[01:03:15 -> 01:03:17] that's one of the reasons why you have
+[01:03:17 -> 01:03:19] these humongous, you know, like,
+[01:03:19 -> 01:03:21] you know, 3K, 2K, 3K, 4K,
+[01:03:21 -> 01:03:23] second level TLBs.
+[01:03:23 -> 01:03:32] Okay.
+[01:03:32 -> 01:03:34] Yeah.
+[01:04:03 -> 01:04:05] Yeah. The question is, if I have
+[01:04:05 -> 01:04:07] a virtually indexed, physically tagged
+[01:04:07 -> 01:04:09] cache,
+[01:04:09 -> 01:04:11] does it also have a synonym problem?
+[01:04:34 -> 01:04:36] This is the physical index and the virtual index
+[01:04:36 -> 01:04:38] equivalent, so you've done nothing.
+[01:04:38 -> 01:04:41] It's just physically indexed,
+[01:04:41 -> 01:04:47] physically tagged.
+[01:04:47 -> 01:04:49] So a physically indexed, physically tagged
+[01:04:49 -> 01:04:51] cache doesn't have a synonym problem.
+[01:04:51 -> 01:04:53] Because there's only one.
+[01:04:53 -> 01:04:55] Okay.
+[01:04:55 -> 01:04:57] A virtually
+[01:04:57 -> 01:04:59] indexed, virtually tagged cache has
+[01:04:59 -> 01:05:01] a synonym problem because same virtual
+[01:05:01 -> 01:05:03] address would be in the same place.
+[01:05:03 -> 01:05:05] A virtually indexed, physically
+[01:05:05 -> 01:05:07] tagged cache,
+[01:05:07 -> 01:05:09] what you're doing is
+[01:05:09 -> 01:05:11] you're using
+[01:05:11 -> 01:05:13] virtually,
+[01:05:13 -> 01:05:15] virtual address bits
+[01:05:15 -> 01:05:17] to index
+[01:05:17 -> 01:05:20] into the cache.
+[01:05:20 -> 01:05:22] But those virtual address bits, because
+[01:05:22 -> 01:05:24] they are fully contained
+[01:05:24 -> 01:05:26] with the page offset, are
+[01:05:26 -> 01:05:28] going to be the same as the physical.
+[01:05:28 -> 01:05:38] The index will be the same.
+[01:05:38 -> 01:05:40] The tag will be different.
+[01:05:40 -> 01:05:42] The tag,
+[01:05:42 -> 01:05:44] the tag, okay.
+[01:05:44 -> 01:05:46] The tag is
+[01:05:46 -> 01:05:48] the tag that you have.
+[01:05:48 -> 01:05:50] So the index is
+[01:05:50 -> 01:05:52] what you need to
+[01:05:52 -> 01:05:54] start the read of the cache.
+[01:05:54 -> 01:05:56] Alright?
+[01:05:56 -> 01:05:58] The index is what you need to do
+[01:05:58 -> 01:06:00] to start the read of the cache.
+[01:06:00 -> 01:06:02] The tag
+[01:06:02 -> 01:06:04] is what you need to determine if it's going to be
+[01:06:04 -> 01:06:06] a hit or a not.
+[01:06:06 -> 01:06:08] The tag is
+[01:06:08 -> 01:06:10] going to be completely physical
+[01:06:10 -> 01:06:12] the address.
+[01:06:12 -> 01:06:16] Okay?
+[01:06:16 -> 01:06:18] So, so
+[01:06:18 -> 01:06:20] what's happening is now you're reading
+[01:06:20 -> 01:06:22] the TLB, getting
+[01:06:22 -> 01:06:24] the physical address,
+[01:06:24 -> 01:06:26] that is what you're using to compare
+[01:06:26 -> 01:06:28] against the tag.
+[01:06:28 -> 01:06:35] Make sense?
+[01:06:35 -> 01:06:37] And that is what I said over here
+[01:06:37 -> 01:06:39] to this page coloring.
+[01:06:39 -> 01:06:41] Okay?
+[01:06:41 -> 01:06:43] I know that the page offset
+[01:06:43 -> 01:06:45] bits are not changing.
+[01:06:45 -> 01:06:47] And I'm maintaining this
+[01:06:47 -> 01:06:49] okay? What I'm trying to see is
+[01:06:49 -> 01:06:51] can I have more bits that I can use
+[01:06:51 -> 01:06:53] to index that aren't
+[01:06:53 -> 01:06:55] going to change as part of the translation?
+[01:06:55 -> 01:06:57] And that's what I'm doing
+[01:06:57 -> 01:06:59] with this page coloring over here.
+[01:06:59 -> 01:07:01] Saying that, hey, you know,
+[01:07:01 -> 01:07:03] I preserved
+[01:07:03 -> 01:07:05] the bottom two bits of the
+[01:07:05 -> 01:07:07] virtual page number and it's
+[01:07:07 -> 01:07:12] going to have the same physical page number.
+[01:07:12 -> 01:07:14] But the tags are fully physically
+[01:07:14 -> 01:07:16] addressed. So we should just call
+[01:07:16 -> 01:07:18] this index and physically
+[01:07:18 -> 01:07:20] tagged. It's not really
+[01:07:20 -> 01:07:22] virtually indexed. No.
+[01:07:22 -> 01:07:24] It is. It is.
+[01:07:24 -> 01:07:26] It is a
+[01:07:26 -> 01:07:28] virtually index physically tagged.
+[01:07:28 -> 01:07:30] Right, but the index
+[01:07:30 -> 01:07:32] is identical whether
+[01:07:32 -> 01:07:34] or both physical and
+[01:07:34 -> 01:07:36] physical.
+[01:07:36 -> 01:07:38] So I know you
+[01:07:38 -> 01:07:40] brought this up. How do
+[01:07:40 -> 01:07:42] these Qualcomm things do it then?
+[01:07:42 -> 01:07:44] We don't know. But they can't be doing
+[01:07:44 -> 01:07:46] this because they don't have enough bits.
+[01:07:46 -> 01:07:48] No, they don't. So what
+[01:07:48 -> 01:07:50] they do is they actually
+[01:07:50 -> 01:07:57] this
+[01:07:57 -> 01:07:59] unless
+[01:07:59 -> 01:08:01] they do this with some
+[01:08:01 -> 01:08:03] remapping. I do not know that.
+[01:08:03 -> 01:08:05] Okay? But more likely
+[01:08:05 -> 01:08:07] I've seen in the past
+[01:08:07 -> 01:08:09] for many years
+[01:08:09 -> 01:08:11] is they have a
+[01:08:11 -> 01:08:13] small micro
+[01:08:13 -> 01:08:15] TLB. They call it a nano TLB.
+[01:08:15 -> 01:08:20] And then
+[01:08:20 -> 01:08:22] they can also access
+[01:08:22 -> 01:08:24] this normal TLB in parallel.
+[01:08:24 -> 01:08:26] But
+[01:08:26 -> 01:08:28] it may take, okay,
+[01:08:28 -> 01:08:30] so what I'm doing
+[01:08:30 -> 01:08:32] is say I'm accessing this
+[01:08:32 -> 01:08:34] nano TLB in half a clock
+[01:08:34 -> 01:08:36] cycle or something. At the same time
+[01:08:36 -> 01:08:38] I'm accessing the
+[01:08:38 -> 01:08:40] 128 entry level
+[01:08:40 -> 01:08:42] one TLB. Maybe it's
+[01:08:42 -> 01:08:44] taking two side cycles.
+[01:08:44 -> 01:08:46] So I'm still in a sense overlapping
+[01:08:46 -> 01:08:48] I'm not letting
+[01:08:48 -> 01:08:50] the TLB access necessarily
+[01:08:50 -> 01:08:52] if I get a somewhat hit
+[01:08:52 -> 01:08:54] in the micro TLB and get in
+[01:08:54 -> 01:08:56] the way. If I don't
+[01:08:56 -> 01:08:58] then perhaps I'm only paying
+[01:08:58 -> 01:09:00] an additional extra for
+[01:09:00 -> 01:09:02] doing the
+[01:09:02 -> 01:09:04] re whatever it is.
+[01:09:04 -> 01:09:06] Okay?
+[01:09:06 -> 01:09:08] So they, many of the arm designs
+[01:09:08 -> 01:09:10] have these micro
+[01:09:10 -> 01:09:12] or nano TLBs as they call them.
+[01:09:12 -> 01:09:14] So if you don't
+[01:09:14 -> 01:09:16] have enough bits to do the
+[01:09:16 -> 01:09:18] virtual, the VI's don't
+[01:09:18 -> 01:09:20] equal the PI's, then
+[01:09:20 -> 01:09:22] you really need to have some kind of physical
+[01:09:22 -> 01:09:24] indexing or you're going to have a synaptic problem.
+[01:09:24 -> 01:09:32] Yes. And
+[01:09:32 -> 01:09:34] unless you control your own software
+[01:09:34 -> 01:09:36] in which you do something like this
+[01:09:36 -> 01:09:38] then you call
+[01:09:38 -> 01:09:40] that a bad design and you're going to regret it
+[01:09:40 -> 01:09:45] in a few years.
+[01:09:45 -> 01:09:47] Guaranteed.
+[01:09:47 -> 01:09:49] I don't know if you'll allow or not
+[01:09:49 -> 01:09:51] but confused anything. I'll accept.
+[01:09:51 -> 01:09:53] It hardly changes. You'll regret it.
+[01:09:53 -> 01:09:55] You know.
+[01:09:55 -> 01:09:57] So
+[01:09:57 -> 01:09:59] you just blabber in this office.
+[01:09:59 -> 01:10:01] Okay.
+[01:10:01 -> 01:10:03] So I only have a couple
+[01:10:03 -> 01:10:05] of minutes left but what I do
+[01:10:05 -> 01:10:07] want to introduce to you
+[01:10:07 -> 01:10:09] is the next
+[01:10:09 -> 01:10:11] which is
+[01:10:11 -> 01:10:13] data level travels.
+[01:10:13 -> 01:10:16] And we'll see
+[01:10:16 -> 01:10:18] this in great detail next time.
+[01:10:18 -> 01:10:20] So we'll
+[01:10:20 -> 01:10:22] talk a little bit about vector processors
+[01:10:22 -> 01:10:24] and
+[01:10:24 -> 01:10:26] of course we won't talk about the
+[01:10:26 -> 01:10:28] multi-processor details. That's
+[01:10:28 -> 01:10:30] 757 and a little bit about
+[01:10:30 -> 01:10:32] thread level next time.
+[01:10:32 -> 01:10:34] So
+[01:10:34 -> 01:10:36] you know
+[01:10:36 -> 01:10:38] the metrics we've done is like
+[01:10:38 -> 01:10:40] you can see it's time taken to perform
+[01:10:40 -> 01:10:42] a single task. Very hard to make smaller.
+[01:10:42 -> 01:10:44] Bandwidth is the number of tasks
+[01:10:44 -> 01:10:46] that can be performed in a given amount of time.
+[01:10:46 -> 01:10:48] It's easier to make larger
+[01:10:48 -> 01:10:50] because you can overlap
+[01:10:50 -> 01:10:52] the tasks and execute them in parallel.
+[01:10:52 -> 01:10:54] And we saw one form
+[01:10:54 -> 01:10:56] of parallelism. Instruction level parallelism.
+[01:10:56 -> 01:10:58] We saw pipelining.
+[01:10:58 -> 01:11:00] We saw superscalar.
+[01:11:00 -> 01:11:02] And
+[01:11:02 -> 01:11:04] we saw that IAP is out there
+[01:11:04 -> 01:11:06] and that's what's keeping processors going
+[01:11:06 -> 01:11:08] today.
+[01:11:08 -> 01:11:10] Compiler process that has to do
+[01:11:10 -> 01:11:12] a fair amount of work to do it.
+[01:11:12 -> 01:11:14] But yeah, you know, okay.
+[01:11:14 -> 01:11:16] It's fine.
+[01:11:16 -> 01:11:18] And you know
+[01:11:18 -> 01:11:20] then we saw the clocked IPC
+[01:11:20 -> 01:11:22] at our odds.
+[01:11:22 -> 01:11:24] Pipelining fast clock, hazards in
+[01:11:24 -> 01:11:26] IPC. Wide issue
+[01:11:26 -> 01:11:28] increases IPC, higher IPC
+[01:11:28 -> 01:11:30] but then you have bypassing slow
+[01:11:30 -> 01:11:32] clock. And can we get
+[01:11:32 -> 01:11:34] in a sense the best of both?
+[01:11:34 -> 01:11:36] And you can do that
+[01:11:36 -> 01:11:38] if you have
+[01:11:38 -> 01:11:40] a workload environment
+[01:11:40 -> 01:11:42] where you are doing
+[01:11:42 -> 01:11:44] the same computation on lots
+[01:11:44 -> 01:11:46] and lots and lots of data.
+[01:11:46 -> 01:11:48] Okay?
+[01:11:48 -> 01:11:50] And we will see that
+[01:11:50 -> 01:11:52] how we
+[01:11:52 -> 01:11:54] exploit the vectors.
+[01:11:54 -> 01:11:56] And you know,
+[01:11:56 -> 01:11:58] and it's data
+[01:11:58 -> 01:12:00] vectors started out for
+[01:12:00 -> 01:12:02] scientific computing.
+[01:12:02 -> 01:12:04] And then, you know,
+[01:12:04 -> 01:12:06] then there was
+[01:12:06 -> 01:12:08] interest again in the vector principles
+[01:12:08 -> 01:12:10] once we started working with
+[01:12:10 -> 01:12:12] sound and video
+[01:12:12 -> 01:12:14] which are again,
+[01:12:14 -> 01:12:16] you know, you're doing the same
+[01:12:16 -> 01:12:18] computation on different data
+[01:12:18 -> 01:12:20] items in a very regular fashion.
+[01:12:20 -> 01:12:22] And then these days
+[01:12:22 -> 01:12:24] matrix multiplication
+[01:12:24 -> 01:12:26] seems to be what you're doing all the time
+[01:12:26 -> 01:12:28] with GPUs.
+[01:12:28 -> 01:12:30] For AI, again, very
+[01:12:30 -> 01:12:32] regular computation. Same computation
+[01:12:32 -> 01:12:34] on lots and lots of data.
+[01:12:34 -> 01:12:36] We'll see how these vector
+[01:12:36 -> 01:12:38] principles can really
+[01:12:38 -> 01:12:43] help in this situation. Okay, so we'll see
+[01:12:43 -> 01:12:47] you on Friday then.
+[01:12:47 -> 01:12:49] And you know, I'll be...

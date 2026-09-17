@@ -1,0 +1,1119 @@
+Title: 752_Lec6
+Source file: 752_Lec6.m4a
+Detected language: en
+------------------------------------------------------------
+
+[00:00:00 -> 00:00:12] I'm going to start on the planning part of it, and then there's a whole lot to do this Friday.
+[00:00:15 -> 00:01:23] Any questions? Anyone have a free start? Alignment and Indian Order.
+[00:01:23 -> 00:01:37] So I repeat again, the importance of access alignment is whenever from the CPU you make a request to the memory hierarchy.
+[00:01:37 -> 00:01:43] First to the cache. What you're going to get from the cache is the entire cache line.
+[00:01:43 -> 00:01:53] And if the data that you're trying to get crosses the cache line boundary, then you have to make two cache accesses.
+[00:01:53 -> 00:02:02] And very similarly, the same thing, if it goes all the way to memory, you're going to get it at a cache line at a time, multiple accesses.
+[00:02:02 -> 00:02:15] And that has to be dealt in hardware. So what you try and do is you actually try and make sure that the data is aligned on a boundary
+[00:02:15 -> 00:02:22] so that you can fetch the entire data element in one access rather than multiple accesses.
+[00:02:22 -> 00:02:31] And the Indian Order is basically in the order of, you know, what is the ordering of the bytes?
+[00:02:31 -> 00:02:38] Is it from left to right, high order to low order, or is it from right to left, high order to low order?
+[00:02:38 -> 00:02:47] One is not better than the other. Just like languages, you write from right to left and left to right.
+[00:02:47 -> 00:02:53] They both work and have been working for millennia.
+[00:02:53 -> 00:03:03] And the only issue comes in when you are having someone who says, hey, it's meant to be read from left to right.
+[00:03:03 -> 00:03:11] And someone else says, no, it's meant to be read from right to left. Then you have a little disconnect.
+[00:03:11 -> 00:03:20] So what happens is when you have a machine that is assuming Big Indian Order is communicating, you're passing data to something else,
+[00:03:20 -> 00:03:30] but to another machine, then you have to arrange the order of the bytes to make sure that you're passing the right data.
+[00:03:30 -> 00:03:35] People read bytes in different order many years ago.
+[00:03:35 -> 00:03:42] You know, that was before we had these kind of simulators that we had.
+[00:03:42 -> 00:03:47] Now people would give you a, you know, you would trace them on simulation.
+[00:03:47 -> 00:03:54] You would have a trace of memory addresses, and you could use it to do cache simulations and so on like that.
+[00:03:54 -> 00:04:02] And you know, sort of a very popular set of traces.
+[00:04:02 -> 00:04:08] In those days, there was no network that sent you a tape, which has the traces.
+[00:04:08 -> 00:04:14] And then you have a piece of software that would extract the bytes from the tape,
+[00:04:14 -> 00:04:23] and then you could put it on your local storage, whatever, one megabyte of storage that your desk was or whatever, and then process it.
+[00:04:23 -> 00:04:27] And so the extractor had the byte ordering wrong.
+[00:04:27 -> 00:04:32] But you know what, all the cache simulations still gave the same results.
+[00:04:32 -> 00:04:36] Okay, garbage end, but still, you know, the code is still the same.
+[00:04:36 -> 00:04:38] Anyway, all right.
+[00:04:38 -> 00:04:41] I'm going to argue that Big Indian is definitely better than Big Indian.
+[00:04:41 -> 00:04:47] One, you don't have to do the reordering when you send it out on the network.
+[00:04:47 -> 00:04:52] And two, you can do, like if you want to compare a whole bunch of hints, right,
+[00:04:52 -> 00:05:01] you can use the string comparison functions on Big Indian data and get ordering versus Little Indian.
+[00:05:01 -> 00:05:07] That's just a matter of how the hardware is going to recognize the ordering.
+[00:05:07 -> 00:05:13] The ordering string comparison section, the hardware, how would the hardware recognize it's just fine, too.
+[00:05:13 -> 00:05:14] Okay.
+[00:05:14 -> 00:05:21] You know, maybe I'm used to seeing it, you know, in some way.
+[00:05:21 -> 00:05:24] No, I'm used to seeing it in Little Indian on the Intel processors.
+[00:05:24 -> 00:05:30] So I will say I would much rather have data for Big Indian.
+[00:05:30 -> 00:05:31] It's fine.
+[00:05:31 -> 00:05:33] You know, both can live.
+[00:05:33 -> 00:05:37] Next we'll have an Emacs by argument.
+[00:05:37 -> 00:05:41] I don't think they're actually equivalent.
+[00:05:41 -> 00:05:45] I think that, I mean, there are advantages to being Big Indian,
+[00:05:45 -> 00:05:48] because that's kind of what the network world decided to do.
+[00:05:48 -> 00:05:51] Because that is the network world that decided to do.
+[00:05:51 -> 00:05:52] Yeah.
+[00:05:52 -> 00:05:55] Because they built a lot of that software.
+[00:05:55 -> 00:05:58] The sun was the one behind it.
+[00:05:58 -> 00:06:00] No, no, no, that's three days.
+[00:06:00 -> 00:06:01] Really?
+[00:06:01 -> 00:06:02] No, no, no, no.
+[00:06:02 -> 00:06:11] You know, I mean, the stuff was written before there was such a thing called the sun workstation.
+[00:06:12 -> 00:06:15] You know, BSV worked on that.
+[00:06:15 -> 00:06:20] Bill Joy went and then did some after that.
+[00:06:20 -> 00:06:22] But it was done rather than that.
+[00:06:22 -> 00:06:27] You know, one of the, changing the subject a little bit.
+[00:06:27 -> 00:06:33] It's one of the famous backdoors.
+[00:06:33 -> 00:06:46] One of the first internet worms that got sent out was by a person by Robert Morris was his name.
+[00:06:46 -> 00:06:48] His dad was a big shot.
+[00:06:48 -> 00:06:50] You know, he was a science person.
+[00:06:50 -> 00:06:52] He was a grad student.
+[00:06:52 -> 00:06:58] And he sent out this worm where, you know, all the machines, like,
+[00:06:58 -> 00:07:01] you know, you came in the morning, your wax is all down.
+[00:07:01 -> 00:07:08] Your machines are all down, you know, running your Unix system, not the VMS system.
+[00:07:08 -> 00:07:21] And it exploited a backdoor which Bill Joy and others had put in specifically so that they could hack into the system at any time and become a super user.
+[00:07:21 -> 00:07:28] Never realizing that that software may be out in the real world ubiquitously used.
+[00:07:28 -> 00:07:37] And so that backdoor got out and people explored that backdoor to get into what same way that Bill Joy would try and get into systems.
+[00:07:37 -> 00:07:44] So, anyway, Bill Joy is often as big yard for the last couple of decades.
+[00:07:44 -> 00:07:46] All right.
+[00:07:46 -> 00:07:49] You heard the name Bill Joy?
+[00:07:50 -> 00:07:59] He was one of the creators of the originally Berkeley Unix system.
+[00:07:59 -> 00:08:06] And then he went out and started Sun Microsystems.
+[00:08:06 -> 00:08:16] Sun Microsystems and then also then, you know, I mean, they were the ones who developed a lot of the networking software and all that good stuff.
+[00:08:16 -> 00:09:11] Okay.
+[00:09:11 -> 00:09:15] Nothing works like shutting down the software and letting it restart.
+[00:09:15 -> 00:09:16] Okay.
+[00:09:16 -> 00:09:23] The other issue that I want to talk about is the branch instructions, control instructions.
+[00:09:23 -> 00:09:24] Okay.
+[00:09:24 -> 00:09:30] And there are going to be three issues you're going to have to deal with with the control instructions.
+[00:09:30 -> 00:09:35] One issue is testing for conditions and other is computing the targets.
+[00:09:35 -> 00:09:40] And then the other issue, third issue is the support for procedure calls.
+[00:09:40 -> 00:09:41] Okay.
+[00:09:41 -> 00:09:44] So let us go through these one by one.
+[00:09:44 -> 00:09:49] So the first issue is how do you decide whether the branch is going to be taken or not?
+[00:09:49 -> 00:09:50] How do you test the condition?
+[00:09:50 -> 00:09:52] How do you do that kind of setup?
+[00:09:52 -> 00:09:53] Okay.
+[00:09:53 -> 00:09:59] So the first option is to have a branch instruction.
+[00:09:59 -> 00:10:00] Okay.
+[00:10:00 -> 00:10:07] Where in a single instruction you carry out the comparison of two inputs.
+[00:10:07 -> 00:10:14] See if they meet the condition and then branch.
+[00:10:14 -> 00:10:15] And where do you branch to?
+[00:10:15 -> 00:10:18] You have to calculate an address.
+[00:10:18 -> 00:10:20] Okay.
+[00:10:20 -> 00:10:27] So for example, you can have a branch less than comparing R1 to an immediate value zero.
+[00:10:27 -> 00:10:33] And here is a target address that you're going to branch to if the branch is going to be taken.
+[00:10:33 -> 00:10:35] Okay.
+[00:10:35 -> 00:10:37] So a simple instruction.
+[00:10:37 -> 00:10:49] But now to implement this instruction, I'm going to need one ALU to carry out this comparison between R1 and 10, contents of R1 and 10.
+[00:10:49 -> 00:10:51] Set the condition.
+[00:10:51 -> 00:10:52] Okay.
+[00:10:52 -> 00:10:55] And then another one to calculate the target address.
+[00:10:55 -> 00:10:58] And we'll see the different ways of calculating the target address.
+[00:10:58 -> 00:11:03] Typically it's going to be, I'll add some offset to the program counter.
+[00:11:03 -> 00:11:05] Okay.
+[00:11:05 -> 00:11:14] So when we start talking about pipelining, we'll see is if now an instruction is using two resources like ALUs,
+[00:11:14 -> 00:11:23] then you have to try and make sure that something called structural hazards doesn't get aggravated and deal with structural hazards.
+[00:11:23 -> 00:11:25] Okay.
+[00:11:25 -> 00:11:30] Another option is to have what is called implicit condition code.
+[00:11:30 -> 00:11:36] So you have an arithmetic instruction, say a subtract.
+[00:11:36 -> 00:11:40] And every arithmetic instruction sets some condition code.
+[00:11:40 -> 00:11:48] So you may have seen like a negative condition code, a zero condition code, whether there was a carry out and so on like that.
+[00:11:48 -> 00:11:49] Okay.
+[00:11:49 -> 00:11:53] You must have seen these in your undergraduate architecture class.
+[00:11:53 -> 00:11:58] So you carry out an instruction which sets the condition codes.
+[00:11:58 -> 00:11:59] Okay.
+[00:11:59 -> 00:12:09] And then another, the branch instruction, which is going to test the condition codes to see whether the branch should be taken or not.
+[00:12:09 -> 00:12:10] Okay.
+[00:12:10 -> 00:12:14] Check the values of condition codes.
+[00:12:14 -> 00:12:21] Now these condition codes typically are set for free any time you do an arithmetic operation.
+[00:12:21 -> 00:12:23] Okay.
+[00:12:23 -> 00:12:31] And also this branch instruction is only going to need one ALU test to calculate this target.
+[00:12:31 -> 00:12:35] There is no need to have an ALU to check the condition codes.
+[00:12:35 -> 00:12:39] You're just checking bits over there.
+[00:12:39 -> 00:12:41] So the condition codes are set for free.
+[00:12:41 -> 00:12:42] You don't need multiple ALUs.
+[00:12:42 -> 00:12:50] However, now you have a dependence between this subtract and this branch instruction.
+[00:12:50 -> 00:12:58] So for example, between this subtract instruction and this branch, say I put another add instruction.
+[00:12:58 -> 00:12:59] Okay.
+[00:12:59 -> 00:13:08] This branch now is going to test the condition codes that are set by this add instruction and not by this subtract instruction.
+[00:13:08 -> 00:13:09] Okay.
+[00:13:09 -> 00:13:11] So there is an implicit dependence.
+[00:13:11 -> 00:13:16] An implicit mean that I'm not showing it explicitly.
+[00:13:16 -> 00:13:17] Okay.
+[00:13:17 -> 00:13:26] Which now is going to restrict perhaps the ability to separate these two instructions over here.
+[00:13:26 -> 00:13:28] Why would you want to do that?
+[00:13:28 -> 00:13:32] We will see why we want to do that.
+[00:13:32 -> 00:13:34] Okay.
+[00:13:34 -> 00:13:44] A third option is what you can do is, you know, you can have, you can set your condition in registers.
+[00:13:44 -> 00:13:52] And then the branch instruction actually checks the value of the register to see what the condition codes are.
+[00:13:52 -> 00:13:54] Okay.
+[00:13:54 -> 00:14:03] So you can have an instruction, a set less than instruction, which is going to compare R1 and the immediate value of 10.
+[00:14:03 -> 00:14:10] And if the result of the comparison is, you know, less than, then R2 is set to 1.
+[00:14:10 -> 00:14:11] Okay.
+[00:14:11 -> 00:14:13] Otherwise R2 is set to 0.
+[00:14:13 -> 00:14:14] Okay.
+[00:14:14 -> 00:14:24] And then this branch instruction is going to test the value that is there, 0 or 1, in the R2 register.
+[00:14:24 -> 00:14:25] Okay.
+[00:14:25 -> 00:14:32] So now what I have is I have an explicit dependence between these two instructions through this register R2.
+[00:14:32 -> 00:14:36] Okay.
+[00:14:36 -> 00:14:42] On the negative side, I have two instructions that I had one over here, I have two here too.
+[00:14:42 -> 00:14:47] I'm only using one ALU here and, you know, one ALU over here.
+[00:14:47 -> 00:14:48] Okay.
+[00:14:48 -> 00:14:50] Really I'm only testing a bit over here.
+[00:14:50 -> 00:14:58] And there is an explicit dependence that I'm going to know how to deal with.
+[00:14:58 -> 00:15:06] So, you know, in MIPS and also sort of in RISC-V and others, okay, you use a combination.
+[00:15:06 -> 00:15:08] You compare two registers and branch.
+[00:15:08 -> 00:15:12] So it has a branch equal, branch not equal to instruction.
+[00:15:12 -> 00:15:16] And when I'm comparing two values, I just have to see the bits.
+[00:15:16 -> 00:15:19] I don't have to subtract them to see what the result is.
+[00:15:19 -> 00:15:20] Okay.
+[00:15:20 -> 00:15:23] I can just have an equality comparison of the bits.
+[00:15:23 -> 00:15:24] Okay.
+[00:15:24 -> 00:15:26] Whether they are equal or not equal.
+[00:15:26 -> 00:15:28] I don't need an adder.
+[00:15:28 -> 00:15:31] And it also compares one register to zero and branches.
+[00:15:31 -> 00:15:40] So it has, you know, branch greater than zero, equal to zero, and, you know, different versions of that.
+[00:15:40 -> 00:15:44] So, you know, I can do these greater than or less than comparisons,
+[00:15:44 -> 00:15:52] and I don't need this explicit adder because I'm simply comparing to the zero value.
+[00:15:52 -> 00:15:57] In a sense, you're just checking the value of the bits of the register to see what they are.
+[00:15:57 -> 00:16:00] Okay.
+[00:16:00 -> 00:16:09] And then it also uses these set instructions over here to set different conditions in different registers
+[00:16:09 -> 00:16:14] that the branch instruction can take a look at.
+[00:16:14 -> 00:16:21] And again, you know, they empirically observe more than 80% of the branches
+[00:16:21 -> 00:16:27] simply compare equal to what, you know, zero or not equal to zero.
+[00:16:27 -> 00:16:29] Sorry, inequalities.
+[00:16:29 -> 00:16:30] Are they two equal?
+[00:16:30 -> 00:16:32] Or they are comparing to zero.
+[00:16:32 -> 00:16:33] Okay.
+[00:16:33 -> 00:16:37] And, you know, many of the branches, basically, you end up, you know, loop control and so on.
+[00:16:37 -> 00:16:41] Zero shows up in the picture.
+[00:16:41 -> 00:16:46] You know, in the PowerPC, they actually had multiple sets of condition codes.
+[00:16:46 -> 00:16:49] Everyone thinks they can come up with something clever.
+[00:16:49 -> 00:16:50] Okay.
+[00:16:51 -> 00:16:57] Register operations and different architectures have slightly different variations on these.
+[00:16:57 -> 00:17:02] Any questions about that?
+[00:17:02 -> 00:17:03] Okay.
+[00:17:03 -> 00:17:06] So now, how do I compute the target of a branch?
+[00:17:06 -> 00:17:08] Where I should be branching to?
+[00:17:08 -> 00:17:10] That's the second issue.
+[00:17:10 -> 00:17:14] So the first option, and the issue is very simply the following.
+[00:17:14 -> 00:17:15] Okay.
+[00:17:15 -> 00:17:21] It's like, say I'm dealing with 32-bit architecture.
+[00:17:21 -> 00:17:22] Okay.
+[00:17:22 -> 00:17:25] So I have to have a 32-bit address of the PC.
+[00:17:25 -> 00:17:26] Okay.
+[00:17:26 -> 00:17:34] I cannot specify the entire bits of an address and still have a 32-bit instruction.
+[00:17:34 -> 00:17:37] I can't specify all the 32 bits of the address.
+[00:17:37 -> 00:17:42] So I have to instead specify some formula for calculating the address.
+[00:17:42 -> 00:17:45] Just like I was doing in the address symbols.
+[00:17:45 -> 00:17:47] Okay.
+[00:17:47 -> 00:17:56] So the different formula, if you will, are one is PC relative where what you do is you're
+[00:17:56 -> 00:17:59] saying, I'm going to give an offset in the instruction.
+[00:17:59 -> 00:18:03] It is relative to the PC of the instruction.
+[00:18:03 -> 00:18:04] Okay.
+[00:18:04 -> 00:18:07] Add that offset to the PC of the instruction.
+[00:18:07 -> 00:18:13] Now, you know, unlike data where you could be addressing any part of memory, typically
+[00:18:13 -> 00:18:18] when you are branching in code, you are branching within a procedure.
+[00:18:18 -> 00:18:19] Okay.
+[00:18:19 -> 00:18:21] And a procedure is going to be conditional branches.
+[00:18:21 -> 00:18:22] Okay.
+[00:18:22 -> 00:18:25] And the procedure is going to be of a certain size.
+[00:18:25 -> 00:18:26] Okay.
+[00:18:26 -> 00:18:27] That's what you're taught.
+[00:18:27 -> 00:18:28] You know, right?
+[00:18:28 -> 00:18:29] You know, small procedures.
+[00:18:29 -> 00:18:32] You make any use of procedures.
+[00:18:32 -> 00:18:33] Right.
+[00:18:33 -> 00:18:40] So they're going to be used for branches and also jumps within each procedure.
+[00:18:40 -> 00:18:45] Now, sometimes you want to go outside the procedure.
+[00:18:45 -> 00:18:49] If I call another procedure, I'm going outside the procedure.
+[00:18:49 -> 00:18:50] Okay.
+[00:18:50 -> 00:18:55] And over there, I may be going a little further away.
+[00:18:55 -> 00:18:57] Jump a little further away in the code.
+[00:18:57 -> 00:18:58] Okay.
+[00:18:58 -> 00:19:05] So I need a slightly different formula for doing that.
+[00:19:05 -> 00:19:11] And the third option is indirect where, you know, we specify where you're going
+[00:19:11 -> 00:19:18] to in a compute where we are going to and put it in a register and then you actually
+[00:19:18 -> 00:19:23] read the bits of the register and that's where you end up jumping to.
+[00:19:23 -> 00:19:24] Okay.
+[00:19:24 -> 00:19:27] And that's what you're going to use any time you need to return from a procedure,
+[00:19:27 -> 00:19:34] for example, or if you're dynamically linking code, dynamic procedure calls, switch statements
+[00:19:34 -> 00:19:36] and the like.
+[00:19:36 -> 00:19:37] Okay.
+[00:19:37 -> 00:19:42] So again, typically within a procedure, you don't need to jump, go that far away.
+[00:19:42 -> 00:19:47] But when you go from one procedure to the next or you return from a procedure to another
+[00:19:47 -> 00:19:52] procedure and so on, you need to go a little farther away.
+[00:19:52 -> 00:19:53] Okay.
+[00:19:53 -> 00:19:59] So these are, in a sense, the three idioms that MIPS uses.
+[00:19:59 -> 00:20:01] And again, Respy is very similar.
+[00:20:01 -> 00:20:04] The other architectures are very similar.
+[00:20:04 -> 00:20:10] So they have an I type, a J type, and an R type control instruction.
+[00:20:10 -> 00:20:15] This I type is used for pretty much all conditional branches.
+[00:20:15 -> 00:20:18] So here is branch equal to or not equal to or whatever.
+[00:20:18 -> 00:20:19] Okay.
+[00:20:19 -> 00:20:21] The two registers.
+[00:20:21 -> 00:20:22] Okay.
+[00:20:22 -> 00:20:25] And then this is the offset value.
+[00:20:25 -> 00:20:31] And then what you do is the way, here are 16 bits that you have to calculate
+[00:20:31 -> 00:20:32] an address.
+[00:20:32 -> 00:20:38] And then what you do is you take these 16 bits, sign extend them to 32.
+[00:20:38 -> 00:20:42] Then you add that to the PC of this instruction.
+[00:20:42 -> 00:20:43] Okay.
+[00:20:43 -> 00:20:48] And that is where your branch target is.
+[00:20:48 -> 00:20:50] Okay.
+[00:20:50 -> 00:20:57] The J type is used for absolute jumps where the instruction is specifying the address.
+[00:20:57 -> 00:21:01] It's not offset to the current PC if you will.
+[00:21:01 -> 00:21:02] All right.
+[00:21:02 -> 00:21:10] But I cannot, in a 32-bit instruction, I cannot have 32 bits to specify the address.
+[00:21:10 -> 00:21:16] So what I do is I have six bits over here.
+[00:21:16 -> 00:21:17] Okay.
+[00:21:17 -> 00:21:25] And this six bits over here then is you put, for the 26 bits, for the higher order bits,
+[00:21:25 -> 00:21:27] you put the bits of the PC.
+[00:21:27 -> 00:21:28] Okay.
+[00:21:28 -> 00:21:33] And that's how you get the target address over here.
+[00:21:33 -> 00:21:38] Wait, can you say that you use the top bits of the PC for the high order bits?
+[00:21:38 -> 00:21:40] I think so, yeah, if I remember correctly.
+[00:21:40 -> 00:21:41] Hmm.
+[00:21:41 -> 00:21:42] Yeah.
+[00:21:42 -> 00:21:46] But you know, okay, just keep in mind 26.
+[00:21:46 -> 00:21:47] That's big bits.
+[00:21:47 -> 00:21:50] 26 is two to the 26.
+[00:21:50 -> 00:21:56] What you actually, so first you do is you actually put, no, here's what you do.
+[00:21:56 -> 00:21:59] The bottom two bits are zero.
+[00:21:59 -> 00:22:00] Okay.
+[00:22:00 -> 00:22:04] Because instructions are four bytes and instructions have to be aligned.
+[00:22:04 -> 00:22:06] All right.
+[00:22:06 -> 00:22:12] And then you take 26 and then you take the four bytes of the PC.
+[00:22:12 -> 00:22:13] Okay.
+[00:22:13 -> 00:22:18] So, you know, two to the 28 is quite big.
+[00:22:18 -> 00:22:19] Huh?
+[00:22:19 -> 00:22:20] Yeah.
+[00:22:20 -> 00:22:21] Yeah, yeah.
+[00:22:21 -> 00:22:22] 256 meg.
+[00:22:22 -> 00:22:23] Yeah.
+[00:22:23 -> 00:22:24] It's a lot.
+[00:22:24 -> 00:22:28] The code is clearly not that big.
+[00:22:28 -> 00:22:34] You know, if you have code bigger than that, then what you do is you jump to one place
+[00:22:34 -> 00:22:37] and then from there you jump somewhere else.
+[00:22:37 -> 00:22:43] You know, then you create these trampolines, if you will.
+[00:22:43 -> 00:22:45] So, okay.
+[00:22:45 -> 00:22:52] And then for indirect jumps, then you just need to specify the contents in a register
+[00:22:52 -> 00:22:57] and, you know, and then you read the register and that's the address.
+[00:22:57 -> 00:22:59] Move that to the PC.
+[00:22:59 -> 00:23:02] Questions?
+[00:23:02 -> 00:23:09] Okay.
+[00:23:09 -> 00:23:14] So, the remaining issue is support for procedure calls.
+[00:23:14 -> 00:23:19] Any time you call a procedure, you have a procedure called instruction,
+[00:23:19 -> 00:23:24] you are going to return to the next PC, if you will.
+[00:23:24 -> 00:23:26] Instruction of the next PC.
+[00:23:26 -> 00:23:27] Okay.
+[00:23:27 -> 00:23:33] So, you have to save the instruction address of the next PC.
+[00:23:33 -> 00:23:34] Okay.
+[00:23:34 -> 00:23:39] And, you know, there are multiple options for where to save it.
+[00:23:39 -> 00:23:44] And in some architectures you save it implicitly on top of a stack.
+[00:23:44 -> 00:23:48] You know, in MIPS and some of the other RISC architectures,
+[00:23:48 -> 00:23:54] what they choose to do is they choose to save it in one of the 32 registers.
+[00:23:54 -> 00:23:59] The 31 is always, you know, reserved for a linkage register.
+[00:23:59 -> 00:24:02] So what you do is, you know, when you do a procedure call,
+[00:24:02 -> 00:24:06] you save the PC in that linkage register.
+[00:24:06 -> 00:24:10] And now when you see a procedure return,
+[00:24:10 -> 00:24:14] then you simply read the contents of the PC.
+[00:24:14 -> 00:24:15] Okay.
+[00:24:15 -> 00:24:22] And, you know, return is basically, you know, sorry, you know,
+[00:24:22 -> 00:24:25] return is an indirect jump like that, okay.
+[00:24:25 -> 00:24:34] And you basically read the contents of register 31 and move it to PC.
+[00:24:34 -> 00:24:36] All right.
+[00:24:36 -> 00:24:37] Okay.
+[00:24:37 -> 00:24:41] So, you know, I won't go into some of these, you know,
+[00:24:41 -> 00:24:45] both ARM and, you know, x86.
+[00:24:45 -> 00:24:48] ARM is the example of sort of a RISC machine,
+[00:24:48 -> 00:24:52] even though you take a look at it, it's fairly ugly.
+[00:24:52 -> 00:24:57] And, you know, and then of course they started out with, you know,
+[00:24:57 -> 00:25:01] 32-bit instructions with 32-bit architecture,
+[00:25:01 -> 00:25:04] went to a 64-bit architecture, okay.
+[00:25:04 -> 00:25:10] It has fewer than, you know, registers 16 versus 32.
+[00:25:10 -> 00:25:16] And then they went to the 16-bit instructions to increase core density
+[00:25:16 -> 00:25:21] as they started making more of a headway in mobile devices.
+[00:25:21 -> 00:25:22] Okay.
+[00:25:22 -> 00:25:26] I won't go into this, you know, the x86 stuff.
+[00:25:26 -> 00:25:29] But what I do want to say is that, look,
+[00:25:29 -> 00:25:32] the instruction set that we talked about is an interface
+[00:25:32 -> 00:25:37] between the hardware and the software, okay.
+[00:25:37 -> 00:25:48] And it's, you know, has to be, it's fixed, okay.
+[00:25:48 -> 00:25:51] No ambiguities, nothing like that.
+[00:25:51 -> 00:25:53] Software creates a program.
+[00:25:53 -> 00:25:56] The hardware doesn't create, is not concerned
+[00:25:56 -> 00:26:02] about how the software creates the program, okay.
+[00:26:02 -> 00:26:05] Hardware gets this program.
+[00:26:05 -> 00:26:12] And what it does is it's going to execute the instructions.
+[00:26:12 -> 00:26:18] How it executes the instructions is not going to matter
+[00:26:18 -> 00:26:22] as long as anyone, as long as the creator
+[00:26:22 -> 00:26:24] of the program thinks, hey,
+[00:26:24 -> 00:26:30] everything happened one instruction at a time, okay.
+[00:26:30 -> 00:26:33] That's very important, okay.
+[00:26:33 -> 00:26:38] These instructions that I created, you know, program,
+[00:26:38 -> 00:26:43] you know, is assuming, the correct program is assuming
+[00:26:43 -> 00:26:46] the instructions are executing one at a time
+[00:26:46 -> 00:26:50] in the order I'm expecting them to.
+[00:26:50 -> 00:26:54] The hardware and the software doesn't care
+[00:26:54 -> 00:26:57] how these instructions are executed.
+[00:26:57 -> 00:27:00] And that's going to be, you know, our whole, you know,
+[00:27:00 -> 00:27:03] rationale when we talk about all the out-of-order
+[00:27:03 -> 00:27:07] execution techniques and so on like that, okay.
+[00:27:07 -> 00:27:14] So what the, you know, remember, you know,
+[00:27:14 -> 00:27:17] I mentioned this pattern, you know, saying, hey,
+[00:27:17 -> 00:27:18] Ramallah, write your book.
+[00:27:18 -> 00:27:22] I can learn your tricks and play them, okay.
+[00:27:22 -> 00:27:25] So I briefly talked a little bit about it
+[00:27:25 -> 00:27:27] and you'll see a little bit more when we talk
+[00:27:27 -> 00:27:30] about pipelining is if I have these simple instructions,
+[00:27:30 -> 00:27:33] you know, then they are going to be easier
+[00:27:33 -> 00:27:36] to implement in hardware, okay.
+[00:27:36 -> 00:27:40] Maybe make the hardware run faster, if you will.
+[00:27:40 -> 00:27:44] But x86 does not have simple instruction.
+[00:27:44 -> 00:27:47] It has all these, you know, these 8-bit instructions.
+[00:27:47 -> 00:27:50] It could be, you know, it could be an 8-bit instruction.
+[00:27:50 -> 00:27:53] It could be like, you know, 51 bytes,
+[00:27:53 -> 00:27:56] one byte or 51 bytes, you know, lots and lots, okay.
+[00:27:56 -> 00:28:00] You know, I mean, complex stuff, okay.
+[00:28:00 -> 00:28:04] So what they did is, you know, they were,
+[00:28:04 -> 00:28:07] you get your x86 instructions, the hardware gets them.
+[00:28:07 -> 00:28:10] Inside the hardware, you translate them
+[00:28:10 -> 00:28:15] into simple micro-operations, as you call them, okay.
+[00:28:15 -> 00:28:17] UOPs, as they call them.
+[00:28:17 -> 00:28:19] They were actually, even then, you know,
+[00:28:19 -> 00:28:25] and then the hardware can deal with those simple operations, okay.
+[00:28:25 -> 00:28:28] Once the decoder, once you get past the decoder
+[00:28:28 -> 00:28:31] that translates these complex instructions
+[00:28:31 -> 00:28:35] into the simpler ones, multiple simpler ones,
+[00:28:35 -> 00:28:36] then the hardware can work
+[00:28:36 -> 00:28:40] with the multiple simpler instructions, okay.
+[00:28:40 -> 00:28:43] But externally, the software thinks,
+[00:28:43 -> 00:28:45] external observer thinks that, hey,
+[00:28:45 -> 00:28:52] these x86 instructions executed one at a time, all right.
+[00:28:52 -> 00:28:55] So they actually did the out-of-order execution,
+[00:28:55 -> 00:28:56] you know, in a sense, before,
+[00:28:56 -> 00:29:01] even though they had a more complex instruction set.
+[00:29:01 -> 00:29:04] And the thing that let them do that, in some sense,
+[00:29:04 -> 00:29:06] is that the number of transistors
+[00:29:06 -> 00:29:10] had gotten to a point where you could have the extra work
+[00:29:10 -> 00:29:12] in the decoder and do the translation
+[00:29:12 -> 00:29:15] and maintain that translation, you know, keep copies,
+[00:29:15 -> 00:29:17] so you don't have to repeatedly
+[00:29:17 -> 00:29:23] keep doing that translation.
+[00:29:23 -> 00:29:27] Okay, you know, inspired by, you know, Intel,
+[00:29:27 -> 00:29:30] why is that, you know, the case for quite a while is,
+[00:29:30 -> 00:29:32] you know, these days, there's a lot of talk
+[00:29:32 -> 00:29:34] of people building, lots of different companies
+[00:29:34 -> 00:29:37] building RISC-V processors or ARM processors.
+[00:29:37 -> 00:29:40] A lot of people wanted to build x86 processors,
+[00:29:40 -> 00:29:43] a lot of companies with x86 processors.
+[00:29:43 -> 00:29:45] And, you know, using the same techniques,
+[00:29:45 -> 00:29:48] they actually said, hey, I'd rather do this in hardware,
+[00:29:48 -> 00:29:50] I can actually do the translation in software
+[00:29:50 -> 00:29:53] and convert it to a different binary.
+[00:29:53 -> 00:29:55] And there were a couple of companies that did that,
+[00:29:55 -> 00:29:57] that unfortunately, I mean,
+[00:29:57 -> 00:30:00] if you're doing stuff in software all the time,
+[00:30:00 -> 00:30:02] or even a lot of the time,
+[00:30:02 -> 00:30:04] you just can't necessarily keep up.
+[00:30:04 -> 00:30:07] But they developed a lot of very, very clever techniques.
+[00:30:07 -> 00:30:09] And, you know, very similar techniques,
+[00:30:09 -> 00:30:11] but also the ones that, you know,
+[00:30:11 -> 00:30:14] allowed companies like Apple to just go,
+[00:30:14 -> 00:30:18] switch over from one IS to the next ISA.
+[00:30:18 -> 00:30:20] A lot of many issues.
+[00:30:20 -> 00:30:26] Okay, so just to summarize what we talked about,
+[00:30:26 -> 00:30:29] you know, what makes a good ISA programmability,
+[00:30:29 -> 00:30:31] implementability, compatibility,
+[00:30:31 -> 00:30:33] and compatibility is, you know,
+[00:30:33 -> 00:30:36] very powerful force, if you will.
+[00:30:36 -> 00:30:48] Questions about that?
+[00:30:48 -> 00:30:52] Okay, so we'll move on to pipelining now.
+[00:30:52 -> 00:30:54] And so what we are doing now is,
+[00:30:54 -> 00:30:57] you know, most often now what we're going to do
+[00:30:57 -> 00:30:59] for the next several years
+[00:30:59 -> 00:31:03] is going to be dealing with the CPU.
+[00:31:03 -> 00:31:06] So we'll start off with, you know, the basic pipelining,
+[00:31:06 -> 00:31:08] then we'll talk about data hazards
+[00:31:08 -> 00:31:10] and how to deal with them,
+[00:31:10 -> 00:31:12] and then we'll talk about control hazards
+[00:31:12 -> 00:31:14] and branch prediction,
+[00:31:14 -> 00:31:15] and then we'll, you know,
+[00:31:15 -> 00:31:18] bring up this precise state, which is crucial.
+[00:31:18 -> 00:31:22] Because this is now going to be our beginning foray
+[00:31:22 -> 00:31:25] into, hey, software,
+[00:31:25 -> 00:31:27] you think all these instructions you wrote
+[00:31:27 -> 00:31:29] are happening one at a time?
+[00:31:29 -> 00:31:31] Well, no, we're actually going to start
+[00:31:31 -> 00:31:34] doing more than one at a time, if you will.
+[00:31:34 -> 00:31:38] But we won't tell you.
+[00:31:38 -> 00:31:40] You don't need to know about it.
+[00:31:40 -> 00:31:42] All that you will see is
+[00:31:42 -> 00:31:45] your program's executing best.
+[00:31:45 -> 00:31:48] Okay?
+[00:31:48 -> 00:31:49] All right.
+[00:31:49 -> 00:31:52] So basically, to process an instruction,
+[00:31:52 -> 00:31:53] you have to fetch it,
+[00:31:53 -> 00:31:56] you have to decode it and execute it,
+[00:31:56 -> 00:31:58] and there is hardware to do all of that.
+[00:31:58 -> 00:32:00] And you can build what is called, you know,
+[00:32:00 -> 00:32:02] the single cycle data path that you've seen
+[00:32:02 -> 00:32:06] that you execute one instruction in one cycle,
+[00:32:06 -> 00:32:07] and in that one cycle,
+[00:32:07 -> 00:32:12] you do all the work of processing that instruction.
+[00:32:12 -> 00:32:13] Okay?
+[00:32:13 -> 00:32:15] When you're done with one instruction,
+[00:32:15 -> 00:32:19] you go and do the same thing for the next instruction.
+[00:32:19 -> 00:32:20] Okay?
+[00:32:20 -> 00:32:25] One instruction at a time.
+[00:32:25 -> 00:32:29] Now, you realize that, hey, you know,
+[00:32:29 -> 00:32:33] this hardware really has multiple phases in it.
+[00:32:33 -> 00:32:34] Okay?
+[00:32:34 -> 00:32:36] So, you know, I have a phase,
+[00:32:36 -> 00:32:39] this part of the hardware does the fetch operation,
+[00:32:39 -> 00:32:41] another part of the hardware decodes,
+[00:32:41 -> 00:32:46] another part of the hardware carries out the execution.
+[00:32:46 -> 00:32:49] So rather than run through all this hardware in one cycle,
+[00:32:49 -> 00:32:52] maybe I'll take one cycle to run through this hardware,
+[00:32:52 -> 00:32:53] another to this hardware,
+[00:32:53 -> 00:32:56] another through this hardware.
+[00:32:56 -> 00:32:57] Okay?
+[00:32:57 -> 00:32:58] So basically, what I've simply done is
+[00:32:58 -> 00:32:59] I've separated out the hardware
+[00:32:59 -> 00:33:04] that's doing different parts of the processing.
+[00:33:04 -> 00:33:05] Okay?
+[00:33:05 -> 00:33:10] And so, you know, I can have a single cycle data path
+[00:33:10 -> 00:33:13] where the cycle for instruction is one,
+[00:33:13 -> 00:33:16] but this clock period is big
+[00:33:16 -> 00:33:21] to accommodate the time taken in all of this hardware.
+[00:33:21 -> 00:33:22] Okay?
+[00:33:22 -> 00:33:26] Or I could have a multi-cycle data path control
+[00:33:26 -> 00:33:29] where I spend multiple cycles,
+[00:33:29 -> 00:33:31] here I'm spending one, two, three cycles
+[00:33:31 -> 00:33:33] executing this instruction,
+[00:33:33 -> 00:33:37] but each cycle is much smaller
+[00:33:37 -> 00:33:39] because you only have to go through
+[00:33:39 -> 00:33:41] a smaller piece of hardware over here,
+[00:33:41 -> 00:33:42] a smaller amount of hardware.
+[00:33:42 -> 00:33:47] Okay?
+[00:33:47 -> 00:33:49] So the multi-cycle control,
+[00:33:49 -> 00:33:51] you have a short clock period
+[00:33:51 -> 00:33:54] and but a high negative autism, high CPI.
+[00:33:54 -> 00:33:58] So the obvious question is,
+[00:33:58 -> 00:34:01] can we both have a low CPI and a short clock period?
+[00:34:01 -> 00:34:03] And you can't do that
+[00:34:03 -> 00:34:07] if you're only doing one thing at a time,
+[00:34:07 -> 00:34:11] but what you can do is you can, you know,
+[00:34:11 -> 00:34:14] do more than one thing at a time,
+[00:34:14 -> 00:34:19] and that is what is the basic pipeline.
+[00:34:19 -> 00:34:25] So what we can do is,
+[00:34:25 -> 00:34:27] hey, these are now separate pieces of hardware
+[00:34:27 -> 00:34:30] that really are interacting with each other.
+[00:34:30 -> 00:34:33] So once the one instruction
+[00:34:33 -> 00:34:36] is done using the first piece of hardware
+[00:34:36 -> 00:34:39] and moves to the second piece of hardware,
+[00:34:39 -> 00:34:42] I can start processing another instruction
+[00:34:42 -> 00:34:44] in the first piece of hardware.
+[00:34:44 -> 00:34:48] Okay?
+[00:34:48 -> 00:34:52] And when this instruction moves to the third piece of hardware,
+[00:34:52 -> 00:34:54] the second instruction can start using
+[00:34:54 -> 00:34:57] the second piece of hardware, the before hardware,
+[00:34:57 -> 00:34:59] and then the third instruction
+[00:34:59 -> 00:35:01] can start using the fetch piece of hardware.
+[00:35:01 -> 00:35:05] Okay?
+[00:35:05 -> 00:35:07] So what we are going to do is,
+[00:35:07 -> 00:35:11] we are going to improve the instruction throughput
+[00:35:11 -> 00:35:13] rather than the latency.
+[00:35:13 -> 00:35:16] We'll start with the multi-cycle design.
+[00:35:16 -> 00:35:21] One instruction advances from stage one to stage two.
+[00:35:21 -> 00:35:23] Then you allow the next instruction
+[00:35:23 -> 00:35:26] to enter stage one again.
+[00:35:26 -> 00:35:29] Okay?
+[00:35:29 -> 00:35:34] The amount of time for one instruction,
+[00:35:34 -> 00:35:42] latency of executing one instruction,
+[00:35:42 -> 00:35:44] hasn't decreased.
+[00:35:44 -> 00:35:48] In fact, it will even increase, we will see that.
+[00:35:48 -> 00:35:50] Okay?
+[00:35:50 -> 00:35:52] But what we are doing is,
+[00:35:52 -> 00:35:56] instructions are arriving at the processing
+[00:35:56 -> 00:35:59] and leaving the processing at a much faster rate.
+[00:35:59 -> 00:36:06] And, you know, the automobile assembly line
+[00:36:06 -> 00:36:07] is one analogy.
+[00:36:07 -> 00:36:09] I guess so many analogies.
+[00:36:09 -> 00:36:10] Okay?
+[00:36:10 -> 00:36:13] In real life, when you have a resource,
+[00:36:13 -> 00:36:17] and you can allow multiple users of that resource
+[00:36:17 -> 00:36:18] to go through that,
+[00:36:18 -> 00:36:21] as long as you can separate them somehow,
+[00:36:21 -> 00:36:25] you're going to get a much higher overall throughput.
+[00:36:25 -> 00:36:29] Okay?
+[00:36:29 -> 00:36:32] Okay.
+[00:36:32 -> 00:36:35] So here is a very simple five-stage pipeline
+[00:36:35 -> 00:36:38] that you all have seen before, no doubt.
+[00:36:38 -> 00:36:41] But I want to spend a little time on this
+[00:36:41 -> 00:36:43] to make a few points.
+[00:36:43 -> 00:36:44] Okay?
+[00:36:44 -> 00:36:48] So what I had is, I had some piece of hardware
+[00:36:48 -> 00:36:50] that is needed to process the instruction.
+[00:36:50 -> 00:36:51] Okay?
+[00:36:51 -> 00:36:53] This is the hardware that's needed
+[00:36:53 -> 00:36:55] to process the instruction.
+[00:36:55 -> 00:36:59] And that's sort of the yellow boxes over here.
+[00:36:59 -> 00:37:00] Okay?
+[00:37:00 -> 00:37:01] What I'm going to do is,
+[00:37:01 -> 00:37:03] I'm going to take that overall hardware
+[00:37:03 -> 00:37:06] and chop it up into pieces.
+[00:37:06 -> 00:37:07] Okay?
+[00:37:07 -> 00:37:09] So here's a piece
+[00:37:09 -> 00:37:12] that is going to be fetching the instruction.
+[00:37:12 -> 00:37:15] Here's a piece that's going to be...
+[00:37:15 -> 00:37:17] There's a lot of stuff I haven't shown over here.
+[00:37:17 -> 00:37:18] Okay?
+[00:37:18 -> 00:37:20] Where I'm going to decode the bits of the instruction,
+[00:37:20 -> 00:37:22] read registers.
+[00:37:22 -> 00:37:24] Here's a piece that I'm going to carry out
+[00:37:24 -> 00:37:26] the arithmetic operation.
+[00:37:26 -> 00:37:29] Here's a piece that I'm going to read the data memory.
+[00:37:29 -> 00:37:31] Here's a piece of hardware
+[00:37:31 -> 00:37:34] that's going to write back the results.
+[00:37:34 -> 00:37:36] Okay?
+[00:37:36 -> 00:37:38] So the first thing I'm going to try and do
+[00:37:38 -> 00:37:41] is I'm going to try and chop the total hardware
+[00:37:41 -> 00:37:43] into N pieces.
+[00:37:43 -> 00:37:45] Here, N is 5.
+[00:37:45 -> 00:37:46] Okay?
+[00:37:46 -> 00:37:49] And what I'm going to try and do is
+[00:37:49 -> 00:37:52] keep each piece
+[00:37:52 -> 00:37:55] to roughly take the same amount of time.
+[00:37:55 -> 00:37:58] Okay?
+[00:37:58 -> 00:38:01] Observe that that's something that I'd like to achieve,
+[00:38:01 -> 00:38:04] but I may not always be able to achieve it.
+[00:38:04 -> 00:38:05] Okay?
+[00:38:05 -> 00:38:07] So for example,
+[00:38:07 -> 00:38:10] so for example, you know,
+[00:38:10 -> 00:38:12] here is a ALU.
+[00:38:12 -> 00:38:14] Say it's a 64-bit ALU.
+[00:38:14 -> 00:38:16] And, you know,
+[00:38:16 -> 00:38:19] and say I, you know,
+[00:38:19 -> 00:38:24] say I want...
+[00:38:24 -> 00:38:26] Say I'm able to divide the hardware.
+[00:38:26 -> 00:38:29] So yeah, this is going to take X delay.
+[00:38:29 -> 00:38:32] This is going to take X delay.
+[00:38:32 -> 00:38:35] And I want this to take X delay, too.
+[00:38:35 -> 00:38:37] But the way I, you know,
+[00:38:37 -> 00:38:40] if the X delay means that, hey,
+[00:38:40 -> 00:38:43] it's after I compute the 48th bit,
+[00:38:43 -> 00:38:45] and I don't, you know,
+[00:38:45 -> 00:38:48] and I still have the remaining bits to compute,
+[00:38:48 -> 00:38:51] that will take X plus delta delay.
+[00:38:51 -> 00:38:56] It's not very meaningful to make that also delay of X.
+[00:38:56 -> 00:38:58] Are you with me on this?
+[00:38:59 -> 00:39:00] Okay.
+[00:39:00 -> 00:39:03] So I'd like to chop it into roughly equal pieces,
+[00:39:03 -> 00:39:05] but they also have to be sort of, you know,
+[00:39:05 -> 00:39:07] boundaries that make sense.
+[00:39:07 -> 00:39:09] So does that mean that you essentially
+[00:39:09 -> 00:39:12] use the time, whatever the longest stage in type 1
+[00:39:12 -> 00:39:13] is going to be?
+[00:39:13 -> 00:39:14] Yes.
+[00:39:14 -> 00:39:16] Maximum delay stage.
+[00:39:16 -> 00:39:18] We'll see how that enters.
+[00:39:18 -> 00:39:20] And then, you know,
+[00:39:20 -> 00:39:23] and part of why I want to spend a little time
+[00:39:23 -> 00:39:25] on this stuff that you've seen before
+[00:39:25 -> 00:39:28] is because it will lead to several other things,
+[00:39:28 -> 00:39:31] tricks that people play with pipelines
+[00:39:31 -> 00:39:36] that are hard to sometimes contemplate.
+[00:39:36 -> 00:39:38] Okay, people do it.
+[00:39:38 -> 00:39:40] Okay, and get them right.
+[00:39:40 -> 00:39:43] Okay, yes, but that's one observation
+[00:39:43 -> 00:39:45] and one consequence.
+[00:39:45 -> 00:39:46] Okay?
+[00:39:46 -> 00:39:49] Now, the next thing I want to do is,
+[00:39:49 -> 00:39:51] since I want to have,
+[00:39:51 -> 00:39:53] since I want to now have
+[00:39:53 -> 00:39:58] multiple instructions in this piece of hardware,
+[00:39:58 -> 00:40:02] I want to make sure they don't run into each other.
+[00:40:02 -> 00:40:03] Okay?
+[00:40:03 -> 00:40:05] I want only one instruction
+[00:40:05 -> 00:40:10] in any one stage of the hardware, if you will.
+[00:40:10 -> 00:40:12] Except when I don't.
+[00:40:12 -> 00:40:14] We'll talk about that later on.
+[00:40:14 -> 00:40:16] Okay?
+[00:40:16 -> 00:40:20] All right?
+[00:40:20 -> 00:40:23] So I'm going to separate the stages,
+[00:40:23 -> 00:40:25] the different pieces of hardware.
+[00:40:25 -> 00:40:26] How am I going to separate
+[00:40:26 -> 00:40:28] those different pieces of hardware?
+[00:40:28 -> 00:40:31] I will have latches that are going to be
+[00:40:31 -> 00:40:33] separating those different pieces.
+[00:40:33 -> 00:40:37] Okay?
+[00:40:37 -> 00:40:40] So what does this hardware do?
+[00:40:40 -> 00:40:43] This hardware takes the inputs,
+[00:40:43 -> 00:40:46] what's at its inputs,
+[00:40:46 -> 00:40:51] and as long as those inputs are a certain value,
+[00:40:51 -> 00:40:53] it computes some output.
+[00:40:53 -> 00:40:56] It computes the outputs based on that input.
+[00:40:56 -> 00:40:57] Okay?
+[00:40:57 -> 00:41:00] As long as the inputs don't change,
+[00:41:00 -> 00:41:04] the output is not going to change.
+[00:41:04 -> 00:41:10] All right?
+[00:41:10 -> 00:41:12] If I change the inputs,
+[00:41:12 -> 00:41:14] then the output will change.
+[00:41:14 -> 00:41:16] Okay?
+[00:41:16 -> 00:41:18] What are the inputs to this piece of hardware?
+[00:41:18 -> 00:41:20] The inputs to this piece of hardware
+[00:41:20 -> 00:41:23] are the outputs of this latch
+[00:41:23 -> 00:41:26] or a set of flip-flops over here.
+[00:41:26 -> 00:41:28] Okay?
+[00:41:28 -> 00:41:33] When do the outputs of this piece of hardware change?
+[00:41:33 -> 00:41:38] The outputs of this piece of hardware will change.
+[00:41:38 -> 00:41:40] This piece of hardware has inputs.
+[00:41:40 -> 00:41:42] These inputs can keep changing,
+[00:41:42 -> 00:41:44] do whatever they want,
+[00:41:44 -> 00:41:47] but this output will not change
+[00:41:47 -> 00:41:51] unless I clock this latch or enable this,
+[00:41:51 -> 00:41:54] do the right enable for that latch.
+[00:41:54 -> 00:41:55] Okay?
+[00:41:55 -> 00:41:58] So far, so good.
+[00:41:58 -> 00:42:01] Okay?
+[00:42:01 -> 00:42:04] And now, when I do the right enable
+[00:42:04 -> 00:42:06] or clock this latch over here,
+[00:42:06 -> 00:42:11] the inputs become the outputs of the latch,
+[00:42:11 -> 00:42:15] and therefore they become the inputs of this hardware,
+[00:42:15 -> 00:42:21] and then they get to the outputs of the hardware,
+[00:42:21 -> 00:42:26] which then becomes the input to this latch over here.
+[00:42:26 -> 00:42:28] Okay?
+[00:42:28 -> 00:42:32] Now, if I clock this latch,
+[00:42:32 -> 00:42:35] the inputs of this,
+[00:42:35 -> 00:42:37] which were the outputs of this piece of logic
+[00:42:37 -> 00:42:39] with this set of inputs,
+[00:42:39 -> 00:42:41] will now become the outputs of it,
+[00:42:41 -> 00:42:47] and the inputs to this piece of hardware over here.
+[00:42:47 -> 00:42:49] Okay, are you with me on this?
+[00:42:49 -> 00:42:53] This basic stuff, we'll come back to this picture
+[00:42:53 -> 00:42:55] multiple times, okay?
+[00:42:55 -> 00:42:57] Because you'll see many things.
+[00:42:57 -> 00:43:00] And, you know, so what I'm going to do now
+[00:43:00 -> 00:43:03] is that, you know,
+[00:43:03 -> 00:43:05] the way I'm going to make instructions
+[00:43:05 -> 00:43:08] through to this pipeline is,
+[00:43:08 -> 00:43:12] I'm going to clock this latch,
+[00:43:12 -> 00:43:14] the inputs to this latch,
+[00:43:14 -> 00:43:17] which were the outputs of the instruction in this stage
+[00:43:17 -> 00:43:20] become the outputs of this latch
+[00:43:20 -> 00:43:21] for the inputs of this stage,
+[00:43:21 -> 00:43:23] or in other words, this instruction
+[00:43:23 -> 00:43:26] will move from this stage to the next stage.
+[00:43:26 -> 00:43:27] If I clock this one,
+[00:43:27 -> 00:43:28] the instruction in this stage
+[00:43:28 -> 00:43:31] will move from this stage to this stage.
+[00:43:31 -> 00:43:32] If I clock this,
+[00:43:32 -> 00:43:34] I will move the instruction in this stage
+[00:43:34 -> 00:43:35] will move to this stage.
+[00:43:35 -> 00:43:36] and move to this stage.
+[00:43:36 -> 00:43:38] If I clock this, the instruction at this stage
+[00:43:38 -> 00:43:41] and move to this stage, okay?
+[00:43:41 -> 00:43:45] If I clock PC, a new value will get entered to PC
+[00:43:45 -> 00:43:53] and start fetching the instructions over here.
+[00:43:53 -> 00:43:59] Now, what is there in each latch?
+[00:43:59 -> 00:44:05] Each latch is going to have the sets of bits that I'm going
+[00:44:05 -> 00:44:10] to need to process the instruction in the hardware
+[00:44:10 -> 00:44:18] that occurs later, in the later stages, all right?
+[00:44:18 -> 00:44:21] So, in this latch, I'm going to have the IOD,
+[00:44:21 -> 00:44:24] which is the instruction that I fetched, okay,
+[00:44:24 -> 00:44:29] and the PC of the instruction, okay?
+[00:44:29 -> 00:44:34] Why will I need the PC of the instruction?
+[00:44:34 -> 00:44:37] I need the PC of the instruction in case
+[00:44:37 -> 00:44:41] that the instruction is a branch instruction and I need
+[00:44:41 -> 00:44:47] to add the offset, okay, to the PC.
+[00:44:47 -> 00:44:50] Why do I need to take the PC of the instruction along
+[00:44:50 -> 00:44:51] with the instruction?
+[00:44:51 -> 00:44:55] Because there are other instructions with other PCs.
+[00:44:55 -> 00:44:58] Okay, this PC could have changed.
+[00:44:58 -> 00:45:02] Not could, it would have changed, okay?
+[00:45:02 -> 00:45:06] And when I no longer need a set of bits
+[00:45:06 -> 00:45:08] to process the instruction,
+[00:45:08 -> 00:45:12] I don't need to take it further along with me, okay?
+[00:45:12 -> 00:45:16] So once I've used the PC to calculate the target address
+[00:45:16 -> 00:45:19] if it's a branch, the branch is not,
+[00:45:19 -> 00:45:22] the PC is not going to be used to access the data cache.
+[00:45:22 -> 00:45:23] The PC is not going to be used
+[00:45:23 -> 00:45:26] to write back the result of the instruction.
+[00:45:26 -> 00:45:31] I don't need to take it further with me anymore.
+[00:45:31 -> 00:45:36] Okay, so far so good?
+[00:45:36 -> 00:45:42] So, what else I need to do is, you know,
+[00:45:42 -> 00:45:44] I am going to fetch the instruction,
+[00:45:44 -> 00:45:47] decode the instruction, and what you do as part
+[00:45:47 -> 00:45:50] of the decoding the instruction is figuring out
+[00:45:50 -> 00:45:53] what all control signals the hardware is going to need
+[00:45:53 -> 00:45:59] to have to carry out the required processing of the, okay?
+[00:45:59 -> 00:46:02] So, this control is going to be divided
+[00:46:02 -> 00:46:07] into control signals for this stage, the execute stage,
+[00:46:07 -> 00:46:12] control signals for this stage, the MEMS stage,
+[00:46:12 -> 00:46:14] and control signals for this stage,
+[00:46:14 -> 00:46:17] and I will also take the control signals
+[00:46:17 -> 00:46:22] in the latches along with the instruction as they go along.
+[00:46:24 -> 00:46:29] Okay, so these latches can be a couple of 100 bits wide.
+[00:46:33 -> 00:46:36] Because I also need to have register values, you know,
+[00:46:36 -> 00:46:39] these are 64 bit, you know, 64, 64,
+[00:46:39 -> 00:46:41] PC, you know, 64, whatever, okay?
+[00:46:41 -> 00:46:45] Wide, wide, okay.
+[00:46:46 -> 00:46:52] So, you know, we are just going to sort of, you know,
+[00:46:52 -> 00:46:54] rather than have all of that, I am going to have sort
+[00:46:54 -> 00:46:57] of the abstract pipeline where I am going
+[00:46:57 -> 00:47:01] to have the stages of the pipeline.
+[00:47:01 -> 00:47:03] This is a simple five-stage pipeline.
+[00:47:03 -> 00:47:07] This is the fetch stage, this is the decode stage,
+[00:47:07 -> 00:47:11] this is the execute stage, this is the MEMS stage,
+[00:47:11 -> 00:47:13] and this is the write-back stage.
+[00:47:13 -> 00:47:18] And these latches that I had, these latches that I had,
+[00:47:18 -> 00:47:21] okay, so this is the fetch stage, this is the decode,
+[00:47:21 -> 00:47:25] this is the execute, memory, access, write-back.
+[00:47:25 -> 00:47:28] The latches, to distinguish between the different latches,
+[00:47:28 -> 00:47:31] I am going to say this is the F slash D latch
+[00:47:31 -> 00:47:33] between the fetch and the decode.
+[00:47:33 -> 00:47:36] This is the DX latch between decode and execute.
+[00:47:36 -> 00:47:41] This is the XM latch, and this is the MW latch.
+[00:47:41 -> 00:47:43] Five latches.
+[00:47:43 -> 00:47:46] The PC, in a sense, is being the latch
+[00:47:46 -> 00:47:54] at the input to the stage over here, all right?
+[00:47:54 -> 00:47:57] So this is a very basic pipeline.
+[00:47:57 -> 00:48:01] Notice what I have done is in this pipeline over here,
+[00:48:01 -> 00:48:05] there's this register file that I'm going to read
+[00:48:05 -> 00:48:07] in the decode stage, and eventually,
+[00:48:07 -> 00:48:11] write back the result into that register file, okay?
+[00:48:11 -> 00:48:16] So, you know, to have a slightly different picture,
+[00:48:16 -> 00:48:17] I have taken the register file
+[00:48:17 -> 00:48:20] and put it over here, yay, okay?
+[00:48:20 -> 00:48:22] Now, it's being read in the decode stage,
+[00:48:22 -> 00:48:27] and it's written back in the write-back stage, okay?
+[00:48:27 -> 00:48:28] And why so?
+[00:48:28 -> 00:48:31] Because as we start doing the auto-order processor,
+[00:48:31 -> 00:48:33] the register renaming, and all that kind of stuff,
+[00:48:33 -> 00:48:36] you will see this register file really is sort of
+[00:48:36 -> 00:48:37] off on the side.
+[00:48:37 -> 00:48:39] It's at the heart of everything,
+[00:48:39 -> 00:48:41] but, you know, if you try and draw it
+[00:48:41 -> 00:48:47] inside the pipeline, it gets a little more complicated.
+[00:48:47 -> 00:48:49] Now, I'm typically also going to have
+[00:48:49 -> 00:48:53] a point at floating point pipeline, okay?
+[00:48:53 -> 00:48:56] So, you know, there is going to be
+[00:48:56 -> 00:48:59] just a floating point multiplication pipeline
+[00:48:59 -> 00:49:01] that has three stages.
+[00:49:01 -> 00:49:02] So the whole multiply hardware,
+[00:49:02 -> 00:49:05] I've broken up into three pieces, okay?
+[00:49:05 -> 00:49:07] Say a floating point add pipeline,
+[00:49:07 -> 00:49:10] I was able to break it up into two pieces.
+[00:49:10 -> 00:49:12] A floating point divide,
+[00:49:12 -> 00:49:15] it is hard to break that hardware into multiple pieces,
+[00:49:15 -> 00:49:18] okay, it's typically done iteratively to divide,
+[00:49:18 -> 00:49:24] so I'm not even going to bother pipelining it.
+[00:49:24 -> 00:49:27] So there's now a pipeline that will take three cycles,
+[00:49:27 -> 00:49:32] two cycles, it's going to take many cycles.
+[00:49:32 -> 00:49:36] Now, typically, what I would also do is
+[00:49:36 -> 00:49:38] I would have a set of integer registers
+[00:49:38 -> 00:49:40] that hold integer values,
+[00:49:40 -> 00:49:44] and also a separate set of four digit values.
+[00:49:44 -> 00:49:45] So now I've, you know,
+[00:49:45 -> 00:49:55] broken up the integer register file into a floating point.
+[00:49:55 -> 00:49:57] Now let's take a look at, you know,
+[00:49:57 -> 00:49:59] these basic main pipeline diagrams
+[00:49:59 -> 00:50:02] that you'll see immediately.
+[00:50:02 -> 00:50:07] And so these are the five stages of my processing,
+[00:50:07 -> 00:50:10] fetch, decode, execute, mem, write back.
+[00:50:10 -> 00:50:13] These are my instructions over here, okay?
+[00:50:13 -> 00:50:15] And the instructions are,
+[00:50:15 -> 00:50:16] this occurs after this,
+[00:50:16 -> 00:50:21] this occurs after this in the dynamic instruction, okay?
+[00:50:21 -> 00:50:25] So, you know, I'm going to say that
+[00:50:25 -> 00:50:28] the add instruction is the fetch stage in clock cycle one,
+[00:50:28 -> 00:50:32] decode in two, execute in three, mem in four,
+[00:50:32 -> 00:50:34] write back in five.
+[00:50:34 -> 00:50:36] You know, if I say, you know,
+[00:50:36 -> 00:50:40] this instruction is in X over here in clock cycle four,
+[00:50:42 -> 00:50:46] what that means is that in clock cycle four,
+[00:50:48 -> 00:50:51] the instruction was in this piece of hardware,
+[00:50:51 -> 00:50:54] which means at the beginning of clock cycle four,
+[00:50:55 -> 00:50:57] the bits of the instruction,
+[00:50:57 -> 00:50:59] this, the beginning of the clock cycle four,
+[00:50:59 -> 00:51:01] this latch was locked.
+[00:51:02 -> 00:51:04] And then at the end of clock cycle four,
+[00:51:04 -> 00:51:12] this latch gets locked over here, okay?
+[00:51:12 -> 00:51:16] So this X means this dot instruction
+[00:51:16 -> 00:51:18] finished the execute stage
+[00:51:18 -> 00:51:23] and writes into this latch at the end of clock cycle,
+[00:51:23 -> 00:51:24] okay?
+[00:51:25 -> 00:51:26] Question?
+[00:51:28 -> 00:51:30] Let's forget there's a reverse key monology,
+[00:51:30 -> 00:51:34] it doesn't sort of make a difference.
+[00:51:34 -> 00:51:36] So it just means that essentially the appropriate bits
+[00:51:36 -> 00:51:41] from the previous latch are moved into the next stage
+[00:51:41 -> 00:51:45] in the...
+[00:51:45 -> 00:51:46] Okay.
+[00:51:46 -> 00:51:51] At the start of clock cycle four,
+[00:51:51 -> 00:51:53] all these latches get latched.
+[00:51:53 -> 00:51:55] A clock, okay.
+[00:51:55 -> 00:51:58] Start of clock cycle four, that load instruction,
+[00:52:01 -> 00:52:03] clock cycle three, the load instruction was here.
+[00:52:03 -> 00:52:05] At the end of clock cycle three
+[00:52:05 -> 00:52:07] or the beginning of clock cycle four,
+[00:52:07 -> 00:52:09] this latch will latch your planned clock.
+[00:52:09 -> 00:52:12] So which corresponding load instruction
+[00:52:12 -> 00:52:14] entered this stage over here, this hardware?
+[00:52:14 -> 00:52:16] This hardware did this thing,
+[00:52:16 -> 00:52:18] took a clock cycle to do it.
+[00:52:18 -> 00:52:21] At the end of the clock cycle four,
+[00:52:21 -> 00:52:23] this latch got clocked.
+[00:52:23 -> 00:52:26] Every latch is clocked and recycled, okay?
+[00:52:26 -> 00:52:29] This latch got clocked, except when it's not clocked.
+[00:52:29 -> 00:52:32] Okay, we'll talk about that too, okay?
+[00:52:32 -> 00:52:33] All right, you know?
+[00:52:33 -> 00:52:36] And therefore this load now got done
+[00:52:36 -> 00:52:39] with the execute stage and moved to this next stage.
+[00:52:40 -> 00:52:43] Okay, but I don't get why the X is in the diagram
+[00:52:43 -> 00:52:45] and I'm missing something.
+[00:52:45 -> 00:52:49] This instruction is in the execute stage, X is execute.
+[00:52:49 -> 00:52:51] Oh, you just made it red for it to highlight it.
+[00:52:51 -> 00:52:51] Yeah.
+[00:52:51 -> 00:52:52] Duh.
+[00:52:54 -> 00:52:55] I'm embarrassed.
+[00:52:56 -> 00:52:58] You should never be embarrassed, but okay.
+[00:52:59 -> 00:53:00] Can I check?
+[00:53:00 -> 00:53:01] Thanks.
+[00:53:01 -> 00:53:03] No, no, I'm not embarrassed, what happened first?
+[00:53:03 -> 00:53:05] No, I was telling them I was embarrassed.
+[00:53:05 -> 00:53:08] No, you know, there are so many times
+[00:53:08 -> 00:53:12] I'm looking at something and reading it.
+[00:53:12 -> 00:53:13] It's right in front of me,
+[00:53:13 -> 00:53:15] but I'm reading something else, so.
+[00:53:18 -> 00:53:20] Especially as an agent, so that happens.
+[00:53:21 -> 00:53:22] Okay, all right.
+[00:53:24 -> 00:53:27] So, you know, back up the on-look calculation,
+[00:53:27 -> 00:53:28] you know what I mean?
+[00:53:28 -> 00:53:30] We can see these different instruction mixes
+[00:53:30 -> 00:53:32] beyond what we have right now, okay?
+[00:53:32 -> 00:53:36] So if I had a clock period of 50 nanoseconds, okay,
+[00:53:36 -> 00:53:40] that's a single cycle, a CPI of one,
+[00:53:40 -> 00:53:42] I was taking 50 nanoseconds per instruction.
+[00:53:43 -> 00:53:48] Now, if I, you know, pipelined it,
+[00:53:48 -> 00:53:51] and I was, the way I was able to chop this piece
+[00:53:51 -> 00:53:54] of hardware, there was one that took 12 nanoseconds,
+[00:53:54 -> 00:54:00] you know, you know, it took 11 nanoseconds, okay?
+[00:54:01 -> 00:54:06] All right, and, you know, and so the, you know,
+[00:54:06 -> 00:54:08] clock period is yay, I'm only doing, you know,
+[00:54:08 -> 00:54:11] I'm doing 12 nanoseconds per instruction,
+[00:54:11 -> 00:54:20] that's exactly less than a five speed up what we did, okay?
+[00:54:20 -> 00:54:23] But I'll talk about this over at just a moment.
+[00:54:25 -> 00:54:28] So now let us do some, you know,
+[00:54:28 -> 00:54:31] simple calculations to sort of, you know,
+[00:54:31 -> 00:54:33] show you why pipelining works,
+[00:54:34 -> 00:54:37] or what benefit we can get with pipelining.
+[00:54:37 -> 00:54:42] So say the instruction execution takes N stages, okay,
+[00:54:43 -> 00:54:46] and each takes T and time.
+[00:54:46 -> 00:54:50] They are really all equal right now in some sense, okay?
+[00:54:51 -> 00:54:54] So if I had a single cycle execution,
+[00:54:55 -> 00:54:59] then the latency of the instruction
+[00:54:59 -> 00:55:06] would be simply summation of N times TN.
+[00:55:06 -> 00:55:10] And I'm, the throughput is I'm only doing
+[00:55:10 -> 00:55:13] one instruction at a time, it's one over L.
+[00:55:14 -> 00:55:19] And now if I have a program that has M instructions in it,
+[00:55:21 -> 00:55:26] okay, then the, if each one of them,
+[00:55:26 -> 00:55:28] and M is much greater than one, okay?
+[00:55:28 -> 00:55:30] Why do we say it's much greater than one?
+[00:55:30 -> 00:55:32] In this case it doesn't matter,
+[00:55:32 -> 00:55:35] but when we have a pipeline we will see that
+[00:55:35 -> 00:55:36] because of the initial, you know,
+[00:55:36 -> 00:55:37] the initial startups and so on like that,
+[00:55:37 -> 00:55:42] it's going to, you know, that it needs to be,
+[00:55:42 -> 00:55:44] you know, quite a bit more than the length
+[00:55:44 -> 00:55:47] of the pipeline, the number of instructions.
+[00:55:47 -> 00:55:51] So if each instruction taking latency L1
+[00:55:51 -> 00:55:54] and I have M instruction, this is the time taken
+[00:55:54 -> 00:56:00] to sort of execute the program, M instruction program.
+[00:56:00 -> 00:56:03] Now let us say I have an N stage pipeline.
+[00:56:05 -> 00:56:10] Now the latency to execute one instruction,
+[00:56:14 -> 00:56:17] this is my pipeline, the latency to execute
+[00:56:17 -> 00:56:20] the instruction from start to finish
+[00:56:21 -> 00:56:24] is not going to be less than if I was,
+[00:56:24 -> 00:56:25] it's going to be at least going through
+[00:56:25 -> 00:56:27] all the yellow pieces of hardware,
+[00:56:27 -> 00:56:32] which is what the single cycle data path did.
+[00:56:34 -> 00:56:38] In fact it's going to be worse, why?
+[00:56:38 -> 00:56:44] Because now I have these latches over here,
+[00:56:44 -> 00:56:52] which are in a sense overhead, all right?
+[00:56:52 -> 00:56:55] And what we will do is rather than have
+[00:56:55 -> 00:57:02] this, very simply that's what you're going to have, okay?
+[00:57:02 -> 00:57:07] You reduce that overhead by actually having a design
+[00:57:07 -> 00:57:12] where you know what, part of this yellow logic
+[00:57:12 -> 00:57:15] is actually done along with the latch.
+[00:57:16 -> 00:57:18] So the logic and latching function
+[00:57:18 -> 00:57:22] can actually be combined to not have additional delay
+[00:57:22 -> 00:57:26] if you will, okay, if you only go into this course
+[00:57:26 -> 00:57:29] over here, there's a lot of other techniques to do that,
+[00:57:29 -> 00:57:32] but okay, very simplistically,
+[00:57:32 -> 00:57:35] the latency we'll say if there is no overhead
+[00:57:35 -> 00:57:37] is the same as the latency
+[00:57:37 -> 00:57:42] for the single cycle data execution.
+[00:57:42 -> 00:57:47] But now, now what I'm going to do is to,
+[00:57:49 -> 00:57:53] the throughput is I'm going to be executing
+[00:57:53 -> 00:57:57] N instructions at a time if all these TN are equal,
+[00:57:58 -> 00:58:00] okay, all right?
+[00:58:00 -> 00:58:05] So the maximum amount of time in each stage is l1 over N,
+[00:58:05 -> 00:58:08] then the throughput ends up being
+[00:58:08 -> 00:58:15] I'm doing N instructions in so much time, okay?
+[00:58:16 -> 00:58:19] And the reason why I want M to be later on now
+[00:58:19 -> 00:58:24] much larger than one is that, okay,
+[00:58:25 -> 00:58:26] I'm doing 10 instructions.
+[00:58:26 -> 00:58:29] Well, the first one will take five cycles.
+[00:58:29 -> 00:58:34] Second one will be available at six.
+[00:58:36 -> 00:58:37] Third one at seven and so on like that.
+[00:58:37 -> 00:58:43] So to do 10, I'll be taking 15 cycles, okay?
+[00:58:43 -> 00:58:47] Not 10 cycles, but that's, so there's five cycles.
+[00:58:47 -> 00:58:49] Overhead, but if I'm doing 10,000,
+[00:58:50 -> 00:58:59] there's still only 10,000 plus five, okay?
+[00:58:59 -> 00:59:03] So the latency to execute M instruction in the pipeline
+[00:59:03 -> 00:59:08] is going to be M times the time,
+[00:59:08 -> 00:59:11] the clock cycle, in each stage,
+[00:59:11 -> 00:59:14] assuming they're all the same, okay, X, T, N,
+[00:59:14 -> 00:59:18] which is going to be greater than or equal to this.
+[00:59:18 -> 00:59:20] So the speed up that I'm going to get
+[00:59:20 -> 00:59:24] with an N stage pipeline is going to be N
+[00:59:24 -> 00:59:29] or less than or equal to one, okay?
+[00:59:30 -> 00:59:34] So, you know, the larger the N,
+[00:59:34 -> 00:59:35] the larger the speed up.
+[00:59:35 -> 00:59:39] So why don't we have very, very, you know,
+[00:59:40 -> 00:59:45] lots of stages in the pipeline?
+[00:59:45 -> 00:59:46] Well, two things.
+[00:59:47 -> 00:59:52] One is there can be some extra overhead delay
+[00:59:52 -> 01:00:02] in the pipeline.
+[01:00:02 -> 01:00:03] What are the overheads?
+[01:00:03 -> 01:00:04] There's a latch overhead,
+[01:00:04 -> 01:00:11] and then there's a clock and data skew overhead.
+[01:00:11 -> 01:00:15] What are those?
+[01:00:15 -> 01:00:20] Latch overhead is the overhead of this latch over here.
+[01:00:21 -> 01:00:25] Time to go through this latch over here,
+[01:00:25 -> 01:00:27] which I didn't have in the yellow.
+[01:00:28 -> 01:00:32] Are you with me on this?
+[01:00:32 -> 01:00:35] What is the clock and data skew?
+[01:00:35 -> 01:01:00] What I said is that, you know,
+[01:01:00 -> 01:01:02] when I clock this latch,
+[01:01:04 -> 01:01:06] this instruction moves from here to here.
+[01:01:06 -> 01:01:07] When I clock this latch over here,
+[01:01:07 -> 01:01:10] this instruction moves from here to here.
+[01:01:10 -> 01:01:11] When I clock this latch,
+[01:01:11 -> 01:01:12] this instruction moves from here to here.
+[01:01:12 -> 01:01:13] When I clock this latch,
+[01:01:13 -> 01:01:17] this instruction moves from here to here, okay?
+[01:01:18 -> 01:01:24] Things are good. So what I'm doing is if I clock all these latches at the same time,
+[01:01:24 -> 01:01:33] okay, then all the interruptions move from one step to the next stage.
+[01:01:33 -> 01:01:39] Life is good. The problem, two problems, okay.
+[01:01:39 -> 01:01:46] One is all these clocks are not going to happen at the same time.
+[01:01:46 -> 01:01:49] Why? Because there's a delay in propagating the signals.
+[01:01:49 -> 01:01:56] Those up signals are not going to happen precisely at the same time, okay.
+[01:01:56 -> 01:02:14] Say it happened that this clock came slightly before this clock over here, right?
+[01:02:14 -> 01:02:23] And the circuit went through quickly, so its input came to the output over here, okay.
+[01:02:23 -> 01:02:28] It very quickly went across and became the input over here.
+[01:02:28 -> 01:02:44] And now, before this lock got clocked, and now the output of this latch is the output corresponding to the instruction in this stage and not in this stage.
+[01:02:44 -> 01:02:45] Well, that would be bad.
+[01:02:45 -> 01:02:54] And you know, I mean, that would be bad and the hardware guys cannot make it happen, software guys.
+[01:02:54 -> 01:02:56] We'll fix it in the next release.
+[01:02:56 -> 01:03:01] So, you know, anyway, that would be bad, okay.
+[01:03:01 -> 01:03:07] So what you have to do is you have to try and do your clocks.
+[01:03:07 -> 01:03:10] So this happens a little bit before this.
+[01:03:10 -> 01:03:12] This happens a little bit before this.
+[01:03:12 -> 01:03:17] This happens a little bit before this, okay.
+[01:03:17 -> 01:03:23] Clock's cute. Let's say clock's cute, okay.
+[01:03:23 -> 01:03:26] Data's cute, again.
+[01:03:26 -> 01:03:46] Now, you know, the same data example over here, same data example over here is, you know, these bits have to go through this piece of hardware here.
+[01:03:46 -> 01:03:48] It takes time.
+[01:03:48 -> 01:03:52] This bit goes right away, okay.
+[01:03:52 -> 01:04:08] So the different amounts of time that different bits of data take through that hardware in the stage is what is called a data skew over here.
+[01:04:08 -> 01:04:17] Why is data skew an issue, okay?
+[01:04:17 -> 01:04:21] And is it a positive issue or is it a negative issue?
+[01:04:21 -> 01:04:25] Okay, let's dwell on that for a little bit.
+[01:04:25 -> 01:04:38] So let's step back and assume that these are all cars, okay.
+[01:04:38 -> 01:04:45] And these latches are, in a sense, working as brakes for the cars, okay.
+[01:04:45 -> 01:05:03] So, you know, a car enters this piece of the road, okay, as long as they can make sure that it's not running into the previous car, it'll be good, okay.
+[01:05:03 -> 01:05:09] And in fact, if I can always ensure that, I don't need brakes on the cars.
+[01:05:09 -> 01:05:19] These latches, in a sense, are brakes that are preventing the cars from running into each other.
+[01:05:19 -> 01:05:30] So how does that work?
+[01:05:30 -> 01:05:46] Now, let us say that I designed this piece of hardware so all the signals through the piece of hardware from input, the output of this latch, from the input of this stage to the output of this stage,
+[01:05:46 -> 01:05:53] or in other words, the output of this latch to the input of this latch, took the same amount of time.
+[01:05:53 -> 01:05:59] There wasn't this issue that I just talked about that, hey, I got to clock this latch before I clock this latch.
+[01:05:59 -> 01:06:03] See, I did that.
+[01:06:03 -> 01:06:21] I can make sure that the bits from different instructions aren't running into each other.
+[01:06:21 -> 01:06:26] Are you with me on this?
+[01:06:26 -> 01:06:42] If I can make sure by hardware design that the bits of the instructions aren't going to run into each other, are not going to run into each other, then I don't need the safeguards.
+[01:06:42 -> 01:06:50] I don't need these latches, okay.
+[01:06:50 -> 01:06:56] That is what is called wave pipelining.
+[01:06:56 -> 01:07:03] So if you ever see a processor that uses wave pipelining, that's what they're doing.
+[01:07:03 -> 01:07:14] They have this piece of hardware where they've broken it up into different pieces, in a sense, but that is more sort of a virtual breakout.
+[01:07:14 -> 01:07:24] And then they are arranging each one of these different stages, so you take the same amount of time through those different pieces of logic,
+[01:07:24 -> 01:07:32] and thereby make sure that the instructions don't run into each other.
+[01:07:32 -> 01:07:39] So these wave pipeline design techniques are actually used not for instruction pipelines like this, though they have been in some sense,
+[01:07:39 -> 01:07:53] but when you have a data processing pipeline, which is streaming through inputs, you use these wave pipeline techniques to make sure that those bits of the instructions don't run into each other.
+[01:07:53 -> 01:08:08] So the clock and data skew can reduce the extra delay.
+[01:08:08 -> 01:08:10] So I don't want to run through this again.
+[01:08:10 -> 01:08:11] It's fairly straightforward.
+[01:08:11 -> 01:08:13] I'll read this one.
+[01:08:13 -> 01:08:25] Now if I have an end stage pipeline with an overhead O delay per stage, then the latency is going to be what it was without any overhead.
+[01:08:25 -> 01:08:28] And I have end stages, each has an overhead O.
+[01:08:28 -> 01:08:32] So this is now the latency for instruction.
+[01:08:32 -> 01:08:38] And you can then do these other things.
+[01:08:38 -> 01:08:49] And so this O limits the use of the number of pipeline stages.
+[01:08:49 -> 01:08:54] The other part is what is called a hazard.
+[01:08:54 -> 01:09:03] And these instructions that we are executing, they aren't independent of each other, and they use some resource in the pipeline.
+[01:09:03 -> 01:09:10] So I can have a dependent relationship between the instructions.
+[01:09:10 -> 01:09:12] And what are the different types of relationships?
+[01:09:12 -> 01:09:15] The dependence relationship serializes two instructions.
+[01:09:15 -> 01:09:18] One has to occur after the other.
+[01:09:18 -> 01:09:25] I can have data dependence where two instructions use the same value of total location.
+[01:09:25 -> 01:09:29] And we'll see the different incarnations of data dependencies.
+[01:09:29 -> 01:09:34] Control dependence where one instruction affects whether another executes at all.
+[01:09:34 -> 01:09:41] And there may be dependence where two instructions may or may not have a dependence.
+[01:09:41 -> 01:09:45] And we'll see that happens in load and store instructions a lot.
+[01:09:45 -> 01:09:56] And a hazard is a situation where a dependence causes potentially incorrect execution.
+[01:09:56 -> 01:10:04] So unless I make steps to fix a hazard, I have the potential for doing something wrong.
+[01:10:04 -> 01:10:09] And I can have data hazards.
+[01:10:09 -> 01:10:13] I can also have structural hazards where two instructions want to use the same instruction.
+[01:10:13 -> 01:10:20] And if now I have H as the number of hazard cycles per instruction, this is what I end up getting.
+[01:10:20 -> 01:10:26] H also limits the throughput and the speedup.
+[01:10:26 -> 01:10:32] The more the number of stages in the pipeline, the more instructions I have in flight.
+[01:10:32 -> 01:10:37] The more instructions I have, the more dependencies become hazards.
+[01:10:37 -> 01:10:50] And this is exactly how to figure out or do a detailed simulation.
+[01:10:50 -> 01:10:57] And so this is a simple example of optimizing the pipeline depth.
+[01:10:57 -> 01:11:04] Because of the additional overheads and hazards, I can have typically as I increase the number of stages,
+[01:11:04 -> 01:11:06] I get some performance benefit.
+[01:11:06 -> 01:11:09] But then after that, it actually goes down significantly.
+[01:11:09 -> 01:11:16] And there's a notion of an optimal pipeline depth.
+[01:11:16 -> 01:11:19] I want to talk about this slide today.
+[01:11:19 -> 01:11:24] So it'll let you think about it a little bit more when we get back on Wednesday.
+[01:11:24 -> 01:11:31] So what we're going to do now is we're going to have two operations that are going to help us manage a pipeline.
+[01:11:31 -> 01:11:35] One is a stall operation and another is a flush operation.
+[01:11:35 -> 01:11:45] And the way we're going to implement these is by messing around with the right enabled signals and clear signals of these latches.
+[01:11:45 -> 01:11:53] What a stall operation is going to do is it's going to stall an instruction in the stage it was.
+[01:11:53 -> 01:12:05] And a flush operation is going to basically clear out the instruction from the pipeline.
+[01:12:05 -> 01:12:08] So how do we implement these?
+[01:12:08 -> 01:12:13] Let's go back to our pipeline over here.
+[01:12:16 -> 01:12:28] So if I do not clock this latch, if I do not activate the right enabled signal for this latch,
+[01:12:28 -> 01:12:34] the inputs of this latch are not going to be the outputs of this latch.
+[01:12:34 -> 01:12:38] Whatever the previous inputs were are the outputs.
+[01:12:38 -> 01:12:46] And whatever are the previous, if I don't clock this, whatever the previous inputs of this latch are the outputs.
+[01:12:46 -> 01:12:56] So if I do not clock these latches, the instruction in that stage ineffectively stays there.
+[01:12:56 -> 01:13:02] So I'm stalling that instruction.
+[01:13:02 -> 01:13:11] What happens if I clear all the bits in this latch?
+[01:13:11 -> 01:13:17] If I clear all the bits in the latch, make them all zeros.
+[01:13:17 -> 01:13:24] These are the bits that are corresponding to this instruction in this stage over here.
+[01:13:24 -> 01:13:30] It's as if that instruction was gone. It didn't even exist.
+[01:13:30 -> 01:13:38] Okay? Are you with me on this?
+[01:13:38 -> 01:13:40] So two operations.
+[01:13:40 -> 01:13:51] Stall. When you want to stop some instructions in their correct stages, you de-assert the right enabled or the clock signals for those latches.
+[01:13:51 -> 01:13:58] And what you're basically going to use it for is you want to make younger instructions wait for older ones to complete
+[01:13:58 -> 01:14:05] so that the younger instruction has the correct value that it needs from the older instruction.
+[01:14:05 -> 01:14:06] Okay?
+[01:14:06 -> 01:14:12] And the flush operation, in effect, removes instructions from the current stages.
+[01:14:12 -> 01:14:15] What we use this operation for, we'll see later.
+[01:14:15 -> 01:14:20] And very simply, the way you implement it is you simply insert the clear signal for the latch
+[01:14:20 -> 01:14:23] and the instruction vanishes.
+[01:14:23 -> 01:14:27] Questions?
+[01:14:27 -> 01:14:30] Okay.
+[01:14:30 -> 01:14:33] We'll take it from here. Next lecture then.

@@ -1,0 +1,1312 @@
+Title: 752_Lec23
+Source file: 752_Lec23.mp3
+Detected language: en
+------------------------------------------------------------
+
+[00:00:00 -> 00:00:05] share this, we'll talk a little bit about it, all right?
+[00:00:05 -> 00:00:08] And, you know, the big question comes
+[00:00:08 -> 00:00:12] as cache interference, okay, and really, you know,
+[00:00:12 -> 00:00:15] if you are sharing the instruction cache
+[00:00:15 -> 00:00:18] and you're deteriorating the instruction cache hit rate
+[00:00:18 -> 00:00:21] for any thread, if the thread's not touching instructions
+[00:00:21 -> 00:00:23] it's not doing anything,
+[00:00:23 -> 00:00:25] if that's a significant degradation.
+[00:00:25 -> 00:00:28] So the question that comes is, you know,
+[00:00:28 -> 00:00:32] can the working set of multiple threads fit in the caches?
+[00:00:32 -> 00:00:35] And we talked last time about the single program
+[00:00:35 -> 00:00:40] multiple threads model, okay, multiple data model,
+[00:00:41 -> 00:00:44] where the instruction caches, which are the important part,
+[00:00:44 -> 00:00:48] okay, the instruction code, the code is shared
+[00:00:48 -> 00:00:49] amongst the different threads,
+[00:00:49 -> 00:00:53] and so the instruction cache holds the code
+[00:00:53 -> 00:00:56] from the different threads, which is the same code,
+[00:00:56 -> 00:00:57] if you will.
+[00:00:58 -> 00:01:03] Okay, what you need to now have is the map table.
+[00:01:03 -> 00:01:07] The map table has to have as many entries
+[00:01:07 -> 00:01:09] as their number of threads,
+[00:01:09 -> 00:01:10] times how many other architectural
+[00:01:10 -> 00:01:13] data attributes you have, okay?
+[00:01:13 -> 00:01:16] We are giving one map table per thread,
+[00:01:16 -> 00:01:20] one program counter per thread, what we do.
+[00:01:20 -> 00:01:24] But the physical register file can be shared,
+[00:01:24 -> 00:01:29] and it should have at least as many registers
+[00:01:29 -> 00:01:32] as the number of architectural registers per thread,
+[00:01:32 -> 00:01:34] times the number of threads,
+[00:01:34 -> 00:01:37] plus how many other instructions are in flight,
+[00:01:37 -> 00:01:41] which could be from multiple threads, all right?
+[00:01:41 -> 00:01:42] And in fact, not could be,
+[00:01:42 -> 00:01:44] would be from multiple threads, typically.
+[00:01:47 -> 00:01:50] How are the, you know, the re-arm buffer,
+[00:01:50 -> 00:01:53] load store queue, reservation stations,
+[00:01:53 -> 00:01:56] and here, you can, you know,
+[00:01:56 -> 00:01:58] do either static or dynamic,
+[00:01:58 -> 00:02:00] depends on what you want to achieve.
+[00:02:00 -> 00:02:02] What a static partitioning would do is,
+[00:02:02 -> 00:02:05] in a sense, basically split up the hardware somehow
+[00:02:05 -> 00:02:09] between the two different threads, okay?
+[00:02:09 -> 00:02:10] So say I have, you know,
+[00:02:10 -> 00:02:15] I gave three fourths of the resources to one thread
+[00:02:16 -> 00:02:19] and one quarter to the other thread,
+[00:02:19 -> 00:02:21] if you were to statically decide that.
+[00:02:21 -> 00:02:23] By statically, it means, you know,
+[00:02:23 -> 00:02:27] before you start executing the threads, okay?
+[00:02:28 -> 00:02:33] And you can do static portions,
+[00:02:34 -> 00:02:37] and so what that does is that,
+[00:02:37 -> 00:02:39] even if I have a low IPC thread
+[00:02:39 -> 00:02:42] which is not necessarily using all the slots, okay?
+[00:02:43 -> 00:02:47] You know, it doesn't start the high IPC one
+[00:02:47 -> 00:02:49] because, you know, each one,
+[00:02:49 -> 00:02:51] because it's not, the low IPC thread
+[00:02:51 -> 00:02:54] isn't keeping all the resources occupied,
+[00:02:54 -> 00:02:58] it's only keeping its resources occupied, okay?
+[00:02:58 -> 00:03:00] On the other hand, of course, now, you know,
+[00:03:00 -> 00:03:02] I mean, you could have situations
+[00:03:02 -> 00:03:05] where one thread could use more resources than the other
+[00:03:05 -> 00:03:09] so you end up having a little low utilization,
+[00:03:09 -> 00:03:11] and the other is dynamically, you know,
+[00:03:11 -> 00:03:13] basically let the threads fight it out
+[00:03:13 -> 00:03:15] with each other who gets the resources,
+[00:03:15 -> 00:03:19] and, you know, that's going to get you high utilization,
+[00:03:19 -> 00:03:21] but, you know, there's always the possibility
+[00:03:21 -> 00:03:23] one of the threads, you know, could starve
+[00:03:23 -> 00:03:25] because someone, okay, a thread that's constantly
+[00:03:25 -> 00:03:29] using resources is not going to let someone,
+[00:03:29 -> 00:03:32] you know, it's going to take them over to someone
+[00:03:32 -> 00:03:35] and starve that other thread.
+[00:03:35 -> 00:03:38] And so this paper that you just read,
+[00:03:38 -> 00:03:40] you know, the Dalton paper talks about,
+[00:03:40 -> 00:03:43] hey, you can actually do, you know,
+[00:03:43 -> 00:03:46] basically by controlling what you fetch.
+[00:03:47 -> 00:03:49] What you fetch then just determines
+[00:03:49 -> 00:03:52] what happens in the rest of the machine, okay?
+[00:03:52 -> 00:03:56] So you can actually fetch instructions
+[00:03:56 -> 00:04:02] from the thread with a few in-flight instructions.
+[00:04:02 -> 00:04:06] So this simultaneous multi-threading, again,
+[00:04:06 -> 00:04:08] you know, it's like shows up sometimes
+[00:04:08 -> 00:04:11] in a lot of processors because of, you know,
+[00:04:11 -> 00:04:13] many of the arguments that we've made
+[00:04:13 -> 00:04:16] for utilization, et cetera, et cetera.
+[00:04:16 -> 00:04:18] And then maybe the next generation,
+[00:04:18 -> 00:04:20] they don't use it, and then sometimes
+[00:04:20 -> 00:04:23] someone else uses it again, et cetera.
+[00:04:23 -> 00:04:26] Okay, so, you know, these things come and go
+[00:04:26 -> 00:04:29] and the way these things work is many a time
+[00:04:29 -> 00:04:31] work goes in a process that is determined
+[00:04:31 -> 00:04:32] by the lead architect.
+[00:04:34 -> 00:04:36] They decide just what's going to go,
+[00:04:36 -> 00:04:38] you know, after you've entered a different lead architect,
+[00:04:38 -> 00:04:42] more of a fan of simultaneous multi-threading
+[00:04:42 -> 00:04:44] or hyper-threading or not a fan,
+[00:04:44 -> 00:04:47] and, you know, these things bounce around.
+[00:04:47 -> 00:04:50] So, you know, I mean, this is another one
+[00:04:50 -> 00:04:55] of the tools that we have in our bag of tools,
+[00:04:55 -> 00:04:57] and, you know, they keep changing from time to time
+[00:04:57 -> 00:05:00] whether they're used or not.
+[00:05:00 -> 00:05:05] So, you know, people argue about the power implications
+[00:05:05 -> 00:05:09] of multi-threading, and, you know,
+[00:05:09 -> 00:05:10] the question is, hey, you know,
+[00:05:10 -> 00:05:14] is multi-threading at all a problem?
+[00:05:15 -> 00:05:18] For static power, which is static power
+[00:05:18 -> 00:05:22] if you remember is you are using, you know,
+[00:05:22 -> 00:05:26] you are using static energy, expending static energy,
+[00:05:26 -> 00:05:30] whether or not those transistors are being used or not.
+[00:05:31 -> 00:05:36] Okay, and so if you are actually doing something
+[00:05:37 -> 00:05:40] on top of this static wasted power, if you will,
+[00:05:41 -> 00:05:44] then anything that increases the utilization
+[00:05:44 -> 00:05:47] helps amortize the static power.
+[00:05:48 -> 00:05:51] Okay, let's make it more better power efficient.
+[00:05:51 -> 00:05:56] For dynamic power, again, it's highly dependent
+[00:05:56 -> 00:05:57] on the utilization.
+[00:05:57 -> 00:06:00] A significant factor is the cache activity,
+[00:06:00 -> 00:06:04] and if you're actually creating more cache misses, okay,
+[00:06:04 -> 00:06:08] maybe you're actually expending more dynamic power.
+[00:06:08 -> 00:06:10] And that is why I think for sometimes people say,
+[00:06:10 -> 00:06:14] hey, no, you know, for my relevant data cache size
+[00:06:14 -> 00:06:16] and this, you know, and for the workloads
+[00:06:16 -> 00:06:18] that I'm considering,
+[00:06:18 -> 00:06:21] this actually don't end up taking more power.
+[00:06:22 -> 00:06:26] And, you know, the reverse argument is,
+[00:06:26 -> 00:06:29] hey, if static power importance is increasing more,
+[00:06:29 -> 00:06:32] which, you know, there's some argument that it is,
+[00:06:32 -> 00:06:34] in that given environment,
+[00:06:34 -> 00:06:38] then overall multi-threading ends up being
+[00:06:38 -> 00:06:41] more powerful.
+[00:06:41 -> 00:06:45] So, you know, these days, what you do is,
+[00:06:45 -> 00:06:46] I'm not going to talk about multi-threading
+[00:06:46 -> 00:06:48] for like 15, okay?
+[00:06:48 -> 00:06:50] If you have multiple threads, then people play,
+[00:06:50 -> 00:06:54] you know, all sorts of other interesting tricks with them.
+[00:06:54 -> 00:06:57] You can build multiple processors on a chip,
+[00:06:57 -> 00:06:58] or a chip multi-processor.
+[00:06:58 -> 00:07:01] You can also have multi-threading,
+[00:07:01 -> 00:07:05] and both of them will get you more throughput
+[00:07:05 -> 00:07:07] on multiple threads.
+[00:07:07 -> 00:07:10] The, you know, if I build multiple processors
+[00:07:10 -> 00:07:12] without doing multi-threading per process,
+[00:07:12 -> 00:07:16] I'll probably get a simpler machine and faster clock,
+[00:07:16 -> 00:07:19] but SMP will get you better performance
+[00:07:19 -> 00:07:22] on a single thread, you know,
+[00:07:22 -> 00:07:26] thread with basically an out of order processor.
+[00:07:26 -> 00:07:29] And if you can then use other threads,
+[00:07:29 -> 00:07:31] in a sense, you know,
+[00:07:31 -> 00:07:34] SMP is converting the thread level parallelism
+[00:07:34 -> 00:07:39] to instruction level parallelism.
+[00:07:39 -> 00:07:40] So people, you know, like I said,
+[00:07:40 -> 00:07:43] you know, the multi-processors, chip multi-process,
+[00:07:43 -> 00:07:48] we'll talk a little bit about several aspects of that next.
+[00:07:50 -> 00:07:56] But, you know, people end up perhaps, you know,
+[00:07:56 -> 00:07:58] doing a little bit of both.
+[00:07:59 -> 00:08:03] Okay, so the one question was, okay,
+[00:08:03 -> 00:08:08] now I have, you know, these multiple threads over there
+[00:08:09 -> 00:08:11] running at the same time, and I have an exception.
+[00:08:12 -> 00:08:23] Okay, what do I do?
+[00:08:24 -> 00:08:27] What do you have to do if you have one thread running?
+[00:08:27 -> 00:08:30] Flush the ROV and whatever it is,
+[00:08:30 -> 00:08:34] and handle the exception, go and come back and do that.
+[00:08:35 -> 00:08:38] Okay, and the nice thing, and the nice thing
+[00:08:39 -> 00:08:43] about the micro-architectures we've talked about is,
+[00:08:43 -> 00:08:44] you have precise interrupt.
+[00:08:44 -> 00:08:48] You can stop at any point and come back at any point,
+[00:08:48 -> 00:08:52] and do that point at any time.
+[00:08:52 -> 00:08:56] Okay, so, you know, again, if I have an exception
+[00:08:57 -> 00:09:01] in a thread, you know, if I recognize,
+[00:09:01 -> 00:09:02] if I have, you know, remember,
+[00:09:02 -> 00:09:07] I'm only recognizing one exception for thread, okay?
+[00:09:07 -> 00:09:11] And, you know, if I have multiple recognizable exceptions
+[00:09:11 -> 00:09:14] in multiple threads, I would just recognize one,
+[00:09:14 -> 00:09:18] stop the other one, and, you know,
+[00:09:18 -> 00:09:21] restart that if necessary.
+[00:09:21 -> 00:09:24] So, in the best case, if you have, like,
+[00:09:24 -> 00:09:28] let's say, four threads on an SMT thing,
+[00:09:28 -> 00:09:31] all four have a unique style of exception,
+[00:09:31 -> 00:09:33] so, can the processor, like,
+[00:09:33 -> 00:09:35] handle all four of them at the same time?
+[00:09:35 -> 00:09:40] You're only handling one at a time, okay?
+[00:09:40 -> 00:09:41] You are only handling one exception.
+[00:09:41 -> 00:09:43] The others, you won't even recognize them.
+[00:09:43 -> 00:09:45] Remember, you only recognize the exception
+[00:09:45 -> 00:09:49] when you're ready to retire the instruction, okay?
+[00:09:49 -> 00:09:51] You know, so, whichever comes first,
+[00:09:51 -> 00:09:53] you know, you handle the others.
+[00:09:53 -> 00:09:55] You can just say, hey, you know,
+[00:09:55 -> 00:09:57] come back when it's your turn.
+[00:09:57 -> 00:09:59] You restart from some other point,
+[00:09:59 -> 00:10:01] and then you come back, and then,
+[00:10:01 -> 00:10:03] if you create the exception again,
+[00:10:03 -> 00:10:08] then we'll recognize you at that time.
+[00:10:08 -> 00:10:10] Yeah, you know, if you have these type of exceptions,
+[00:10:10 -> 00:10:14] you can choose to recognize them at any point.
+[00:10:14 -> 00:10:16] Remember, you know, when we started
+[00:10:16 -> 00:10:18] talking about the exceptions,
+[00:10:18 -> 00:10:20] we said, you know, we're gonna bite the bullet,
+[00:10:20 -> 00:10:22] and then, actually, recognize the exception
+[00:10:22 -> 00:10:27] at any arbitrary instruction counter.
+[00:10:27 -> 00:10:30] It's not at a branch, not at something else,
+[00:10:30 -> 00:10:36] or at any arbitrary instruction counter.
+[00:10:36 -> 00:10:41] Okay, to, yeah, I mean, you know, the summary.
+[00:10:41 -> 00:10:44] Okay, next, I want to move on to
+[00:10:46 -> 00:10:50] give you a really bird's eye view of multi-processors,
+[00:10:50 -> 00:10:52] shared multi-multi-processors.
+[00:10:52 -> 00:10:55] This is really just gonna be a, you know,
+[00:10:55 -> 00:10:57] bird's eye view of, you know, three of the issues
+[00:10:57 -> 00:10:59] that come up in multi-processing.
+[00:11:01 -> 00:11:05] CSCC 757 delves into these issues,
+[00:11:05 -> 00:11:07] and other multi-processing issues in great detail.
+[00:11:07 -> 00:11:09] It's an entire course, as well.
+[00:11:10 -> 00:11:15] But, you know, since many people stop with this class,
+[00:11:15 -> 00:11:17] and they should at least know
+[00:11:17 -> 00:11:19] these three issues that we talk about
+[00:11:19 -> 00:11:21] that come up in multi-processing,
+[00:11:21 -> 00:11:24] so we're gonna do that.
+[00:11:24 -> 00:11:28] Okay, so, you know, we are gonna be talking now
+[00:11:28 -> 00:11:31] more about the CPU and memory, and the connection,
+[00:11:31 -> 00:11:34] and multiple CPUs being connected.
+[00:11:34 -> 00:11:37] Three issues we're gonna talk about are cache coherence,
+[00:11:37 -> 00:11:40] synchronization, and memory consistency.
+[00:11:40 -> 00:11:42] And for cache coherence,
+[00:11:42 -> 00:11:45] typically there are two approaches.
+[00:11:45 -> 00:11:48] One is what is called a snooping approach,
+[00:11:48 -> 00:11:52] which was the first approach for cache coherence
+[00:11:52 -> 00:11:57] on, you know, SMPs which were symmetric multi-processors.
+[00:11:58 -> 00:12:01] We'll see what symmetric meant, in some sense.
+[00:12:01 -> 00:12:05] And, you know, that's typically for a, you know,
+[00:12:05 -> 00:12:06] small number of processors.
+[00:12:06 -> 00:12:08] Why a small number of processors?
+[00:12:08 -> 00:12:10] Well, we will see that.
+[00:12:10 -> 00:12:12] And then, as you start going
+[00:12:12 -> 00:12:14] to bigger and bigger multi-processors,
+[00:12:14 -> 00:12:18] you have to have different way of maintaining cache coherence.
+[00:12:18 -> 00:12:20] So we'll talk about snooping caches
+[00:12:20 -> 00:12:23] for, you know, small numbers of multi-processors
+[00:12:23 -> 00:12:27] connected by a broadcast network type of us.
+[00:12:27 -> 00:12:29] Then there are the other directory scale approaches
+[00:12:29 -> 00:12:33] for lots of processors that we won't talk about in 752,
+[00:12:33 -> 00:12:35] or you'll learn in 757.
+[00:12:37 -> 00:12:42] Okay, so let's take this, you know,
+[00:12:44 -> 00:12:47] what multi-processors are gonna be doing, again,
+[00:12:47 -> 00:12:50] is, you know, you have multiple program counter,
+[00:12:50 -> 00:12:53] each processor is going to be running a different program
+[00:12:53 -> 00:12:57] for a different thread, okay?
+[00:12:57 -> 00:13:02] And the, so that is what we call thread-level parallelism.
+[00:13:03 -> 00:13:08] And those threads are basically asynchronous tasks
+[00:13:08 -> 00:13:10] that are not started and stopped together.
+[00:13:10 -> 00:13:12] They can start at any time
+[00:13:12 -> 00:13:15] and proceed at different places,
+[00:13:15 -> 00:13:18] and, you know, stop at, you know, different times.
+[00:13:18 -> 00:13:22] These tasks are not coordinated in any way.
+[00:13:22 -> 00:13:24] The parallelism in these tasks are not coordinated
+[00:13:24 -> 00:13:28] in any way in that, you know, starting and stopping
+[00:13:28 -> 00:13:30] and how we execute it,
+[00:13:30 -> 00:13:33] which is different from the SIMD machines
+[00:13:33 -> 00:13:35] and the vector machines that we talked about,
+[00:13:35 -> 00:13:37] whereas there's a single instruction
+[00:13:38 -> 00:13:43] doing the parallel work on all the different data items
+[00:13:43 -> 00:13:48] in a very coordinated fashion.
+[00:13:48 -> 00:13:52] So here is now a example that we're gonna take
+[00:13:52 -> 00:13:54] of your database web server,
+[00:13:54 -> 00:13:57] and this is basically, you know, an ATM machine.
+[00:13:57 -> 00:14:00] You're withdrawing some money from an ATM machine,
+[00:14:00 -> 00:14:03] from your account, okay?
+[00:14:03 -> 00:14:07] And so what you do is, you know, you have some,
+[00:14:07 -> 00:14:08] you have an account,
+[00:14:08 -> 00:14:11] and the account has a certain balance,
+[00:14:11 -> 00:14:13] and you want to withdraw a certain amount.
+[00:14:13 -> 00:14:17] You're gonna check to see if the amount is more than,
+[00:14:18 -> 00:14:20] if the balance is greater than or equal to the amount.
+[00:14:20 -> 00:14:23] If it is, you are going to decrement the balance
+[00:14:23 -> 00:14:26] by the amount and spew out the cash.
+[00:14:28 -> 00:14:31] And now, you could be having multiple withdrawals
+[00:14:31 -> 00:14:35] from different ATM machines.
+[00:14:35 -> 00:14:38] Different times at the same time, who knows?
+[00:14:38 -> 00:14:43] You gotta make sure it works as if it were on the same time.
+[00:14:43 -> 00:14:48] Okay, so this account is shared
+[00:14:48 -> 00:14:52] amongst the, you know, different threads.
+[00:14:52 -> 00:14:55] So you can't put it, you know, this is not a scalar,
+[00:14:55 -> 00:14:59] but even with a single scalar variable,
+[00:14:59 -> 00:15:01] you cannot put it in a register
+[00:15:01 -> 00:15:05] because any time something is shared,
+[00:15:05 -> 00:15:08] any variable that is shared by multiple process,
+[00:15:08 -> 00:15:10] you know, that's gonna be shared
+[00:15:10 -> 00:15:12] potentially by multiple processors,
+[00:15:12 -> 00:15:15] actions on that shared variable
+[00:15:15 -> 00:15:20] have to be visible to the multiple, okay?
+[00:15:20 -> 00:15:22] And we will see the actions that happen
+[00:15:22 -> 00:15:26] on memory locations, which happen to be in the caches,
+[00:15:27 -> 00:15:30] we can keep visible.
+[00:15:30 -> 00:15:34] But if a variable ends up in a register,
+[00:15:34 -> 00:15:37] what's in the register of the processor?
+[00:15:37 -> 00:15:42] It's hard to make visible, do in a processor, okay?
+[00:15:42 -> 00:15:44] Are you with me on this?
+[00:15:44 -> 00:15:48] So you cannot allocate data that is shared
+[00:15:48 -> 00:15:53] that is going to be updated, okay, into a register.
+[00:15:56 -> 00:16:01] The ID and the amount are private variables
+[00:16:02 -> 00:16:06] and you are going to be updating them also, okay?
+[00:16:06 -> 00:16:08] And so those are going to be allocated to
+[00:16:08 -> 00:16:11] the register of an order.
+[00:16:11 -> 00:16:14] So what we first do is, you know,
+[00:16:14 -> 00:16:19] we will, you know, get the ID
+[00:16:19 -> 00:16:24] of the, you know, the account is an R1.
+[00:16:25 -> 00:16:30] We get a, you know, set the base address
+[00:16:30 -> 00:16:33] of the accounts in R3.
+[00:16:33 -> 00:16:36] Then you are going to load, you know,
+[00:16:36 -> 00:16:40] account ID or balance into R4
+[00:16:40 -> 00:16:45] and the amount that you are wanting to withdraw is an R2.
+[00:16:46 -> 00:16:51] So you're going to check to see if R2 is less than R4,
+[00:16:52 -> 00:16:56] you know, if not, sorry, you know,
+[00:16:56 -> 00:16:59] if it's not less than, you're going to,
+[00:16:59 -> 00:17:03] you're going to not carry out the withdrawal, go to six.
+[00:17:03 -> 00:17:08] Okay, and if it ends, then you are going to subtract
+[00:17:09 -> 00:17:14] subtract the amount from the balance, which is an R4,
+[00:17:21 -> 00:17:23] write the result into the balance.
+[00:17:23 -> 00:17:24] Then you're going to store the balance
+[00:17:24 -> 00:17:28] into this account ID and balance, all right?
+[00:17:28 -> 00:17:33] And you're going to spear out the cash, all right?
+[00:17:33 -> 00:17:36] So we will take a look at this transaction
+[00:17:36 -> 00:17:39] and we'd be carrying out multiple of these transactions
+[00:17:39 -> 00:17:42] on multiple processors and see what issues can happen
+[00:17:44 -> 00:17:46] and how to make sure that this runs correctly.
+[00:17:49 -> 00:17:53] So the way people build multi-processors
+[00:17:53 -> 00:17:58] and they are sharing data is, you know,
+[00:17:58 -> 00:17:59] you can have two different options.
+[00:17:59 -> 00:18:01] One is what is called shared memory
+[00:18:01 -> 00:18:04] and the other is called message passing.
+[00:18:04 -> 00:18:08] In message passing, you know, there are two different threads.
+[00:18:08 -> 00:18:11] You're actually figuring out how they are communicating
+[00:18:11 -> 00:18:15] and your program is explicitly passing data
+[00:18:15 -> 00:18:17] from one thread to another thread,
+[00:18:17 -> 00:18:20] you know, by writing into it, you know,
+[00:18:20 -> 00:18:21] passing it directly.
+[00:18:21 -> 00:18:25] What happens in a shared memory is that, you know,
+[00:18:25 -> 00:18:29] the threads basically all can access a single address
+[00:18:29 -> 00:18:32] to multiple entities in context.
+[00:18:33 -> 00:18:35] And there could be multiple programs
+[00:18:35 -> 00:18:36] operating on multiple data.
+[00:18:36 -> 00:18:40] All that data is in a single address space, okay?
+[00:18:40 -> 00:18:42] Or more frequently, as we talked about,
+[00:18:42 -> 00:18:45] a single program, multiple data.
+[00:18:45 -> 00:18:47] Again, threads that are executing the same program
+[00:18:47 -> 00:18:50] or similar program on multiple data
+[00:18:50 -> 00:18:53] and all that data is in that single address space.
+[00:18:53 -> 00:18:56] And the way the different threads communicate
+[00:18:56 -> 00:18:59] is via loads and stores, okay?
+[00:18:59 -> 00:19:01] So one thread stores up into a memory address,
+[00:19:02 -> 00:19:05] and the other thread loads from that memory address.
+[00:19:05 -> 00:19:08] That's how a value gets from one thread to another thread.
+[00:19:08 -> 00:19:12] That's how they communicate, all right?
+[00:19:12 -> 00:19:15] So it makes the software writing simple
+[00:19:15 -> 00:19:17] because there is no need for messages.
+[00:19:17 -> 00:19:19] Communication happens naturally
+[00:19:19 -> 00:19:21] and you can support, you know,
+[00:19:21 -> 00:19:22] arbitrarily irregular patterns,
+[00:19:22 -> 00:19:24] whereas if you have message passing,
+[00:19:24 -> 00:19:27] some of the more irregular patterns become,
+[00:19:27 -> 00:19:29] you know, dynamic communication patterns
+[00:19:29 -> 00:19:31] become more complicated to deal with.
+[00:19:33 -> 00:19:35] So the software, you know,
+[00:19:35 -> 00:19:37] if software can be considered simple,
+[00:19:37 -> 00:19:40] this is relatively simple, okay?
+[00:19:40 -> 00:19:42] You know, in general, software is,
+[00:19:42 -> 00:19:44] even a single thread software is not simple.
+[00:19:44 -> 00:19:46] Multi-thread software is, you know,
+[00:19:48 -> 00:19:53] when the first chip multiprocessors came out,
+[00:19:54 -> 00:19:58] you know, one of the biggest applications
+[00:19:58 -> 00:20:03] for making people want to use multiple processors
+[00:20:03 -> 00:20:07] on these PCs was one of the Adobe software items.
+[00:20:07 -> 00:20:11] I forget which it was, and they paralyzed it, okay?
+[00:20:11 -> 00:20:13] And they thought they got it correct.
+[00:20:13 -> 00:20:15] They had a race condition that didn't show up
+[00:20:15 -> 00:20:18] until years later in the field, okay?
+[00:20:18 -> 00:20:21] So these things happen, you know?
+[00:20:21 -> 00:20:27] So we say simple, but it's relatively simple.
+[00:20:27 -> 00:20:32] On the flip side, the hardware becomes complex, okay?
+[00:20:32 -> 00:20:36] Because the hardware, you know,
+[00:20:36 -> 00:20:39] just like, you know, just like, you know,
+[00:20:39 -> 00:20:41] out of order of process of speculative execution,
+[00:20:41 -> 00:20:43] software thinks it's one instruction
+[00:20:43 -> 00:20:47] is being executed at a time, okay?
+[00:20:47 -> 00:20:52] In reality, something very different is happening, okay?
+[00:20:53 -> 00:20:56] Well, what we are to do now, you know,
+[00:20:56 -> 00:21:01] we want to basically give the appearance that, you know,
+[00:21:01 -> 00:21:03] what we want to do, give the appearance,
+[00:21:03 -> 00:21:05] is I have multiple processors,
+[00:21:05 -> 00:21:09] I have a memory that they're all sharing,
+[00:21:09 -> 00:21:12] and each one of them is going to, you know,
+[00:21:12 -> 00:21:17] get memory, everyone's seeing the same values in memory,
+[00:21:17 -> 00:21:18] et cetera, et cetera, okay?
+[00:21:18 -> 00:21:22] That's what the software is thinking, okay?
+[00:21:22 -> 00:21:27] So this is this uniform view of memory that software has,
+[00:21:29 -> 00:21:30] okay?
+[00:21:31 -> 00:21:33] In reality, this is what the hardware is.
+[00:21:33 -> 00:21:37] This is what the so-called memory system is, okay?
+[00:21:37 -> 00:21:41] Each processor has its own cache,
+[00:21:41 -> 00:21:44] and alongside, there may be part
+[00:21:44 -> 00:21:49] of the overall memory over here, okay?
+[00:21:49 -> 00:21:54] And then there is some interconnection network, okay?
+[00:21:54 -> 00:21:57] And then the caches and the memory interface
+[00:21:57 -> 00:21:59] with the interconnection network,
+[00:21:59 -> 00:22:02] and, you know, if, you know,
+[00:22:02 -> 00:22:05] and then somehow, you know, the values,
+[00:22:05 -> 00:22:10] and each one of these is making accesses independently,
+[00:22:11 -> 00:22:13] okay, on its own asynchronously,
+[00:22:13 -> 00:22:16] trying to give the appearance that, hey,
+[00:22:16 -> 00:22:18] what you're really doing over here
+[00:22:18 -> 00:22:23] is one shared, uniform shared memory
+[00:22:23 -> 00:22:26] is what we have to do, okay?
+[00:22:26 -> 00:22:31] That's what makes it complex.
+[00:22:31 -> 00:22:36] So, you know, the first question
+[00:22:36 -> 00:22:39] that we have to do with is, hey, you know,
+[00:22:39 -> 00:22:42] do we have what was historically
+[00:22:42 -> 00:22:45] called a uniform memory access machine
+[00:22:45 -> 00:22:49] where the CPUs are on, you know,
+[00:22:49 -> 00:22:52] basically I have some interconnection network,
+[00:22:52 -> 00:22:54] and on one side I have the CPUs,
+[00:22:54 -> 00:22:57] on the other side I have the memory.
+[00:22:57 -> 00:23:02] So any CPU, if it wants to access any memory address,
+[00:23:02 -> 00:23:04] so the memory is in multiple banks,
+[00:23:04 -> 00:23:06] different addresses in different banks,
+[00:23:06 -> 00:23:11] any CPU, if it wants to access any address in memory,
+[00:23:11 -> 00:23:15] it has equal latency to all of them, okay?
+[00:23:16 -> 00:23:19] So uniform memory access.
+[00:23:19 -> 00:23:23] So, you know, when you are writing your code
+[00:23:23 -> 00:23:24] or whatever and you're trying to, you know,
+[00:23:24 -> 00:23:27] get performance out of it, you have some idea,
+[00:23:27 -> 00:23:29] you need some idea of how long does it take
+[00:23:29 -> 00:23:31] to access memory?
+[00:23:31 -> 00:23:34] Well, in this case, regardless of what memory address
+[00:23:34 -> 00:23:38] you access, it's the same, okay?
+[00:23:41 -> 00:23:45] Now, you know, this is going to result in,
+[00:23:45 -> 00:23:48] in perhaps lower peak performance,
+[00:23:48 -> 00:23:51] because, you know, certain memory,
+[00:23:51 -> 00:23:54] if certain areas of memory are faster to access,
+[00:23:54 -> 00:23:59] say instead what I did is I had this other approach,
+[00:23:59 -> 00:24:03] which is a NUMA, or a non-uniform memory access machine.
+[00:24:04 -> 00:24:08] So when the different banks of memory,
+[00:24:08 -> 00:24:10] different memory addresses are split across
+[00:24:10 -> 00:24:13] the different banks of memory, you know,
+[00:24:13 -> 00:24:15] this bank is closer to this CPU.
+[00:24:15 -> 00:24:18] This bank is closer to this CPU, okay?
+[00:24:18 -> 00:24:21] So if this bank, this CPU wants to access memory
+[00:24:21 -> 00:24:25] in this address space, it's going to have latency A.
+[00:24:25 -> 00:24:27] If it wants to access over here,
+[00:24:27 -> 00:24:29] it has to go through the interconnection network,
+[00:24:29 -> 00:24:31] get in a different latency,
+[00:24:31 -> 00:24:35] which is likely to be higher, okay?
+[00:24:35 -> 00:24:39] So you have faster access to local memory,
+[00:24:39 -> 00:24:46] and, you know, you are going to get higher peak performance
+[00:24:46 -> 00:24:49] if you get the proper placement of data,
+[00:24:49 -> 00:24:54] but now the software becomes more common, all right?
+[00:24:54 -> 00:24:57] Over here, you're gonna have lower peak performance,
+[00:24:57 -> 00:24:58] again, because you're, in a sense,
+[00:24:58 -> 00:25:00] you're making all memory equally slow.
+[00:25:03 -> 00:25:06] The initial multi-blossom sort of started off like,
+[00:25:06 -> 00:25:09] yay, all right?
+[00:25:09 -> 00:25:10] So this is what we talk about
+[00:25:10 -> 00:25:14] to introduce some of the concepts that you have,
+[00:25:14 -> 00:25:16] but we've talked about now a little bit
+[00:25:16 -> 00:25:17] of the interconnection network,
+[00:25:17 -> 00:25:19] and, you know, these days, of course,
+[00:25:19 -> 00:25:22] you have a mixture of both styles.
+[00:25:24 -> 00:25:28] Okay, so any questions about Puma and Numa?
+[00:25:30 -> 00:25:33] Again, if you go to 757, you'll learn a lot more.
+[00:25:34 -> 00:25:35] All right.
+[00:25:35 -> 00:25:38] Now, the next thing I want to talk about is,
+[00:25:38 -> 00:25:44] hey, what is this network?
+[00:25:44 -> 00:25:51] This network either can be a shared network
+[00:25:51 -> 00:25:53] where basically is, you know,
+[00:25:53 -> 00:25:58] all the CPUs have access to the entire network over here,
+[00:25:59 -> 00:26:04] and what that does is that allows a CPU
+[00:26:05 -> 00:26:09] to observe at one point on this network
+[00:26:09 -> 00:26:14] what the other CPUs are doing in it, okay?
+[00:26:14 -> 00:26:18] Because it's a shared network that everyone can see, okay?
+[00:26:20 -> 00:26:23] The shared network, of course, now I want to, you know,
+[00:26:23 -> 00:26:25] get from point A to point B.
+[00:26:25 -> 00:26:26] I just go across the network,
+[00:26:26 -> 00:26:32] and I get from point A to point B in one hour.
+[00:26:32 -> 00:26:34] So there's low latency.
+[00:26:34 -> 00:26:39] However, this configuration,
+[00:26:39 -> 00:26:43] once I have a network that has a certain bandwidth,
+[00:26:43 -> 00:26:45] okay?
+[00:26:45 -> 00:26:50] And a CPU that's demanding, you know,
+[00:26:50 -> 00:26:54] say this network has a bandwidth of B,
+[00:26:54 -> 00:26:58] and each CPU is demanding a bandwidth of C,
+[00:26:59 -> 00:27:04] then the number of CPUs that can connect is B over C.
+[00:27:05 -> 00:27:06] Okay?
+[00:27:06 -> 00:27:10] So there is a limit to how many, you know,
+[00:27:10 -> 00:27:12] processors that can connect
+[00:27:12 -> 00:27:19] if the network connecting them has to be shared.
+[00:27:19 -> 00:27:20] On the positive side,
+[00:27:20 -> 00:27:24] the shared property is going to simplify
+[00:27:24 -> 00:27:25] cache coherence protocols,
+[00:27:25 -> 00:27:28] and we will talk about cache coherence protocols
+[00:27:28 -> 00:27:29] on a shared network,
+[00:27:29 -> 00:27:32] and you will see that they end up being reasonably simple.
+[00:27:33 -> 00:27:36] If you have a more involved network
+[00:27:36 -> 00:27:38] where all the CPUs cannot see
+[00:27:38 -> 00:27:40] what the other CPUs are doing,
+[00:27:40 -> 00:27:47] then the cache coherence protocol becomes, okay?
+[00:27:47 -> 00:27:50] So this is an example of a point-to-point network.
+[00:27:50 -> 00:27:52] Okay, here where, you know,
+[00:27:52 -> 00:27:55] this CPU is connected to this CPU
+[00:27:55 -> 00:27:58] and this CPU but not to this one.
+[00:27:58 -> 00:27:59] This one's connected to this one
+[00:27:59 -> 00:28:03] and this one but not to this one, et cetera.
+[00:28:03 -> 00:28:06] Okay, so here I have a ring, you know,
+[00:28:07 -> 00:28:10] bidirectional ring over here.
+[00:28:10 -> 00:28:13] So now if this CPU wants to access this memory,
+[00:28:13 -> 00:28:15] it takes zero hops.
+[00:28:16 -> 00:28:19] If it wants to access this memory or this memory,
+[00:28:19 -> 00:28:22] it has only one hop on the network.
+[00:28:22 -> 00:28:24] If it wants to access data on this memory,
+[00:28:24 -> 00:28:28] it has to one hop, two hops, or one hop, two hops.
+[00:28:28 -> 00:28:32] It takes multiple hops, okay?
+[00:28:32 -> 00:28:34] So you're gonna have longer latency
+[00:28:34 -> 00:28:37] because you may need multiple hops to communicate,
+[00:28:37 -> 00:28:39] but you can have higher bandwidth.
+[00:28:40 -> 00:28:41] Okay, why so now?
+[00:28:41 -> 00:28:43] Because you could be carrying out a communication
+[00:28:43 -> 00:28:45] on this path, on this path, on this path,
+[00:28:45 -> 00:28:54] on this path simultaneously, all right?
+[00:28:54 -> 00:28:58] So if I have a point-to-point network,
+[00:28:58 -> 00:29:01] one of the other parameters that comes up,
+[00:29:01 -> 00:29:03] and we won't talk about this too much,
+[00:29:03 -> 00:29:04] in fact, you know, after this,
+[00:29:04 -> 00:29:07] we won't talk about it too much at all,
+[00:29:07 -> 00:29:12] is the, what is the network topology?
+[00:29:12 -> 00:29:14] Is how are the different nodes,
+[00:29:14 -> 00:29:19] so the CPU and memory come nodes in a network, okay?
+[00:29:19 -> 00:29:21] If the nodes in the network
+[00:29:21 -> 00:29:23] are directly connected to other nodes,
+[00:29:23 -> 00:29:28] we have a, you know, what is called a direct network,
+[00:29:29 -> 00:29:31] but if these nodes are connected indirectly
+[00:29:31 -> 00:29:35] to other nodes via additional routing chips,
+[00:29:35 -> 00:29:38] then you have what is called a indirect network.
+[00:29:41 -> 00:29:43] Again, you know, pluses and minuses,
+[00:29:44 -> 00:29:48] you know, this way you can get to many, many more processors,
+[00:29:48 -> 00:29:51] but this way, you know, you basically can,
+[00:29:51 -> 00:29:54] don't have, you know, traditional logic
+[00:29:54 -> 00:29:56] that you need to connect.
+[00:29:57 -> 00:29:59] These things all depend, what network you use
+[00:29:59 -> 00:30:05] depends on exactly the scenario that you have.
+[00:30:05 -> 00:30:10] Okay, so what we're gonna talk about now
+[00:30:10 -> 00:30:13] is this particular implementation
+[00:30:13 -> 00:30:17] also referred to as a snooping bus multiprocessor,
+[00:30:18 -> 00:30:20] where I have multiple processors
+[00:30:20 -> 00:30:25] connected to a broadcast network, which is a bus,
+[00:30:26 -> 00:30:28] and the memories are now
+[00:30:28 -> 00:30:35] on the other side of the broadcast, okay?
+[00:30:35 -> 00:30:38] This network, we're just gonna consider a bus.
+[00:30:38 -> 00:30:40] It could also be a crossbar network.
+[00:30:40 -> 00:30:42] A crossbar network is in a sense
+[00:30:42 -> 00:30:46] is also a broadcast network with much higher bandwidth,
+[00:30:46 -> 00:30:50] but this bus-based, you know, network
+[00:30:50 -> 00:30:55] helps us, you know, elaborate on the issue that comes up,
+[00:30:57 -> 00:31:02] when we do that, okay?
+[00:31:02 -> 00:31:05] And, you know, this was originally also,
+[00:31:05 -> 00:31:06] this is a multiprocessor built,
+[00:31:06 -> 00:31:08] they were called symmetric multiprocessor
+[00:31:08 -> 00:31:13] because, you know, processor memory, quite symmetric,
+[00:31:13 -> 00:31:18] there is no unevenness that we have if there is, you know,
+[00:31:27 -> 00:31:32] if different, you know, CPUs have different latencies
+[00:31:32 -> 00:31:42] to connect to them, maybe higher, maybe smaller.
+[00:31:42 -> 00:31:43] The implementation, too, again,
+[00:31:43 -> 00:31:45] I sort of won't talk about it,
+[00:31:45 -> 00:31:47] but, you know, you can have a variety
+[00:31:47 -> 00:31:50] of different networks, and then you can go to,
+[00:31:50 -> 00:31:53] people build networks, even thousands of them.
+[00:31:53 -> 00:31:55] This is now a two-dimensional network.
+[00:31:55 -> 00:31:59] It could have arbitrary and dimensional networks.
+[00:31:59 -> 00:32:06] Okay, let me start off with the cache coherence issue.
+[00:32:06 -> 00:32:16] Just gonna drink a sip of water, I'll be right back.
+[00:32:16 -> 00:32:18] Synchronization, and then we talk about
+[00:32:18 -> 00:32:22] memory consistency tomorrow.
+[00:32:22 -> 00:32:23] Just to give you a full warning,
+[00:32:23 -> 00:32:26] this stuff is okay, we can get it done.
+[00:32:26 -> 00:32:29] It's complex, but reasonably simple.
+[00:32:30 -> 00:32:32] We've talked a little about synchronization,
+[00:32:32 -> 00:32:33] and then it becomes a little more involved.
+[00:32:33 -> 00:32:37] Memory consistency tomorrow.
+[00:32:37 -> 00:32:40] I'll introduce to you what the issue is,
+[00:32:40 -> 00:32:44] and then, you know, delve into it in 757,
+[00:32:44 -> 00:32:47] and even, these days, people are a little better
+[00:32:47 -> 00:32:50] at producing even the big exports guys.
+[00:32:53 -> 00:32:58] We only discuss SMP connected by a bus,
+[00:32:58 -> 00:33:00] and, you know, there are different options
+[00:33:00 -> 00:33:06] for different cases, so, all right.
+[00:33:06 -> 00:33:13] Let's go back to now, withdrawal from an ATM.
+[00:33:13 -> 00:33:18] And now, what we have is, we have two withdrawals,
+[00:33:18 -> 00:33:23] $100 each, from the same account at two different ATMs.
+[00:33:27 -> 00:33:31] Each one of these transactions maps onto a thread
+[00:33:31 -> 00:33:33] in a different processor, so this transaction
+[00:33:33 -> 00:33:36] is executed on processor zero,
+[00:33:36 -> 00:33:40] this transaction is executed on processor one.
+[00:33:40 -> 00:33:42] Each one of them is trying to withdraw $100
+[00:33:43 -> 00:33:51] from the account that has $500 in it, all right?
+[00:33:51 -> 00:33:56] Okay, let's assume that we didn't have a cash.
+[00:33:59 -> 00:34:01] Why have a cash?
+[00:34:01 -> 00:34:04] It's a big problem for us, okay?
+[00:34:05 -> 00:34:08] It creates a path, you go fast to get to the problem.
+[00:34:09 -> 00:34:13] It's a problem.
+[00:34:13 -> 00:34:16] So, let's say we didn't have a cash,
+[00:34:16 -> 00:34:20] and, you know, and see what happens.
+[00:34:20 -> 00:34:25] Okay, so what happens is, this transaction
+[00:34:25 -> 00:34:29] loads the value of the account into R4,
+[00:34:29 -> 00:34:32] memory of the account value is 500,
+[00:34:32 -> 00:34:35] so it gets 500 in R4.
+[00:34:37 -> 00:34:40] It wants to withdraw 100, 500 is more than 100,
+[00:34:40 -> 00:34:44] so it subtracts that and gets 400,
+[00:34:44 -> 00:34:48] and this 400 then gets the written instrument.
+[00:34:48 -> 00:34:51] Okay, so again, you started off at 500,
+[00:34:51 -> 00:34:58] this loaded 500, the store wrote 400.
+[00:34:58 -> 00:35:04] This transaction, right now it's happening
+[00:35:04 -> 00:35:09] after this transaction finishes, all right?
+[00:35:09 -> 00:35:14] And once we sort this coherence out,
+[00:35:14 -> 00:35:16] then we'll see what happens if they are
+[00:35:16 -> 00:35:20] executing at the same time, or close to each other,
+[00:35:20 -> 00:35:24] that's when we talk about synchronization.
+[00:35:24 -> 00:35:29] Okay, so this processor now does the load from memory,
+[00:35:29 -> 00:35:34] memory is 400, so R4 gets 400, 400 is greater than 100,
+[00:35:35 -> 00:35:39] so you subtract that, R4 is 300,
+[00:35:39 -> 00:35:41] then you store 300 into memory,
+[00:35:41 -> 00:35:43] and you steal the $100.
+[00:35:43 -> 00:35:47] Life is good, the account has the correct value,
+[00:35:47 -> 00:35:54] you know, both sides, you've got your $100.
+[00:35:54 -> 00:35:59] Okay, well, any questions?
+[00:35:59 -> 00:36:04] Now, let us say we had a cache.
+[00:36:04 -> 00:36:09] So what process was out of cache, okay?
+[00:36:09 -> 00:36:12] So this is what's there in memory,
+[00:36:12 -> 00:36:15] this is what's there in processor zero's cache,
+[00:36:15 -> 00:36:20] this is what's there in processor one's cache, okay?
+[00:36:20 -> 00:36:25] And a cache could have a block in valid or dirty,
+[00:36:28 -> 00:36:33] that's what we know so far, okay?
+[00:36:33 -> 00:36:38] So this processor does a, memory has 500,
+[00:36:38 -> 00:36:43] this processor does a load from memory, gets 500,
+[00:36:43 -> 00:36:48] and now it is, that memory address has the value 500,
+[00:36:48 -> 00:36:53] and it's valid, all right?
+[00:36:53 -> 00:36:57] And, you know, right now I have my two caches, okay?
+[00:36:59 -> 00:37:02] And so I do that, and I do the store,
+[00:37:02 -> 00:37:05] I do the store of 400, that store,
+[00:37:05 -> 00:37:10] I get a hint in the cache, I store 400 into accounts,
+[00:37:12 -> 00:37:16] and I mark that cache block dirty.
+[00:37:16 -> 00:37:21] Notice now, memory has 500, the cache has 400,
+[00:37:21 -> 00:37:24] which is a 9th speed of the $100, okay?
+[00:37:25 -> 00:37:28] Now along comes this thread,
+[00:37:28 -> 00:37:32] and it runs on processor one, does the load,
+[00:37:32 -> 00:37:36] misses in the cache, goes to memory, memory has 500,
+[00:37:36 -> 00:37:40] bring 500 into the cache, okay?
+[00:37:40 -> 00:37:44] And set the bit valid, do the check, yes,
+[00:37:44 -> 00:37:48] decremented 400, and you now write 400
+[00:37:48 -> 00:37:51] into that variable in the cache,
+[00:37:51 -> 00:37:55] and you set that bit dirty, and, you know,
+[00:37:55 -> 00:37:59] and now if you do another transaction,
+[00:38:00 -> 00:38:03] you know, you will get basically,
+[00:38:03 -> 00:38:08] you have the wrong account value over here.
+[00:38:08 -> 00:38:13] So, you know, you could have three different copies
+[00:38:13 -> 00:38:17] of that variable in the memory,
+[00:38:17 -> 00:38:19] in processor, if you use cache,
+[00:38:19 -> 00:38:25] and processor one's cache, and they can get it.
+[00:38:25 -> 00:38:28] So this is what happens in the write-through cache,
+[00:38:28 -> 00:38:30] and you say, okay, don't use a write-through,
+[00:38:30 -> 00:38:33] write back cache, use a write-through cache
+[00:38:33 -> 00:38:35] that's also going to write the value
+[00:38:35 -> 00:38:38] into the memory, if it's written in the cache, right?
+[00:38:38 -> 00:38:42] Then we won't have this problem, okay?
+[00:38:43 -> 00:38:47] Let us see what happens with a write-through cache.
+[00:38:49 -> 00:38:51] Again, I start off with 500 in memory,
+[00:38:51 -> 00:38:55] do the load, bring 500 into the processor zero's cache,
+[00:38:55 -> 00:38:59] do the store, write 400 into the cache,
+[00:38:59 -> 00:39:01] and write-through, so it also goes into memory.
+[00:39:02 -> 00:39:06] Now this two values are going to exist.
+[00:39:06 -> 00:39:10] This processor then now does the load,
+[00:39:10 -> 00:39:13] gets the right value, 400 from memory,
+[00:39:13 -> 00:39:17] has 400 in the cache, okay?
+[00:39:17 -> 00:39:21] And now does the store, writes 300 into this cache,
+[00:39:21 -> 00:39:24] into memory, and 300 is the correct account balance
+[00:39:24 -> 00:39:27] there, okay?
+[00:39:28 -> 00:39:31] But now, you know, this time there are only
+[00:39:31 -> 00:39:35] two different copies, okay?
+[00:39:35 -> 00:39:37] But, say you have another withdrawal,
+[00:39:37 -> 00:39:42] which happens to execute on processor P0.
+[00:39:42 -> 00:39:46] You will get a hit over here with the wrong
+[00:39:46 -> 00:39:52] account value, and so the, you know,
+[00:39:52 -> 00:39:56] you will be able to withdraw another $100 from here,
+[00:39:56 -> 00:40:03] make it 300, and run the account value 300.
+[00:40:03 -> 00:40:04] You have a problem.
+[00:40:06 -> 00:40:10] Which is good, if you want to withdraw a lot of cash
+[00:40:10 -> 00:40:13] in your account, you have to update it correctly.
+[00:40:16 -> 00:40:21] But, you know, it also screws up deposits.
+[00:40:21 -> 00:40:24] And now, oh, I didn't think of that.
+[00:40:27 -> 00:40:31] Make only one deposit at a time.
+[00:40:31 -> 00:40:34] Given that deposits are far less frequent than,
+[00:40:35 -> 00:40:37] anyway, that's too bad.
+[00:40:38 -> 00:40:40] Banks will figure it out.
+[00:40:40 -> 00:40:43] So they want hardware that does it correctly.
+[00:40:44 -> 00:40:49] That's why hardware cache coherence.
+[00:40:49 -> 00:40:54] So what is a given is that a particular memory address
+[00:40:54 -> 00:40:59] is going to be in multiple places.
+[00:40:59 -> 00:41:05] That's what will happen when you have a cache period.
+[00:41:05 -> 00:41:09] All copies, what you want to make sure is that,
+[00:41:09 -> 00:41:13] you know, if you want to have absolute coherence,
+[00:41:13 -> 00:41:18] which means all copies have the same data at all times,
+[00:41:18 -> 00:41:19] you can do that.
+[00:41:20 -> 00:41:22] It's hard to implement, and slow,
+[00:41:22 -> 00:41:26] but it's also not necessary, okay?
+[00:41:26 -> 00:41:29] So remember, a write back cache.
+[00:41:30 -> 00:41:35] A write back cache, the value of the cache
+[00:41:35 -> 00:41:40] and the value in the memory were different, right?
+[00:41:40 -> 00:41:42] If the block in the cache was dirty,
+[00:41:42 -> 00:41:43] the values are different.
+[00:41:45 -> 00:41:47] That's okay, that's okay.
+[00:41:48 -> 00:41:53] If no one sees an incoherent incorrect value.
+[00:41:58 -> 00:42:03] So it's not that you can't add multiple values.
+[00:42:03 -> 00:42:06] You just have to make sure that
+[00:42:06 -> 00:42:09] whenever there is a need for a value,
+[00:42:09 -> 00:42:12] you get the correct value.
+[00:42:12 -> 00:42:14] So that's what you're more interested in
+[00:42:14 -> 00:42:16] if there's a relative coherency.
+[00:42:16 -> 00:42:18] Temporary incoherence is okay,
+[00:42:18 -> 00:42:20] just like we have the write back cache.
+[00:42:21 -> 00:42:24] As long as all loads get the right values,
+[00:42:24 -> 00:42:29] or in other words, no one can look at incoherent data.
+[00:42:31 -> 00:42:32] Okay?
+[00:42:33 -> 00:42:34] So what we want to do is,
+[00:42:34 -> 00:42:37] here is the CPU, the cache,
+[00:42:37 -> 00:42:40] data cache tags in the bus.
+[00:42:40 -> 00:42:42] We are also going to have some logic
+[00:42:42 -> 00:42:44] that we call a coherence control.
+[00:42:45 -> 00:42:49] What this coherence controller is going to do
+[00:42:49 -> 00:42:52] is it's going to take a look at the requests
+[00:42:52 -> 00:42:56] coming out from the CPU to the data,
+[00:42:56 -> 00:43:02] and the requests that are going by on the bus,
+[00:43:02 -> 00:43:05] and see if the requests going by on the bus
+[00:43:07 -> 00:43:10] is for data that exists in this cache,
+[00:43:11 -> 00:43:14] and whether appropriate action should be taken.
+[00:43:16 -> 00:43:16] Okay?
+[00:43:17 -> 00:43:21] So this coherence controller
+[00:43:21 -> 00:43:24] is going to execute a cache coherence protocol,
+[00:43:25 -> 00:43:30] which is going to tell you what to do with a local copy
+[00:43:30 -> 00:43:35] when you see different things happening on the bus.
+[00:43:35 -> 00:43:40] All right?
+[00:43:40 -> 00:43:45] So we are going to basically only talk about
+[00:43:45 -> 00:43:47] bus-based coherence protocols.
+[00:43:47 -> 00:43:49] These are also called smoothing protocols
+[00:43:50 -> 00:43:54] or broadcast protocols.
+[00:43:54 -> 00:43:55] Okay?
+[00:43:56 -> 00:43:59] So what we're going to have is that
+[00:43:59 -> 00:44:04] we're going to have a bus called a snooping bus.
+[00:44:05 -> 00:44:08] And each processor now is going to have a cache.
+[00:44:14 -> 00:44:16] Each processor is going to have a cache.
+[00:44:16 -> 00:44:19] Each processor is going to have a cache controller.
+[00:44:19 -> 00:44:23] And these cache controllers are going to monitor
+[00:44:23 -> 00:44:25] and see what all is happening,
+[00:44:25 -> 00:44:28] what our traffic is going across the bus,
+[00:44:28 -> 00:44:33] in addition to looking at the traffic from their own CPU.
+[00:44:38 -> 00:44:42] So all the controllers are going to see
+[00:44:42 -> 00:44:47] all the transactions that are happening on the bus.
+[00:44:48 -> 00:44:49] Okay?
+[00:44:49 -> 00:44:52] Importantly, they're all looking at the bus
+[00:44:52 -> 00:44:54] at the same time.
+[00:44:54 -> 00:44:57] They're going to all observe the transactions
+[00:44:57 -> 00:44:58] that are happening on the bus.
+[00:44:59 -> 00:45:00] They're all in the same order.
+[00:45:00 -> 00:45:02] Everyone is seeing the same order.
+[00:45:03 -> 00:45:06] That's very important.
+[00:45:06 -> 00:45:07] Okay?
+[00:45:07 -> 00:45:11] So the bus is going to be the ordering point.
+[00:45:11 -> 00:45:13] Requests coming from different processors
+[00:45:13 -> 00:45:15] somehow have to arbitrate,
+[00:45:15 -> 00:45:18] and one of them is going to get on the bus.
+[00:45:18 -> 00:45:21] But then every processor or every cache controller
+[00:45:21 -> 00:45:24] is going to see all the requests on the bus
+[00:45:24 -> 00:45:30] that appear on the bus in the same order.
+[00:45:30 -> 00:45:33] And that's what the protocol is going to rely
+[00:45:33 -> 00:45:39] on all the process of seeing the total ordering of the bus.
+[00:45:39 -> 00:45:42] So we start off with a very simple protocol
+[00:45:42 -> 00:45:44] for write-through caches.
+[00:45:44 -> 00:45:47] So we are going to distinguish between
+[00:45:48 -> 00:45:49] this cache controller,
+[00:45:49 -> 00:45:53] or this cache controller and the cache.
+[00:45:53 -> 00:45:54] Okay?
+[00:45:54 -> 00:46:04] Process of side events and bus side events.
+[00:46:04 -> 00:46:05] In the simplest case,
+[00:46:05 -> 00:46:08] there are two process of side events,
+[00:46:08 -> 00:46:11] the read and the write.
+[00:46:11 -> 00:46:12] Okay?
+[00:46:13 -> 00:46:16] And there are two bus side events.
+[00:46:17 -> 00:46:22] A bus read and a bus write.
+[00:46:22 -> 00:46:27] A bus read is when some other processor
+[00:46:27 -> 00:46:30] is trying to read that cache block.
+[00:46:31 -> 00:46:32] Why is it trying to read that cache block?
+[00:46:32 -> 00:46:35] It comes because that other processor
+[00:46:35 -> 00:46:37] had a read miss in its cache.
+[00:46:37 -> 00:46:46] And so the request appeared for as a read miss.
+[00:46:46 -> 00:46:49] The second bus side event is a bus write.
+[00:46:50 -> 00:46:53] Where basically there is a processor
+[00:46:53 -> 00:46:57] writing into the block.
+[00:46:57 -> 00:46:58] Okay?
+[00:46:58 -> 00:47:01] The processor is trying to write into this block
+[00:47:01 -> 00:47:02] in the cache.
+[00:47:02 -> 00:47:04] It's a write-through cache
+[00:47:04 -> 00:47:08] that write also goes on the bus
+[00:47:08 -> 00:47:11] on its way to the middle.
+[00:47:11 -> 00:47:12] Okay?
+[00:47:12 -> 00:47:14] Are you familiar with this?
+[00:47:14 -> 00:47:17] So a bus write happens
+[00:47:17 -> 00:47:24] when there is a write-through by another processor.
+[00:47:24 -> 00:47:29] So far so good.
+[00:47:29 -> 00:47:30] There is a very simple
+[00:47:32 -> 00:47:34] cache for headers protocol
+[00:47:34 -> 00:47:36] for a write-through cache.
+[00:47:36 -> 00:47:39] And we are going to call it a valid and valid protocol.
+[00:47:41 -> 00:47:44] So each state now,
+[00:47:44 -> 00:47:46] now here's the cache.
+[00:47:46 -> 00:47:47] Here's the data for each block,
+[00:47:47 -> 00:47:49] the tag for each block.
+[00:47:50 -> 00:47:53] Now in addition also you're going to have some
+[00:47:53 -> 00:47:55] state bits in each cache block.
+[00:47:56 -> 00:47:58] Okay?
+[00:47:58 -> 00:48:00] You know, previously you knew
+[00:48:00 -> 00:48:01] that you have like a dirty bit.
+[00:48:01 -> 00:48:03] That was a state bit.
+[00:48:03 -> 00:48:03] Okay?
+[00:48:03 -> 00:48:06] Or a valid bit or an invalid bit.
+[00:48:07 -> 00:48:08] Okay?
+[00:48:08 -> 00:48:13] You've seen those before.
+[00:48:13 -> 00:48:15] Here now, I have write-through caches.
+[00:48:16 -> 00:48:19] There are two states per block.
+[00:48:19 -> 00:48:23] A valid state means the cache has the block
+[00:48:23 -> 00:48:26] and an invalid state means that,
+[00:48:26 -> 00:48:29] you know, that block doesn't have the process
+[00:48:29 -> 00:48:32] of getting access data in that block.
+[00:48:32 -> 00:48:33] Okay?
+[00:48:33 -> 00:48:36] The cache doesn't have that block.
+[00:48:36 -> 00:48:38] So, and of course, again,
+[00:48:38 -> 00:48:39] we might have a bit of a simple,
+[00:48:39 -> 00:48:43] one valid bit.
+[00:48:43 -> 00:48:46] So these are the same bits that we would have
+[00:48:46 -> 00:48:48] in any cache right now, right?
+[00:48:48 -> 00:48:52] These are the same bits,
+[00:48:52 -> 00:48:54] but what you would do is you would have sometimes
+[00:48:54 -> 00:48:55] you would have more states.
+[00:48:55 -> 00:48:56] We will see.
+[00:48:56 -> 00:48:58] I think when we get to just for right now,
+[00:48:58 -> 00:48:59] these are the same valid bits
+[00:48:59 -> 00:49:01] that we would have in regular.
+[00:49:01 -> 00:49:02] The caches we've talked about.
+[00:49:02 -> 00:49:06] Exactly.
+[00:49:06 -> 00:49:11] And for, yes, you know,
+[00:49:11 -> 00:49:12] for a write-back cache,
+[00:49:12 -> 00:49:13] we'd have the dirty bits and so on.
+[00:49:13 -> 00:49:16] Yeah, this is just the same state bits.
+[00:49:16 -> 00:49:26] Okay?
+[00:49:26 -> 00:49:29] Something that I'm going to forget.
+[00:49:29 -> 00:49:32] So I'll tell you who asked me.
+[00:49:32 -> 00:49:33] Okay.
+[00:49:33 -> 00:49:34] So ask me.
+[00:49:34 -> 00:49:36] Remember, remind me to tell you about,
+[00:49:36 -> 00:49:40] hey, you know, this cache controller
+[00:49:40 -> 00:49:43] is checking, handling both process of site
+[00:49:43 -> 00:49:46] and bus site requests and how does it do that?
+[00:49:46 -> 00:49:48] Let us just see, you know,
+[00:49:48 -> 00:49:51] what the, how it handles the request,
+[00:49:51 -> 00:49:53] what actions it takes,
+[00:49:53 -> 00:49:55] and then we'll actually talk about it a little bit about,
+[00:49:55 -> 00:49:58] you know, how exactly it handles that
+[00:49:58 -> 00:50:03] and how you may have to duplicate the tags, okay?
+[00:50:03 -> 00:50:04] Oh, okay.
+[00:50:04 -> 00:50:08] So this is a
+[00:50:08 -> 00:50:09] a
+[00:50:09 -> 00:50:11] protocol,
+[00:50:11 -> 00:50:13] coherence protocol, you know,
+[00:50:13 -> 00:50:15] state machine diagram.
+[00:50:15 -> 00:50:18] And basically, you know,
+[00:50:20 -> 00:50:22] in the convention, it says,
+[00:50:22 -> 00:50:25] hey, here's an event and what's the generated event
+[00:50:25 -> 00:50:27] that happens, okay?
+[00:50:27 -> 00:50:32] So, you know, if anyone wants to write a block,
+[00:50:32 -> 00:50:33] you give it up
+[00:50:33 -> 00:50:36] and transition to an unmetered state.
+[00:50:36 -> 00:50:37] And you have a read miss,
+[00:50:37 -> 00:50:39] you get the data from memory.
+[00:50:40 -> 00:50:43] Let's see, let's work it through, okay?
+[00:50:43 -> 00:50:44] Okay.
+[00:50:45 -> 00:50:46] So,
+[00:50:47 -> 00:50:48] say I don't have a block,
+[00:50:48 -> 00:50:51] but a block is an unmetered state, okay?
+[00:50:51 -> 00:50:54] I have a read miss, okay?
+[00:50:54 -> 00:50:56] I have a read miss,
+[00:50:56 -> 00:50:59] that's, so I have a read, it misses,
+[00:50:59 -> 00:51:02] I create a bus read event
+[00:51:02 -> 00:51:07] and then that bus read event is on the bus.
+[00:51:07 -> 00:51:09] Others may be reacting to that bus read event.
+[00:51:09 -> 00:51:11] I'll bring in that block
+[00:51:11 -> 00:51:18] and have it in the valid state.
+[00:51:18 -> 00:51:21] If I have a block in the valid state
+[00:51:21 -> 00:51:24] and I do a read, fine.
+[00:51:24 -> 00:51:29] Processor does a read, it stays there, okay?
+[00:51:29 -> 00:51:31] If the processor
+[00:51:31 -> 00:51:33] does a write,
+[00:51:34 -> 00:51:36] it's a write through cache.
+[00:51:36 -> 00:51:38] I write the data in that block in the cache
+[00:51:38 -> 00:51:40] and I create a bus write event
+[00:51:40 -> 00:51:45] saying that, hey, I'm writing to this block X.
+[00:51:45 -> 00:51:50] That bus write event appears on the bus.
+[00:51:50 -> 00:51:52] Okay?
+[00:51:52 -> 00:51:56] If processor has a block in valid state
+[00:51:56 -> 00:52:00] and it observes a bus read event, okay?
+[00:52:00 -> 00:52:04] So, you know, block X is here in valid state
+[00:52:04 -> 00:52:08] and now a read to that block,
+[00:52:08 -> 00:52:12] a bus read, a read to that block appears on the bus.
+[00:52:13 -> 00:52:14] Okay?
+[00:52:14 -> 00:52:17] In this situation, again,
+[00:52:17 -> 00:52:19] I'm not going to do anything.
+[00:52:19 -> 00:52:21] I'm going to ignore that request
+[00:52:21 -> 00:52:26] because this bus request will get serviced by the memory
+[00:52:26 -> 00:52:28] and so the other processor now
+[00:52:28 -> 00:52:31] is going to have a copy of that block.
+[00:52:32 -> 00:52:34] Better copy of block with valid data.
+[00:52:36 -> 00:52:40] Now, remember that since it's a write through cache,
+[00:52:40 -> 00:52:42] the copies and the caches and the memory
+[00:52:42 -> 00:52:46] are always the same, okay?
+[00:52:46 -> 00:52:49] So even if I have a block,
+[00:52:49 -> 00:52:53] I'm not giving the block to anyone
+[00:52:53 -> 00:52:56] because the memory has the correct copy
+[00:52:56 -> 00:52:59] because if I wrote into it, I wrote it through.
+[00:52:59 -> 00:52:59] Okay?
+[00:52:59 -> 00:53:07] And they're getting the correct copy from the memory.
+[00:53:07 -> 00:53:07] So far so good.
+[00:53:10 -> 00:53:13] Okay.
+[00:53:13 -> 00:53:17] If now I have a valid block
+[00:53:17 -> 00:53:23] and I observe a bus write event to that block,
+[00:53:23 -> 00:53:27] if I observe a bus write event to that block,
+[00:53:27 -> 00:53:35] I transition to an invalid state.
+[00:53:35 -> 00:53:37] I could have a block in the cache
+[00:53:37 -> 00:53:38] that is in valid state
+[00:53:39 -> 00:53:43] and that block in the cache could be,
+[00:53:43 -> 00:53:45] there could be bus read and bus write events
+[00:53:45 -> 00:53:47] to that block.
+[00:53:48 -> 00:53:49] Okay?
+[00:53:49 -> 00:53:50] I ignore it.
+[00:53:50 -> 00:53:57] I stay in invalid state.
+[00:53:57 -> 00:53:59] If I have a write
+[00:54:01 -> 00:54:02] from the processor to the block
+[00:54:02 -> 00:54:04] that's in invalid state,
+[00:54:04 -> 00:54:07] in valid view, I don't have a copy of the block.
+[00:54:08 -> 00:54:10] You know, anything that,
+[00:54:10 -> 00:54:11] I can't access that copy of the block.
+[00:54:11 -> 00:54:12] It's invalid.
+[00:54:13 -> 00:54:14] Okay?
+[00:54:15 -> 00:54:20] I carry out a bus write operation to write
+[00:54:22 -> 00:54:24] but I do not do a write allocate.
+[00:54:24 -> 00:54:30] So I do not bring that valid copy in the block.
+[00:54:31 -> 00:54:33] Remember we talked about write allocate,
+[00:54:33 -> 00:54:35] write new allocate.
+[00:54:35 -> 00:54:37] Okay, so here I do a write new allocate
+[00:54:37 -> 00:54:40] and I don't get a copy of the block
+[00:54:40 -> 00:54:45] that I can access.
+[00:54:45 -> 00:54:46] Okay.
+[00:54:46 -> 00:54:48] Now let me make the point of what I was trying to make.
+[00:54:48 -> 00:54:54] So now, this cache coherence controller,
+[00:54:54 -> 00:54:57] I have these additional state bits in each block
+[00:54:57 -> 00:55:00] and this cache coherence controller
+[00:55:00 -> 00:55:02] is implementing the finite state machine
+[00:55:04 -> 00:55:08] and taking the actions.
+[00:55:08 -> 00:55:10] Now remember we talked about caches.
+[00:55:10 -> 00:55:13] Caches have data, caches have tags.
+[00:55:13 -> 00:55:14] All right?
+[00:55:14 -> 00:55:17] And when the processor has the request,
+[00:55:17 -> 00:55:21] I go and see whether I have a tag match.
+[00:55:21 -> 00:55:23] You know, all sorts of tricks are played
+[00:55:23 -> 00:55:25] with different cache types.
+[00:55:25 -> 00:55:27] I have a tag match in which case,
+[00:55:27 -> 00:55:33] you know, the cache has data that I'm interested in.
+[00:55:33 -> 00:55:36] Now what I'm saying is this cache coherence controller
+[00:55:36 -> 00:55:40] is servicing requests from the processor
+[00:55:40 -> 00:55:45] and also observing requests from the, on the bus.
+[00:55:47 -> 00:55:47] Okay.
+[00:55:47 -> 00:55:51] And when I, how does it, you know,
+[00:55:51 -> 00:55:54] and it takes action if those requests
+[00:55:54 -> 00:55:57] are for a block in the cache.
+[00:55:57 -> 00:56:00] How does it know it should take action?
+[00:56:00 -> 00:56:02] It checks the tags of the cache
+[00:56:02 -> 00:56:05] to see if that block for which there's a read
+[00:56:05 -> 00:56:08] or a write from the processor
+[00:56:08 -> 00:56:10] or does the bus read a bus write in the bus
+[00:56:10 -> 00:56:14] is in the cache.
+[00:56:14 -> 00:56:18] So the tags in the cache are being accessed
+[00:56:18 -> 00:56:20] by this cache coherence controller.
+[00:56:20 -> 00:56:23] If the processor is doing its job
+[00:56:24 -> 00:56:27] and sending out requests, you know,
+[00:56:27 -> 00:56:32] I'll be working, it's basically handling a request
+[00:56:32 -> 00:56:34] from the processor of every cycle.
+[00:56:35 -> 00:56:37] Or these days more than one per cycle
+[00:56:37 -> 00:56:39] if I'm doing two loads, okay.
+[00:56:40 -> 00:56:46] And also what's happening on the bus is, you know,
+[00:56:47 -> 00:56:49] I'm going to connect enough processors
+[00:56:49 -> 00:56:52] so the bus ends up being fully utilized
+[00:56:52 -> 00:56:54] for having a high utilization.
+[00:56:55 -> 00:56:57] Which also means this cache controller
+[00:56:57 -> 00:57:00] is seeing the requests on the bus
+[00:57:00 -> 00:57:03] and checking to see if that block
+[00:57:03 -> 00:57:09] is in the cache all the time.
+[00:57:09 -> 00:57:11] So basically what you have to do
+[00:57:11 -> 00:57:14] is you have to have two sets of tags.
+[00:57:14 -> 00:57:16] One to service requests by the processor
+[00:57:16 -> 00:57:20] and one to service requests by the bus.
+[00:57:20 -> 00:57:24] And two sets of tags means two sets of those state bits
+[00:57:25 -> 00:57:27] because the update to the state bits
+[00:57:27 -> 00:57:29] happen only in rare occasions.
+[00:57:30 -> 00:57:33] They happen only for correctness on rare occasions.
+[00:57:33 -> 00:57:36] They aren't happening all the time, okay.
+[00:57:36 -> 00:57:38] When an update happens,
+[00:57:38 -> 00:57:42] then of course I stop, you know,
+[00:57:42 -> 00:57:44] the processor from accessing its tags
+[00:57:44 -> 00:57:46] and update that state.
+[00:57:46 -> 00:57:48] Are you with me on this?
+[00:57:48 -> 00:57:51] So it's like two-ported force to tag
+[00:57:51 -> 00:57:54] but basically then being the same copy
+[00:57:54 -> 00:57:58] and when an update to the state bits of the tags happen,
+[00:57:58 -> 00:57:59] and in this case the co-host protocol
+[00:57:59 -> 00:58:02] really is updating the state bits if you will, okay.
+[00:58:02 -> 00:58:09] Then I carry out that update predominantly.
+[00:58:09 -> 00:58:14] Questions?
+[00:58:14 -> 00:58:15] Okay.
+[00:58:16 -> 00:58:20] But write-through caches aren't that interesting, okay.
+[00:58:20 -> 00:58:23] Because you want to have write-back caches.
+[00:58:23 -> 00:58:28] So let us see what happens now for write-back caches.
+[00:58:28 -> 00:58:30] For write-back caches,
+[00:58:30 -> 00:58:32] there are three processes of side-effects.
+[00:58:32 -> 00:58:36] A read, a write, and a write-back
+[00:58:36 -> 00:58:42] of a block that is dirty and is being replaced, okay.
+[00:58:42 -> 00:58:45] Even though technically that write-back
+[00:58:45 -> 00:58:47] is from here to here.
+[00:58:48 -> 00:58:52] It's really in view this as coming from this side
+[00:58:52 -> 00:58:56] to the bus as opposed to from the bus to the processor.
+[00:58:57 -> 00:58:59] Okay.
+[00:58:59 -> 00:59:03] So there's a bus write-back.
+[00:59:03 -> 00:59:06] On the bus, there is the bus read,
+[00:59:06 -> 00:59:09] which is a read missed by another processor,
+[00:59:09 -> 00:59:13] a bus write, a write miss on another processor.
+[00:59:13 -> 00:59:17] There could also be the copy-back of the block,
+[00:59:17 -> 00:59:20] of this dirty block being written back,
+[00:59:21 -> 00:59:23] you could copy it back to memory,
+[00:59:23 -> 00:59:25] and in some protocols, you could even send it
+[00:59:25 -> 00:59:29] to another processor, or you don't go through that.
+[00:59:29 -> 00:59:30] Okay.
+[00:59:30 -> 00:59:32] And so this copy-back is basically
+[00:59:32 -> 00:59:37] sending the block to memory and being done with it.
+[00:59:37 -> 00:59:41] And we only talk about for write-back,
+[00:59:41 -> 00:59:44] this bus-based directory for point-to-point,
+[00:59:44 -> 00:59:47] like I said, it gets quite a bit more complicated.
+[00:59:47 -> 00:59:50] Okay.
+[00:59:50 -> 00:59:54] So here now is a very simple, again,
+[00:59:54 -> 01:00:02] valid-invalid protocol with a write-back cache.
+[01:00:02 -> 01:00:07] So in a write-back cache, the two states,
+[01:00:07 -> 01:00:11] invalid means I don't have a copy of the block.
+[01:00:11 -> 01:00:15] I have it, and then it got invalid in my head.
+[01:00:15 -> 01:00:17] If I have a block-invalid state,
+[01:00:17 -> 01:00:21] it means, you know, I have the block,
+[01:00:21 -> 01:00:25] and, you know, and this valid state
+[01:00:25 -> 01:00:30] is going to be the form of a dirty state, too.
+[01:00:31 -> 01:00:32] Okay.
+[01:00:32 -> 01:00:34] I'm not gonna distinguish between dirty
+[01:00:34 -> 01:00:35] and not dirty right now.
+[01:00:35 -> 01:00:42] We will in the next protocol.
+[01:00:42 -> 01:00:45] So if I have a block, then, you know,
+[01:00:45 -> 01:00:47] it could be modified.
+[01:00:47 -> 01:00:53] I can modify it when that block is.
+[01:00:53 -> 01:00:55] So to summarize the protocol is that
+[01:00:55 -> 01:00:58] anyone wants to read the block or write the block,
+[01:00:58 -> 01:00:59] just give it up.
+[01:01:00 -> 01:01:02] And transition to invalid.
+[01:01:03 -> 01:01:07] And, you know, if the block is dirty,
+[01:01:07 -> 01:01:09] then you copy it back on replacement
+[01:01:09 -> 01:01:13] or any other request, and a miss is always
+[01:01:13 -> 01:01:17] going to get the latest copy of the block
+[01:01:17 -> 01:01:19] from the memory of the processor.
+[01:01:21 -> 01:01:27] Let us see how that protocol is going to work.
+[01:01:27 -> 01:01:32] So say I had the block invalid, okay?
+[01:01:32 -> 01:01:34] If I have a read request or a write request,
+[01:01:34 -> 01:01:41] I service it and I stay in the valid state.
+[01:01:41 -> 01:01:43] If I don't have a copy of the block,
+[01:01:44 -> 01:01:47] my block is invalid, okay?
+[01:01:47 -> 01:01:50] If I have a read miss, I do a bus write,
+[01:01:51 -> 01:01:57] bus read, and bring the block in valid state.
+[01:01:57 -> 01:02:00] If I have a write miss, I do a bus write,
+[01:02:00 -> 01:02:07] and bring the copy in the valid state, okay?
+[01:02:10 -> 01:02:12] If I have the block in valid state,
+[01:02:13 -> 01:02:16] and I see a bus read from some other processor,
+[01:02:17 -> 01:02:20] or a bus write from some other processor,
+[01:02:21 -> 01:02:24] I ignore it, I don't do anything.
+[01:02:24 -> 01:02:29] Because I don't have a copy of the block.
+[01:02:29 -> 01:02:33] If I have the block in valid state,
+[01:02:33 -> 01:02:37] if I see a bus read from another processor,
+[01:02:38 -> 01:02:42] I give up my block, so I copy back that block
+[01:02:42 -> 01:02:45] to the memory.
+[01:02:45 -> 01:02:48] If I see a bus write from another processor,
+[01:02:48 -> 01:02:52] I also give up that block and copy back that block
+[01:02:56 -> 01:02:58] and you know, hey, you know,
+[01:02:58 -> 01:03:00] in either one of these cases,
+[01:03:00 -> 01:03:04] the other processor could actually snarf it off the bus
+[01:03:06 -> 01:03:08] while it's going on the bus,
+[01:03:08 -> 01:03:12] while I'm writing and copying it back to memory.
+[01:03:12 -> 01:03:13] All right?
+[01:03:13 -> 01:03:16] And I mean, the protocols actually do that.
+[01:03:16 -> 01:03:18] So when I say these protocol has these two states,
+[01:03:18 -> 01:03:22] the next state that we have, we have three states,
+[01:03:22 -> 01:03:23] they actually have within each state,
+[01:03:23 -> 01:03:25] multiple intermediate states too,
+[01:03:25 -> 01:03:30] as some of those movements are happening.
+[01:03:30 -> 01:03:32] Just like we had in a non-blocking cache, right?
+[01:03:32 -> 01:03:34] In a non-blocking cache,
+[01:03:34 -> 01:03:35] the different parts of the block
+[01:03:35 -> 01:03:37] will come in a different cycle
+[01:03:37 -> 01:03:40] when we have to track which parts of the block are here.
+[01:03:40 -> 01:03:43] Very similarly, you can have each one of these states
+[01:03:43 -> 01:03:47] as they are transitioning from one state to another state,
+[01:03:47 -> 01:03:52] multiple other sub-states.
+[01:03:52 -> 01:03:53] Okay.
+[01:03:53 -> 01:03:56] Finally, if I have the block in valid state
+[01:03:56 -> 01:03:59] and it got replaced, okay,
+[01:03:59 -> 01:04:01] so I have to write it back.
+[01:04:01 -> 01:04:03] I write it back, which means I simply
+[01:04:03 -> 01:04:10] carry out the copy that block back.
+[01:04:10 -> 01:04:13] So basically, you know,
+[01:04:13 -> 01:04:14] again, to summarize,
+[01:04:14 -> 01:04:16] if anyone wants to either write the block,
+[01:04:16 -> 01:04:20] I give it up and if I'm replacing the block,
+[01:04:20 -> 01:04:23] I copy the block back.
+[01:04:23 -> 01:04:25] If I'm giving up the block
+[01:04:25 -> 01:04:27] because of someone else's reading or a point reader,
+[01:04:27 -> 01:04:30] write it, I copy it back,
+[01:04:30 -> 01:04:35] and the miss always gets the latest copy,
+[01:04:35 -> 01:04:37] either from memory,
+[01:04:37 -> 01:04:41] or if another processor has it in this cache
+[01:04:41 -> 01:04:42] and has given it up,
+[01:04:44 -> 01:04:51] to go to memory, I pull it off this block.
+[01:04:51 -> 01:04:57] Questions?
+[01:04:57 -> 01:04:58] Okay.
+[01:04:58 -> 01:05:02] Let's see now, with this protocol,
+[01:05:02 -> 01:05:06] what happens in our example?
+[01:05:06 -> 01:05:10] So this thread, memory has 500,
+[01:05:10 -> 01:05:14] this load gets 500 into the cache,
+[01:05:14 -> 01:05:18] our process is zero, it's valid, memory has 500.
+[01:05:18 -> 01:05:21] This store, okay,
+[01:05:21 -> 01:05:25] does a write into the cache,
+[01:05:25 -> 01:05:31] okay, and so it writes 400.
+[01:05:31 -> 01:05:33] So if I'm doing the read or write,
+[01:05:33 -> 01:05:36] I stay over here.
+[01:05:36 -> 01:05:38] Okay, read or write,
+[01:05:38 -> 01:05:40] I wrote 400 over there, I stay over here,
+[01:05:40 -> 01:05:45] memory has 500.
+[01:05:45 -> 01:05:49] This processor now does a load,
+[01:05:50 -> 01:05:53] it misses in this cache.
+[01:05:53 -> 01:05:56] So what now comes out of the cache
+[01:05:56 -> 01:05:59] is a bus read from processor one.
+[01:06:01 -> 01:06:05] Processor zero has the block invalid.
+[01:06:05 -> 01:06:07] It sees a bus read from processor one
+[01:06:07 -> 01:06:09] come out of the bus.
+[01:06:09 -> 01:06:13] So it copies back that block to memory,
+[01:06:14 -> 01:06:18] transitions to the memory.
+[01:06:18 -> 01:06:23] Okay, so it copies back that block to memory,
+[01:06:23 -> 01:06:25] so memory gets 400,
+[01:06:26 -> 01:06:36] and this block is now in processor one,
+[01:06:36 -> 01:06:39] reads that memory address,
+[01:06:39 -> 01:06:41] doesn't add in the cache, it misses.
+[01:06:42 -> 01:06:45] All right, and so now,
+[01:06:45 -> 01:06:47] goes to memory, gets 400,
+[01:06:47 -> 01:06:49] brings this into its cache,
+[01:06:50 -> 01:06:52] does the store,
+[01:06:52 -> 01:06:55] so it writes 300 into its cache,
+[01:06:55 -> 01:06:59] does not write into memory.
+[01:06:59 -> 01:07:02] Now the situation that we had was
+[01:07:02 -> 01:07:05] that processor zero executes another,
+[01:07:05 -> 01:07:06] the third withdrawal.
+[01:07:07 -> 01:07:09] That is now going to miss in the cache,
+[01:07:10 -> 01:07:13] so that request is gonna go on the bus.
+[01:07:14 -> 01:07:15] In this process of season,
+[01:07:15 -> 01:07:18] it will copy back 300 to memory,
+[01:07:18 -> 01:07:22] in metadata it's copied over there,
+[01:07:22 -> 01:07:23] and then this processor now
+[01:07:23 -> 01:07:27] will read the amount of value of 300
+[01:07:27 -> 01:07:29] for each of the cache,
+[01:07:29 -> 01:07:35] and do the right thing.
+[01:07:35 -> 01:07:42] All right, questions about that?
+[01:07:42 -> 01:07:44] So I have a question.
+[01:07:44 -> 01:07:46] This is all happening between the CPU
+[01:07:46 -> 01:07:47] and the L1 cache,
+[01:07:47 -> 01:07:49] so it's happening that,
+[01:07:49 -> 01:07:57] that we kind of has to, right?
+[01:07:57 -> 01:07:59] Did everyone hear the question?
+[01:08:00 -> 01:08:01] CPU and the L1 cache.
+[01:08:03 -> 01:08:04] Before I can answer the question,
+[01:08:04 -> 01:08:06] tell me how many levels of cache?
+[01:08:07 -> 01:08:08] Three.
+[01:08:10 -> 01:08:11] I'm a real modern processor,
+[01:08:11 -> 01:08:13] maybe four, but we'll say three.
+[01:08:13 -> 01:08:15] Can we go with two?
+[01:08:15 -> 01:08:16] Can we go with one?
+[01:08:16 -> 01:08:17] Let's start with one.
+[01:08:17 -> 01:08:19] We only have one here.
+[01:08:19 -> 01:08:19] Sure.
+[01:08:21 -> 01:08:24] We only have one here.
+[01:08:24 -> 01:08:30] If we have only one here,
+[01:08:30 -> 01:08:31] if we have only one here,
+[01:08:33 -> 01:08:34] okay?
+[01:08:34 -> 01:08:35] Then it's happening,
+[01:08:35 -> 01:08:39] the bus is observing all the CPU activities
+[01:08:39 -> 01:08:40] in the L1 cache,
+[01:08:40 -> 01:08:44] and the L1 cache is observing the bus activity over here.
+[01:08:46 -> 01:08:48] Okay?
+[01:08:48 -> 01:08:51] It works.
+[01:08:51 -> 01:09:01] Now you say you have two levels of cache.
+[01:09:01 -> 01:09:03] You know, we learned more stuff
+[01:09:03 -> 01:09:05] in this multi-level inclusion,
+[01:09:05 -> 01:09:08] and you're saying what it was for?
+[01:09:08 -> 01:09:09] This is what it was for.
+[01:09:11 -> 01:09:13] Okay?
+[01:09:13 -> 01:09:16] So I have a processor, processor,
+[01:09:17 -> 01:09:18] L1 cache,
+[01:09:20 -> 01:09:23] L1 cache,
+[01:09:23 -> 01:09:24] L2 cache.
+[01:09:28 -> 01:09:33] And say I have a bus over here
+[01:09:34 -> 01:09:37] with the request of a different processor for coming out.
+[01:09:38 -> 01:09:39] Okay?
+[01:09:39 -> 01:09:40] And what I'm saying over here
+[01:09:40 -> 01:09:43] is this cache is observing,
+[01:09:43 -> 01:09:45] has to observe the request that other,
+[01:09:45 -> 01:09:50] if it's going to keep a copy of a block from memory,
+[01:09:50 -> 01:09:54] it has to observe what the other processors are doing
+[01:09:54 -> 01:09:57] so it can do the right thing.
+[01:09:57 -> 01:10:01] Okay?
+[01:10:01 -> 01:10:05] So now the question comes as
+[01:10:05 -> 01:10:10] there's activity going on the bus over here.
+[01:10:10 -> 01:10:16] Should this L1 cache be observing over here?
+[01:10:16 -> 01:10:21] Should this L2 cache be observing over here?
+[01:10:21 -> 01:10:25] You know, what I'd like to do
+[01:10:26 -> 01:10:28] is I'd like to make sure that,
+[01:10:28 -> 01:10:34] well, okay, let us say,
+[01:10:35 -> 01:10:38] remember our multi-level inclusions?
+[01:10:38 -> 01:10:41] What multi-level inclusion said is that,
+[01:10:41 -> 01:10:46] hey, the L1 is a strict subset of the L2 cache.
+[01:10:50 -> 01:10:51] Okay?
+[01:10:51 -> 01:10:53] So everything in the L1 cache
+[01:10:53 -> 01:10:58] is also there in the L2 cache.
+[01:10:58 -> 01:11:02] Say that I have only the L2 caches
+[01:11:02 -> 01:11:06] observing what's happening.
+[01:11:06 -> 01:11:10] Now, if the request on the bus
+[01:11:10 -> 01:11:12] isn't of interest to this L2,
+[01:11:14 -> 01:11:19] you're guaranteed it's not of interest to this L2.
+[01:11:19 -> 01:11:20] Okay?
+[01:11:20 -> 01:11:23] If it is of interest to the L2,
+[01:11:24 -> 01:11:27] what you can keep now is another state bit
+[01:11:28 -> 01:11:30] with each block,
+[01:11:30 -> 01:11:37] saying if it's there in the L1 or not.
+[01:11:37 -> 01:11:38] So if it's in the,
+[01:11:38 -> 01:11:43] of interest to the L2 and that block is in the L1,
+[01:11:43 -> 01:11:48] then that request ends up bothering me.
+[01:11:48 -> 01:11:51] And that is a sufficiently rare event.
+[01:11:51 -> 01:11:54] So I do not even need the dual tags over here
+[01:11:54 -> 01:11:57] because while this one is observing every bus event,
+[01:11:58 -> 01:12:01] okay, only a very, very small fraction
+[01:12:01 -> 01:12:07] of those events actually end up there.
+[01:12:07 -> 01:12:08] Yeah?
+[01:12:08 -> 01:12:09] So we don't even need the extra bits.
+[01:12:09 -> 01:12:12] We just make the validations propagate upward.
+[01:12:12 -> 01:12:14] So if you validate an L2 block,
+[01:12:14 -> 01:12:16] you evaluate the L1 block.
+[01:12:16 -> 01:12:17] So when I actually-
+[01:12:17 -> 01:12:19] Did everybody hear that question?
+[01:12:21 -> 01:12:23] I'm gonna take a couple of minutes.
+[01:12:23 -> 01:12:24] If you guys are fine with this.
+[01:12:26 -> 01:12:29] So yes, you could save on one bit.
+[01:12:29 -> 01:12:32] And every time there's an event of interest
+[01:12:32 -> 01:12:34] to L2, you send it to L1.
+[01:12:34 -> 01:12:37] But since the L1 is a tenth the size,
+[01:12:37 -> 01:12:40] or less than that of the L2,
+[01:12:40 -> 01:12:41] most of the events in the L2
+[01:12:41 -> 01:12:43] are not gonna be of interest to the L1.
+[01:12:43 -> 01:12:49] So you don't want some.
+[01:12:49 -> 01:12:54] If these caches were exclusive,
+[01:12:58 -> 01:13:01] where's my pen?
+[01:13:01 -> 01:13:02] I think you just put it away in the bag.
+[01:13:02 -> 01:13:03] Huh?
+[01:13:03 -> 01:13:05] That you just put it away in the bag, I think.
+[01:13:05 -> 01:13:06] You can see it there.
+[01:13:06 -> 01:13:07] Is that good?
+[01:13:09 -> 01:13:16] If these were exclusive,
+[01:13:16 -> 01:13:19] which means the blocks here were different,
+[01:13:20 -> 01:13:24] then this cache and both of these
+[01:13:24 -> 01:13:30] have to be observable.
+[01:13:30 -> 01:13:36] If they were non-inclusive,
+[01:13:36 -> 01:13:38] where I get no guarantees,
+[01:13:39 -> 01:13:42] then again, this cache and this cache
+[01:13:42 -> 01:13:48] have to be observable.
+[01:13:48 -> 01:13:51] And because of the fact that
+[01:13:54 -> 01:13:56] multi-level inclusion makes this coherence much easier.
+[01:13:57 -> 01:14:01] That is why we have multi-level.
+[01:14:01 -> 01:14:04] Now, if you go through the three, four, whatever it is,
+[01:14:04 -> 01:14:06] there is one level that you have to maintain
+[01:14:06 -> 01:14:07] that coherence.
+[01:14:07 -> 01:14:09] And if they're inclusive,
+[01:14:09 -> 01:14:17] then yes, propagate the events of interest to the L2.
+[01:14:17 -> 01:14:19] Okay, two seconds for that.

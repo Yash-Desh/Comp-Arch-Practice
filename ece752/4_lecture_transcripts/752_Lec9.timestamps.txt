@@ -1,0 +1,1195 @@
+Title: 752_Lec9
+Source file: 752_Lec9.m4a
+Detected language: en
+------------------------------------------------------------
+
+[00:00:00 -> 00:00:09] There are all these things we have to learn, but this is the front end over here, and the opposite here we drag them, you know.
+[00:00:09 -> 00:00:20] And so let me see a little bit today of what goes into that front end, and what we have to do over there.
+[00:00:20 -> 00:00:35] And then I also want to just, this was one of the other processor slides, Qualcomm's latest stuff that is probably still not available yet.
+[00:00:35 -> 00:00:52] And it talks about multiple branch prediction tables, branch target buffer, single cycle fetching the next PC group, conditional branch predictor,
+[00:00:52 -> 00:01:00] predicting the direction, an indirect branch predictor, okay, a return address tag, okay.
+[00:01:00 -> 00:01:15] So here we have them, the instruction cache, you know, the branch target buffer, a return address tag, conditional branch predictor, you know,
+[00:01:15 -> 00:01:20] spending a fair amount of resources, 80 kilobytes on the conditional branch predictor.
+[00:01:20 -> 00:01:28] And this indirect predictor basically was for the indirect branches that we got the returns over there,
+[00:01:28 -> 00:01:40] but, you know, they are also further figuring out and trying to remember those different cases and predict more of those cases to get even an indirect branch prediction.
+[00:01:40 -> 00:01:50] Okay, and then it takes, you know, for us, for us, branch is resolved in the EX stage, two cycles later, it takes 13 cycles.
+[00:01:50 -> 00:01:54] Okay, if the branch is wrong, it's 13 cycles.
+[00:01:54 -> 00:02:09] Okay, so just to put it in context, you know, the stuff that we talked about, pretty much everything we talk about in glass, you're going to find,
+[00:02:09 -> 00:02:12] except the scale is different.
+[00:02:12 -> 00:02:15] All right, the basic concepts are still the same.
+[00:02:15 -> 00:02:24] Okay, so where we left off was talking about, you know, superscalar doing more than one instruction at a time.
+[00:02:24 -> 00:02:33] So here's a very simple two instruction at a time pipeline, dual issue, where what you're going to do is you're going to actually,
+[00:02:33 -> 00:02:38] you know, whenever you go to fetch something from the cache, you actually fetch the entire cache line.
+[00:02:38 -> 00:02:48] So we were talking about fetching one instruction, you actually fetch an entire cache line from which, you know, you can pull out the instructions that you need to do.
+[00:02:48 -> 00:02:51] Okay, then you're going to do decode in parallel.
+[00:02:51 -> 00:03:02] And then you also need to check if you have two instructions, either an I2, you need to check to see if the output of one is going to be the input of the other in the same bundle of people.
+[00:03:02 -> 00:03:14] Okay, then we also need to have multi-ported register files over here to read multiple register of multiple execution units, memory unit.
+[00:03:14 -> 00:03:16] And we'll talk about these.
+[00:03:16 -> 00:03:23] Now, one thing that I do want to talk a little bit about is, you know, the register file and what happens over there.
+[00:03:23 -> 00:03:39] Okay, so, you know, if you remember from your class like 552, what, you know, a bit was stored as a, you know, storage in a SRAM cell, if you will, the way you build a register.
+[00:03:40 -> 00:03:41] Okay.
+[00:03:41 -> 00:03:50] And here is you have the address, you know, here you have the address decoder.
+[00:03:50 -> 00:04:06] And then so you decode the address and then you had a row select and then you had a column select and then here was your sort of, you know, your multiplexer, you know, column multiplexer out to get the value over here.
+[00:04:06 -> 00:04:08] Okay.
+[00:04:08 -> 00:04:16] So this is, you know, to do one read of a register or any storage element, if you will.
+[00:04:16 -> 00:04:17] Okay.
+[00:04:17 -> 00:04:29] If I want to do two, okay, I'm going to have to have two row selects and two column selects, if you will.
+[00:04:29 -> 00:04:30] Okay.
+[00:04:30 -> 00:04:36] If I want to have to do four, I'm going to have four of these.
+[00:04:36 -> 00:04:38] All right, so far so good.
+[00:04:38 -> 00:04:39] Okay.
+[00:04:39 -> 00:04:47] So now we, remember we talked about, you know, wires and wires taking area, etc., etc.
+[00:04:47 -> 00:05:04] If I just did this on a two dimensional plane, okay, the number of wires increases, you know, say this is an area taken up by a single bit, includes the storage and the wires, you know, the wires and the column wires.
+[00:05:04 -> 00:05:05] Okay.
+[00:05:05 -> 00:05:15] As I increase the number of ports, you know, this increases by n, this increases by n, so the area increases by n squared.
+[00:05:15 -> 00:05:17] Okay.
+[00:05:17 -> 00:05:27] So to try and not make the area increase by n squared, you know, these wires then have to not be in the same plane, they go on different planes, etc., etc.
+[00:05:27 -> 00:05:30] Okay, in a different dimension.
+[00:05:30 -> 00:05:31] Okay.
+[00:05:31 -> 00:05:34] Are you with me on this?
+[00:05:34 -> 00:05:38] But it's also going to take more circuitry just to drive it, right?
+[00:05:38 -> 00:05:46] The bit is no longer just, you know, flip-flop, it's now become, you know, you need a bunch of transistors to...
+[00:05:46 -> 00:05:49] It's never a flip-flop, it's too much storage.
+[00:05:49 -> 00:05:51] Okay, it's typically six transistors.
+[00:05:51 -> 00:05:52] Okay.
+[00:05:52 -> 00:05:53] Okay.
+[00:05:53 -> 00:05:54] Over there.
+[00:05:54 -> 00:05:59] And yes, you need to have enough of the, you know, the drive and all of that.
+[00:05:59 -> 00:06:03] You know, you have to, you know, pre-charge it and get the charges in the right place and so on like that.
+[00:06:03 -> 00:06:04] Yes.
+[00:06:04 -> 00:06:05] Okay.
+[00:06:05 -> 00:06:09] But the area is a big deal.
+[00:06:09 -> 00:06:15] Oh, I get that, but I was just like, the area is going to grow by more than just the wires, right?
+[00:06:15 -> 00:06:19] It's the electronics to drive each of those wires.
+[00:06:19 -> 00:06:23] Or is it, like, that's just negligible compared to...
+[00:06:23 -> 00:06:35] No, I mean, you know, I mean, you know, I mean, that is the, you know, the buffers over here and the multiplexers and the transistors and those over there.
+[00:06:35 -> 00:06:42] That is, you know, there is a set of those and there are many, many more of these, you know.
+[00:06:42 -> 00:06:49] This is not an electronics course, of course, but you get six transistors to make up the storage.
+[00:06:49 -> 00:06:50] Yeah.
+[00:06:50 -> 00:06:59] And then don't you need, like, at least one or two, one for the row select and one for the column select to put the actual bit on the wires?
+[00:06:59 -> 00:07:00] That's part of that.
+[00:07:00 -> 00:07:01] You need that.
+[00:07:01 -> 00:07:02] That's right.
+[00:07:02 -> 00:07:03] Okay.
+[00:07:03 -> 00:07:04] Okay.
+[00:07:04 -> 00:07:07] That is the additional stuff that goes with it.
+[00:07:07 -> 00:07:08] Okay.
+[00:07:08 -> 00:07:10] Yes, you need those additional transistors.
+[00:07:10 -> 00:07:22] But the area is growing with the wires.
+[00:07:22 -> 00:07:25] And we'll talk about this later on, okay?
+[00:07:25 -> 00:07:32] So another approach has been to split the integer pipeline and the floating point pipeline.
+[00:07:32 -> 00:07:33] Okay.
+[00:07:33 -> 00:07:36] So now this is my one-issue integer pipeline.
+[00:07:36 -> 00:07:40] And now this is my, you know, one-issue floating point pipeline.
+[00:07:40 -> 00:07:45] If I have an integer and a floating point instruction, I can do two instructions.
+[00:07:45 -> 00:07:46] Okay.
+[00:07:46 -> 00:07:49] My single one still gets a point, okay?
+[00:07:49 -> 00:07:58] But, you know, you know, it's never the case that they're always evenly balanced numbers of integer and floating point instructions and workloads, all right?
+[00:07:58 -> 00:08:02] You can also then do two and two of each, okay?
+[00:08:02 -> 00:08:14] And some of the early superscalar processors started out like a two-integer and two-floating-point instructions.
+[00:08:14 -> 00:08:16] Okay.
+[00:08:16 -> 00:08:22] So what we're going to do now, you know, these days, you know, machines are four, six, eight wide.
+[00:08:22 -> 00:08:26] So what you have to do is we'll talk about the hardware challenges.
+[00:08:26 -> 00:08:29] How do we fetch wide instruction?
+[00:08:29 -> 00:08:34] You know, how do you do a wide instruction fetch to fetch eight instructions?
+[00:08:34 -> 00:08:35] Okay.
+[00:08:35 -> 00:08:36] How do you decode them?
+[00:08:36 -> 00:08:38] How do you do a wide instruction decode?
+[00:08:38 -> 00:08:40] How do you do a wide instruction issue?
+[00:08:40 -> 00:08:44] You know, what are all, you know, the things that we have to worry about over there?
+[00:08:44 -> 00:08:47] How do you do a wide register read?
+[00:08:47 -> 00:08:55] You know, how do you do a wide instruction execution, wide and the right back, and bypass paths?
+[00:08:55 -> 00:08:56] Okay.
+[00:08:56 -> 00:09:05] The same thing that we had in a, you know, one instruction pipeline, but now you have to do N of them.
+[00:09:05 -> 00:09:10] And let us see what all issues come in dealing when you have to deal with N of them.
+[00:09:10 -> 00:09:12] Okay.
+[00:09:12 -> 00:09:15] So this is, you know, the hardware.
+[00:09:15 -> 00:09:27] But to keep the hardware busy, you need to be able to extract the instruction level parallelism from the program.
+[00:09:27 -> 00:09:28] Okay.
+[00:09:28 -> 00:09:34] And over there, you know, hardware tricks and software tricks.
+[00:09:34 -> 00:09:35] Okay.
+[00:09:35 -> 00:09:42] And, you know, we talk about software tricks, which are used when we have, you know, the LRW kind of processor.
+[00:09:42 -> 00:09:45] It doesn't mean those tricks can't be played in the hardware.
+[00:09:45 -> 00:09:55] And the concepts, you know, some, you know, like the concepts of trying to discover parallelism and exploit parallelism are the same.
+[00:09:55 -> 00:09:59] Just the implementations, okay, are different.
+[00:09:59 -> 00:10:06] So the principles, we'll take a look at, you know, what, you know, some of that looks like.
+[00:10:06 -> 00:10:08] Okay.
+[00:10:08 -> 00:10:17] So now let us try and take a look at how do I go about fetching multiple instructions per cycle.
+[00:10:17 -> 00:10:18] Okay.
+[00:10:18 -> 00:10:24] And recall what I'm doing is I'm going to the cache and getting an entire cache line.
+[00:10:24 -> 00:10:25] Okay.
+[00:10:25 -> 00:10:26] Okay.
+[00:10:26 -> 00:10:41] So if, you know, I go to a cache and get 64 bytes, okay, and each instruction is four bytes, okay, and maybe I want to do four instructions at a time.
+[00:10:41 -> 00:10:42] Okay.
+[00:10:42 -> 00:10:45] Maybe I'm getting all four instructions in the same cache block.
+[00:10:45 -> 00:10:48] Then all the sequential instructions.
+[00:10:48 -> 00:10:50] Okay.
+[00:10:50 -> 00:11:01] But what you, so, you know, that favors sort of a large cache block size and all the instructions in the same cache block.
+[00:11:01 -> 00:11:03] Okay.
+[00:11:03 -> 00:11:17] But what you further want to do to increase the chances that the instructions are in the same cache block is the following.
+[00:11:17 -> 00:11:18] Okay.
+[00:11:18 -> 00:11:25] And, you know, that is aligning a basic block to an instruction cache boundary.
+[00:11:25 -> 00:11:27] So, you know, here is my program.
+[00:11:27 -> 00:11:28] Okay.
+[00:11:28 -> 00:11:30] This is, you know, sequential memory addresses, if you will.
+[00:11:30 -> 00:11:31] Okay.
+[00:11:31 -> 00:11:32] Okay.
+[00:11:32 -> 00:11:36] And say this now is one cache line.
+[00:11:36 -> 00:11:37] Okay.
+[00:11:37 -> 00:11:38] This is 64 bytes.
+[00:11:38 -> 00:11:40] One cache line.
+[00:11:40 -> 00:11:44] This is corresponding to another cache line over here.
+[00:11:44 -> 00:11:46] Okay.
+[00:11:46 -> 00:12:01] And now in this instruction, in this piece of code, I have a branch, a conditional branch that branches to a memory address somewhere in the middle of that cache line.
+[00:12:01 -> 00:12:07] It branches to this memory address, which happens to be in the middle of a cache line.
+[00:12:07 -> 00:12:08] Okay.
+[00:12:08 -> 00:12:22] So, let me say that branches to a memory address that, you know, is like the second to last address in the cache line.
+[00:12:22 -> 00:12:23] Okay.
+[00:12:23 -> 00:12:35] So now if I want to fetch four instructions from this point, I will end up fetching, you know, one instruction from here and I want three instructions in this cache line, the next cache line.
+[00:12:35 -> 00:12:36] Okay.
+[00:12:36 -> 00:12:59] So, to reduce the occurrence of that, what instead I'm going to do is when I write out this code, okay, this instruction is going to branch to this memory address and these two memory addresses will just have nothing left.
+[00:12:59 -> 00:13:00] Okay.
+[00:13:00 -> 00:13:01] Are you with me?
+[00:13:01 -> 00:13:03] And that's what I'm doing.
+[00:13:03 -> 00:13:06] And aligning the basic block, you know what a basic block is.
+[00:13:06 -> 00:13:14] A basic block is a set of instructions that starts off at the target of a branch and ends in a branch.
+[00:13:14 -> 00:13:15] Okay.
+[00:13:15 -> 00:13:23] So I'm aligning the basic block to instruction cache line boundaries.
+[00:13:23 -> 00:13:24] Okay.
+[00:13:24 -> 00:13:33] So now this will allow me to get, you know, the instructions that I can from one cache line.
+[00:13:33 -> 00:13:38] But now I have wasted space in memory.
+[00:13:38 -> 00:13:41] Wasted space in memory is okay who cares.
+[00:13:41 -> 00:13:42] I have a lot of memory.
+[00:13:42 -> 00:13:43] Okay.
+[00:13:43 -> 00:13:53] But all of this also now, you fetch the entire cache line into an instruction cache and part of that cache line is not going to get used.
+[00:13:53 -> 00:13:54] Okay.
+[00:13:54 -> 00:13:59] So, you know, there's a little trade off over there too.
+[00:13:59 -> 00:14:12] It reduces the effective cache capacity, but it increases the fetch bandwidth utilization, which, you know, very simply is in a very simple situation is the more important criteria.
+[00:14:12 -> 00:14:18] You're not going to get that always.
+[00:14:18 -> 00:14:19] All right.
+[00:14:19 -> 00:14:30] So what you also, you know, A, your fetch can cross multiple, can cross a cache line boundary.
+[00:14:30 -> 00:14:39] So what you would do typically is you would actually have even and odd banks of the cache.
+[00:14:39 -> 00:14:40] Okay.
+[00:14:40 -> 00:14:52] And now what you would do is you would actually fetch two cache lines, one from the odd, even bank, one from the odd bank consecutive cache lines.
+[00:14:52 -> 00:14:53] All right.
+[00:14:53 -> 00:15:06] And now you can then pull out the required setup instructions even though that block that you're in that block of instructions you're trying to fetch is crossing a cache line boundary.
+[00:15:06 -> 00:15:10] Okay.
+[00:15:10 -> 00:15:18] So it may add some latency because of these multiplexers, but now it allows you to fetch N instructions that cross a cache line boundary.
+[00:15:18 -> 00:15:23] So, by the way, it's not either or.
+[00:15:23 -> 00:15:27] Pretty much all the bricks get played.
+[00:15:27 -> 00:15:28] All right.
+[00:15:28 -> 00:16:03] So actually just going back to this Qualcomm thing, they're fetching 160 instructions.
+[00:16:03 -> 00:16:14] And they have 192 kilobyte cache.
+[00:16:14 -> 00:16:18] I must be wrong.
+[00:16:18 -> 00:16:20] Cache has to be in power of two.
+[00:16:20 -> 00:16:25] We'll sort that out later on when we get to caches.
+[00:16:25 -> 00:16:27] Okay.
+[00:16:27 -> 00:16:37] So, okay.
+[00:16:37 -> 00:16:41] So that was if all the instructions that you're trying to fetch were sequential.
+[00:16:41 -> 00:16:42] Okay.
+[00:16:42 -> 00:16:46] What if now the instructions are not sequential?
+[00:16:46 -> 00:16:47] Okay.
+[00:16:47 -> 00:16:50] So basically, you know, I'm going to do a data.
+[00:16:50 -> 00:16:51] I'm going to branch.
+[00:16:51 -> 00:16:53] And now the instruction is not sequential.
+[00:16:53 -> 00:16:56] I have to fetch from somewhere else.
+[00:16:56 -> 00:16:57] Okay.
+[00:16:57 -> 00:16:59] So there are two related questions.
+[00:16:59 -> 00:17:02] It's how many branches am I going to predict per cycle?
+[00:17:02 -> 00:17:20] How many branches am I going to predict per cycle?
+[00:17:20 -> 00:17:26] And can I fetch from more than one taken branch per cycle?
+[00:17:26 -> 00:17:27] Okay.
+[00:17:27 -> 00:17:32] Typically, the answer has been I can only predict one branch per cycle.
+[00:17:32 -> 00:17:39] And no, I cannot fetch from more than multiple taken branches per cycle.
+[00:17:39 -> 00:17:43] These days, that is starting to change.
+[00:17:43 -> 00:17:44] Okay.
+[00:17:44 -> 00:17:52] And the way to make a change requires a lot more innovation and cleverness than what we are going to do.
+[00:17:52 -> 00:17:55] Or deal with over here in some sense.
+[00:17:55 -> 00:18:02] So for the most part, the most common organization is you only do one branch prediction per cycle.
+[00:18:02 -> 00:18:07] And then you discard both branch instructions if the prediction is taken.
+[00:18:07 -> 00:18:08] Okay.
+[00:18:08 -> 00:18:15] Just by the way, just to do a little back of the envelope kind of stuff is, you know,
+[00:18:15 -> 00:18:18] if every six instructions are branched,
+[00:18:18 -> 00:18:24] which typically would be is if I don't have a lot of loops that I'm unrolling in the loops and so on like that,
+[00:18:24 -> 00:18:29] okay, and I want to do eight instructions per cycle,
+[00:18:29 -> 00:18:34] I have to predict more than one branch per cycle in some sense.
+[00:18:34 -> 00:18:35] Okay.
+[00:18:35 -> 00:18:38] But if I am doing like four instructions per cycle,
+[00:18:38 -> 00:18:42] I can probably get away with only one branch prediction per cycle.
+[00:18:42 -> 00:18:45] Are you with me on that?
+[00:18:45 -> 00:18:47] Okay.
+[00:18:47 -> 00:18:53] So, you know, this, you know, affects,
+[00:18:53 -> 00:18:59] it basically lowers the effective fetch width because they can only do one branch per cycle.
+[00:18:59 -> 00:19:10] So, you know, say I have a loop.
+[00:19:10 -> 00:19:11] Okay.
+[00:19:11 -> 00:19:12] Say I have a loop.
+[00:19:12 -> 00:19:15] It is ten instructions.
+[00:19:15 -> 00:19:16] Okay.
+[00:19:16 -> 00:19:21] And, you know, here's a branch at the end of the loop that goes back to the beginning of the loop.
+[00:19:21 -> 00:19:27] The loop is running, who knows, whatever, 100 to 200, a large number of instructions.
+[00:19:27 -> 00:19:29] Okay.
+[00:19:29 -> 00:19:37] So I start fetching instructions from here and say I fetch eight instructions at a time.
+[00:19:37 -> 00:19:38] Okay.
+[00:19:38 -> 00:19:45] Now in the next cycle, I'm going to get only two instructions from this iteration of the loop.
+[00:19:45 -> 00:19:50] And then I'd have to fetch the remaining from the next iteration of the loop,
+[00:19:50 -> 00:19:57] which is from the target of this branch.
+[00:19:57 -> 00:20:04] So, you know, if I simply have a very simple fetcher like this,
+[00:20:04 -> 00:20:12] then at best I can get is eight in one cycle, two in the other cycle, ten over two cycles, five per cycle.
+[00:20:12 -> 00:20:13] Okay.
+[00:20:13 -> 00:20:21] I can build a big machine with doing, you know, eight floating, you know, integer operations per cycle.
+[00:20:21 -> 00:20:28] But I'm never going to get there because I'm only fetching five instructions per cycle on the average.
+[00:20:28 -> 00:20:30] And fetch is so important.
+[00:20:30 -> 00:20:31] Okay.
+[00:20:31 -> 00:20:37] If you can't fetch, you can't do anything else.
+[00:20:37 -> 00:20:38] Okay.
+[00:20:38 -> 00:20:43] So typically, you know, you're going to fetch a whole number of instructions.
+[00:20:43 -> 00:20:48] Some of them, okay, will not write from, they didn't align properly with the branch.
+[00:20:48 -> 00:20:52] Some of them are not going to be speculately executed, et cetera, et cetera.
+[00:20:52 -> 00:20:59] Actually, you end up having to fetch many more instructions than the rate of instruction execution that you want to sustain.
+[00:20:59 -> 00:21:02] So you fall down by 16 instructions if I can fetch.
+[00:21:02 -> 00:21:06] Even though in the back end they're doing eight instructions.
+[00:21:06 -> 00:21:08] Okay.
+[00:21:08 -> 00:21:14] So, you know, compilers can, you know, one way of trying to not deal with branches,
+[00:21:14 -> 00:21:19] not worry about the consequence of branches and not have branches or have fewer branches.
+[00:21:19 -> 00:21:23] And one way of having fewer branches is unroll the loop.
+[00:21:23 -> 00:21:26] And therefore you have fewer branches.
+[00:21:26 -> 00:21:30] But, you know, you can't make branches go away.
+[00:21:30 -> 00:21:38] If you just had a straight line piece of code that will execute like this, nothing interesting.
+[00:21:38 -> 00:21:39] Okay.
+[00:21:39 -> 00:21:42] All right.
+[00:21:42 -> 00:21:47] So how can we, you know, do a little, you know, non-sequential fetch?
+[00:21:47 -> 00:21:54] Non-sequential means from a, you know, you have a branch that is taken.
+[00:21:54 -> 00:21:59] So you can actually allow embedded taken branches.
+[00:21:59 -> 00:22:01] And what do I sort of mean by that?
+[00:22:01 -> 00:22:14] You know, I actually, so the thing now is what we've been saying so far is you all understand branch predictor, right?
+[00:22:14 -> 00:22:22] So how do you access the branch predictor with the PC as a branch instructor?
+[00:22:22 -> 00:22:23] Right.
+[00:22:23 -> 00:22:25] Well, no, that's not wrong.
+[00:22:25 -> 00:22:27] That's what we've learned.
+[00:22:27 -> 00:22:28] Okay.
+[00:22:28 -> 00:22:35] And what you're typically going to access it with is remember you are going and doing, you know,
+[00:22:35 -> 00:22:37] accessing the cache and so on like that.
+[00:22:37 -> 00:22:38] Okay.
+[00:22:38 -> 00:22:40] And so you're fetching instructions.
+[00:22:40 -> 00:22:43] You want to be able to fetch and predict the branch.
+[00:22:43 -> 00:22:44] Okay.
+[00:22:44 -> 00:22:53] So typically what you will do is you can access with the PC of the cache block that holds the instruction.
+[00:22:53 -> 00:22:54] Okay.
+[00:22:54 -> 00:22:58] And if there's only one branch in some sense you're dealing with, it amounts to the same thing.
+[00:22:58 -> 00:23:04] Whether you're accessing the predictor with PC1 or PC3.
+[00:23:04 -> 00:23:05] Okay.
+[00:23:05 -> 00:23:07] It's the same thing in a sense.
+[00:23:07 -> 00:23:08] Okay.
+[00:23:08 -> 00:23:15] So now in such a case, such a case, you know, you can, you require a little more, you know,
+[00:23:15 -> 00:23:19] smarts over there and multiple cycles.
+[00:23:19 -> 00:23:31] So you can get partly way, part of the way in trying to fetch from a non-sequential path by basically,
+[00:23:32 -> 00:23:46] you know, by basically, you know, for branches that are embedded in the block, you know,
+[00:23:46 -> 00:23:55] you can get from the target of the branch reasonably easily.
+[00:23:55 -> 00:24:02] But more interesting now is a different concept.
+[00:24:02 -> 00:24:03] Okay.
+[00:24:03 -> 00:24:10] The issue that we are having, the issue that we are having is some of the code I'm fetching
+[00:24:10 -> 00:24:12] sequentially, otherwise it's non-sequential.
+[00:24:12 -> 00:24:17] I have to go, you know, fetch from some taken path and have to figure out where I'm going,
+[00:24:17 -> 00:24:19] et cetera, et cetera.
+[00:24:19 -> 00:24:20] Okay.
+[00:24:20 -> 00:24:29] So what you can do is, is that, hey, you can figure out a expected dynamic path
+[00:24:29 -> 00:24:31] through the code, a trace.
+[00:24:31 -> 00:24:37] And we talk about this trace concept again when we do trace scheduling.
+[00:24:37 -> 00:24:38] All right.
+[00:24:38 -> 00:24:42] And now, you know, what we can do is a normal cache.
+[00:24:42 -> 00:24:46] This is your memory, blocks of memory in your normal cache.
+[00:24:46 -> 00:24:48] We all understand how that works.
+[00:24:48 -> 00:24:49] Okay.
+[00:24:49 -> 00:24:57] But we are going to have a different cache, which is going to hold a trace of execution
+[00:24:57 -> 00:25:01] through the code of the program.
+[00:25:01 -> 00:25:03] Okay.
+[00:25:03 -> 00:25:08] So let me tell you what I mean by that.
+[00:25:08 -> 00:25:09] Okay.
+[00:25:09 -> 00:25:13] So we'll take an example and then we'll sort of, you know, go back to that.
+[00:25:13 -> 00:25:15] So here's a piece of code.
+[00:25:15 -> 00:25:20] You know, at PC 0, this instruction PC 1 is a branch instruction.
+[00:25:20 -> 00:25:23] At PC 2, there's a load instruction.
+[00:25:23 -> 00:25:25] At PC 3, there's a subtract instruction.
+[00:25:25 -> 00:25:28] At PC 4, there's a store instruction.
+[00:25:28 -> 00:25:32] And if the branch is taken, it's going to go to PC 4.
+[00:25:32 -> 00:25:34] Okay.
+[00:25:34 -> 00:25:38] So normally in my cache, say I had a block of four instructions.
+[00:25:38 -> 00:25:39] Okay.
+[00:25:39 -> 00:25:49] A block would be PC 0, PC 1, PC 2, PC 3, PC 4, 5, 6, 7.
+[00:25:49 -> 00:25:52] All right.
+[00:25:52 -> 00:25:55] That's your traditional instruction cache.
+[00:25:55 -> 00:26:00] Instead, what I'm going to do is I'm going to say, hey, the instruction at this PC,
+[00:26:00 -> 00:26:04] this PC, and let this branch is likely going to be taken.
+[00:26:04 -> 00:26:13] And so from these four instructions from the next path, I'm going to store them all together like here.
+[00:26:13 -> 00:26:20] So in my, you know, trace cache, okay, we'll be starting at address 0.
+[00:26:20 -> 00:26:25] There is going to be the add, branch, store, and call instruction.
+[00:26:25 -> 00:26:38] And this is a sequence of instructions that corresponds to starting at PC 0 and this branch was taken.
+[00:26:38 -> 00:26:39] All right.
+[00:26:39 -> 00:26:43] Are you with me on this?
+[00:26:43 -> 00:27:03] So the question is, you know, how do I, you know, what determination of this branch am I assuming?
+[00:27:03 -> 00:27:05] Is that the question?
+[00:27:05 -> 00:27:07] That's what it is, okay.
+[00:27:07 -> 00:27:14] So normally when we talk about a trace and we talk about trace when we get to VLW and trace scheduling,
+[00:27:14 -> 00:27:22] that determination of the branch, that prediction of the branch outcome is done statically, okay.
+[00:27:22 -> 00:27:26] And this trace cache, this trace construction, we've done dynamically.
+[00:27:26 -> 00:27:37] That branch is, because we are going to be, the instructions are still stored in memory.
+[00:27:37 -> 00:27:40] And in the instruction cache like here,
+[00:27:40 -> 00:27:44] we are actually going to construct this trace cache dynamically.
+[00:27:44 -> 00:27:56] So what, how do we determine that it's a tag and a tag is, it starts with this add instruction?
+[00:27:56 -> 00:27:58] Is that because it's the beginning of a block?
+[00:27:58 -> 00:28:01] Or is it because it's the beginning of a cache line?
+[00:28:01 -> 00:28:04] Or how do we decide to index it there?
+[00:28:04 -> 00:28:08] Okay.
+[00:28:08 -> 00:28:10] Forget trace cache, okay.
+[00:28:10 -> 00:28:13] You are accessing your instruction cache, okay.
+[00:28:13 -> 00:28:17] You are giving it a PC value, all right.
+[00:28:17 -> 00:28:20] And this way you're giving it the PC value zero.
+[00:28:20 -> 00:28:26] And at PC value zero, it's going to fetch forward by a forward instruction that I've prepared.
+[00:28:26 -> 00:28:29] So that's all good, right?
+[00:28:29 -> 00:28:33] Now what we are doing is, as we are executing the program,
+[00:28:33 -> 00:28:40] you're saying, hey, I had this instruction at PC zero and after that was it, you know, one, okay.
+[00:28:40 -> 00:28:48] And then, by the way, it went to this other branch, to this branch, and it was taken.
+[00:28:48 -> 00:28:52] And then it went and executed these other instructions.
+[00:28:52 -> 00:28:56] I don't care if they were at PC nine, 300, who cares?
+[00:28:56 -> 00:28:58] That's the sequence branch.
+[00:28:58 -> 00:29:04] Now, when my program comes to PC zero, okay,
+[00:29:04 -> 00:29:13] it will go and do this trace cache and access the trace cache with PC zero, okay.
+[00:29:13 -> 00:29:19] And now, if it sees that there's a T with a tag,
+[00:29:19 -> 00:29:28] it will say, this is the setup instructions for that starter at PC zero and the branch was taken.
+[00:29:28 -> 00:29:39] If now, I could also have created a trace in the trace cache, you know, with zero and not taken.
+[00:29:39 -> 00:29:44] And that would have, you know, that would have add branch equal to nodes and drag.
+[00:29:44 -> 00:30:01] No, no, look, if you're, I'm sure someone else is confused too.
+[00:30:01 -> 00:30:04] So let's try it.
+[00:30:04 -> 00:30:08] Okay, so you're using the example of PC zero, which is a little weird.
+[00:30:08 -> 00:30:11] It's just address, this address, this is the address zero.
+[00:30:11 -> 00:30:17] Right, but let's say there was, I don't know, some other instruction and add right before this one, right?
+[00:30:17 -> 00:30:18] Yeah.
+[00:30:18 -> 00:30:23] Why isn't that where it's deciding to start the trace cache from?
+[00:30:23 -> 00:30:26] Why is it starting at this add and not the one before it?
+[00:30:26 -> 00:30:35] Did everybody get that question?
+[00:30:35 -> 00:30:36] Why is it starting at this add?
+[00:30:36 -> 00:30:39] Because I have it starting at this add, that's why.
+[00:30:39 -> 00:30:44] But in general, why is it starting at this add and not somewhere else?
+[00:30:44 -> 00:30:56] No, no.
+[00:30:56 -> 00:31:02] Because I start constructing a trace.
+[00:31:02 -> 00:31:07] Okay, and I start constructing a trace.
+[00:31:07 -> 00:31:18] And I decided that my trace cache, the width of each entry in the trace cache is four instructions.
+[00:31:19 -> 00:31:21] All right?
+[00:31:21 -> 00:31:27] And so I'm going to start that from a point, construct the trace.
+[00:31:27 -> 00:31:40] When I'm done with four, end the trace, start the new trace.
+[00:31:40 -> 00:31:46] The starting point of the new trace would be the end of the previous trace,
+[00:31:46 -> 00:31:52] which could be the target of a branch in some cases.
+[00:31:52 -> 00:32:01] It could be in the middle because the previous trace finished at that point.
+[00:32:01 -> 00:32:06] Are you all with me on this?
+[00:32:06 -> 00:32:13] Yeah.
+[00:32:13 -> 00:32:18] How do you go about updating the trace cache?
+[00:32:18 -> 00:32:20] How do you go about it?
+[00:32:20 -> 00:32:23] Hold on.
+[00:32:23 -> 00:32:24] We'll get there, okay.
+[00:32:24 -> 00:32:29] So a trace cache, you know, actually this is something that I had come up with years ago
+[00:32:29 -> 00:32:31] and thought it was a really bad idea.
+[00:32:31 -> 00:32:33] And when I saw this come out, you know,
+[00:32:33 -> 00:32:38] it did end up being an idea that people didn't quite like,
+[00:32:38 -> 00:32:41] but it helped the particular problem.
+[00:32:41 -> 00:32:45] So it overcomes the serialization of prediction and fetch by combining them.
+[00:32:45 -> 00:32:50] So you store the dynamic, not static instruction sequences.
+[00:32:50 -> 00:32:56] Blocks can contain statically non-contiguous instructions.
+[00:32:56 -> 00:32:57] Okay?
+[00:32:57 -> 00:33:04] The tag that you are using for each entry is the PC of the first instruction
+[00:33:04 -> 00:33:10] plus the not taken taken of the embedded.
+[00:33:10 -> 00:33:11] Okay?
+[00:33:11 -> 00:33:15] So you go to the trace cache.
+[00:33:15 -> 00:33:18] You get a PC, go to the trace cache.
+[00:33:18 -> 00:33:20] If it hits, fine.
+[00:33:20 -> 00:33:27] If not, then you go and construct a new trace
+[00:33:27 -> 00:33:32] and then need to put it in the trace.
+[00:33:32 -> 00:33:36] So for a PC like for a tag zero,
+[00:33:36 -> 00:33:39] it would have two entries for taken and not taken boot.
+[00:33:39 -> 00:33:41] It could.
+[00:33:41 -> 00:33:45] It could.
+[00:33:45 -> 00:33:47] There are lower branches that we can't predict.
+[00:33:47 -> 00:33:48] Like, they're not in the cache.
+[00:33:48 -> 00:33:49] They're not in the branch cache.
+[00:33:49 -> 00:33:50] They're not in directional.
+[00:33:50 -> 00:33:52] We just stop the trace there.
+[00:33:52 -> 00:34:00] So if you do not know what is the next instruction after the boot,
+[00:34:00 -> 00:34:03] you do know what the next instruction after the branch is
+[00:34:03 -> 00:34:06] when you actually execute the code.
+[00:34:06 -> 00:34:07] Okay?
+[00:34:07 -> 00:34:12] So you construct the trace as you're executing the code.
+[00:34:12 -> 00:34:13] Okay?
+[00:34:13 -> 00:34:14] So that's what you're saying.
+[00:34:14 -> 00:34:19] You're saying, hey, you know, this is a block of code
+[00:34:19 -> 00:34:22] which starts at this PC and there is some branch in it.
+[00:34:22 -> 00:34:23] Who knows?
+[00:34:23 -> 00:34:28] As long as it's taken tag, that's a set of instructions.
+[00:34:28 -> 00:34:30] I meant more like for calculated jumps,
+[00:34:30 -> 00:34:32] like jump by register.
+[00:34:32 -> 00:34:40] We haven't catch that value yet.
+[00:34:40 -> 00:34:41] Okay.
+[00:34:41 -> 00:34:46] So if you are saying is that entity over there is,
+[00:34:46 -> 00:34:49] you know, it was a jump register, if you will.
+[00:34:49 -> 00:34:53] I don't believe they actually constructed traces on that
+[00:34:53 -> 00:34:55] because what you also, what you have to do is
+[00:34:55 -> 00:34:57] you have to fetch these instructions, all right?
+[00:34:57 -> 00:34:59] And then when that branch executes,
+[00:34:59 -> 00:35:03] you have to verify that, yes, indeed,
+[00:35:03 -> 00:35:06] the instruction that created the trace cache was correct.
+[00:35:06 -> 00:35:10] So, you know, so you would have, that is important.
+[00:35:10 -> 00:35:13] But that requires knowing the value of the register.
+[00:35:14 -> 00:35:19] I don't think that traces for jump passed in the right jobs.
+[00:35:19 -> 00:35:21] Okay?
+[00:35:21 -> 00:35:22] Yeah.
+[00:35:22 -> 00:35:24] Let's say we are starting a program
+[00:35:24 -> 00:35:28] and the first tag we encounter is the branch.
+[00:35:28 -> 00:35:31] Before the branch instruction comes,
+[00:35:31 -> 00:35:35] do we store all those values in the tree?
+[00:35:35 -> 00:35:38] Like if you go to the example,
+[00:35:38 -> 00:35:40] like the branch comes at tag one,
+[00:35:40 -> 00:35:43] but we store add I above first, right?
+[00:35:43 -> 00:35:46] And then we store branch, then the target,
+[00:35:46 -> 00:35:48] and followed by the form.
+[00:35:48 -> 00:35:51] But why don't you start with add I value?
+[00:35:51 -> 00:35:54] Just in the example as you constructed the trace.
+[00:35:54 -> 00:35:58] It could be the case that the branch is the first instruction.
+[00:35:58 -> 00:36:01] Okay.
+[00:36:01 -> 00:36:03] There's nothing to say that's not,
+[00:36:03 -> 00:36:05] but typically it's not going to be
+[00:36:05 -> 00:36:07] because there are other instructions.
+[00:36:07 -> 00:36:12] So we store all the instructions before the branch?
+[00:36:12 -> 00:36:13] No.
+[00:36:13 -> 00:36:14] Let's see.
+[00:36:14 -> 00:36:16] So what's happening here?
+[00:36:16 -> 00:36:18] Part of the reason why this failed
+[00:36:18 -> 00:36:22] is they did not have an instruction cache.
+[00:36:22 -> 00:36:24] So if you had a miss in the trace cache,
+[00:36:24 -> 00:36:26] you have to construct the trace
+[00:36:26 -> 00:36:31] from the second level cache, if you will.
+[00:36:31 -> 00:36:32] Okay?
+[00:36:32 -> 00:36:35] So I'm executing a program.
+[00:36:35 -> 00:36:37] I'm fetching an instruction.
+[00:36:37 -> 00:36:39] I can't get it from the trace cache.
+[00:36:39 -> 00:36:44] I go fetch it from the next level,
+[00:36:44 -> 00:36:46] and then I keep doing that,
+[00:36:46 -> 00:36:48] and now I've constructed a trace,
+[00:36:48 -> 00:36:51] and that's when I store in the trace cache.
+[00:36:51 -> 00:37:00] You construct the trace, right?
+[00:37:00 -> 00:37:03] You are putting values in the trace cache
+[00:37:03 -> 00:37:06] as you are constructing the trace.
+[00:37:06 -> 00:37:08] And the first time you're constructing a trace,
+[00:37:08 -> 00:37:12] you're having to fetch the instructions
+[00:37:12 -> 00:37:16] from, let's say, memory.
+[00:37:16 -> 00:37:18] Just like any instruction cache,
+[00:37:18 -> 00:37:19] the first time it misses,
+[00:37:19 -> 00:37:21] you go and fetch it in the instruction cache.
+[00:37:21 -> 00:37:23] Now what you're doing is, you know,
+[00:37:23 -> 00:37:26] you're going and fetching it into the processor,
+[00:37:26 -> 00:37:29] fetching multiple instructions in some sense,
+[00:37:29 -> 00:37:31] and once you've constructed the trace,
+[00:37:31 -> 00:37:33] say you're constructing four instruction traces,
+[00:37:33 -> 00:37:35] and once you've constructed the trace,
+[00:37:35 -> 00:37:41] you save it in the trace cache.
+[00:37:41 -> 00:37:44] Okay?
+[00:37:44 -> 00:37:46] Taking a lot of time, but this is good.
+[00:37:46 -> 00:37:48] Now, you know, this is the kind of stuff
+[00:37:48 -> 00:37:50] that's useful in the back and forth.
+[00:37:50 -> 00:37:52] Okay, it's much more useful than I go through
+[00:37:52 -> 00:37:56] all these types that you've been offline to.
+[00:37:56 -> 00:38:00] Okay, so, you know, this was used in the PCM4,
+[00:38:00 -> 00:38:05] and now, now, it actually, what you have to do is,
+[00:38:05 -> 00:38:06] instead of the next branch,
+[00:38:06 -> 00:38:08] you have to predict the next trace.
+[00:38:08 -> 00:38:13] That is also something actually we came up with
+[00:38:13 -> 00:38:17] in our research group many years ago.
+[00:38:17 -> 00:38:25] Okay, now, step back a little bit
+[00:38:25 -> 00:38:29] and see, hey, you know, we had an x86 instruction,
+[00:38:29 -> 00:38:33] and rather than decode it every time,
+[00:38:33 -> 00:38:35] you know, we are going to convert this,
+[00:38:35 -> 00:38:37] you know, complex instruction
+[00:38:37 -> 00:38:42] into a sequence of simpler instructions.
+[00:38:42 -> 00:38:47] And what the, you know, the,
+[00:38:47 -> 00:38:49] when you afford it is now,
+[00:38:49 -> 00:38:51] since they were executing x86 store,
+[00:38:51 -> 00:38:56] they would actually store this in the trace cache.
+[00:38:56 -> 00:38:59] So now, you don't have to decode that instruction again.
+[00:38:59 -> 00:39:09] Okay, and in fact, they would even do further stuff
+[00:39:09 -> 00:39:12] into actually not only doing the decode,
+[00:39:12 -> 00:39:15] but even calculating the dependencies
+[00:39:15 -> 00:39:17] and maintaining dependencies.
+[00:39:17 -> 00:39:27] Okay, other questions about this stuff?
+[00:39:27 -> 00:39:33] Okay, we fetched the instructions.
+[00:39:33 -> 00:39:36] Now, we go to decoder.
+[00:39:36 -> 00:39:40] So we have to do N-wide decode,
+[00:39:40 -> 00:39:43] N instruction per cycle.
+[00:39:43 -> 00:39:47] Okay, what does decode involve?
+[00:39:47 -> 00:39:51] Decode involves taking a look at the bits of the instruction,
+[00:39:51 -> 00:39:52] figuring out the opcode,
+[00:39:52 -> 00:39:54] and figuring out what the other fields are,
+[00:39:54 -> 00:39:56] figuring out what to do,
+[00:39:56 -> 00:39:58] reading the registers.
+[00:39:58 -> 00:40:00] Okay, that's what we did.
+[00:40:00 -> 00:40:01] Source registers, that's what we did
+[00:40:01 -> 00:40:04] in the simple in-order pipeline.
+[00:40:04 -> 00:40:07] Figuring out what the instructions are
+[00:40:07 -> 00:40:11] is actually reasonably straightforward.
+[00:40:11 -> 00:40:13] Okay, because all the instructions are fixed length,
+[00:40:13 -> 00:40:16] top six bits of the opcode,
+[00:40:16 -> 00:40:19] if I'm doing four-wide, I just put four decoders.
+[00:40:19 -> 00:40:21] No big deal.
+[00:40:21 -> 00:40:24] Okay, and even if I have variable length,
+[00:40:24 -> 00:40:25] what I can further do,
+[00:40:25 -> 00:40:27] I can play tricks like this,
+[00:40:27 -> 00:40:29] if decoding is a little complicated,
+[00:40:29 -> 00:40:31] do the decoding once
+[00:40:31 -> 00:40:34] and save that information in the cache.
+[00:40:34 -> 00:40:38] Okay, so in a sense, I've pre-decoded it.
+[00:40:38 -> 00:40:40] So once I read those instructions from the cache
+[00:40:40 -> 00:40:42] or the trace cache,
+[00:40:42 -> 00:40:46] I've already decoded it.
+[00:40:46 -> 00:40:50] Okay, reading the input registers,
+[00:40:50 -> 00:40:53] okay, now I need to have
+[00:40:53 -> 00:40:56] each instruction needed to read two registers.
+[00:40:56 -> 00:41:00] If I'm doing N, I need to have so many read ports.
+[00:41:00 -> 00:41:04] Okay, and this can actually increase the area
+[00:41:04 -> 00:41:06] by N squared, if you will.
+[00:41:06 -> 00:41:08] Okay.
+[00:41:08 -> 00:41:11] In practice, now, you know,
+[00:41:11 -> 00:41:14] what do we do when we have bypassing?
+[00:41:14 -> 00:41:17] With bypassing, a lot of the inputs of the instruction,
+[00:41:17 -> 00:41:20] I read registers in the decode state,
+[00:41:20 -> 00:41:23] but I didn't need those register values, okay.
+[00:41:23 -> 00:41:25] The actual inputs of the instruction
+[00:41:25 -> 00:41:27] came from the output of some other instruction
+[00:41:27 -> 00:41:29] from somewhere else in the pipeline.
+[00:41:29 -> 00:41:33] Okay, so I actually
+[00:41:33 -> 00:41:36] don't necessarily need to have,
+[00:41:36 -> 00:41:39] you know, read two to N registers,
+[00:41:39 -> 00:41:41] so many read ports,
+[00:41:41 -> 00:41:44] because many of the values come from bypasses.
+[00:41:44 -> 00:41:50] Then, in decode, we need to figure out
+[00:41:50 -> 00:41:54] whether we should stall, right?
+[00:41:54 -> 00:41:56] What does stall logic look like?
+[00:41:56 -> 00:41:59] Very simple, I'm just going to take one term of it.
+[00:41:59 -> 00:42:02] Okay, so what we did for this
+[00:42:02 -> 00:42:05] one-wide pipeline with full bypassing,
+[00:42:05 -> 00:42:09] and I only needed to stall for load use, okay.
+[00:42:09 -> 00:42:12] So I had some equation which said,
+[00:42:12 -> 00:42:14] okay, all right,
+[00:42:14 -> 00:42:18] if the instruction in that latch,
+[00:42:18 -> 00:42:20] you know, in the mem stage,
+[00:42:20 -> 00:42:22] is a load instruction,
+[00:42:22 -> 00:42:27] and the source register
+[00:42:27 -> 00:42:30] for the instruction in the decode stage
+[00:42:30 -> 00:42:33] is the same as the destination register
+[00:42:33 -> 00:42:37] of the instruction in the mem stage, okay,
+[00:42:37 -> 00:42:41] or the second source register is the same,
+[00:42:41 -> 00:42:43] then I'm going to stall.
+[00:42:43 -> 00:42:47] Okay, so I have one term, one term, two terms,
+[00:42:47 -> 00:42:50] and so I have roughly proportional
+[00:42:50 -> 00:42:53] to two to the N terms, N is one.
+[00:42:53 -> 00:42:58] Okay, what do I have to do
+[00:42:58 -> 00:43:00] if I have a two-wide pipeline?
+[00:43:00 -> 00:43:03] Now I have two instructions in the mem stage
+[00:43:03 -> 00:43:06] and two instructions in the decode or, you know,
+[00:43:06 -> 00:43:10] execute stage wherever I decide to do this.
+[00:43:10 -> 00:43:13] Okay, so first term,
+[00:43:13 -> 00:43:17] I have to see if the instruction in the mem stage,
+[00:43:17 -> 00:43:20] the first instruction is a load,
+[00:43:20 -> 00:43:24] and if the source register of the first instruction,
+[00:43:24 -> 00:43:32] okay, is the same as the destination register
+[00:43:32 -> 00:43:34] of the first load,
+[00:43:34 -> 00:43:39] or the second source register of the instruction
+[00:43:39 -> 00:43:41] is the same as the destination register,
+[00:43:41 -> 00:43:44] which is the same here, okay,
+[00:43:44 -> 00:43:47] but I also need to do the same check
+[00:43:47 -> 00:43:53] for the second instruction in the decode stage.
+[00:43:53 -> 00:43:56] Okay, then for the second instruction
+[00:43:56 -> 00:43:59] in the load mem stage,
+[00:43:59 -> 00:44:02] I need to check to see if either of the source registers
+[00:44:02 -> 00:44:06] of the first instruction are the same
+[00:44:06 -> 00:44:10] or either of the registers of the second instruction
+[00:44:10 -> 00:44:12] are the same, all right?
+[00:44:12 -> 00:44:16] So you have two times two, okay,
+[00:44:16 -> 00:44:19] so you have now, you know,
+[00:44:19 -> 00:44:22] four cross-checks over here,
+[00:44:22 -> 00:44:24] and, you know, eight terms,
+[00:44:24 -> 00:44:26] so if I in general have N,
+[00:44:26 -> 00:44:30] this ends up being N squared cross-checks
+[00:44:30 -> 00:44:35] that I have to take, all right?
+[00:44:35 -> 00:44:39] We're not quite done.
+[00:44:39 -> 00:44:41] You also need to check to see
+[00:44:41 -> 00:44:46] if the destination register of the first instruction
+[00:44:46 -> 00:44:49] is the same as the source register,
+[00:44:49 -> 00:44:51] either of the two source registers
+[00:44:51 -> 00:44:54] or the second instruction, okay,
+[00:44:54 -> 00:44:56] so there are other cross-checks over there,
+[00:44:56 -> 00:44:58] fair number of cross-checks.
+[00:44:58 -> 00:45:07] So now, just talk a little bit
+[00:45:07 -> 00:45:09] about superscalar stalls.
+[00:45:09 -> 00:45:11] I'm not going to, you know,
+[00:45:11 -> 00:45:13] I'm just going to briefly describe what this is
+[00:45:13 -> 00:45:15] and not worry about it too much after that.
+[00:45:15 -> 00:45:17] It's not that important.
+[00:45:17 -> 00:45:20] You know, when you have a stall,
+[00:45:20 -> 00:45:23] when one of the instructions in a group stalls,
+[00:45:23 -> 00:45:26] then do you allow an instruction
+[00:45:26 -> 00:45:29] from a younger, from a later group
+[00:45:29 -> 00:45:31] that is not dependent,
+[00:45:31 -> 00:45:35] is that going to see a propagated stall or not, okay?
+[00:45:35 -> 00:45:37] I can have sort of a rigid scheduling
+[00:45:37 -> 00:45:40] where that instruction, so for example,
+[00:45:40 -> 00:45:43] this subtract instruction over here, okay?
+[00:45:43 -> 00:45:45] This add instruction is going to wait
+[00:45:45 -> 00:45:47] for this load instruction over here,
+[00:45:47 -> 00:45:49] but the subtract instructions
+[00:45:49 -> 00:45:52] is independent and can proceed, okay?
+[00:45:52 -> 00:45:54] If I had a rigid pipeline,
+[00:45:54 -> 00:45:56] I'm going to make this way too,
+[00:45:56 -> 00:45:58] have this propagated stall,
+[00:45:58 -> 00:46:00] or a fluid pipeline where this need not have
+[00:46:00 -> 00:46:03] this propagated stall.
+[00:46:03 -> 00:46:05] Okay, I'm not going to get too much more into that.
+[00:46:05 -> 00:46:08] I'm not going to tell you sort of what it is,
+[00:46:08 -> 00:46:10] but these are also issues that you're going to have
+[00:46:10 -> 00:46:12] to work, deal with in hardware,
+[00:46:12 -> 00:46:14] and I'll bring it up when we try
+[00:46:14 -> 00:46:16] and do things in software.
+[00:46:16 -> 00:46:21] It doesn't have to deal with this stuff.
+[00:46:21 -> 00:46:26] Okay, so now, why execute?
+[00:46:26 -> 00:46:28] How do I do an instruction,
+[00:46:28 -> 00:46:31] execute an instruction per time cycle?
+[00:46:31 -> 00:46:34] What is involved with that?
+[00:46:34 -> 00:46:38] So, you know, I need to have multiple execution units.
+[00:46:38 -> 00:46:40] So if I have integer ALUs,
+[00:46:40 -> 00:46:42] integer ALUs these days are like,
+[00:46:42 -> 00:46:44] okay, you know, how many more are I starting with?
+[00:46:44 -> 00:46:48] It's like, you know, going to get your Chinese carrier
+[00:46:48 -> 00:46:51] and throw a whole bunch of soy sauce packets
+[00:46:51 -> 00:46:53] and you don't care how many.
+[00:46:53 -> 00:46:55] It's like, integer ALUs, how many ever you want.
+[00:46:55 -> 00:46:56] It doesn't matter.
+[00:46:56 -> 00:46:57] They are inexpensive.
+[00:46:57 -> 00:47:01] It doesn't cost much, okay?
+[00:47:01 -> 00:47:04] But the floating point dividers, no.
+[00:47:04 -> 00:47:07] You know, those are expensive.
+[00:47:07 -> 00:47:10] Other question, how many branches do you want
+[00:47:10 -> 00:47:11] to execute per cycle?
+[00:47:11 -> 00:47:14] How many loads and stores?
+[00:47:14 -> 00:47:18] Okay, and typically what you do is you take a look
+[00:47:18 -> 00:47:21] at your mix of your operations in the program
+[00:47:21 -> 00:47:25] and try and figure out what mix of execution units
+[00:47:25 -> 00:47:28] you need to have to overall make sure
+[00:47:28 -> 00:47:31] that the system is balanced.
+[00:47:31 -> 00:47:32] Okay?
+[00:47:32 -> 00:47:38] We'll get to memory later on.
+[00:47:38 -> 00:47:45] We'll talk about memory over here.
+[00:47:45 -> 00:47:49] So execute.
+[00:47:49 -> 00:47:52] The next thing is memory access.
+[00:47:52 -> 00:47:56] So how many memory operations should I be doing
+[00:47:56 -> 00:47:58] per cycle?
+[00:47:58 -> 00:48:00] Okay, memory operations are loaded for.
+[00:48:00 -> 00:48:07] So if I want to do, you know,
+[00:48:07 -> 00:48:09] what are the different options?
+[00:48:09 -> 00:48:12] If I want to do multiple load stores to execute,
+[00:48:12 -> 00:48:16] the first option is to have multiple reports.
+[00:48:16 -> 00:48:19] If I want to do two loads,
+[00:48:19 -> 00:48:23] I have to have two reports.
+[00:48:23 -> 00:48:28] Now, remember this little n-square issue
+[00:48:28 -> 00:48:30] with the register, okay?
+[00:48:30 -> 00:48:34] Cache is built with SRAM, okay?
+[00:48:34 -> 00:48:36] I have 32 registers.
+[00:48:36 -> 00:48:39] Maybe when we do out of order processor,
+[00:48:39 -> 00:48:41] 200 registers.
+[00:48:41 -> 00:48:45] I have a lot of cache, okay?
+[00:48:45 -> 00:48:51] So it's, you know, it's going to be quite a lot of work
+[00:48:51 -> 00:48:54] to have an additional report on it.
+[00:48:54 -> 00:49:00] Eventually we will do it, okay?
+[00:49:00 -> 00:49:03] But initially when resources are a little tight,
+[00:49:03 -> 00:49:06] this is sort of not an option we wanted.
+[00:49:06 -> 00:49:11] So what are the other tricks that people have tried?
+[00:49:11 -> 00:49:14] The other tricks that people have tried
+[00:49:14 -> 00:49:17] is to bank the cache.
+[00:49:17 -> 00:49:20] So what I do is I have my data cache.
+[00:49:20 -> 00:49:23] I break it into an even bank and an odd bank.
+[00:49:23 -> 00:49:26] And now I have two more instructions.
+[00:49:26 -> 00:49:29] If they are both accessing, you know,
+[00:49:29 -> 00:49:33] they're accessing data at a certain memory address
+[00:49:33 -> 00:49:35] and a time cache line, if you will.
+[00:49:35 -> 00:49:39] If they happen to go into different banks, life is good.
+[00:49:39 -> 00:49:45] If they happen to go to the same bank,
+[00:49:45 -> 00:49:48] then I'm only doing one of them at a time.
+[00:49:48 -> 00:49:51] But further work, I have to check to see
+[00:49:51 -> 00:49:53] if there is going to be a conflict.
+[00:49:53 -> 00:49:56] And if there is going to be a conflict,
+[00:49:56 -> 00:50:01] I have to add the stalls, et cetera, et cetera, okay?
+[00:50:01 -> 00:50:06] So one thing that I could possibly do
+[00:50:06 -> 00:50:10] is to try and reduce the probability of conflict.
+[00:50:10 -> 00:50:13] And how could I reduce the probability of conflict
+[00:50:13 -> 00:50:15] to have more banks?
+[00:50:15 -> 00:50:19] But I still have to detect the conflict
+[00:50:19 -> 00:50:22] and deal with it.
+[00:50:22 -> 00:50:24] And by the way, like, you know, one thing that,
+[00:50:24 -> 00:50:26] you know, should be clear by now,
+[00:50:26 -> 00:50:27] but I'll say it again,
+[00:50:27 -> 00:50:30] is describing multiple solutions,
+[00:50:30 -> 00:50:33] it's never either one, okay?
+[00:50:33 -> 00:50:38] It's like, you know, you're using multiple,
+[00:50:38 -> 00:50:41] depending on the context.
+[00:50:41 -> 00:50:45] So, you know, you can support a load to an odd
+[00:50:45 -> 00:50:46] and even bank.
+[00:50:46 -> 00:50:47] The addresses are not known.
+[00:50:47 -> 00:50:49] That complicates the stall logic.
+[00:50:49 -> 00:50:52] And with two banks, the conflicts are frequent.
+[00:50:52 -> 00:50:59] The third option is to replicate the cash.
+[00:50:59 -> 00:51:01] Just duplicate the cash.
+[00:51:01 -> 00:51:04] Again, replicate, you know, duplicate.
+[00:51:04 -> 00:51:07] I can do now two reads,
+[00:51:07 -> 00:51:11] but I can only do one write.
+[00:51:11 -> 00:51:13] And you're saying, wait, what?
+[00:51:13 -> 00:51:19] Twice, you're replicating cash is twice the area.
+[00:51:19 -> 00:51:21] Yes.
+[00:51:21 -> 00:51:24] Multiple boards was?
+[00:51:24 -> 00:51:28] More than that.
+[00:51:28 -> 00:51:29] Okay.
+[00:51:29 -> 00:51:30] But with multiple boards,
+[00:51:30 -> 00:51:33] I could do multiple writes, two writes.
+[00:51:33 -> 00:51:36] Okay.
+[00:51:36 -> 00:51:39] With this one, I can only do one write.
+[00:51:39 -> 00:51:41] And I have to write in the book.
+[00:51:41 -> 00:51:45] Is that a problem?
+[00:51:45 -> 00:51:47] Well, you know, typically,
+[00:51:47 -> 00:51:51] again, go back to typical ratios
+[00:51:51 -> 00:51:55] in, you know, in programs.
+[00:51:55 -> 00:52:02] So what is a canonical computation?
+[00:52:02 -> 00:52:05] I'm doing an arithmetic operation.
+[00:52:05 -> 00:52:06] Okay.
+[00:52:06 -> 00:52:10] It has two inputs, one output.
+[00:52:10 -> 00:52:16] Eventually, somehow, the inputs are coming from memory.
+[00:52:16 -> 00:52:18] I may have brought them into the register first
+[00:52:18 -> 00:52:20] with a load instruction.
+[00:52:20 -> 00:52:22] And somehow, the output is going to memory
+[00:52:22 -> 00:52:24] eventually with a stall instruction.
+[00:52:24 -> 00:52:29] So typically, if I have these diary computations,
+[00:52:29 -> 00:52:40] I'm going to have two times loads to the number of scores.
+[00:52:40 -> 00:52:41] Interestingly, by the way,
+[00:52:41 -> 00:52:46] if I had operation that had three inputs and one output,
+[00:52:46 -> 00:52:49] then I would expect a ratio of three to one.
+[00:52:49 -> 00:52:54] And in fact, and in fact, you know,
+[00:52:54 -> 00:52:56] as people are, as you're trying to get more
+[00:52:56 -> 00:52:59] and more complex operations, if you will,
+[00:52:59 -> 00:53:01] you're actually trying, you know,
+[00:53:01 -> 00:53:04] three input ALUs, et cetera, et cetera,
+[00:53:04 -> 00:53:06] to basically, otherwise,
+[00:53:06 -> 00:53:09] with two input ALUs, I have two loads, okay,
+[00:53:09 -> 00:53:13] one store, two loads again, another store.
+[00:53:13 -> 00:53:14] Okay.
+[00:53:14 -> 00:53:18] And some of that store may just be data
+[00:53:18 -> 00:53:20] that you load back again.
+[00:53:20 -> 00:53:21] Okay.
+[00:53:21 -> 00:53:27] The other option is to white line a cache
+[00:53:27 -> 00:53:30] where you basically, you know,
+[00:53:30 -> 00:53:34] do maybe, you know, one access and one half clock cycle,
+[00:53:34 -> 00:53:37] another access and another clock cycle.
+[00:53:37 -> 00:53:39] And you're probably saying,
+[00:53:39 -> 00:53:41] hey, you know, memory is supposed to be slower.
+[00:53:41 -> 00:53:42] Now you're doing a memory access
+[00:53:42 -> 00:53:45] and half a clock cycle, what gives?
+[00:53:45 -> 00:53:46] Okay.
+[00:53:46 -> 00:53:50] And what gives if you make the clock cycle bigger
+[00:53:50 -> 00:53:54] and you can do that?
+[00:53:54 -> 00:53:57] But that's not sort of a necessarily interesting thing.
+[00:53:57 -> 00:54:02] But they are, you play a lot of, you know,
+[00:54:02 -> 00:54:05] sometimes, you know, tricks, circuit tricks
+[00:54:05 -> 00:54:09] to try and increase the speed of the transistor over there.
+[00:54:09 -> 00:54:11] This is, again, has been used,
+[00:54:11 -> 00:54:14] but it's typically not the case, okay.
+[00:54:14 -> 00:54:17] So initially, when, you know,
+[00:54:17 -> 00:54:21] superscalar process wanted to do more than one operation,
+[00:54:21 -> 00:54:24] this was the trick that was technically used.
+[00:54:24 -> 00:54:29] These days, it is getting much more into this one over here
+[00:54:29 -> 00:54:30] because you have, you know,
+[00:54:30 -> 00:54:32] hey, you know, two loads and one store.
+[00:54:32 -> 00:54:35] Like, let us see what we finally have in this box.
+[00:54:35 -> 00:54:37] I think we have it.
+[00:54:37 -> 00:54:39] We are doing up to four
+[00:54:39 -> 00:55:01] of any combination of load store operations per cycle.
+[00:55:01 -> 00:55:06] Better do something to earn their salaries, I guess.
+[00:55:06 -> 00:55:08] It's made well.
+[00:55:08 -> 00:55:18] So you can, and that's to the L1.
+[00:55:18 -> 00:55:22] Something in between there.
+[00:55:22 -> 00:55:24] Hey.
+[00:55:24 -> 00:55:26] So, you know,
+[00:55:26 -> 00:55:31] so this is presented at Hotship,
+[00:55:31 -> 00:55:34] so I've been programmed here at Hotship a couple of times.
+[00:55:34 -> 00:55:37] And, you know, the marketing people at companies
+[00:55:37 -> 00:55:39] are always trying to pretend stuff
+[00:55:39 -> 00:55:41] and the technical people at jobless
+[00:55:41 -> 00:55:44] to make sure that VSS get to a minimum.
+[00:55:44 -> 00:55:46] And clearly at times when, you know,
+[00:55:46 -> 00:55:48] like, hey, big companies,
+[00:55:48 -> 00:55:50] you know, didn't get their slides right,
+[00:55:50 -> 00:55:53] and I said, sorry,
+[00:55:53 -> 00:55:55] you may be a multi-billion dollar company.
+[00:55:55 -> 00:55:57] You're marketing to prevent your slides
+[00:55:57 -> 00:55:59] since you're marketing.
+[00:55:59 -> 00:56:01] And they think so, you know.
+[00:56:01 -> 00:56:03] So that's the nice part being an academic.
+[00:56:03 -> 00:56:07] You remember Boston, you get called and fired.
+[00:56:07 -> 00:56:10] But, actually, you know,
+[00:56:10 -> 00:56:13] Larry Ellison did try that once.
+[00:56:13 -> 00:56:16] He called a chance for, you know,
+[00:56:16 -> 00:56:19] he called a chance for John Wiley
+[00:56:19 -> 00:56:22] and asked him to fire one of our faculty members.
+[00:56:22 -> 00:56:26] A chance for doing it again.
+[00:56:26 -> 00:56:28] Anyway, it's a separate story.
+[00:56:28 -> 00:56:30] That's good.
+[00:56:30 -> 00:56:33] So then,
+[00:56:33 -> 00:56:34] what gives away here?
+[00:56:34 -> 00:56:37] I'm telling you N squared, okay?
+[00:56:37 -> 00:56:41] And remember what I said is that dimension.
+[00:56:41 -> 00:56:42] Okay?
+[00:56:42 -> 00:56:46] So now then if you start going vertically,
+[00:56:46 -> 00:56:50] you can cut down the size increase in the area
+[00:56:50 -> 00:56:52] in one dimension.
+[00:56:52 -> 00:56:55] Then you have to have multiple wire layers.
+[00:56:55 -> 00:56:56] Okay?
+[00:56:56 -> 00:56:57] Et cetera.
+[00:56:57 -> 00:57:01] Are you with me on this?
+[00:57:01 -> 00:57:06] Okay.
+[00:57:06 -> 00:57:09] Let's make stuff a little more interesting, too.
+[00:57:09 -> 00:57:10] Okay?
+[00:57:10 -> 00:57:13] So we talked about this N squared stall logic, right?
+[00:57:13 -> 00:57:15] You know, you figure that out.
+[00:57:15 -> 00:57:18] Hey, why did we get this N squared stall logic?
+[00:57:18 -> 00:57:26] Now, what is it we are checking over here?
+[00:57:26 -> 00:57:30] We are checking the register values,
+[00:57:30 -> 00:57:33] register numbers to see if they are the same.
+[00:57:33 -> 00:57:37] If I have 32 registers, that's 5x.
+[00:57:37 -> 00:57:38] Okay?
+[00:57:38 -> 00:57:40] So this logic, if you will,
+[00:57:40 -> 00:57:44] that is even though it's N squared, okay,
+[00:57:44 -> 00:57:47] it's actually, you know, 5-bit white quantities
+[00:57:47 -> 00:57:49] or 1-bit white quantities.
+[00:57:49 -> 00:58:01] But now I actually have to bypass the values.
+[00:58:01 -> 00:58:03] If I have a 32-bit architecture,
+[00:58:03 -> 00:58:05] the value is 32 bits.
+[00:58:05 -> 00:58:10] If I have 64-bit architecture, value is 64 bits.
+[00:58:10 -> 00:58:11] Okay?
+[00:58:11 -> 00:58:14] Now I have to have N squared bypasses
+[00:58:14 -> 00:58:18] of let's say 64-bit entities.
+[00:58:18 -> 00:58:21] Okay, so this is now a bypass network
+[00:58:21 -> 00:58:23] for a four-wire issue.
+[00:58:23 -> 00:58:26] I have to have a bypass from the output of this one
+[00:58:26 -> 00:58:28] to the input of all four,
+[00:58:28 -> 00:58:31] the output of the second one to the input of all four,
+[00:58:31 -> 00:58:33] third one to the input of all four,
+[00:58:33 -> 00:58:35] fourth one to the input of all four.
+[00:58:35 -> 00:58:44] So that's the four times four, all right?
+[00:58:44 -> 00:58:47] So, and this is just one bypassing stage.
+[00:58:47 -> 00:58:51] A lot of wires.
+[00:58:51 -> 00:58:53] Okay, now if I have those other stages,
+[00:58:53 -> 00:58:57] this was just EX, there was MEM and write back,
+[00:58:57 -> 00:59:00] many, many more bypasses.
+[00:59:00 -> 00:59:01] 64 bits white.
+[00:59:01 -> 00:59:03] Okay?
+[00:59:03 -> 00:59:07] Okay, so lots of wires, long wires,
+[00:59:07 -> 00:59:09] expensive metal layer crossing,
+[00:59:09 -> 00:59:13] and these, you know, import boxes at each stage.
+[00:59:13 -> 00:59:22] Now, one trick that people play is the following.
+[00:59:22 -> 00:59:28] So what I have now is these are 64-bit white.
+[00:59:28 -> 00:59:32] And there are four of them.
+[00:59:32 -> 00:59:34] What instead I could do is I could do
+[00:59:34 -> 00:59:36] a bit slicing approach.
+[00:59:36 -> 00:59:42] Whereas now I construct a one bit each
+[00:59:42 -> 00:59:47] of four different ALUs with the appropriate bypasses.
+[00:59:47 -> 00:59:49] Okay?
+[00:59:49 -> 00:59:52] So say now this is not a 64-bit ALU,
+[00:59:52 -> 00:59:54] there's only a one bit ALU.
+[00:59:54 -> 00:59:56] Okay?
+[00:59:56 -> 00:59:59] Now these paths are only one bit bypassed,
+[00:59:59 -> 01:00:01] reasonably short.
+[01:00:01 -> 01:00:04] And then I have 64 of these over there.
+[01:00:04 -> 01:00:12] Remember, you know, because a bit I
+[01:00:12 -> 01:00:14] is going from the output of bit I
+[01:00:14 -> 01:00:17] to the input of, you know, corresponding bit I,
+[01:00:17 -> 01:00:21] I don't need to send bit I output from one ALU
+[01:00:21 -> 01:00:24] to bit I plus nine at the other ALU.
+[01:00:24 -> 01:00:26] That's not what is happening.
+[01:00:26 -> 01:00:27] So all the bit, you know,
+[01:00:27 -> 01:00:29] bit I is just going from output to input.
+[01:00:29 -> 01:00:33] That's the path that I need to create.
+[01:00:33 -> 01:00:36] And then now I have several of them,
+[01:00:36 -> 01:00:38] the different, all the different bits,
+[01:00:38 -> 01:00:44] 64-bits are in parallel.
+[01:00:44 -> 01:00:45] How does that help?
+[01:00:45 -> 01:00:47] Do you have the same number of wires?
+[01:00:47 -> 01:00:50] No, no, no, no, no, no, no.
+[01:00:50 -> 01:00:55] You are right, you have the same number of wires.
+[01:00:55 -> 01:01:00] But, but, okay, now let us take a look at it
+[01:01:00 -> 01:01:03] and see, you know, this bit over,
+[01:01:03 -> 01:01:05] this output here.
+[01:01:06 -> 01:01:10] This is crossing this wire, this wire,
+[01:01:10 -> 01:01:12] this wire, this wire, this wire, this wire.
+[01:01:12 -> 01:01:14] These are all 64-bits.
+[01:01:14 -> 01:01:19] So length is huge, okay?
+[01:01:19 -> 01:01:24] So the length of those wires increases.
+[01:01:24 -> 01:01:29] Like if you are doing an add,
+[01:01:29 -> 01:01:31] carries have to jump from ALU.
+[01:01:31 -> 01:01:36] Oh, do that, minor problem.
+[01:01:36 -> 01:01:40] So carry does have to go from bit I to bit I plus one.
+[01:01:40 -> 01:01:43] And you are saying, now what?
+[01:01:43 -> 01:01:47] It got complicated.
+[01:01:47 -> 01:01:50] Everybody get what he said?
+[01:01:50 -> 01:01:53] Yeah, I've got problems with you.
+[01:01:53 -> 01:01:56] And do those have to go through a bypass then, too?
+[01:01:56 -> 01:01:58] No, they just have to hop across.
+[01:01:58 -> 01:01:59] Okay.
+[01:01:59 -> 01:02:00] Okay.
+[01:02:00 -> 01:02:02] Do you know what that each ALU unit is
+[01:02:02 -> 01:02:04] for each of the different points?
+[01:02:04 -> 01:02:06] But then as you know, from, you know,
+[01:02:06 -> 01:02:09] like, you know, other classes,
+[01:02:09 -> 01:02:11] is when you have an N bit add,
+[01:02:11 -> 01:02:13] when you tip it, the carry doesn't hop across.
+[01:02:13 -> 01:02:14] Yes.
+[01:02:14 -> 01:02:15] Okay?
+[01:02:15 -> 01:02:16] And you turn it somewhere else,
+[01:02:16 -> 01:02:18] and from there it goes somewhere else,
+[01:02:18 -> 01:02:21] and then it shows up at the right place.
+[01:02:21 -> 01:02:22] Okay?
+[01:02:22 -> 01:02:26] But yes, the carry chain does get delayed.
+[01:02:26 -> 01:02:30] The length of the carry chain in time does increase.
+[01:02:30 -> 01:02:32] Are there other communications from the ALU
+[01:02:32 -> 01:02:34] that you have to do that for?
+[01:02:34 -> 01:02:35] No.
+[01:02:35 -> 01:02:37] Just the N?
+[01:02:37 -> 01:02:38] Yeah.
+[01:02:38 -> 01:02:41] I mean, mostly the carry chain in the ALU
+[01:02:41 -> 01:02:44] is what the other stuff is all parallel.
+[01:02:44 -> 01:02:46] You know, AMs and XRs.
+[01:02:46 -> 01:02:49] They're all parallel.
+[01:02:49 -> 01:02:52] So you see the issues there?
+[01:02:52 -> 01:02:54] Okay.
+[01:02:54 -> 01:02:58] The carry chain does go on the end with this.
+[01:02:58 -> 01:03:04] So one of the tricks people do is they say,
+[01:03:04 -> 01:03:06] I'm going to cluster.
+[01:03:06 -> 01:03:07] Okay?
+[01:03:07 -> 01:03:10] So I'm going to drive, you know,
+[01:03:10 -> 01:03:14] I'm going to write my N into K clusters.
+[01:03:14 -> 01:03:19] So I have N by K in each cluster,
+[01:03:19 -> 01:03:24] and now I have N by K squared bypassed.
+[01:03:24 -> 01:03:25] Okay?
+[01:03:25 -> 01:03:28] And then, though, now the issue comes is,
+[01:03:28 -> 01:03:32] okay, how do you steer an instruction to a cluster?
+[01:03:32 -> 01:03:33] So if I had an instruction
+[01:03:33 -> 01:03:37] that's going to produce a register value output,
+[01:03:37 -> 01:03:39] another instruction that is going to read
+[01:03:39 -> 01:03:41] the register value output,
+[01:03:41 -> 01:03:42] I'm going to get it in the same cluster
+[01:03:42 -> 01:03:45] and bypass that as well.
+[01:03:45 -> 01:03:47] But if the instruction producing the register output
+[01:03:47 -> 01:03:49] is in this cluster,
+[01:03:49 -> 01:03:53] and the instruction reading in this cluster,
+[01:03:53 -> 01:03:55] reading the register value of this cluster,
+[01:03:55 -> 01:03:59] then I have to actually, you know,
+[01:03:59 -> 01:04:01] hopefully I'm going to try and steer it
+[01:04:01 -> 01:04:02] into the same cluster,
+[01:04:02 -> 01:04:05] otherwise I have to then bypass from,
+[01:04:05 -> 01:04:08] you know, actually forward the value
+[01:04:08 -> 01:04:10] from one cluster to the other,
+[01:04:10 -> 01:04:14] and that takes time.
+[01:04:14 -> 01:04:15] Okay?
+[01:04:15 -> 01:04:21] Are you with me on this?
+[01:04:21 -> 01:04:25] What is involved in writing N registers per cycle?
+[01:04:25 -> 01:04:27] Really not much.
+[01:04:27 -> 01:04:29] You have N ports.
+[01:04:29 -> 01:04:30] Okay?
+[01:04:30 -> 01:04:33] But, you know, if you're doing N wide,
+[01:04:33 -> 01:04:36] you know, not every instruction writes into a register.
+[01:04:36 -> 01:04:39] You know, branches don't write into a register.
+[01:04:39 -> 01:04:43] Stores don't write into a register.
+[01:04:43 -> 01:04:46] Okay.
+[01:04:46 -> 01:04:48] What about exceptions?
+[01:04:48 -> 01:04:51] Do I have to recognize multiple exceptions per cycle?
+[01:04:51 -> 01:04:52] Not really.
+[01:04:52 -> 01:04:53] Only the oldest exception.
+[01:04:53 -> 01:04:55] The other ones are going to get dropped into it.
+[01:04:55 -> 01:05:06] Questions?
+[01:05:06 -> 01:05:07] Okay.
+[01:05:07 -> 01:05:10] So now let's try and take a variety of different
+[01:05:10 -> 01:05:13] multiple issue implementations.
+[01:05:13 -> 01:05:15] You know, the first is a statically scheduled
+[01:05:15 -> 01:05:17] in-order processor,
+[01:05:17 -> 01:05:19] a superscalar,
+[01:05:19 -> 01:05:21] which is going to execute your unmodified
+[01:05:21 -> 01:05:22] sequential programs,
+[01:05:22 -> 01:05:24] and the hardware must figure out
+[01:05:24 -> 01:05:25] what can be done in parallel.
+[01:05:25 -> 01:05:29] Sort of along what we've been talking about so far.
+[01:05:29 -> 01:05:30] Okay.
+[01:05:30 -> 01:05:34] Then, because of the complexity of hardware,
+[01:05:34 -> 01:05:37] and at a time when there weren't that many
+[01:05:37 -> 01:05:39] hardware resources available,
+[01:05:39 -> 01:05:42] and at a time when people were saying
+[01:05:42 -> 01:05:45] I can maybe do clever things in the compiler,
+[01:05:45 -> 01:05:46] okay,
+[01:05:46 -> 01:05:49] people proposed a very long
+[01:05:49 -> 01:05:51] instruction board architecture
+[01:05:51 -> 01:05:54] where the hardware can be dumb and low power.
+[01:05:54 -> 01:05:56] It's not going to have a lot of the stuff
+[01:05:56 -> 01:05:57] that we talked about.
+[01:05:57 -> 01:05:58] Okay.
+[01:05:58 -> 01:06:02] But the compiler must actually group the instructions.
+[01:06:02 -> 01:06:04] And that's going to, as you'll see,
+[01:06:04 -> 01:06:05] require new binaries.
+[01:06:05 -> 01:06:08] So every time you go and buy a new processor,
+[01:06:08 -> 01:06:13] you have to recompile your program.
+[01:06:13 -> 01:06:14] Hardware guys love it.
+[01:06:14 -> 01:06:16] The people, the customers are going to say,
+[01:06:16 -> 01:06:18] no, I don't want to do that.
+[01:06:18 -> 01:06:20] Any time I touch my program,
+[01:06:20 -> 01:06:22] who knows what's going to happen.
+[01:06:22 -> 01:06:23] Okay.
+[01:06:23 -> 01:06:27] Then the epic, explicitly parallel computing,
+[01:06:27 -> 01:06:29] which was basically Intel's big thing,
+[01:06:29 -> 01:06:31] Intel Itanium I64,
+[01:06:31 -> 01:06:33] we briefly mentioned that.
+[01:06:33 -> 01:06:35] And then we'll spend a lot of time later on
+[01:06:35 -> 01:06:39] on the dynamically scheduled superscalar processors.
+[01:06:39 -> 01:06:43] Okay.
+[01:06:43 -> 01:06:46] So,
+[01:06:46 -> 01:06:50] but recall that what we just talked about is
+[01:06:50 -> 01:06:53] when we are doing multiple issue in hardware,
+[01:06:53 -> 01:06:55] you're going to have to do wide fetch,
+[01:06:55 -> 01:06:57] you're going to have to do branch prediction,
+[01:06:57 -> 01:06:59] these n square bypasses,
+[01:06:59 -> 01:07:01] n square dependence checks.
+[01:07:01 -> 01:07:04] And we talked about, you know,
+[01:07:04 -> 01:07:06] trace cache to help with this fetching.
+[01:07:06 -> 01:07:09] We talked about plus string to help with the bypass
+[01:07:09 -> 01:07:10] and so on like that.
+[01:07:10 -> 01:07:11] Okay.
+[01:07:11 -> 01:07:12] The trace cache,
+[01:07:12 -> 01:07:16] if you actually store the decoded parts,
+[01:07:16 -> 01:07:20] then you don't have that dependence check necessarily.
+[01:07:20 -> 01:07:22] It's not that complicated.
+[01:07:22 -> 01:07:26] So the, you know, people said,
+[01:07:26 -> 01:07:27] hey, you know,
+[01:07:27 -> 01:07:29] I can do a lot of the stuff that the hardware
+[01:07:29 -> 01:07:30] is weak at doing.
+[01:07:30 -> 01:07:34] I can figure it out and do it.
+[01:07:34 -> 01:07:38] And what I want to do is, you know,
+[01:07:38 -> 01:07:42] this one white pipeline that you did is fairly good.
+[01:07:42 -> 01:07:45] I understand that in some sense.
+[01:07:45 -> 01:07:47] But now,
+[01:07:47 -> 01:07:50] I'm still going to have a one white pipeline.
+[01:07:50 -> 01:07:52] But the one,
+[01:07:52 -> 01:07:55] it's not going to be one instruction.
+[01:07:55 -> 01:07:58] It's going to be n instructions.
+[01:07:58 -> 01:08:03] Or let me put it a different way.
+[01:08:03 -> 01:08:04] Okay.
+[01:08:04 -> 01:08:05] It's going to be one instruction
+[01:08:05 -> 01:08:07] with n different operations.
+[01:08:07 -> 01:08:09] We aren't going to call it.
+[01:08:09 -> 01:08:10] Okay.
+[01:08:10 -> 01:08:11] Let's just say, yeah,
+[01:08:11 -> 01:08:13] besides n different operations in it.
+[01:08:13 -> 01:08:15] Okay.
+[01:08:15 -> 01:08:17] So what we're going to do is
+[01:08:17 -> 01:08:19] we're going to have the compiler guarantee
+[01:08:19 -> 01:08:23] that the operations within a VLI group,
+[01:08:23 -> 01:08:25] W group are independent.
+[01:08:25 -> 01:08:26] Okay.
+[01:08:26 -> 01:08:30] And if I have to find an operation
+[01:08:30 -> 01:08:32] and I can't find n,
+[01:08:32 -> 01:08:35] I can only find n-3,
+[01:08:35 -> 01:08:37] then I have three no-ops.
+[01:08:37 -> 01:08:39] Okay.
+[01:08:39 -> 01:08:43] Then this group,
+[01:08:43 -> 01:08:45] just like the one instruction traveled
+[01:08:45 -> 01:08:48] down the pipeline by itself,
+[01:08:48 -> 01:08:53] it's going to travel around the pipeline as a unit.
+[01:08:53 -> 01:08:54] Okay.
+[01:08:54 -> 01:08:57] So I don't need to do any rigid fluid business.
+[01:08:57 -> 01:08:58] Okay.
+[01:08:58 -> 01:09:04] Further, I also don't need to do any cross-checks
+[01:09:04 -> 01:09:09] or dependencies between the instructions in this group.
+[01:09:09 -> 01:09:12] Because the way the compiler,
+[01:09:12 -> 01:09:16] the compiler made sure that there are no dependencies between them.
+[01:09:16 -> 01:09:21] Okay.
+[01:09:21 -> 01:09:22] Are you with me on this?
+[01:09:22 -> 01:09:25] I may still need some, you know,
+[01:09:25 -> 01:09:30] cross-checks down the pipeline, you know,
+[01:09:30 -> 01:09:32] depending on the VRW model,
+[01:09:32 -> 01:09:34] we'll talk a little bit there.
+[01:09:34 -> 01:09:43] They went even further.
+[01:09:43 -> 01:10:20] So we talked about having multiple different,
+[01:10:20 -> 01:10:22] you know, execution units, right?
+[01:10:22 -> 01:10:23] Integer, ALU,
+[01:10:23 -> 01:10:25] I mean, yeah, I do it every day.
+[01:10:25 -> 01:10:26] Okay.
+[01:10:26 -> 01:10:27] Whatever it is, you know,
+[01:10:27 -> 01:10:28] floating point adder,
+[01:10:28 -> 01:10:31] floating point multiplier, load, load store.
+[01:10:31 -> 01:10:32] Okay.
+[01:10:32 -> 01:10:37] So, you know, rather than just back an instruction,
+[01:10:37 -> 01:10:41] one instruction with multiple different operations
+[01:10:41 -> 01:10:43] and instructions,
+[01:10:43 -> 01:10:48] you can actually create an instruction which says,
+[01:10:48 -> 01:10:51] you know,
+[01:10:51 -> 01:10:55] this is now the instruction that goes and executes over here.
+[01:10:55 -> 01:10:59] This is the, or operation that goes and executes over here.
+[01:10:59 -> 01:11:03] This is the operation that goes and executes over here.
+[01:11:03 -> 01:11:05] Hey, if I don't have a, you know,
+[01:11:05 -> 01:11:09] this is a no-log maybe because nothing is executing here.
+[01:11:09 -> 01:11:12] This is the operation that goes and executes over here.
+[01:11:12 -> 01:11:14] This is the operation that goes and executes here.
+[01:11:14 -> 01:11:17] This is the operation that goes and executes over here.
+[01:11:17 -> 01:11:18] Okay.
+[01:11:18 -> 01:11:22] So, you know, by actually backing the operations
+[01:11:22 -> 01:11:24] for each one of these units
+[01:11:24 -> 01:11:28] at the appropriate positions in the instruction,
+[01:11:28 -> 01:11:32] I can further, or slotting them,
+[01:11:32 -> 01:11:35] I can further simplify the hardware.
+[01:11:35 -> 01:11:38] Okay.
+[01:11:38 -> 01:11:40] So, it's not going to be the case
+[01:11:40 -> 01:11:46] that the instruction that executes over here is over here.
+[01:11:46 -> 01:11:50] I don't put it here in the instruction.
+[01:11:50 -> 01:11:51] Okay.
+[01:11:51 -> 01:11:53] So, then, if I don't do that,
+[01:11:53 -> 01:11:55] then I don't have to steer this operation
+[01:11:55 -> 01:11:57] to this function unit.
+[01:11:57 -> 01:12:01] I'm just going to have all these,
+[01:12:01 -> 01:12:05] I'm going to have a slot for each one of these execution units,
+[01:12:05 -> 01:12:09] and then I'm going to have the important operation
+[01:12:09 -> 01:12:12] in the instruction in the appropriate slot.
+[01:12:12 -> 01:12:18] Are you with me on this?
+[01:12:18 -> 01:12:21] By the way, you know, by the way,
+[01:12:21 -> 01:12:23] okay, we'll just talk a little bit about the history,
+[01:12:23 -> 01:12:25] and then I'll tell you a little bit, you know.
+[01:12:25 -> 01:12:27] So, this is a very old idea.
+[01:12:27 -> 01:12:29] It started out in some, actually,
+[01:12:29 -> 01:12:33] some of the first earliest array and protocol processing.
+[01:12:34 -> 01:12:37] By the way, many of these things that you don't quite actually,
+[01:12:37 -> 01:12:39] they don't appear this way,
+[01:12:39 -> 01:12:41] but this is what even happens in some of the latest,
+[01:12:41 -> 01:12:47] you know, heavily compute-intensive processes.
+[01:12:47 -> 01:12:50] And then people tried to apply these concepts
+[01:12:50 -> 01:12:52] for more integer general purpose code
+[01:12:52 -> 01:12:54] rather than just scientific computing,
+[01:12:54 -> 01:12:56] so they had multiple attempts, you know,
+[01:12:56 -> 01:13:00] multiple side row, you know, inter-Italian, and so on.
+[01:13:00 -> 01:13:06] But these concepts, they still are very widely used
+[01:13:06 -> 01:13:09] for, you know, special purpose processors
+[01:13:09 -> 01:13:11] that you aren't generically programming them
+[01:13:11 -> 01:13:14] again and again, okay?
+[01:13:14 -> 01:13:16] They are doing one special thing,
+[01:13:16 -> 01:13:19] you know, like signal processing or whatever it is,
+[01:13:19 -> 01:13:22] and you're having these wide instructions there
+[01:13:22 -> 01:13:25] that, you know, even slots that keep on, you know,
+[01:13:25 -> 01:13:27] you write the code and you're on constant key writing
+[01:13:27 -> 01:13:30] or variety of different programs on over there.
+[01:13:30 -> 01:13:32] So these embedded processors actually,
+[01:13:32 -> 01:13:35] these concepts are still very widely used.
+[01:13:35 -> 01:13:40] Okay, so we'll take it from here on Wednesday.
+[01:13:40 -> 01:13:44] Any questions?

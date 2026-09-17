@@ -1,0 +1,685 @@
+Title: 752_Lec18
+Source file: 752_Lec18.mp3
+Detected language: en
+------------------------------------------------------------
+
+[00:00:00 -> 00:00:06] It's very hot in here.
+[00:00:06 -> 00:00:07] Say it again?
+[00:00:07 -> 00:00:08] It's very hot in here.
+[00:00:08 -> 00:00:09] It's very hot in here?
+[00:00:09 -> 00:00:10] Yeah.
+[00:00:10 -> 00:00:11] Okay.
+[00:00:11 -> 00:00:12] Yeah, but I know.
+[00:00:12 -> 00:00:15] But still, it's well in here.
+[00:00:15 -> 00:00:23] That's what happens at this time of the year.
+[00:00:23 -> 00:00:30] The heat in the old buildings is especially engineering-well.
+[00:00:30 -> 00:00:32] A little hard to control.
+[00:00:32 -> 00:00:35] My entire undergraduate was on the oil.
+[00:00:35 -> 00:00:37] They shut it off too early.
+[00:00:37 -> 00:00:39] No heat if it gets cold again.
+[00:00:39 -> 00:00:41] And they shut it off too late.
+[00:00:41 -> 00:00:45] 70 degrees outside, 90 degrees inside.
+[00:00:45 -> 00:00:46] Yeah.
+[00:00:46 -> 00:00:55] I mean, we could do the old fashioned things.
+[00:00:55 -> 00:01:00] Did they seal it so you can put it in?
+[00:01:00 -> 00:01:02] They used to be able to.
+[00:01:02 -> 00:01:04] Whatever.
+[00:01:04 -> 00:01:21] Okay.
+[00:01:21 -> 00:01:28] So, last time we were talking about a variety of stores, rights.
+[00:01:28 -> 00:01:30] They were buffered all over the place.
+[00:01:30 -> 00:01:31] Okay.
+[00:01:31 -> 00:01:36] And the first place is the store queues, which we saw in detail.
+[00:01:36 -> 00:01:41] Which basically, that's holding speculative process of state.
+[00:01:41 -> 00:01:46] And the architecture means that no one can see what's going on in the store queue.
+[00:01:46 -> 00:01:47] Okay.
+[00:01:47 -> 00:01:50] It's holding these speculative execute stores.
+[00:01:50 -> 00:01:52] And you may need to roll that back.
+[00:01:52 -> 00:01:56] And in the store queue, you also drag loads for dependencies.
+[00:01:56 -> 00:02:01] So if a later load comes in, well, we are waiting to write.
+[00:02:01 -> 00:02:04] Then you have to bypass that value of the store.
+[00:02:04 -> 00:02:05] Okay.
+[00:02:05 -> 00:02:08] Then we saw last time is to do stores.
+[00:02:08 -> 00:02:11] You have to basically do stores as a two-part operation.
+[00:02:11 -> 00:02:13] First part where you compare the tank.
+[00:02:13 -> 00:02:16] And the second part where you go through the data.
+[00:02:16 -> 00:02:24] And then what you do is you actually keep the data which you are going to write.
+[00:02:24 -> 00:02:27] And this is the store that has actually been committed.
+[00:02:27 -> 00:02:35] So this value, this store is visible to anyone who reads that memory location.
+[00:02:35 -> 00:02:45] And that read of that memory location for which that store is spending could also happen from the same process or a later load.
+[00:02:45 -> 00:02:46] Okay.
+[00:02:46 -> 00:02:50] It could be happening from other processors or a multi-processor.
+[00:02:50 -> 00:02:53] But it could also happen from the same processor.
+[00:02:53 -> 00:02:59] Or as we will see when we talk about multi-thread processors, another thread running on the same processor.
+[00:02:59 -> 00:03:00] Okay.
+[00:03:00 -> 00:03:06] So for that, you have to bypass the values to later stores typically.
+[00:03:06 -> 00:03:14] Or basically, you know, if a later load comes on, stall until this value gets written into the cache.
+[00:03:14 -> 00:03:26] And as we talked about last time, the store queue and the write buffer typically, you are going to have a write buffer whether or not you have an out of order processor, whether or not you have a store queue.
+[00:03:26 -> 00:03:34] Even in a simple pipeline processor, the store is going to be a two-cycle operation and you are going to have a write buffer.
+[00:03:34 -> 00:03:35] Okay.
+[00:03:35 -> 00:03:40] And when you have that write buffer, you are going to have to bypass the values to later loads, etc., etc.
+[00:03:43 -> 00:03:51] But if you do have a store queue, typically the store queue and the write buffer are in the same physical structure as we talked about last time.
+[00:03:51 -> 00:04:00] Especially if this cache that you are writing it onto is also in the same chip, which, you know, is very commonly used.
+[00:04:00 -> 00:04:04] The next buffering is write back buffers.
+[00:04:04 -> 00:04:09] And these write back buffers, we are used when we have write back caches.
+[00:04:09 -> 00:04:10] Okay.
+[00:04:10 -> 00:04:28] Where you, you know, put the line rather than write the dirty line back to memory on the next level and then do the read of the line that you missed on, you actually put that dirty line in this write back buffer.
+[00:04:28 -> 00:04:41] And you let that, you know, load of the clean line go on, handle the miss of the, handle the line that you are missing so that that latency is an increase.
+[00:04:41 -> 00:04:50] Again, in this case, you have to allow multiple, you have to allow bypasses from here to other loads.
+[00:04:50 -> 00:04:55] You have to make sure this becomes logically part of the multi-processor go ahead.
+[00:04:55 -> 00:04:58] And so you'll see this a little bit over there.
+[00:04:58 -> 00:04:59] Okay.
+[00:04:59 -> 00:05:10] And again, you know, when we talked about non-blocking caches, we saw, hey, you know, for some parameters that we picked up, you know, you're going to have eight or ten outstanding misses.
+[00:05:10 -> 00:05:13] They could be two different cache lines.
+[00:05:13 -> 00:05:19] You could have multiple victim lines, dirty lines waiting to be replaced in some sense.
+[00:05:19 -> 00:05:24] So these buffers have to be sized appropriately.
+[00:05:24 -> 00:05:26] Any questions about these?
+[00:05:26 -> 00:05:28] So there's buffering all over the place.
+[00:05:28 -> 00:05:35] And for each one of those buffering, you either have to provide some kind of bypass or a stall.
+[00:05:35 -> 00:05:46] And typically you end up doing a bypass because you're going to have to do comparisons of addresses anyway for multi-processor go ahead and make sure to get the right one.
+[00:05:46 -> 00:05:50] Okay.
+[00:05:50 -> 00:05:52] I'm not going to go into this cache then.
+[00:05:52 -> 00:05:54] We did this when we were talking about wide issue.
+[00:05:54 -> 00:05:59] We talked about the different options to get, you know, more memory operations.
+[00:05:59 -> 00:06:00] So I won't necessarily do that.
+[00:06:00 -> 00:06:04] But again, multi-port caches, bank caches, replication.
+[00:06:04 -> 00:06:12] I want to talk a little bit briefly about evaluation methods.
+[00:06:12 -> 00:06:20] So, you know, we talked about doing a cache, you know, finding the miss ratio of the cache, finding out what was a miss and something like that.
+[00:06:20 -> 00:06:28] You had a stream of address traces, you know, stream of memory references and whether each one was going to hit or miss in the cache.
+[00:06:28 -> 00:06:45] So if you want to try and do evaluation there, you know, three general class of models, you know, three general ways of doing it, where you do an analytical model, a software simulation, or actually have the hardware prototype and do a measurement.
+[00:06:45 -> 00:06:47] Okay.
+[00:06:47 -> 00:06:56] These analytical models are good for doing a big back of the onboard calculation and, you know, like Little's law in a sense is an analytical model.
+[00:06:56 -> 00:07:09] You can have more complex analytical models and over the years people have built mean value analysis models which leverage some of the queuing models to get some idea of overall, you know, system performance, if you will.
+[00:07:09 -> 00:07:20] Not detail levels, but you know, a much more general view of system level performance.
+[00:07:20 -> 00:07:30] A hardware prototype and measurements, you can only get information about that particular hardware and that hardware has to exist.
+[00:07:30 -> 00:07:31] Okay.
+[00:07:31 -> 00:07:34] So if you want to say, hey, how might this cache do?
+[00:07:34 -> 00:07:44] You can't do that with a hardware prototype because it's only going to tell you about that, you know, what's happening in that cache that is there in that hardware.
+[00:07:44 -> 00:07:50] So the software simulation has been, you know, the way people have done a lot of stuff.
+[00:07:50 -> 00:07:54] And so I wonder, you know, hardware counters, you saw the mathematical operations.
+[00:07:54 -> 00:08:01] So typically, you know, if we are studying cache, then we build a cache simulator and software.
+[00:08:01 -> 00:08:06] And then you feed this cache simulator with a set of memory reference traces.
+[00:08:06 -> 00:08:08] All right.
+[00:08:08 -> 00:08:22] And so, you know, a, you know, approach that people have used for quite a while and is widely used in industry is somehow there is a benchmark program.
+[00:08:22 -> 00:08:28] You get a trace of memory references and typically you store that.
+[00:08:28 -> 00:08:33] And then you would now, from that trace, feed that trace into the cache simulator.
+[00:08:33 -> 00:08:39] And yes, the miss ratios, whatever performance metrics that you want.
+[00:08:39 -> 00:08:42] Okay.
+[00:08:42 -> 00:08:48] So the trace driven simulation, you know, can, you know, the experiments are repeatable.
+[00:08:48 -> 00:08:51] You'll get the same result every time you run that simulation.
+[00:08:51 -> 00:08:54] And you can get some very accurate studies.
+[00:08:55 -> 00:09:06] And, you know, there are techniques where you can actually simulate multiple different associativities, caches with multiple different associativities just in one path, et cetera.
+[00:09:06 -> 00:09:08] You know, so there's lots of clearness over there.
+[00:09:08 -> 00:09:09] Okay.
+[00:09:09 -> 00:09:12] Simulation can take some time.
+[00:09:12 -> 00:09:17] And the big issue is, you know, what are the traces?
+[00:09:17 -> 00:09:22] You know, are they representative?
+[00:09:24 -> 00:09:27] This technique is very widely used in industry.
+[00:09:27 -> 00:09:41] And the reason why, you know, why it's very widely used in industry is many of these programs are programs from clients and you don't have access to that code, the source code.
+[00:09:41 -> 00:09:42] Okay.
+[00:09:42 -> 00:09:48] So you can get a trace and then, you know, you have these set of traces.
+[00:09:48 -> 00:09:52] How many of them you have from workloads from different clients, if you will.
+[00:09:52 -> 00:09:57] And then you design your processor improvements on those traces.
+[00:09:57 -> 00:09:58] Okay.
+[00:09:58 -> 00:10:02] So this is a technique that people have used for a long time.
+[00:10:02 -> 00:10:04] Okay.
+[00:10:04 -> 00:10:13] So in some sense, these traces are representative of the workload, important workloads of the important clients.
+[00:10:13 -> 00:10:27] However, these traces that you would get are traces of basically what, you know, memory loads and stores actually committed.
+[00:10:27 -> 00:10:30] Okay.
+[00:10:30 -> 00:10:35] These you cannot directly capture speculative execution.
+[00:10:35 -> 00:10:45] So, you know, if you are making memory references with a speculative execution, you're doing speculative execution, you're doing cache access in the wrong path.
+[00:10:45 -> 00:10:46] Okay.
+[00:10:46 -> 00:10:51] They could change the LRU bits, for example.
+[00:10:51 -> 00:10:52] Okay.
+[00:10:52 -> 00:10:56] And you would have a different overall result.
+[00:10:56 -> 00:11:04] So speculative execution isn't generally directly captured in this trace driven simulation.
+[00:11:04 -> 00:11:12] But, you know, I mean, in the real world, there is no one perfect solution.
+[00:11:12 -> 00:11:15] You have to try and think, you know, what is it you can do?
+[00:11:15 -> 00:11:19] So, you know, people say it's good enough.
+[00:11:19 -> 00:11:21] Okay.
+[00:11:21 -> 00:11:27] But these traces, again, you know, you can get traces of, hey, this is the opcode that I'm executing.
+[00:11:27 -> 00:11:33] This is the, you know, memory addresses that are generated, et cetera, et cetera.
+[00:11:33 -> 00:11:38] Rarely do these traces have what are the register values for those instructions.
+[00:11:38 -> 00:11:52] Another technique that we actually, I mean, we developed one of the first simulators like that where you actually simulate the execution of the program.
+[00:11:52 -> 00:11:58] So that is an execution driven simulation where you simulate each instruction's execution.
+[00:11:58 -> 00:12:03] You can model the processor, memory hierarchy, et cetera, et cetera.
+[00:12:03 -> 00:12:05] You can get execution time.
+[00:12:05 -> 00:12:07] You can account for system interactions.
+[00:12:07 -> 00:12:11] And there is no need to actually store the trace if you would.
+[00:12:11 -> 00:12:12] Okay.
+[00:12:12 -> 00:12:16] However, it actually ends up being a little more time.
+[00:12:16 -> 00:12:18] It takes more time.
+[00:12:18 -> 00:12:26] And it's, you know, much, much more complicated to especially if you're doing the actual simulation of the, you know, everything.
+[00:12:26 -> 00:12:33] But it's relatively complicated, but not that complicated.
+[00:12:33 -> 00:12:34] Okay.
+[00:12:34 -> 00:12:35] Relatively complicated.
+[00:12:35 -> 00:12:46] And one of the other things that, one of the other things that if you're actually simulating a multi-threaded program, then based on how the simulation happens,
+[00:12:46 -> 00:12:56] you know, the different threads can acquire locks in different orders and can result in different executions.
+[00:12:56 -> 00:13:04] So there is some variability unlike in the trace driven simulation where it's basically only getting the same thing every time.
+[00:13:04 -> 00:13:05] Okay.
+[00:13:05 -> 00:13:09] And so, you know, examples of this are GEM5, for example.
+[00:13:09 -> 00:13:15] You know, Jamson is a trace driven simulation, sorry, execution driven simulation, you know.
+[00:13:15 -> 00:13:18] GEM5 is an execution driven simulation.
+[00:13:18 -> 00:13:28] One of the beauties of the execution driven simulation is it lets you see everything that's happening, including register values.
+[00:13:28 -> 00:13:34] Now, a couple of you came to me to talk about projects and I guided you to something called PIN.
+[00:13:34 -> 00:13:35] All right.
+[00:13:35 -> 00:13:43] And what PIN does is it basically, rather than building the entire simulator and run it in its fast, okay,
+[00:13:43 -> 00:13:55] it allows you to create some modules for simulation and then, you know, basically embed those modules into the program executable.
+[00:13:55 -> 00:13:56] Okay.
+[00:13:56 -> 00:14:03] So the program is running and it also runs whatever module you're attaching to it.
+[00:14:03 -> 00:14:04] Okay.
+[00:14:04 -> 00:14:17] And the plus of that is you can run both the program and the whatever you're trying to monitor the program on real hardware at hardware speeds
+[00:14:17 -> 00:14:22] and not have the program run in a simulator.
+[00:14:22 -> 00:14:29] All right.
+[00:14:29 -> 00:14:33] Now let's talk a little bit about low power techniques.
+[00:14:33 -> 00:14:43] So these are some old numbers where, you know, 15% in the Pentium 4, it's hard to actually get details from a commercial product,
+[00:14:43 -> 00:14:48] how much of, you know, power is being consumed by each different unit.
+[00:14:48 -> 00:14:54] Sometimes people will write public papers about it, but in general it's hard to do that.
+[00:14:54 -> 00:15:03] But, you know, caches now are basically, you have level one caches, you know, level two caches, even level three caches,
+[00:15:03 -> 00:15:14] sizable level three caches and the area taken by the caches is huge and even though they aren't running necessarily as fast as the processor,
+[00:15:14 -> 00:15:22] they end up consuming significant power just because it has so many more transistors than the caches.
+[00:15:22 -> 00:15:29] Okay, so let's talk a little bit about three techniques to try and improve the lower power.
+[00:15:29 -> 00:15:48] And the rationale behind all these techniques is going to be that, hey, different programs need different amounts of cash.
+[00:15:48 -> 00:15:54] Also, in different phases of the program, I may be needing different amounts of cash.
+[00:15:54 -> 00:16:09] So, why don't I somehow turn off the parts of the cache that I am not using necessarily to get the performance?
+[00:16:09 -> 00:16:20] Maybe I am in a phase of the program where, yes, I have less cash, I'm going to lose a little bit on performance
+[00:16:20 -> 00:16:29] and take a little more power, but I'm also saving on power for not having that much of that cash.
+[00:16:29 -> 00:16:40] All right, so I'm going to dynamically resize and basically, as we saw in some of the pictures, et cetera,
+[00:16:40 -> 00:16:51] the data and tag arrays are implemented as many smaller arrays so I can turn off subsets of some sub arrays.
+[00:16:51 -> 00:17:00] And many programs don't fully utilize the cache, and many programs also, at different phases, use different amounts of cash.
+[00:17:00 -> 00:17:04] What do you mean by they don't fully utilize the cache?
+[00:17:04 -> 00:17:10] Just through certain addresses?
+[00:17:10 -> 00:17:20] It's not running through that much data, the working set is a little smaller.
+[00:17:20 -> 00:17:31] Okay, I mean, yeah, so L3 is huge, but L1 is small, and L1 is pretty much hammered all the time, right?
+[00:17:31 -> 00:17:40] L1 is hammered all the time, but, you know, if I had a system like L1,
+[00:17:40 -> 00:17:50] there may be phases of the program where 32 kilobytes or 48 kilobytes does just as well.
+[00:17:50 -> 00:18:00] In fact, actually, you know, I mean, there has been a fair amount of work to come on this,
+[00:18:00 -> 00:18:13] because if you take a look at how much of the data in the cache is dead means you aren't going to reference it before it gets replaced, it's half.
+[00:18:14 -> 00:18:18] Yeah, minor details.
+[00:18:18 -> 00:18:37] But, you know, but, you know, I mean, it's like, you know, it's like many years ago, we talked a little bit about reliability.
+[00:18:37 -> 00:18:42] Okay, and, you know, errors in a chip and so on like that, okay.
+[00:18:42 -> 00:18:49] You know, if you get an error in a cache and you just say, hey, I'm turning off this set of the cache,
+[00:18:49 -> 00:18:57] well, the chip's going to work with maybe a little degraded performance if you are banging on that, hitting that set.
+[00:18:57 -> 00:19:05] But, you know, so, and if I do, if I use a little skewed associativity or whatever it is,
+[00:19:05 -> 00:19:11] I can, you know, maybe make sure that I'm constantly, you know, not missing on that set.
+[00:19:11 -> 00:19:17] So, you know, it's like basically what I have in cache is a duplicate.
+[00:19:17 -> 00:19:24] No, I'm good.
+[00:19:24 -> 00:19:53] Yes, but again, you know, a lot of the L2 may not be being used, certainly not the L3 these days.
+[00:19:53 -> 00:20:02] So, the idea is to dynamically turn off the unused arrays.
+[00:20:02 -> 00:20:06] So, turn off means actually disconnect them from the power, okay.
+[00:20:06 -> 00:20:12] So, that's going to help both with dynamic and static power and, but they're always trade-offs, okay.
+[00:20:12 -> 00:20:20] If that part that you want to turn off is holding dirty lines, you have to flush them and that takes power, okay.
+[00:20:20 -> 00:20:25] And if my cache size goes down, yes, the miss rate is going to go up a little bit.
+[00:20:25 -> 00:20:29] It could go up a lot, okay, if you don't do it right.
+[00:20:29 -> 00:20:32] And then, you know, power goes up execution time also.
+[00:20:32 -> 00:20:47] So, one way, okay, and so the question that comes is, okay, you know, how do I know that my cache is big enough
+[00:20:47 -> 00:20:51] or it's like, you know, too big or whatever it is, okay, it's the miss ratio.
+[00:20:51 -> 00:20:56] So, I would like to know what is my miss ratio, okay.
+[00:20:56 -> 00:21:01] But, you know, if you want to figure out what the miss ratio is, it's a little complicated, you know.
+[00:21:01 -> 00:21:06] You have to put in some work, but you can actually answer the question is,
+[00:21:06 -> 00:21:12] is my miss ratio greater than a certain number fairly easily, okay.
+[00:21:12 -> 00:21:20] Because if I want to say, hey, if my miss ratio is less than a certain threshold, maybe I can resize the cache a little bit.
+[00:21:20 -> 00:21:29] And then if my miss ratio starts going above a certain threshold, then I, you know, go back and get the larger size, okay.
+[00:21:29 -> 00:21:35] So, a very, very simple, very, very simple way of trying to figure out where the,
+[00:21:35 -> 00:21:42] if I want to say, look, is my miss ratio greater than 5%, okay.
+[00:21:42 -> 00:21:47] I can have a simple counter, and every time I hit, I decrement the counter.
+[00:21:47 -> 00:21:52] Every time I miss, I increment the counter by 19, okay.
+[00:21:52 -> 00:22:00] If the counter is positive, there is more than one miss for 19 hits, so the miss ratio is greater than 5%, okay.
+[00:22:00 -> 00:22:08] So, you know, I can play simple tricks like this to figure out where I am with respect to a certain threshold.
+[00:22:08 -> 00:22:15] I could do the same thing, by the way, to figure out, you know, what my branch prediction, you know, is at a certain threshold, et cetera.
+[00:22:16 -> 00:22:18] Variety of different things.
+[00:22:18 -> 00:22:25] So, one thing I can do is reduce the weights.
+[00:22:25 -> 00:22:29] Okay, I have a N of my set associative cache.
+[00:22:29 -> 00:22:35] If I reduce the number of weights from N to N minus 1, that's going to be just fine.
+[00:22:35 -> 00:22:45] Because the mapping of the cache blocks with the sets doesn't change.
+[00:22:45 -> 00:22:49] It's fairly simple. You lose associativity.
+[00:22:49 -> 00:22:55] Now, another proposed technique, this one, you know, people have talked about implementing.
+[00:22:55 -> 00:22:58] This one, I haven't seen people implement it.
+[00:22:58 -> 00:23:09] But what you can do is you can actually reduce the number of sets, okay, to less than a power of 2.
+[00:23:09 -> 00:23:18] Which then goes back to the original we so far talked about is, hey, the number of sets has to be a power of 2, because those are the bits that I'm using to select it.
+[00:23:18 -> 00:23:19] Okay.
+[00:23:19 -> 00:23:31] But now what I need to do is I need to have a mapping from N bits to not 2 to the N sets, but something less than 2 to the N sets.
+[00:23:31 -> 00:23:32] Okay.
+[00:23:32 -> 00:23:35] It gets a little more complicated, but it is doable.
+[00:23:35 -> 00:23:44] And you also then need to relocate the blocks whenever you are resizing the cache, because the mapping function changes.
+[00:23:44 -> 00:23:45] Okay.
+[00:23:45 -> 00:23:51] So you typically also need to flush the cache and reload all the blocks back again.
+[00:23:51 -> 00:24:06] And, you know, why, there are certain situations where higher associativity is, you know, for a fixed amount, higher associativity is better.
+[00:24:06 -> 00:24:14] And rather than just losing one-inth of the cache with this way, which you would do with the reduced ways, this gives you a little more option.
+[00:24:14 -> 00:24:17] So, you know, you can always find cases where something like this happens.
+[00:24:17 -> 00:24:32] But, you know, this is, people have talked about either reducing it or actually even partitioning the cache and let the part of the cache go to a different thread or something like that.
+[00:24:32 -> 00:24:34] All right.
+[00:24:34 -> 00:24:39] Another technique that has been used, this is more of a circuit technique.
+[00:24:39 -> 00:24:40] Okay.
+[00:24:40 -> 00:24:43] And this, I believe, is used in several of the ARM processors.
+[00:24:43 -> 00:24:51] Where what you do is you give a voltage to the cache SRAM, even give it a low voltage or a high voltage.
+[00:24:51 -> 00:24:52] Okay.
+[00:24:52 -> 00:25:00] If you have a lower voltage, you have much lower leakage, but too low a voltage and you have an unreliable operation.
+[00:25:00 -> 00:25:08] So what you do is you keep it in a drowsy state where you hold on to that value, but you aren't reading or writing the value.
+[00:25:08 -> 00:25:11] Okay.
+[00:25:11 -> 00:25:16] It's reading or writing the value that becomes unreliable at that low voltage.
+[00:25:16 -> 00:25:22] So at that, if you lower the voltage, you're going to cut down on the static power, the leakage power.
+[00:25:22 -> 00:25:23] Okay.
+[00:25:23 -> 00:25:28] And then when you want to actually do a read, you wake it up to a normal state with a high voltage.
+[00:25:28 -> 00:25:31] You'll take, you know, a few more cycles.
+[00:25:31 -> 00:25:39] So you'll pay the extra latency on doing that and then you can read the drowsy cache.
+[00:25:40 -> 00:25:49] One of the people who did this came and was a faculty member in EC for a few years and then he went off to Illinois instead.
+[00:25:49 -> 00:26:03] So when you supply this high voltage, it's to the whole cache or it's to like, you know what part of the cache you need to power up.
+[00:26:03 -> 00:26:09] You basically, the drowsy part, you would have part of the cache drowsy.
+[00:26:09 -> 00:26:19] You can do, I mean, again, you can do, it depends on how much logic and how much, you know, stuff you're willing to put out there.
+[00:26:19 -> 00:26:24] But it's not like the cache line gets powered up and then you go read it.
+[00:26:24 -> 00:26:27] It's much larger scale.
+[00:26:27 -> 00:26:30] Larger granularity than that.
+[00:26:30 -> 00:26:40] Because you see, it's like, you know, again, it would be more to one of those suburbs if you're talking about it.
+[00:26:40 -> 00:26:44] Okay.
+[00:26:44 -> 00:26:51] So now putting together a lot of what we've learned.
+[00:26:51 -> 00:26:59] So your first level of caches, you're going to have separate instruction and data cache.
+[00:26:59 -> 00:27:02] Otherwise you just have structural conflicts all the time.
+[00:27:02 -> 00:27:11] You have separate instructions and data caches and these first level is going to be optimized for hit latency and barrel access.
+[00:27:11 -> 00:27:18] So you have the separate instruction data caches to get the bandwidth.
+[00:27:18 -> 00:27:21] Typically they are 8 to 64 kilobytes.
+[00:27:21 -> 00:27:26] You know, these are some of the instruction caches like we saw 192 kilobytes and so on like that.
+[00:27:26 -> 00:27:32] But, you know, the data cache is still reasonably small.
+[00:27:32 -> 00:27:41] Because, you know, for the instruction caches you actually go and fetch a whole thing and, you know, you know, you can get ahead of fetching data.
+[00:27:41 -> 00:27:48] You can only start the process once you have the address.
+[00:27:48 -> 00:27:52] And, you know, block size of 16 to 64 kilobytes.
+[00:27:52 -> 00:27:54] 64 is quite common.
+[00:27:54 -> 00:28:00] And associativity, which is, you know,
+[00:28:00 -> 00:28:03] It's actually more than four these days.
+[00:28:03 -> 00:28:10] Why it's that much we will see why that's the case in the next unit.
+[00:28:10 -> 00:28:17] And, you know, you basically have parallel tag and data access, but you use wave prediction sometimes.
+[00:28:17 -> 00:28:22] So your wave prediction is in a sense your power saving technique.
+[00:28:22 -> 00:28:29] For bandwidth you either bank the caches or you use multi porting and replication.
+[00:28:29 -> 00:28:38] And this is more common, you know, these days multi porting replication, you know, especially for the instruction caches, the data caches.
+[00:28:38 -> 00:28:48] You know, for instruction caches, you know, banking can also work reasonably well.
+[00:28:48 -> 00:28:53] And they are typically going to be either write through or write back.
+[00:28:53 -> 00:29:00] Many processors have write through, as you mentioned, level one caches to help.
+[00:29:00 -> 00:29:08] And why so? We'll see a little bit also later on when you get to multi level inclusion and coherence.
+[00:29:08 -> 00:29:10] Okay.
+[00:29:10 -> 00:29:20] Are optimized, you know, assuming L2 is the, you know, after L2 you go to memory.
+[00:29:20 -> 00:29:29] Okay. It's optimized for messes because the cost of a mess going object going to DRAM is hundreds of cycles, you know, 300 cycles or whatever it is.
+[00:29:30 -> 00:29:37] Okay. And it's hit latency is, you know, maybe 10 to 20 cycles.
+[00:29:37 -> 00:29:48] And so you you are, in a sense, saving on the power also by not having this L2 be that fast.
+[00:29:48 -> 00:29:57] Okay. And for them, you don't have typically have separate L2 instruction and data caches.
+[00:29:57 -> 00:30:03] They're typically in the same cache because you can actually utilize, you get a higher utilization.
+[00:30:03 -> 00:30:07] Okay. And a higher miss, a lower miss, right.
+[00:30:07 -> 00:30:16] That said, that said, because the fetching of instructions is so critical, if you don't have an instruction, you are doing nothing.
+[00:30:16 -> 00:30:24] Okay. If you don't have data, well, you miss, you put it in the MSHR and, you know, some other things could be happening.
+[00:30:24 -> 00:30:35] And if you actually have, if you actually have workloads that have very high data sets and they're in a sense, you know, streaming through.
+[00:30:35 -> 00:30:45] If you're sharing the instructions and data in one cache just by the normal LRU policy, if you will, the instruction will get wiped out.
+[00:30:45 -> 00:30:52] All right. So that has all been sort of worked on trying to preserve instructions over data.
+[00:30:52 -> 00:31:08] You know, ordering the rate placement policies, preserve instructions, and somehow maybe even partitioning the cache to, you know, give reference part of it to where instructions could be, et cetera.
+[00:31:08 -> 00:31:10] All right.
+[00:31:10 -> 00:31:20] The block size is, you know, 64 to 56 bytes and a larger associativity.
+[00:31:20 -> 00:31:37] You can have a larger associativity because, because you're going to be using, you know, typically a, you know, if you have especially, you know, quite a big associativity, you can use the serial tag and data access.
+[00:31:37 -> 00:31:45] You can also do parallel and, you know, many times people have parallel to, especially for lower associativity.
+[00:31:45 -> 00:31:57] Here the bandwidth is mostly via banking rather than via porting, multi-porting and replication.
+[00:31:57 -> 00:32:14] Okay. And, you know, when we talked about the different techniques, one of the issues that we said with banking is that if you have two requests to the same bank, you can only handle one of them in any given cycle.
+[00:32:14 -> 00:32:29] All right. If it's now the L1 cache, and I'm trying to handle two accesses to the cache, you know, in parallel, they go to the same bank, only one of them goes, the other one has to wait a cycle.
+[00:32:29 -> 00:32:41] Okay. Going back to what we started talking about, scheduling the dependent load, et cetera, in an operation, you know, all that then gets messed up a little bit.
+[00:32:41 -> 00:32:56] Because with a small number of banks, conflicts are frequent. For an L2 cache, basically, you know, if I have a bank conflict, I'm going to have a queue per bank.
+[00:32:56 -> 00:33:06] Okay. One of them is going to go, the other one's going to go later. Okay. So the first one, maybe I see a 10 cycle latency, the other one 12 cycle latency. Who cares?
+[00:33:06 -> 00:33:18] It's not, you know, a miss is a miss in some sense. Because the hardware, the process, you know, the MSHR and so on, once you get a miss, you wait.
+[00:33:18 -> 00:33:28] It's a split transaction bus, you know, you wait until the result comes back to be hitting in the L2 or missing the L2, hitting in the L3 or going off to memory.
+[00:33:28 -> 00:33:48] That doesn't matter. L2 caches are almost always write back. Because if I want to have L1 write cache, write through, okay, L2 is 10 cycles here.
+[00:33:48 -> 00:34:02] Maybe I have to have this write buffer that maybe can handle 10 cycles of latency.
+[00:34:02 -> 00:34:21] If I want to have L2 write back and say it's writing back to memory and the memory is 300 cycles away, okay, not only do I have to do all of that, but I have to wait 100 cycles and send stuff across the bus for every write operation.
+[00:34:21 -> 00:34:31] Which I don't want to do. I only want to send stuff out onto the bus if I'm replacing a dirty block. So I have a write back cache open.
+[00:34:31 -> 00:34:48] L3 caches now are also, you know, coming up and 30 to 50 cycles. I'm hitting 80 cycles, you know, 100 cycles, L3 or whatever it is. That's what people are building these days.
+[00:34:48 -> 00:35:15] Okay, any questions so far? Here I have an L1 cache and I have a, and let me just say I only have, you know, two levels of cache. That is, you know, memory somewhere over here, etc.
+[00:35:15 -> 00:35:52] And I bring a block and a block can be in the L1 cache, a block can be in the L2 cache. Okay, so now what I have is I have multiple levels of cache and the decision I have to make now is where can a block be present in the cache when I have multiple levels?
+[00:35:52 -> 00:36:25] So, option I have is that a block in the L1 is always going to be also there in the L2. So, in a sense, everything in the L1 is a duplicate of something in the L2.
+[00:36:25 -> 00:36:50] Okay, what is called inclusion? So, I follow a multi-level inclusion policy or a MLI multi-level inclusion. Option is I could have exclusion where a block could be present either in L1 or L2 but not in both.
+[00:36:50 -> 00:37:10] A third option is I don't give any guarantees about whether the blocks are present or where the blocks are present or whether a block in L1 is also present in L2. Why are these important? Why is this important?
+[00:37:10 -> 00:37:47] Okay, and why would I ever want to have inclusion? Exclusion, maybe you can say, yeah, it makes sense. I'm not having a duplication over here. And in fact, if these two caches are roughly of the similar size, okay, then, you know, and they are reasonably small, then exclusion is a good way of making sure that the cache resources are utilized in the best way.
+[00:37:47 -> 00:38:10] And nothing is wasted. Okay, if my L2 cache size is, say, 10 times larger of the L1 cache size, okay, then if I have inclusion, then I am wasting maybe about 10% of the cache resources. I'm losing about 10% of the cache resources.
+[00:38:15 -> 00:38:43] Why would I want to do that? What benefit am I getting from that? The big benefit that comes from that is the following. These days, or actually for quite a while, you almost never had only one processor. You almost always have a...
+[00:38:43 -> 00:39:12] And so when you have a multiprocessor, processor here, you have a processor here, when we get to the last couple of lectures, we'll see that we have to maintain the coherence of these caches.
+[00:39:12 -> 00:39:38] The way we maintain the coherence of these caches is going to be, say this processor is writing to some block address, X, okay, block X. Because this block X could be present in multiple caches, we'll see later on.
+[00:39:38 -> 00:39:58] What you have to do is, as part of that write operation, go ahead and validate that block anywhere else. It could be present in this cache, it could be present in this cache, if I have more processor, it could be present in any one of those caches.
+[00:39:58 -> 00:40:34] How do I know a block X is present in a cache? Check the tags, right? So, I am going to have to check the tags of this cache, I'm going to have to check the tags of this cache, especially if I have an exclusion, because the block could be present in either one of these caches.
+[00:40:37 -> 00:41:14] Are you with me on this? If I had inclusion, I check this cache, if that block is not there in this cache, then I know it's not there in this cache, so I don't need to check this, alright? And most of the time the block is not going to be over here.
+[00:41:14 -> 00:41:31] The only other I can do is, in this cache, in addition to these tags, I can maintain a single bit, indicating whether that block is present in this cache, in the L1 or not.
+[00:41:31 -> 00:41:52] Now, if I have a match for a block, and that match, the inclusion bit says, hey the block is not in the L1 cache, then I don't need to bother this L1 cache. I only need to bother this L1 cache, by bother means take a look at the tags, okay?
+[00:41:52 -> 00:42:14] If there is a match that happens here, and the bit says that block is there in that cache, and in that case I have to go and set the valid bit of this block in the L1 cache. Are you with me on this?
+[00:42:14 -> 00:42:41] So now, you're saying, okay, you know, what's the, you know, if I have multi-level inclusion, again I'm only bothering this cache, checking the tags of this cache, when there is a match, when the block is actually there in that cache, not if it may be as in the case of the exclusion.
+[00:42:41 -> 00:43:05] Now, the reason why I want to minimize these checks is because if this processor is chugging along, it's accessing the L1 cache every cycle, or if I have two ports these days, you know, coils every cycle, okay?
+[00:43:05 -> 00:43:29] So, I do not want to also have the additional third check to see if this request is the block that I have a request, a write for, match of this tag, especially since the chances of a match are extremely low. Okay? Are you with me on this? Yeah?
+[00:43:29 -> 00:43:48] So, in this case, you said we first check in L2 and then go to L1, an inclusive case of the cache.
+[00:43:48 -> 00:44:09] It's opposite. No, okay. So, what we have always talked about is a processor-side request. The processor is making requests. You go to L1, then you go to L2, whatever.
+[00:44:09 -> 00:44:29] Okay. What I'm talking about is requests that are going in this direction. Those would be what are called bus-side requests, which means requests that have come in to the caches from the bus.
+[00:44:29 -> 00:44:41] And why is a request coming to the caches from the bus? Because there's another processor that has made either a read or a write request for that block.
+[00:44:41 -> 00:44:49] And, you know, if it's a read request, it's not that in these caches it comes out in the bus, and if some other cache has it, it supplies it.
+[00:44:49 -> 00:45:01] If it's a write request, then that write request needs to make sure any blocks in the other caches need to be invalidated. So it comes out in this bus, and from the bus it goes.
+[00:45:01 -> 00:45:19] Makes sense? Other questions? Yeah, so it's multi-level inclusion, a very important property.
+[00:45:19 -> 00:45:37] So, you know, you've seen this before. You know, you have a component. Your access is hit, miss, fail, mis-read, hit latency, mis-latency.
+[00:45:37 -> 00:45:52] This is the average memory access latency. If you have multiple levels, then again, you know, each one of these then, you know, become as a latency of hit time, miss-read times, miss-latency at that level.
+[00:45:52 -> 00:46:35] One of the things now I do want to talk about is the local and the global mistakes. The processor, L1 cache, okay?
+[00:46:35 -> 00:46:48] The requests that come to the L1 cache are the requests that the processor makes. The requests that come to the L2 cache are the misses from the L1 cache.
+[00:46:48 -> 00:47:00] All right? So when I talk about a miss rate, what is the miss rate that I'm talking about?
+[00:47:00 -> 00:47:10] If I'm talking about the miss rate of this cache, it is the number of requests that this cache gets, what percentage of them do miss.
+[00:47:10 -> 00:47:18] If I'm talking about the miss rate of this cache, it is the number of requests that this cache gets, what percentage of them miss.
+[00:47:18 -> 00:47:30] And that is what would be a local hit or miss rate. Percentage of references to the cache that hit. Okay?
+[00:47:30 -> 00:47:42] Now, many a times, we actually talk about how many misses are there per instruction. So, you know, people have a metric that MPKI misses per kilo instruction.
+[00:47:42 -> 00:48:00] Okay? So the processor is executing instructions and generating references. What percentage of those references miss in the cache? Okay?
+[00:48:00 -> 00:48:28] So the global hit miss rate is the misses per instruction. So, you know, if I say I have one miss per 30 instructions, or, you know, that's 3% of all the instructions, in a sense, have the miss.
+[00:48:28 -> 00:48:40] All right? Now, consider a second level cache. If the L1 cache has, say, two misses per 100 instructions, 2% miss ratio. Okay?
+[00:48:40 -> 00:48:56] And the L2 cache has one miss per 100 instructions. Okay? The local miss rate over here is actually, you know, for every 100 instructions, two references are coming out over here.
+[00:48:56 -> 00:49:17] Of those, one is missing. Okay? So the local miss rate over here is 50%. Okay? Not 1%. So, you know, it's important to understand the difference between the local and the global miss rate.
+[00:49:17 -> 00:49:28] Now, why is that important? You know, why, you know, okay? Because, you know, sometimes you may say, hey, you know, I have an L2 cache and let me just simulate an L2 cache. Okay?
+[00:49:28 -> 00:49:37] And simulate an L2 cache, a cache of a certain size and get a certain miss rate. Okay?
+[00:49:37 -> 00:49:55] So, you know, say this is, you know, 64 kilobyte cache or 1 megabyte cache, and I want to find the miss rate in a L2 cache, I'll just simulate a 1 megabyte cache with the reference stream coming from the processor, get a certain miss rate. Okay?
+[00:49:55 -> 00:50:16] But no, the reference stream this is seeing is the miss rate in this, not the coming out from the processor. So the global miss rate over here for calculating, you know, what is the miss rate for one of these over here is actually the local miss rate.
+[00:50:16 -> 00:50:20] Are you with me on this? Yeah?
+[00:50:20 -> 00:50:28] I understand the local miss rate for L2 is 50%, but what is the global miss rate?
+[00:50:28 -> 00:50:38] The global miss rate is basically, you know, I'm executing 100 instructions. Okay?
+[00:50:38 -> 00:50:44] How many misses am I seeing in this cache for 100 instructions? All right?
+[00:50:44 -> 00:50:51] If I'm seeing one miss rate for 100 instructions, that is the global miss rate.
+[00:50:51 -> 00:50:55] That is 50%. That is 1%.
+[00:50:55 -> 00:50:58] The local miss rate is 50%.
+[00:50:58 -> 00:51:18] Actually, the global miss rate is not 1%, it's 1 miss for 100 instructions, if it is, and if, you know, 1 in 3 instructions are loads, if I only have load instructions, it's 1 miss for every 30 instructions, 30 references.
+[00:51:18 -> 00:51:38] So, you know, I'm not going to do these performance calculations, but you can sort of do these, again, you know, if you have any issue with these, you can always reach out to me, fairly straightforward.
+[00:51:38 -> 00:51:47] Very similarly, you know, you can do, you know, calculations as to separating the CPI of the instruction misses and the CPI of the data misses.
+[00:51:47 -> 00:51:52] You know, these are, again, very simplistic back of the envelope calculations.
+[00:51:52 -> 00:51:58] They aren't necessarily very meaningful for the order of order processes, et cetera, that we are talking about.
+[00:51:58 -> 00:52:02] You can also do, you know, energy calculations, you know.
+[00:52:03 -> 00:52:11] Again, you're doing some simple calculations as to what is, you know, how much can I say with a 0 tag data access design.
+[00:52:15 -> 00:52:29] So, to summarize, you know, we talked about the average memory access time of a memory component, access time of a memory component is the hit latency plus the percentage misses times miss latency.
+[00:52:29 -> 00:52:34] It's hard to get both the hit latency and the percentage misses down in one structure.
+[00:52:34 -> 00:52:44] So, you get a hierarchy. So, you have SRAMs, DRAMs, and we go to DRAMs with X and disks, smaller, faster, more expensive, bigger, slower, cheaper.
+[00:52:44 -> 00:52:46] We talked about the 3C model.
+[00:52:46 -> 00:52:56] Then we talked about techniques like victim buffers and, you know, school-associated caches to reduce the percentage misses, prefetching to reduce the miss rate,
+[00:52:56 -> 00:53:03] and then reducing the miss latency, critical work from after we restart, lack of redesign, et cetera.
+[00:53:03 -> 00:53:13] Power optimizations, wave prediction, dynamic resizing, variety issues, right back, right through, right allocate, et cetera.
+[00:53:13 -> 00:53:14] Questions on this?
+[00:53:14 -> 00:53:29] Prefetching, play with the coherence requirements that are more expensive?
+[00:53:29 -> 00:53:42] For the coherence part, typically, prefetching is just considered just like a normal request.
+[00:53:42 -> 00:53:55] And that itself then has sometimes, if you do the wrong prefetch, it can be quite expensive in the amount of coherence activity that it causes.
+[00:53:55 -> 00:53:59] You know, a lot of the coherence activity is due to the rights.
+[00:53:59 -> 00:54:02] So, you don't do pre-rights, typically.
+[00:54:02 -> 00:54:11] Okay, so now let's move on to sort of the next part.
+[00:54:11 -> 00:54:16] And here, you know, it's the main memory part.
+[00:54:16 -> 00:54:20] We talk basically, you know, memory hierarchy review.
+[00:54:20 -> 00:54:24] We talk a little bit about address translation.
+[00:54:24 -> 00:54:32] You probably have seen this in a class like 537 before, CS537, translation page tables.
+[00:54:32 -> 00:54:46] But then we'll make it a little more interesting to see the interaction between, you know, TLBs for page tables and the interaction between TLB access and cache access, et cetera.
+[00:54:46 -> 00:54:47] Okay.
+[00:54:47 -> 00:54:48] All right.
+[00:54:48 -> 00:54:53] So, you know, our static ramp, which we built caches out of.
+[00:54:53 -> 00:55:00] We had a bit cell array, which had some number of rows and some number of columns.
+[00:55:00 -> 00:55:04] And typically, the number of rows and columns is the same.
+[00:55:04 -> 00:55:17] We have a square array to minimize the overall latency, because the latency is, in a sense, dependent to, you know, how long the wires are along the row and how long the wires are along the column.
+[00:55:17 -> 00:55:23] Each cell is typically, you know, six transistors.
+[00:55:23 -> 00:55:26] And here's the row select line.
+[00:55:26 -> 00:55:34] And here are the different bit lines to read the set next up.
+[00:55:34 -> 00:55:40] The sequence you go through for a row, for a read is, first, you get the address.
+[00:55:40 -> 00:55:43] You decode the address.
+[00:55:43 -> 00:55:47] To drive a row select signal, select the row.
+[00:55:47 -> 00:55:51] Read all the bits in the row.
+[00:55:51 -> 00:55:52] Okay.
+[00:55:52 -> 00:55:56] And drive them onto these bit cell lines.
+[00:55:56 -> 00:55:57] Okay.
+[00:55:57 -> 00:56:05] Then you do that differential sensing and select the column you want to read.
+[00:56:05 -> 00:56:12] And then you do a recharge all the bit lines and, you know, cycle it again.
+[00:56:12 -> 00:56:22] The access latency is going to be determined by the address decode, drive the row select, and the latency of getting the bits to over here.
+[00:56:22 -> 00:56:24] Okay.
+[00:56:24 -> 00:56:33] And the cycle time is going to be, you know, proportional to, determined by, not proportional to two, three, and four.
+[00:56:33 -> 00:56:42] And typically, of course, you know, you have some synchronous and pipeline interface logic to deal with these.
+[00:56:42 -> 00:56:47] A DRAM.
+[00:56:47 -> 00:56:49] Okay.
+[00:56:49 -> 00:56:56] You have the, logically, the same bit cell array.
+[00:56:56 -> 00:56:57] Okay.
+[00:56:57 -> 00:57:03] And again, you try and make n equal to m to overall minimize the latency.
+[00:57:03 -> 00:57:11] Then also you have an address decoding, and you have a sense amp and multiplexing over here.
+[00:57:11 -> 00:57:12] Okay.
+[00:57:12 -> 00:57:23] But each bit is now, rather than six transistors over here, is going to be one transistor and a capacitor.
+[00:57:23 -> 00:57:24] Okay.
+[00:57:24 -> 00:57:30] So the bits are stored as charges on the disnode capacitance.
+[00:57:30 -> 00:57:38] And when you read a bit, that chart on the capacitance is lost.
+[00:57:38 -> 00:57:40] So you have to refresh it.
+[00:57:40 -> 00:57:41] Okay.
+[00:57:41 -> 00:57:46] Further, over time, these bit cells lose charge.
+[00:57:46 -> 00:57:55] So you periodically have to refresh it.
+[00:57:55 -> 00:58:03] So the address decode, row select, select bit lines are the same as an SRAM.
+[00:58:03 -> 00:58:07] Very similar as you know.
+[00:58:07 -> 00:58:14] And, you know, here, instead of a differential sensing and column select, you have a different kind of sensing.
+[00:58:14 -> 00:58:15] Okay.
+[00:58:15 -> 00:58:22] Which not only reads the data, but also amplifies and regenerates that bit line.
+[00:58:22 -> 00:58:30] And then you have pre-charge all the bit lines as before.
+[00:58:30 -> 00:58:40] And then periodically, you must have a DRAM controller, either in a distributed or in a burst fashion, read all these rows.
+[00:58:40 -> 00:58:41] Okay.
+[00:58:41 -> 00:58:42] And write them back.
+[00:58:42 -> 00:58:56] So what you further now have is, in a sense, is you have some traditional, very simple logic.
+[00:58:56 -> 00:59:04] And you have a signal called a row address probe and a column address probe.
+[00:59:04 -> 00:59:05] Okay.
+[00:59:05 -> 00:59:10] This row address probe is going to be, you know, indicating when to read a row.
+[00:59:10 -> 00:59:19] And the column address probe is going to be indicating, in a sense, how to, you know, how to read the column.
+[00:59:19 -> 00:59:23] And we'll see that.
+[00:59:23 -> 00:59:26] This is the basic structure.
+[00:59:26 -> 00:59:35] And now, on top of this basic structure, okay, you end up having a variety of different techniques to,
+[00:59:35 -> 00:59:39] once you read a row, to allow repeated accesses.
+[00:59:39 -> 00:59:43] Okay.
+[00:59:43 -> 00:59:47] Because the latency is basically, you know, one, two, three.
+[00:59:47 -> 00:59:54] It's a latency, but once you read the entire row, then you can have various hacks to optimize it.
+[00:59:54 -> 00:59:57] We'll see that.
+[00:59:57 -> 01:00:03] So, you know, DRAM showed up in about, you know, in the 70s.
+[01:00:03 -> 01:00:08] Before that, computers had, their memory was a magnetic core memory.
+[01:00:08 -> 01:00:15] And before that, there was these mercury delay lines, which it was amazing that they actually got it to work.
+[01:00:15 -> 01:00:16] Okay.
+[01:00:16 -> 01:00:21] But this magnetic core actually was a reasonably reliable memory.
+[01:00:21 -> 01:00:27] And then once you got, you know, electronic memory, this was magnetic memory, not electronic.
+[01:00:27 -> 01:00:35] Once you got electronic memory, DRAMs, then you could actually, you know, build a lot more of it.
+[01:00:35 -> 01:00:43] So, again, just to review the basics of a DRAM, here's the memory array.
+[01:00:43 -> 01:00:46] Here's the CPU, whatever it is, bus.
+[01:00:46 -> 01:00:55] And then there's a memory controller that is accessing, allowing access to the DRAM array.
+[01:00:55 -> 01:00:57] Okay.
+[01:00:57 -> 01:01:06] And what you do is you read, you know, activate the row decoder with an address, read a row.
+[01:01:06 -> 01:01:07] All right.
+[01:01:07 -> 01:01:15] And, you know, different DRAMs and manufacturers refer to this in different ways.
+[01:01:15 -> 01:01:19] Just, you know, people like to be different, even though the thing is the same.
+[01:01:19 -> 01:01:20] Okay.
+[01:01:20 -> 01:01:23] Otherwise, it would be not good marketing.
+[01:01:23 -> 01:01:30] Okay.
+[01:01:30 -> 01:01:36] So, you know, so reading this, they talk about opening a DRAM page.
+[01:01:36 -> 01:01:42] By the way, you know, you all take an operating systems class and you know about pages.
+[01:01:42 -> 01:01:48] We are going to have pages here, which are not the same.
+[01:01:48 -> 01:01:49] Okay.
+[01:01:49 -> 01:01:52] Here a page is just going to be a row of the DRAM.
+[01:01:52 -> 01:01:54] Okay.
+[01:01:54 -> 01:01:59] So please do not confuse this page with the page that you know.
+[01:01:59 -> 01:02:00] All right.
+[01:02:01 -> 01:02:08] So you're going to open a DRAM page on a row or sometimes it's called activate.
+[01:02:08 -> 01:02:18] You'll see an ACT signal, activate a DRAM page or a row address row, which is basically strobe in read a row.
+[01:02:18 -> 01:02:19] Yeah.
+[01:02:19 -> 01:02:25] This is something I was going to bring up when you're talking about starting catch fetches on the critical word.
+[01:02:25 -> 01:02:31] A lot of microcontrollers and a lot of like DRAM things I've seen don't support that anything.
+[01:02:31 -> 01:02:34] You just say I give you the entire page and that's it.
+[01:02:34 -> 01:02:38] So is this more of a newer push to have DRAMs that support this?
+[01:02:38 -> 01:02:39] No, DRAMs don't support it.
+[01:02:39 -> 01:02:41] DRAMs do not support this.
+[01:02:41 -> 01:02:42] Okay.
+[01:02:42 -> 01:02:47] DRAMs do not support that.
+[01:02:47 -> 01:02:51] Here is the DRAM.
+[01:02:51 -> 01:03:06] From the DRAM, okay, that block that I'm reading, which between an L3 and the DRAM would be much more than 64 bytes if you will.
+[01:03:06 -> 01:03:07] Okay.
+[01:03:07 -> 01:03:13] Isn't all getting transferred across in one shot?
+[01:03:13 -> 01:03:14] Okay.
+[01:03:14 -> 01:03:16] So that's where you would have.
+[01:03:16 -> 01:03:23] So what's happening is from there, it would go and fill in parts of this buffer over here.
+[01:03:23 -> 01:03:27] From there, it will get written in this cache.
+[01:03:27 -> 01:03:33] Or if it's coming from this cache, it's moving from this cache to this cache.
+[01:03:33 -> 01:03:40] And this, you know, this set of wires isn't 64 bytes wide.
+[01:03:40 -> 01:03:41] Okay.
+[01:03:41 -> 01:03:45] So it's coming across maybe eight bytes at a time.
+[01:03:45 -> 01:03:51] So you would fill in this buffer and provide it over here.
+[01:03:51 -> 01:03:56] That is the critical over here.
+[01:03:56 -> 01:04:05] This logic all implies this, you know, process of cache form, which no one knows about even exists.
+[01:04:05 -> 01:04:19] Right.
+[01:04:19 -> 01:04:26] So now once that row is there in the SAMSAMs and the storage over here,
+[01:04:26 -> 01:04:31] then you either have a read command or you have a column address trove.
+[01:04:31 -> 01:04:35] And then you have data in out buffers.
+[01:04:35 -> 01:04:36] Okay.
+[01:04:36 -> 01:04:43] So from the data in out buffers, they go back to the memory controller and bus and whatever.
+[01:04:43 -> 01:04:51] So data gets into the data buffers.
+[01:04:51 -> 01:04:58] From the data buffers, you have either a data out and sometimes you can optionally have this column address trove.
+[01:04:58 -> 01:05:01] And we'll see that a little bit.
+[01:05:01 -> 01:05:07] That is the basic concept.
+[01:05:07 -> 01:05:19] And, you know, so we'll talk about some of the, you know, the early DRAMs again.
+[01:05:19 -> 01:05:23] You know, you would read entire row over here.
+[01:05:23 -> 01:05:29] And then people start coming up with these optimizations saying, look,
+[01:05:29 -> 01:05:34] as long as I don't read another row, I'm going to keep that row active.
+[01:05:34 -> 01:05:40] The data from that row in this buffer or data from this page, that's my page, my row.
+[01:05:40 -> 01:05:43] So I'm going to keep that page open.
+[01:05:43 -> 01:05:44] Okay.
+[01:05:44 -> 01:05:53] Now, as now as if I'm accessing other bits, other columns in that page, I can simply provide them from here.
+[01:05:53 -> 01:05:54] Okay.
+[01:05:54 -> 01:06:00] Rather than having to read it again.
+[01:06:00 -> 01:06:06] So this open page acts as a memory level cache to reduce latency.
+[01:06:06 -> 01:06:12] But it results in variable access latency because if you get a hit in the same page, it's lower latency.
+[01:06:12 -> 01:06:15] Then if you have to go and read a new row here.
+[01:06:15 -> 01:06:24] Or there's, you know, people talk about closed page where all the accesses then become this way.
+[01:06:24 -> 01:06:28] So, you know, there's a complex power performance trade off.
+[01:06:28 -> 01:06:31] But these were some of the early DRAM optimizations.
+[01:06:31 -> 01:06:33] Okay.
+[01:06:33 -> 01:06:39] And we'll see that a little bit, you know, when we talk about these.
+[01:06:39 -> 01:06:48] But let's talk about the next thing.
+[01:06:48 -> 01:06:59] I have a DRAM chip.
+[01:06:59 -> 01:07:00] Okay.
+[01:07:00 -> 01:07:03] It has some capacity.
+[01:07:03 -> 01:07:04] Okay.
+[01:07:04 -> 01:07:09] So it basically has some number of address lines.
+[01:07:09 -> 01:07:12] Okay.
+[01:07:12 -> 01:07:17] And then some number of data lines.
+[01:07:17 -> 01:07:30] The number of data lines effectively was one.
+[01:07:30 -> 01:07:35] In the DRAM chip, you only store one bit of data.
+[01:07:35 -> 01:07:37] Okay.
+[01:07:37 -> 01:07:45] So say I'm now trying to design a memory that I'm reading 32 bits at a time.
+[01:07:45 -> 01:08:00] If I'm doing that, then I have to have 32 of these buy one chips.
+[01:08:00 -> 01:08:01] And people get that.
+[01:08:01 -> 01:08:03] No big deal.
+[01:08:03 -> 01:08:04] Okay.
+[01:08:04 -> 01:08:11] And then what started happening is that, hey, the capacity of the chip,
+[01:08:11 -> 01:08:14] mark of number of bits of the chip,
+[01:08:14 -> 01:08:21] increase more rapidly than the size of memory people wanted to have.
+[01:08:21 -> 01:08:40] So basically what that means is that, you know, to get the same, you know,
+[01:08:40 -> 01:08:45] let's say four megabit chip.
+[01:08:45 -> 01:08:54] And I want to have a, you know, buy eight wide memory.
+[01:08:54 -> 01:08:57] Let's say buy 32 wide memory.
+[01:08:57 -> 01:08:58] Okay.
+[01:08:58 -> 01:09:03] Then I have to have four megabit by 32.
+[01:09:03 -> 01:09:06] At least, what does this work out to be in bytes?
+[01:09:06 -> 01:09:11] 16 megabytes of memory.
+[01:09:11 -> 01:09:13] All right.
+[01:09:13 -> 01:09:17] That's the minimum size I have.
+[01:09:17 -> 01:09:25] Now say that instead I ended up having 64 megabit chips.
+[01:09:25 -> 01:09:30] If I still had only, it was one bit wide,
+[01:09:30 -> 01:09:33] and I wanted to have a 32 bit wide memory,
+[01:09:33 -> 01:09:40] then the minimum memory size ends up being, what are the lists?
+[01:09:40 -> 01:09:43] 56.
+[01:09:43 -> 01:09:45] Is that right?
+[01:09:45 -> 01:09:46] Yeah.
+[01:09:46 -> 01:09:47] Okay.
+[01:09:47 -> 01:09:51] I may not want this much memory.
+[01:09:51 -> 01:09:54] Okay.
+[01:09:54 -> 01:09:57] So what are my options?
+[01:09:57 -> 01:10:05] My options are, say I only want a 64 megabyte memory.
+[01:10:05 -> 01:10:08] Okay.
+[01:10:08 -> 01:10:14] And I have 64 megabit chips, then I'm going to use eight of those chips.
+[01:10:14 -> 01:10:15] All right.
+[01:10:15 -> 01:10:21] If I use eight of those chips and I still want a 32 bit wide access,
+[01:10:21 -> 01:10:28] then each of these chips should now have four bits of data.
+[01:10:28 -> 01:10:33] Okay.
+[01:10:33 -> 01:10:39] So as the DRAM density increased,
+[01:10:39 -> 01:10:43] okay, that is increasing faster than demand,
+[01:10:43 -> 01:10:49] which meant that the number of chips in the memory system kept decreasing.
+[01:10:49 -> 01:10:50] Which is actually a good thing,
+[01:10:50 -> 01:10:53] because you would never have these small devices
+[01:10:53 -> 01:10:57] if you had 16 chips for memory even.
+[01:10:57 -> 01:11:00] Okay.
+[01:11:00 -> 01:11:06] What that means is now you need to increase the bandwidth per chip
+[01:11:06 -> 01:11:09] to actually get the desired bandwidth.
+[01:11:09 -> 01:11:16] Are you with me on this?
+[01:11:16 -> 01:11:17] Okay.
+[01:11:17 -> 01:11:21] So, you know, we went from,
+[01:11:21 -> 01:11:27] we will see from the first cut DRAM designs to synchronous DRAM
+[01:11:27 -> 01:11:33] to dual data rate and then DDR2, DDR3.
+[01:11:33 -> 01:11:36] I think today most common is DDR5.
+[01:11:36 -> 01:11:38] I don't know if you know.
+[01:11:38 -> 01:11:46] So we will see some of this evolution in a sense how it is done.
+[01:11:46 -> 01:11:49] Okay.
+[01:11:49 -> 01:11:52] So we start off with this early synchronous interface.
+[01:11:52 -> 01:11:56] Then we talk about extended data out, then synchronous DRAM,
+[01:11:56 -> 01:11:59] then double data rate, which is DDR,
+[01:11:59 -> 01:12:02] and then there are multiple versions of the media.
+[01:12:02 -> 01:12:05] I want to talk a little bit about Rambus FP,
+[01:12:05 -> 01:12:10] because this for a while was something that came out of Stanford,
+[01:12:10 -> 01:12:13] was where they first made people aware of,
+[01:12:13 -> 01:12:16] hey, you need to, you're going to have all these, you know,
+[01:12:16 -> 01:12:18] processors that are needing,
+[01:12:18 -> 01:12:22] that are making huge demands on memory bandwidth.
+[01:12:22 -> 01:12:24] So the DRAMs need to have high bandwidth,
+[01:12:24 -> 01:12:27] and the DRAM industry was asleep in, you know.
+[01:12:27 -> 01:12:30] Life is good, why do I need to bother, you know.
+[01:12:30 -> 01:12:33] And that's typically a lot of companies just say,
+[01:12:33 -> 01:12:36] life is good, I'm making money until someone comes,
+[01:12:36 -> 01:12:38] eats their lunch, and you know,
+[01:12:38 -> 01:12:40] they go out of business like Dax and Sun,
+[01:12:40 -> 01:12:43] or they shape up, you know.
+[01:12:43 -> 01:12:47] So, you know, and so they, Rambus,
+[01:12:47 -> 01:12:52] actually introduced the world to the need for having high bandwidth
+[01:12:52 -> 01:12:56] in DRAMs, but they had a proprietary interface
+[01:12:56 -> 01:12:57] that you had to license,
+[01:12:57 -> 01:13:00] and people weren't willing to pay the licensing revenues.
+[01:13:00 -> 01:13:04] So then, you know, the standards agencies came up
+[01:13:04 -> 01:13:10] with the standards for the DRAMs, which are the DRAMs.
+[01:13:10 -> 01:13:12] Okay.
+[01:13:12 -> 01:13:17] So here is sort of an early picture of a micron DRAM.
+[01:13:17 -> 01:13:20] Again, the memory array over here.
+[01:13:20 -> 01:13:22] Okay.
+[01:13:22 -> 01:13:26] The row decoder over here.
+[01:13:26 -> 01:13:28] The sense amps over here.
+[01:13:28 -> 01:13:30] Column decoder over here.
+[01:13:30 -> 01:13:32] Column address buffer.
+[01:13:32 -> 01:13:34] Row address buffer.
+[01:13:34 -> 01:13:36] Refresh controller.
+[01:13:36 -> 01:13:38] Refresh counter.
+[01:13:38 -> 01:13:39] Data in buffer.
+[01:13:39 -> 01:13:41] Data out buffer.
+[01:13:41 -> 01:13:43] Okay.
+[01:13:43 -> 01:13:45] Clock generator.
+[01:13:45 -> 01:13:47] Row address probe.
+[01:13:47 -> 01:13:50] Somewhere there should be a column address probe.
+[01:13:50 -> 01:13:51] Column address probe.
+[01:13:51 -> 01:13:52] Write, enable.
+[01:13:52 -> 01:13:53] Okay.
+[01:13:53 -> 01:13:58] You know, fairly, you know, stuff that is, you know,
+[01:13:58 -> 01:14:03] right now.
+[01:14:03 -> 01:14:05] So again, you generate the row address, you know,
+[01:14:05 -> 01:14:08] got to the correct row, read the row into the sense amps,
+[01:14:08 -> 01:14:12] and then you have the column address to access that.
+[01:14:12 -> 01:14:16] So the, you know, the typical flow was, again,
+[01:14:16 -> 01:14:20] you would go and read one of these and then send that data back.
+[01:14:20 -> 01:14:27] The first, the first, so basically,
+[01:14:27 -> 01:14:31] you would have a row address strobe signal for each row
+[01:14:31 -> 01:14:34] and then a column address to reach, you know,
+[01:14:34 -> 01:14:35] each column.
+[01:14:35 -> 01:14:38] The first optimization that came out was what is called
+[01:14:38 -> 01:14:41] extended data out.
+[01:14:41 -> 01:14:42] Okay.
+[01:14:42 -> 01:14:46] And what it did is each row address probe over here
+[01:14:46 -> 01:14:49] would read one row.
+[01:14:49 -> 01:14:51] Okay.
+[01:14:51 -> 01:14:56] You read that row and then you actually, you know,
+[01:14:56 -> 01:15:00] provided different column, you provided a row address,
+[01:15:00 -> 01:15:04] read the row, then you provided different column addresses
+[01:15:04 -> 01:15:07] to read different columns of that same row.
+[01:15:07 -> 01:15:10] So for each address you were providing over here,
+[01:15:10 -> 01:15:13] each address, you know, this address is coming, you know,
+[01:15:13 -> 01:15:16] with a control logic, a column address strobe signal.
+[01:15:16 -> 01:15:21] For each address you would read that data out
+[01:15:21 -> 01:15:24] and you would indicate that there is a new address
+[01:15:24 -> 01:15:28] by activating, toggling this column address.
+[01:15:28 -> 01:15:31] Okay.
+[01:15:31 -> 01:15:33] So it's similar to that fast-paced mode,
+[01:15:33 -> 01:15:38] but you overlap the column address with this data out over here.
+[01:15:38 -> 01:15:41] Okay.
+[01:15:41 -> 01:15:44] I'd like to stop here and we'll continue on Monday then.

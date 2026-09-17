@@ -1,0 +1,656 @@
+Title: 752_Lec12
+Source file: 752_Lec12.mp4
+Detected language: en
+------------------------------------------------------------
+
+[00:00:00 -> 00:00:08] When I'm going and reading the two inputs for an instruction I'm going to need to have two
+[00:00:08 -> 00:00:14] read ports on the register file and then each one of those is going to get
+[00:00:14 -> 00:00:21] written into independent places so there's only one write port in this
+[00:00:21 -> 00:00:32] reservation station okay and so what I'm going to have to do is if I have N
+[00:00:32 -> 00:00:38] white issue for the reservation stations I'm going to need N tag value write
+[00:00:38 -> 00:00:46] ports okay so for each instruction each instruction that I created a
+[00:00:46 -> 00:00:53] reservation I dispatch to a reservation station I'm going to need a write port
+[00:00:53 -> 00:00:57] for the tag and write port for the you know the two source tags the
+[00:00:57 -> 00:01:11] destination tags and the you know write port for each of the values so N write
+[00:01:11 -> 00:01:16] ports if I'm doing N instructions and I'm going to need that in the
+[00:01:16 -> 00:01:25] dispatch stage then when the instruction is issued okay when N instructions are
+[00:01:25 -> 00:01:33] issued when N instructions are issued for each instruction I'm going to read
+[00:01:33 -> 00:01:41] the two values each of them has one read port if you will okay so for N instructions I'm going
+[00:01:41 -> 00:01:51] to need to read N values so I need N read ports and then I'm also reading these tag
+[00:01:51 -> 00:02:01] cans over here so I need two N of those tag cans in the reservation station the
+[00:02:01 -> 00:02:07] map table we'll come back to this one the map table is going to need two N
+[00:02:07 -> 00:02:15] read ports in dispatch and map is written and also so you read two tags
+[00:02:15 -> 00:02:21] from the map table and then you write the tag in the map table so if I'm
+[00:02:21 -> 00:02:27] doing N instructions I need N write ports register file very similarly I'm
+[00:02:27 -> 00:02:31] going to read to register so if I'm doing N instructions I need two N
+[00:02:31 -> 00:02:38] read ports and N write ports and if I'm now trying to do N instructions N
+[00:02:38 -> 00:02:43] instructions are putting their value out on the common data bus so basically
+[00:02:43 -> 00:02:55] I need in a sense N common data buses okay then the two is coming from the
+[00:02:55 -> 00:03:00] fact that you are doing both source operands yes and then the N is
+[00:03:01 -> 00:03:12] destination okay and now if I have W reservation stations okay for one issue I
+[00:03:12 -> 00:03:16] have to select one of those instructions in the W reservation
+[00:03:16 -> 00:03:22] station if I'm doing N I have to select N in those W reservation
+[00:03:22 -> 00:03:29] stations okay so I have to select from the W instructions I have I have
+[00:03:29 -> 00:03:38] to select of them select them with some priority important so this ends up
+[00:03:38 -> 00:03:45] being one of the most you know complex pieces why so because it ends up being
+[00:03:45 -> 00:03:50] more of the order of and I you know want to go to the details over here
+[00:03:50 -> 00:03:59] of you know N square times log W and you know the others are the other is
+[00:03:59 -> 00:04:04] lot of them okay they take area they do whatever it is okay but this one the
+[00:04:04 -> 00:04:08] selection is actually ends up being if you take a look at the logic of a
+[00:04:08 -> 00:04:13] priority encoder encoder it is an occurrence relation of some kind okay
+[00:04:13 -> 00:04:21] and ends up being the complex part so the select logic is also you know
+[00:04:21 -> 00:04:28] it's part of the instruction scheduling process and so you know you
+[00:04:28 -> 00:04:32] will see you know at different places people are talking about an instruction
+[00:04:32 -> 00:04:37] scheduler and you know how do you basically schedule select which
+[00:04:37 -> 00:04:42] instructions to schedule for execution so there has been you know variety of
+[00:04:42 -> 00:04:49] different designs as you know so what you what you pointed out last time
+[00:04:49 -> 00:04:54] James is that hey I had you know you know when I had these reservation
+[00:04:54 -> 00:04:59] stations I was saying that you know there was a reservation station for a
+[00:04:59 -> 00:05:06] functional unit if you will well I mean you could look at it that way but
+[00:05:06 -> 00:05:12] you know over here in a sense we are like drawing a board as if they're
+[00:05:12 -> 00:05:16] just one pool of reservation stations from which you are selecting for the
+[00:05:16 -> 00:05:24] different functional units okay so you know you can have you know
+[00:05:24 -> 00:05:29] different designs where you can split the reservation stations into n different
+[00:05:29 -> 00:05:37] banks okay one per functional unit so now what you're doing is you are
+[00:05:37 -> 00:05:42] selecting only one for each bank but since you have n banks you have
+[00:05:42 -> 00:05:48] selected okay and your overall window you know which was n instructions is
+[00:05:48 -> 00:05:53] broken up into n reservation stations W reservation stations broken up into n
+[00:05:53 -> 00:06:01] banks so each bank is W over n if you will the logic now simpler but now
+[00:06:01 -> 00:06:04] there's a less scheduling flexibility because you can you know there may be
+[00:06:04 -> 00:06:10] cases where you want to select two from the same bank if you will which
+[00:06:10 -> 00:06:16] you cannot over here especially if you share it's like you know you know I
+[00:06:16 -> 00:06:21] mean it's like you go to a bank and you have you can if you have a cube or
+[00:06:21 -> 00:06:25] teller okay they're n tellers you have a cube or teller you know
+[00:06:25 -> 00:06:29] theoretically proven that if you have a single cube then service time is
+[00:06:29 -> 00:06:41] less okay but you know maybe the the end individuals the logic is much better
+[00:06:41 -> 00:06:46] you can even go further where rather than selecting any of the end you
+[00:06:46 -> 00:06:51] actually just take the top one you know so you actually issue only in the
+[00:06:51 -> 00:06:56] head order it's fairly simple there's no select logic over here you're
+[00:06:56 -> 00:07:04] just issuing the top one and that's reasonably well but you know the
+[00:07:04 -> 00:07:09] scheduler part in the actual design people bring great attention into
+[00:07:09 -> 00:07:14] digging up the you know the banks and later on music physical register
+[00:07:14 -> 00:07:20] giving up the different physical register you know partitioning the
+[00:07:20 -> 00:07:28] different structures so that you can manage them much better than one big
+[00:07:28 -> 00:07:32] uniform structure for our purposes you know having a uniform structure is
+[00:07:32 -> 00:07:36] just it's more intuitive it's easy to understand when you actually go do
+[00:07:36 -> 00:07:41] the design then you start playing all sorts of games given the constraints
+[00:07:41 -> 00:07:49] that you have over there okay now you know we saw in the in order
+[00:07:50 -> 00:07:54] bypassing is sort of one of those critical things okay it is really a big
+[00:07:54 -> 00:08:05] saver so can we add bypassing over here and Thomas who helps the simple one
+[00:08:05 -> 00:08:12] that we have okay so basically what that means is rather than the value
+[00:08:12 -> 00:08:15] from the function from an instruction that's created rather than first
+[00:08:15 -> 00:08:20] waiting to write it into the reservation station where the successor
+[00:08:20 -> 00:08:25] instruction dependent instruction could read it from you actually issue the
+[00:08:25 -> 00:08:29] dependent the successor instruction and you bypass the value to the input
+[00:08:29 -> 00:08:35] multiplexer of the function unit okay so you can actually get the result
+[00:08:35 -> 00:08:39] and you get the correct operation and you saw that in the in order pipeline
+[00:08:39 -> 00:08:42] you know rather than wait for the result to be written back in the
+[00:08:42 -> 00:08:53] you just bypassed it to the end but again so it actually is much more
+[00:08:53 -> 00:08:57] involved how you do it in Thomas and let us see what that is you know why
+[00:08:57 -> 00:09:03] it is more complicated and then you know what you have to do and what are
+[00:09:03 -> 00:09:08] the hiccups and then when there is a hiccup what needs to be done because
+[00:09:08 -> 00:09:14] you're going to want to have a passing period okay all right so here was a
+[00:09:14 -> 00:09:20] simple you know Thomas Sulu without any bypassing the load was creating a
+[00:09:20 -> 00:09:26] value that was an input to the multiply okay so what happened is the
+[00:09:26 -> 00:09:31] load executed in clock cycle three its result was ready at the end of clock
+[00:09:31 -> 00:09:36] cycle three then we wrote it into the wrote it into the reservation
+[00:09:36 -> 00:09:42] stations in clock cycle four and then you also issued multiply in clock cycle
+[00:09:42 -> 00:09:50] four so it started executing in clock cycle five okay what we'd like to be
+[00:09:50 -> 00:09:55] able to do is to hey you know at the end of clock cycle three the
+[00:09:55 -> 00:10:00] result of the load is ready so at the big minute at the in clock cycle
+[00:10:00 -> 00:10:05] four the multiply should start executing so it can actually read the
+[00:10:05 -> 00:10:10] use the value of the load that was available and that's what we did in the
+[00:10:10 -> 00:10:19] simple in order pipeline right okay so if I want the multiply to execute
+[00:10:19 -> 00:10:26] start executing in clock cycle four it must be issued in clock cycle three
+[00:10:26 -> 00:10:36] okay and when we did our Thomas Sulu algorithm okay what did we do is we
+[00:10:36 -> 00:10:41] broadcast the tags the reservation stations matched we broadcast the task
+[00:10:41 -> 00:10:45] and the you know end of execution the reservation station matched and then
+[00:10:45 -> 00:10:49] you knew the instruction was ready to issue and that's when you issue the
+[00:10:49 -> 00:10:58] instructions okay so the instruction that is this multiply is going for it
+[00:10:58 -> 00:11:04] to wake up it needs the tag of the load okay it needs to see the
+[00:11:04 -> 00:11:13] broadcast of the tag of the load okay are you with me on this so if I want the
+[00:11:13 -> 00:11:21] multiply and to start executing in clock cycle four the multiply needs to be
+[00:11:21 -> 00:11:29] issued in clock cycle three which means that the tag of the load should be
+[00:11:30 -> 00:11:40] broadcast in clock cycle three so that the multiply can see it and be done okay
+[00:11:40 -> 00:11:48] and so while the load is executing it hasn't finished execution the
+[00:11:48 -> 00:11:56] tag of that must be broadcast. Are you with me on this? So you're broadcasting the
+[00:11:56 -> 00:12:04] tag ahead of time in the expectation that you know the value will be ready
+[00:12:04 -> 00:12:09] and the dependent instruction can pick it up from where it needs to be you
+[00:12:09 -> 00:12:21] know from the bypass path okay now let's say so what happens now when we
+[00:12:21 -> 00:12:33] have a multi-cycle operation when we have a multi-cycle operation we have a
+[00:12:33 -> 00:12:39] multi-cycle operation it's taken three clock cycles over here and now the store
+[00:12:39 -> 00:12:49] I want to bypass the value from the multiply to the store okay so now what
+[00:12:49 -> 00:12:55] you have to do is you have to broadcast the tag three cycles before
+[00:12:55 -> 00:13:01] you know in a way to tell all the waiting instructions three cycles from
+[00:13:01 -> 00:13:10] now the value that you are waiting for will be coming out on the bypass all
+[00:13:10 -> 00:13:18] right becomes a little more involved so the scheduler is basically not only
+[00:13:18 -> 00:13:23] scheduling for this cycle but scheduling for multiple cycles in the
+[00:13:23 -> 00:13:36] future okay let's go back to the load here let's go back to this load and
+[00:13:36 -> 00:13:42] clock cycle three you know so what we did in clock cycle two we you know
+[00:13:42 -> 00:13:47] issued the load and we go to broadcast the tag of the load so then the
+[00:13:47 -> 00:13:55] multiply can be issued in clock cycle three all right and the expectation for
+[00:13:55 -> 00:14:02] the multiply is hey you know at the beginning of clock cycle four the value
+[00:14:02 -> 00:14:06] of the load will be there at the input multiply sort of the functional
+[00:14:06 -> 00:14:14] I can take it from there okay look okay again let me say that again you
+[00:14:14 -> 00:14:21] know I have in clock cycle three the load is executing and I have issued the
+[00:14:21 -> 00:14:30] multiply and the multiply is now on its way to execute okay and say this
+[00:14:30 -> 00:14:39] load misses in the cache if the load misses in the cache the multiply is
+[00:14:39 -> 00:14:47] already in flight expecting to have a value at the beginning of clock cycle
+[00:14:47 -> 00:14:58] four and it's not there okay so what you have to do is you have to what is
+[00:14:58 -> 00:15:05] called replay the load a replay the multiply okay when the load cache miss
+[00:15:05 -> 00:15:10] comes back you have to say you know whoops you know the multiply start
+[00:15:10 -> 00:15:20] going well you were wrong you know come back and do it again and these load
+[00:15:20 -> 00:15:29] misses unfortunately happen a lot okay so what you further have to do in many
+[00:15:29 -> 00:15:32] other designs when you have a bypass and you're gonna have a bypass okay period
+[00:15:32 -> 00:15:38] okay you actually have to keep track of which instructions were going
+[00:15:38 -> 00:15:42] to use the value it's not only the multiply by the way okay I may have
+[00:15:42 -> 00:15:50] also you know issue other instructions waiting for the multiply okay so you
+[00:15:50 -> 00:15:55] have to keep the trace of instructions that were issued that were using the
+[00:15:55 -> 00:16:02] value somehow and then replay them again insert them back into the
+[00:16:02 -> 00:16:08] scheduler when that load mess the actual load couple back you know the
+[00:16:08 -> 00:16:12] load mess okay it could take five cycles or make misses could take ten cycles and
+[00:16:12 -> 00:16:19] an L2 or take 40 cycles and hit an L3 or could come back after a hundred
+[00:16:19 -> 00:16:23] cycles if it has to go to memory you see you have to keep track of all the
+[00:16:23 -> 00:16:29] instructions that are dependent and replay them are you with me on this
+[00:16:29 -> 00:16:35] okay so bypassing actually especially with cache misses you know does
+[00:16:35 -> 00:16:44] become involved but but you do it because it's very important so you have
+[00:16:44 -> 00:16:48] to keep track of actually state to say that this value isn't in the table and
+[00:16:48 -> 00:16:59] it's going to be coming coming from the bypass so okay how did we do
+[00:16:59 -> 00:17:05] bypasses in the in order pipeline and the way we did our bypasses in the
+[00:17:05 -> 00:17:11] in order pipeline is we had the the bypass logic select one of the
+[00:17:11 -> 00:17:20] inputs of the multiplexer to saying it's coming from that bypass now what we
+[00:17:20 -> 00:17:25] don't have to do very similarly is the scheduler is going to have to
+[00:17:25 -> 00:17:33] basically schedule which instructions are going to be come be being you know
+[00:17:33 -> 00:17:45] executing in that clock cycle and where the inputs are coming from hey you
+[00:17:46 -> 00:17:53] hundreds of millions of transistor these guys didn't huh they might have a
+[00:17:53 -> 00:17:59] million transistors no they actually had about ten million okay six seven
+[00:17:59 -> 00:18:05] million we'll get to the p6 a little wet and then we'll see you know don't
+[00:18:05 -> 00:18:08] you know Tom also they didn't they had
+[00:18:08 -> 00:18:16] yeah so you know they very lucky if you had a you know a few tens of
+[00:18:16 -> 00:18:25] thousands of gates okay so you know just to summarize dynamic scheduling out of
+[00:18:25 -> 00:18:31] order execution allows higher pipeline and function your utilization gives you
+[00:18:31 -> 00:18:41] more performance you can do it fairly I mean it's fairly easy now because
+[00:18:41 -> 00:18:47] people know it wasn't when it first came out okay you have more dynamic
+[00:18:47 -> 00:18:50] storage locations and architectural registers where you can dynamically handle
+[00:18:50 -> 00:18:55] cash missus the instruction buffer is basically like you take your fetch
+[00:18:55 -> 00:19:00] decode latch in the simple pipeline you have many of them all right and
+[00:19:00 -> 00:19:04] that's what implements the scheduling scope with that passing by a passing
+[00:19:04 -> 00:19:09] functionality and you split the decode into an in-order dispatch and an
+[00:19:09 -> 00:19:15] out-of-order issue and you stalled you know for the dispatch an issue
+[00:19:15 -> 00:19:20] you were just waiting you know you you weren't bothering anyone behind you
+[00:19:20 -> 00:19:24] you're just waiting for instructions for your input and then you saw the
+[00:19:24 -> 00:19:34] scoreboard and the Tomasulo so so what happened is you know after the 360
+[00:19:34 -> 00:19:41] model 91 came out they did a fairly elegant stuff you know it's fairly
+[00:19:41 -> 00:19:50] elegant but then you know it got a bad reputation why did it get a bad
+[00:19:50 -> 00:19:54] reputation okay for one you know people saying hey you know like I said
+[00:19:54 -> 00:20:00] it was before virtual memory so you know if you interrupted the machine
+[00:20:00 -> 00:20:05] you know it was in a different state every time there was no precise that
+[00:20:05 -> 00:20:09] interrupted the clock but it was also pre-cash and once cash the cash came
+[00:20:09 -> 00:20:15] around the machine with the cash beat the performance of this machine okay
+[00:20:15 -> 00:20:27] but more importantly okay it's like I mean you all use debunkers and what
+[00:20:27 -> 00:20:31] do you do with a debugger okay it's like okay you put a break point or
+[00:20:31 -> 00:20:37] something here when you get to the break point it's like say you know
+[00:20:37 -> 00:20:44] you got a different result every time you execute the program you
+[00:20:44 -> 00:20:53] would never be able to debug anything okay the whole you know you are only
+[00:20:53 -> 00:21:00] able to debug okay because you you know the expectation is that all the
+[00:21:00 -> 00:21:04] instructions before that break point have completed written their values into
+[00:21:04 -> 00:21:12] the state and nothing after that has even started so they didn't have I mean
+[00:21:12 -> 00:21:17] you know they did not even get that because of the you know given all the
+[00:21:17 -> 00:21:22] hardware debugging techniques and so on at the time you know they could not
+[00:21:22 -> 00:21:28] even get that hardware working correctly because of all you know be
+[00:21:28 -> 00:21:32] giving different things at different times for each run so you could even
+[00:21:32 -> 00:21:39] debug the machine in some sense okay well that's that is for words of Mike
+[00:21:39 -> 00:21:42] Flynn who was the manager of the project and then he became a professor
+[00:21:42 -> 00:21:53] but you know but you won't get it from so yeah the link on the websites
+[00:21:53 -> 00:22:13] broken the six notes like it doesn't work any assembly may have all fixed
+[00:22:13 -> 00:22:32] sorry about that now let's go into you know dynamic scheduling with precise
+[00:22:32 -> 00:22:37] except okay so what you're going to want to do is you're going to want to
+[00:22:37 -> 00:22:42] add speculation because remember we aren't going any if I'm trying to get
+[00:22:42 -> 00:22:48] lots of instructions to choose from to you know schedule I have to get back
+[00:22:48 -> 00:22:54] branches how do I get back branches have to predict and I may be wrong okay so
+[00:22:54 -> 00:22:59] we're going to add speculation and you know add a precise state and we
+[00:22:59 -> 00:23:06] talk about you know the reorder buffer and then we talk about the p6 and then
+[00:23:06 -> 00:23:21] okay then we'll spend some time on doing memory operations so you know we wanted
+[00:23:21 -> 00:23:29] to do our CPI was more than one okay so how did we get a smaller CPI or more
+[00:23:29 -> 00:23:38] larger IPC you went super scalar to do more than one instruction okay now
+[00:23:38 -> 00:23:45] as we saw when you had a super scalar now each if I'm doing n-wide super
+[00:23:45 -> 00:23:51] scalar okay each single cycle raw hazard raw hazard now became n
+[00:23:51 -> 00:24:00] instruction execution opportunities so it became effectively n okay n slots so
+[00:24:00 -> 00:24:11] that increases raw hazards so you go out of order okay just like we saw in
+[00:24:11 -> 00:24:16] Tamasulo you know we could actually you know had you know you know for
+[00:24:16 -> 00:24:21] each iteration you had a path of execution through the iteration or
+[00:24:21 -> 00:24:26] dependence path that took certain time and so you brought in instructions
+[00:24:26 -> 00:24:34] from the second iteration to overlap and execute okay so if the raw hazards
+[00:24:34 -> 00:24:37] are still a problem of course it going to be you have more and more
+[00:24:37 -> 00:24:44] instructions so you have a larger and larger scheduling scope okay to get a
+[00:24:44 -> 00:24:48] larger and larger scheduling scope you have to go past branch instructions
+[00:24:48 -> 00:24:54] so you have to basically add speculative execution saying that hey
+[00:24:54 -> 00:25:01] I'm going to speculate the branches go to a certain way and and then then if
+[00:25:01 -> 00:25:12] the branch did go the other way I have to recover okay so why are these you
+[00:25:12 -> 00:25:16] know speculation and precise interrupt they seem to be separate things but
+[00:25:16 -> 00:25:23] they are actually very highly related okay so you know for sequential
+[00:25:23 -> 00:25:29] semantics or interrupts what do we want we want that all instructions before the
+[00:25:29 -> 00:25:35] interruption have completed all instructions after the interrupt it
+[00:25:35 -> 00:25:41] should look like as they did never even started okay and we want the same
+[00:25:41 -> 00:25:44] thing for branches if we have a branch instruction I'm going to
+[00:25:44 -> 00:25:48] mispredict we want to get the appearance that all instructions
+[00:25:48 -> 00:25:59] before the branch completed and none are correct even started okay so you know what
+[00:25:59 -> 00:26:05] makes precise interrupts difficult when we had out of order completion okay
+[00:26:05 -> 00:26:11] because if the instructions wrote the results in in a different order then
+[00:26:11 -> 00:26:19] their sequential order then we somehow must undo the right backs of the
+[00:26:19 -> 00:26:23] instructions that occurred after the that occurred after the interrupting
+[00:26:23 -> 00:26:27] instructions but that actually executed and wrote the results that earlier
+[00:26:27 -> 00:26:34] okay the same thing that we want to do for branches okay so if you have
+[00:26:34 -> 00:26:40] speculating past a branch and an instruction after the branch right
+[00:26:40 -> 00:26:50] back it's resolved then we have to undo it somehow okay so basically you
+[00:26:50 -> 00:26:56] know in the in-order processes we didn't have that problem because branch is
+[00:26:56 -> 00:27:00] complete and therefore you know which instruction is going to execute after
+[00:27:00 -> 00:27:06] branch or not before the other instructions wrote back themselves but
+[00:27:06 -> 00:27:09] in the out of order that's not necessarily the case the way we sort of
+[00:27:09 -> 00:27:15] described you know Thomas Sillow's algorithm so you know the precise
+[00:27:15 -> 00:27:20] interrupts and mis-speculation are effectively the same problem and so
+[00:27:20 -> 00:27:26] we end up with having the same solution so you know out of order in a sense you
+[00:27:26 -> 00:27:30] know like went away I actually and I heard about it as a
+[00:27:30 -> 00:27:33] grassroots whether it was one of the most elegant things I'd seen it was
+[00:27:33 -> 00:27:38] always in the back of the mind so when I started over here we did
+[00:27:38 -> 00:27:42] something and we'll talk a little bit about it which basically ended up
+[00:27:42 -> 00:27:46] being the basics and all the out of order processors as you know the
+[00:27:46 -> 00:27:51] basis of a lot of everything that is out there today so let's talk a little
+[00:27:51 -> 00:28:00] bit about it okay so that's you know you have the paper by Smith and
+[00:28:00 -> 00:28:05] Pleskin on implementing precise interrupts there was also a huge
+[00:28:05 -> 00:28:08] inspiration for several people that introduced the reorder offer the first
+[00:28:08 -> 00:28:15] time so for speculative execution you want to be able to abort and restart
+[00:28:15 -> 00:28:29] at every branch okay now once we bite the bullet and support precise interrupts
+[00:28:29 -> 00:28:40] and speculative execution and hardware okay then we can use the same hardware
+[00:28:40 -> 00:28:50] and recover from any form of speculation remember in the IA 64 we
+[00:28:50 -> 00:28:54] talked about moving a load before a store unknown with an unknown address
+[00:28:54 -> 00:29:00] and you had to have a special you know load instruction then you had that you
+[00:29:00 -> 00:29:04] have the a lag or the memory conflict buffer on the side do things right
+[00:29:04 -> 00:29:08] stuff there and then you had to check instructions that's gonna check to see
+[00:29:08 -> 00:29:15] the entry is valid okay but executing a load before a prior store whose
+[00:29:15 -> 00:29:21] address is unknown is going to be hugely beneficial so we will actually
+[00:29:21 -> 00:29:28] also want to speculate load so for load speculation you also want to be
+[00:29:28 -> 00:29:36] able to restart at any load that may be speculative which is potentially all
+[00:29:36 -> 00:29:44] loads okay and also I'm not in this course but in 757 you will see for
+[00:29:44 -> 00:29:49] shared memory also load speculation can really help a lot with memory
+[00:29:49 -> 00:29:54] consistency models and programming and so on like that and perform get
+[00:29:54 -> 00:29:58] performance for you know the programming model that uses more
+[00:29:58 -> 00:30:06] stronger consistency models okay that's what speculative execution means
+[00:30:06 -> 00:30:11] control speculation every branch I won't be able to recover precise
+[00:30:11 -> 00:30:16] state for load speculation for every load I want to be able to you know
+[00:30:16 -> 00:30:27] recover precise state for every load okay now what if I have forget speculation okay just a
+[00:30:27 -> 00:30:34] normal even an in-order pipeline okay but whatever I have a program
+[00:30:34 -> 00:30:43] internal interrupt or a trap okay for that I want to be able to abort and
+[00:30:43 -> 00:30:52] restart you know transparently anytime I have an instruction that may cause
+[00:30:52 -> 00:31:03] that okay and the most common reason for restartable traps are basically page
+[00:31:03 -> 00:31:10] force so you can have a page for that load any load you could have a big for
+[00:31:10 -> 00:31:15] any store so you want to be able to abort and restart at every load or a
+[00:31:15 -> 00:31:23] store okay now we actually saw also remember we talked about maintaining
+[00:31:23 -> 00:31:28] compatibility and so on like that and we said hey you we want to like get
+[00:31:28 -> 00:31:34] rid of an opcode and how do you get rid of the opcode is you basically
+[00:31:34 -> 00:31:41] don't have you cause a trap saying bad opcode or unrecognized opcode and then
+[00:31:41 -> 00:31:45] you go to a trap handler that says hey what is this and emulates that
+[00:31:45 -> 00:31:51] instruction and software all right that's what we did so we may also want
+[00:31:51 -> 00:32:00] to even without speculation have the ability to restart at other instructions
+[00:32:02 -> 00:32:12] okay how about an external interrupt external interrupt is easier where you
+[00:32:12 -> 00:32:16] can say hold on hold on let me just get to a point where I'm ready to take
+[00:32:16 -> 00:32:23] the interrupt and then we move on okay but still it could be pretty much any
+[00:32:23 -> 00:32:27] instruction you could say I don't want to wait till I get a you know call
+[00:32:27 -> 00:32:33] instruction or something you know or whatever but you know that's you know
+[00:32:34 -> 00:32:40] it could be anything okay so you know we just going to bite the bullet and say hey we're
+[00:32:40 -> 00:32:44] going to try and implement an abort and restart at every instruction that's
+[00:32:44 -> 00:32:54] been a precise statement okay now you know by the way it while this seems
+[00:32:54 -> 00:32:59] obvious now it was very heavily argued for quite a while because the cost
+[00:32:59 -> 00:33:06] people didn't know how to do it you know before the paper that Jim and Andy did
+[00:33:06 -> 00:33:12] they didn't even know techniques to you know do precise interrupts and then
+[00:33:12 -> 00:33:15] so you know they were even after that they were saying hey this is too
+[00:33:15 -> 00:33:22] expensive so you know many people just said hey we are not going to have
+[00:33:22 -> 00:33:27] precise interrupts okay that makes page forwards very complicated to deal
+[00:33:27 -> 00:33:35] with okay and speculative execution even impossible you know also the IEEE
+[00:33:35 -> 00:33:41] floating-point standard even though you would not expect to have a trap that
+[00:33:41 -> 00:33:46] you want to restart recover from transparently for a floating-point
+[00:33:46 -> 00:33:51] instruction if it's you know divide by zero or whatever it is it's it's you
+[00:33:51 -> 00:33:54] know it's you know bad code if you will you don't need to go
+[00:33:55 -> 00:34:01] but there is the notion of gradual underflow in IEEE floating-point which
+[00:34:01 -> 00:34:06] they were saying you know you may want to support and if you have a gradual
+[00:34:06 -> 00:34:10] underflow kind of situation you have an exception that you have a gradual
+[00:34:10 -> 00:34:18] underflow which you can then go and deal with you know so even processors
+[00:34:18 -> 00:34:24] that came out in you know in the early 90s like they did not have precise
+[00:34:24 -> 00:34:31] state for you know complex floating-point operations it was only in
+[00:34:31 -> 00:34:36] the late you know mid 90s and later when you know I mean you had to have
+[00:34:36 -> 00:34:41] processors that had a very large installed code base like the x86 that
+[00:34:41 -> 00:34:48] they said no we are going to provide precise interrupts for every instruction you know so
+[00:34:48 -> 00:34:56] you may say hey why don't I just force all the instructions to complete the
+[00:34:56 -> 00:35:00] write back in order in a sense just like the you know pure reorder buffer
+[00:35:00 -> 00:35:09] if you will okay and that ends up making things quite slow yeah people
+[00:35:09 -> 00:35:15] have also talked about doing precise you know recovering precise state in
+[00:35:15 -> 00:35:21] software trapped to a software team very smart people come with very smart
+[00:35:21 -> 00:35:28] stuff you know you know if you're trying to recover precise state for a
+[00:35:28 -> 00:35:33] floating-point underflow maybe that's one thing but if it's for every branch
+[00:35:33 -> 00:35:37] misprediction trying to do every branch misprediction recovery in
+[00:35:37 -> 00:35:45] software is not something that is plausible so you do it all in hard
+[00:35:45 -> 00:36:02] okay any questions so far so how are we going to do it so the problem is that
+[00:36:02 -> 00:36:08] the write back that we did for the value of instruction we are actually
+[00:36:08 -> 00:36:13] combining two things one is passing the value to an instruction that's
+[00:36:13 -> 00:36:18] waiting and the second is actually writing the value to register for it
+[00:36:18 -> 00:36:30] okay and with the in order pipeline in some sense it was you know not a
+[00:36:30 -> 00:36:36] problem because he you know the you put the value in the register file and
+[00:36:36 -> 00:36:41] the instruction took it from the dependent instruction took it from the
+[00:36:41 -> 00:36:47] register file or you bypassed it you know and the instruction to get from
+[00:36:47 -> 00:36:55] the input of the multiplexer okay so there are two separate instructions the
+[00:36:55 -> 00:37:03] writing of the values to the registers you want that to be in order because
+[00:37:03 -> 00:37:07] you want to get the appearance that every instruction executed individually
+[00:37:07 -> 00:37:14] and sequentially but the passing of the values to younger instructions it's
+[00:37:14 -> 00:37:24] okay to be out of order in fact we wanted to be out of order you know when we had the
+[00:37:24 -> 00:37:32] out of a you know the previous unit we basically were stalling in decode so
+[00:37:32 -> 00:37:37] rather than stall and decode we split the decode into an in order dispatch
+[00:37:37 -> 00:37:44] and an out of order issue and then we separated these two using this
+[00:37:44 -> 00:37:49] instruction buffer which was a scoreboard of a relation stations right
+[00:37:49 -> 00:37:54] that's what we did okay so we split up this dispatch into dispatching into an
+[00:37:54 -> 00:37:58] instruction buffer and issuing from the instruction buffer rather than having
+[00:37:58 -> 00:38:06] this one you know decode dispatch function very similar we also going to
+[00:38:06 -> 00:38:14] split this up now into two okay so instead of this instruction buffer we
+[00:38:14 -> 00:38:21] have a reorder buffer and we are going to split the right back into two stages
+[00:38:21 -> 00:38:28] in the first stage we are going to write the result of the instruction to
+[00:38:28 -> 00:38:34] the reorder buffer okay and in the second stage we are going to write it
+[00:38:34 -> 00:38:42] into the register file okay so w1 we found different things you'd write in
+[00:38:42 -> 00:38:48] the reorder buffer w2 we write them from the reorder buffer into the
+[00:38:48 -> 00:38:54] register file and there's no latch between these two because the latch
+[00:38:54 -> 00:39:02] between these two is really entries in the reorder buffer okay and you know
+[00:39:02 -> 00:39:10] interestingly you know we did this stuff right after I came here and a
+[00:39:10 -> 00:39:16] grad student freedom larger pay and he actually did the simulator
+[00:39:16 -> 00:39:24] implementation of this for a 752 class project okay and so that that ended up
+[00:39:24 -> 00:39:29] influencing pretty much you know billions and tens of billions of
+[00:39:29 -> 00:39:37] out-of-order processors class projects sometimes there's another class
+[00:39:37 -> 00:39:44] project which one of my former students Andreas will show us and to be a
+[00:39:44 -> 00:39:52] faculty member at Toronto and you know he has class project in media you know
+[00:39:52 -> 00:39:59] give people money yes $50,000 they give you an NVIDIA GPU what did you
+[00:39:59 -> 00:40:05] teach students how to write code in CUDA so you know faculty members very
+[00:40:05 -> 00:40:12] happy to get $50,000 discretionary money students learn it and so a couple of
+[00:40:12 -> 00:40:18] intense students took the class and one of them Alex Krojewski wrote his
+[00:40:18 -> 00:40:27] neural network code in CUDA one part of it for the class project and that
+[00:40:27 -> 00:40:36] became Alex net which made NVIDIA stock go up a factor of 100 but you know other
+[00:40:36 -> 00:40:44] than that there are other benefits so okay
+[00:40:44 -> 00:40:48] so what we're going to do is incidentally by the way when Sriram
+[00:40:48 -> 00:40:54] wrote that simulator he had a bug in the simulator and the bug in the
+[00:40:54 -> 00:41:02] simulator was he did not respect read-after-write dependencies and so when
+[00:41:02 -> 00:41:07] you fix the bug in the simulator I eventually looked at and fixed it the
+[00:41:07 -> 00:41:11] bug in the simulator turns out the performance wasn't very different and
+[00:41:11 -> 00:41:18] because if you're really overlapping the read-after-write dependencies
+[00:41:18 -> 00:41:25] instructions it doesn't matter as hopefully the out-of-order execution
+[00:41:25 -> 00:41:30] should have given you some idea of hey things are going good you know the
+[00:41:30 -> 00:41:34] latency has become less important if I'm overlapping the latency of one
+[00:41:34 -> 00:41:43] iteration with the another iteration well if it's longer then maybe it's
+[00:41:43 -> 00:41:46] going to get then I have three iterations working together or four
+[00:41:46 -> 00:41:50] iterations so I mean end up overlapping those latencies so the
+[00:41:50 -> 00:41:56] latency of each operations felt less so the bug in the similar basically meant
+[00:41:56 -> 00:42:01] that it was all floating-point code that hey I needed four iterations to do
+[00:42:01 -> 00:42:05] the overlap which I could do but the bug in the simulator mean the latency
+[00:42:05 -> 00:42:11] was instead of five cycles was one cycle so I only needed two and the
+[00:42:11 -> 00:42:17] performance wasn't that different so you need a larger reorder buffer but that's about it
+[00:42:17 -> 00:42:26] okay so what we're going to do now is we are going to divide the two parts of
+[00:42:26 -> 00:42:37] this write back if you will into a complete and a retired okay a complete
+[00:42:37 -> 00:42:41] of an instruction is is when the result of the instructions ready the
+[00:42:41 -> 00:42:45] instructions done execution you're going to write the result into the
+[00:42:45 -> 00:42:53] reorder buffer okay and this is going to be done out of order so a
+[00:42:53 -> 00:43:01] instruction you know it is not the a delay in completing awaited completing
+[00:43:01 -> 00:43:07] does not get propagated to the other instructions could be completing
+[00:43:07 -> 00:43:16] completely out of order okay we'll see you know we'll see you know we had we
+[00:43:16 -> 00:43:22] had the you know we had the load multiply store and then that add
+[00:43:22 -> 00:43:28] integer okay the add integer could be completing its result and writing into
+[00:43:28 -> 00:43:36] the reorder buffer before the multiplier okay or the delay in the right back
+[00:43:36 -> 00:43:41] of the multiplier is not delaying the add immediate instruction and we'll see
+[00:43:41 -> 00:43:48] the example of that okay then in the next phase we are going to retire or
+[00:43:48 -> 00:43:54] also called commit where you're going to write the results from the reorder
+[00:43:54 -> 00:44:00] buffer into the register file and you're going to do them in order if an
+[00:44:00 -> 00:44:06] instruction stalling in the reorder buffer or stalls waiting to get the
+[00:44:06 -> 00:44:12] reorder buffer then that stall back propagates to instruction behind it they
+[00:44:12 -> 00:44:18] have to wait until the instruction ahead of them has written their results
+[00:44:18 -> 00:44:28] into the register okay when you say stall but just stalling to complete
+[00:44:28 -> 00:44:33] do not I mean this area they can't complete until that until that
+[00:44:34 -> 00:44:46] but they could have finished executing or okay okay what you're saying is they
+[00:44:46 -> 00:44:54] cannot so you said they're stalling to complete or to retire okay okay
+[00:44:54 -> 00:44:58] starting to retire yes stalling to retire okay but they're not stalling
+[00:44:58 -> 00:45:04] to complete my terminology no no no no this is what I would have said to
+[00:45:04 -> 00:45:12] until now it's to actually use a little more specific terminology okay and we
+[00:45:12 -> 00:45:16] have a place where you were to stall is if you cannot get us entering the
+[00:45:16 -> 00:45:24] reorder buffer so the reorder buffer is completely invisible to the program
+[00:45:24 -> 00:45:33] the program doesn't even know there's hardware it just runs back
+[00:45:34 -> 00:45:42] if we were to single step every instruction right even if the word or
+[00:45:42 -> 00:45:49] has computed the next 50 instructions in the ROB the reg file will not be
+[00:45:49 -> 00:45:54] attempted as the single step yes that is the whole point
+[00:45:57 -> 00:46:03] why the entire studio has to stall because you have registers you can directly write to them to come in
+[00:46:03 -> 00:46:08] why they need to stall then why they need to stall
+[00:46:08 -> 00:46:14] hold on we'll see in the example because that instruction itself may not
+[00:46:14 -> 00:46:27] have completed yet and we'll see that in the example you know the
+[00:46:27 -> 00:46:30] instruction that's at the head of the reorder buffer may be waiting to
+[00:46:31 -> 00:46:44] okay so the reorder buffer makes the register writes in order the right to
+[00:46:44 -> 00:46:50] rest file what about memory operations you're reading from memory with loads
+[00:46:50 -> 00:46:56] and you're writing the memory with stores okay you also have to write into
+[00:46:56 -> 00:47:06] the memory in order and you know if I'm doing 30 instructions I have a
+[00:47:06 -> 00:47:11] window 30 instructions typically a third of the instructions is going to
+[00:47:11 -> 00:47:24] be loads and stores okay so I'm going to just like the reorder buffer I'm going to
+[00:47:24 -> 00:47:29] have a load store queue and in fact the loads and stores are going to be the
+[00:47:29 -> 00:47:33] reorder buffer are also in the load store queue okay and we'll see that in
+[00:47:33 -> 00:47:40] gory detail in a couple lectures okay maybe even starting next lecture so
+[00:47:40 -> 00:47:47] we're going to write the completed stores into the load store queue when a
+[00:47:47 -> 00:47:50] store retires the head of the load store queue will be written into the data
+[00:47:50 -> 00:47:58] cache and when a load executes okay because the data is still not written
+[00:47:58 -> 00:48:02] into the data cache because the instructor store may be waiting to
+[00:48:02 -> 00:48:08] retire because other instructions are ahead of it okay you cannot simply
+[00:48:08 -> 00:48:14] issue the load only to the data cache you also have to access the load store
+[00:48:14 -> 00:48:21] queue to see if the load is loading from an address written by a store
+[00:48:21 -> 00:48:27] that is still waiting in the load store queue okay we'll see this in detail and
+[00:48:27 -> 00:48:32] you know typically these days you have separate load and store queues and
+[00:48:32 -> 00:48:41] we'll see that too okay so now our overall picture is looking like hey you
+[00:48:41 -> 00:48:46] know fetch dispatch to the reorder buffer issue from the reorder buffer
+[00:48:46 -> 00:48:50] complete right to the reorder buffer retired from the reorder buffer to
+[00:48:50 -> 00:48:57] the register file and a load store queue to handle memory operations you
+[00:48:57 -> 00:49:02] know the any any picture that you take a look at has these it has a
+[00:49:02 -> 00:49:06] lot of other things over here but you know you know this is a gross
+[00:49:06 -> 00:49:15] simplification but it's pretty realistic over so we are to start off with you
+[00:49:15 -> 00:49:21] know the p6 so p6 starts off with Tamasuru's algorithm and adds this
+[00:49:21 -> 00:49:27] reorder buffer and it has you know separate reorder buffer reservation
+[00:49:27 -> 00:49:33] stations we are just going to do a simple p6 which is taking that old
+[00:49:33 -> 00:49:46] reservation station organization and we put the reorder buffer on top of it okay so the
+[00:49:46 -> 00:49:52] reservation stations are as before now we are going to have a reorder buffer
+[00:49:52 -> 00:49:57] the reorder buffer is going to have a head pointer and a tail pointer the
+[00:49:57 -> 00:50:00] head pointer is the oldest entry in the reorder buffer the tail pointer
+[00:50:00 -> 00:50:08] is the youngest entry in the reorder buffer okay and these maintain the
+[00:50:08 -> 00:50:17] sequential order of the instructions each entry is going to have the output
+[00:50:17 -> 00:50:22] register of the instruction and the value that is going to be written up
+[00:50:22 -> 00:50:35] into that register okay the tags are a little different in Tamasuru the tag
+[00:50:35 -> 00:50:41] was a reservation station number okay and p6 the tag is going to be a
+[00:50:41 -> 00:50:53] reorder buffer entry number map table is slightly different map table will
+[00:50:53 -> 00:51:02] have a tag which is going to be either zero or non zero and an additional bit
+[00:51:02 -> 00:51:07] and that additional bit is going to be called a ready in the reorder buffer
+[00:51:07 -> 00:51:16] bit okay how is the tag going to be interpreted if the tag is zero means
+[00:51:16 -> 00:51:25] the value is there in the register file if the tag is not zero then the value
+[00:51:25 -> 00:51:34] is not there in the register file and if the reorder ready in reorder buffer
+[00:51:34 -> 00:51:41] bit is zero that means the value is not ready yet and it's being produced
+[00:51:41 -> 00:51:46] by an instruction corresponding to this tag which is the reorder buffer entry
+[00:51:46 -> 00:51:56] number of that instruction okay if the tag this ready in reorder bit is a one
+[00:51:56 -> 00:52:03] then you interpret this tag to say hey this value corresponding to this
+[00:52:03 -> 00:52:09] register is ready in the reorder buffer in this reorder buffer entry
+[00:52:09 -> 00:52:17] okay why would it be in the reorder buffer and not in the register because
+[00:52:17 -> 00:52:24] the instruction that's going to write that register has completed but has not
+[00:52:24 -> 00:52:35] yet retired okay so the data structures are you know we pretty much
+[00:52:35 -> 00:52:42] had the Tamasuru like data structures over here okay and now we have a
+[00:52:42 -> 00:52:48] reorder buffer and there's a head of the pointer and a tail pointer you are
+[00:52:48 -> 00:52:52] retiring instructions at the head and you're dispatching instruction to the
+[00:52:52 -> 00:52:57] tail of the reorder buffer each entry has the destination register and the
+[00:52:57 -> 00:53:00] value that's going to be written into the destination register it has other
+[00:53:00 -> 00:53:09] stuff too but you know this is you know for our purpose that's what's going to have so you
+[00:53:09 -> 00:53:15] know you know reservation stations map table common data bus now we're going
+[00:53:15 -> 00:53:20] to have a reorder buffer reorder buffer has a register our destination
+[00:53:20 -> 00:53:31] register field ending then okay the pipeline now is going to be fetch
+[00:53:31 -> 00:53:44] dispatch issue execute complete retire all right what are we going to do over
+[00:53:44 -> 00:53:49] here in each stage okay in dispatch if you have a structural hazard which
+[00:53:49 -> 00:53:54] means either the reorder buffer is full or the load store queue is full or there
+[00:53:54 -> 00:54:03] is no reservation station then I'm going to stall otherwise I'm going to
+[00:54:03 -> 00:54:09] allocate a reorder buffer entry at the tail a load store queue entry at the
+[00:54:09 -> 00:54:16] tail of the load store queue you'll see and a reservation station okay
+[00:54:16 -> 00:54:21] and then we're going to set the reservation station tag of the selected
+[00:54:21 -> 00:54:27] entry to be the reorder buffer number we're going to set the map table entry
+[00:54:27 -> 00:54:32] for the destination register to be the reorder buffer number that's a tag
+[00:54:32 -> 00:54:40] okay and clear the ready and wrong bit and then we're going to read the
+[00:54:40 -> 00:54:44] ready registers into the reservation station just like we did in Thomas
+[00:54:44 -> 00:54:50] below and those in Thomas ago those ready registers are there in the
+[00:54:50 -> 00:54:54] register file here now the ready registers could be either in the
+[00:54:54 -> 00:55:04] register file or in the reorder buffer okay and it'll become clear when you do the
+[00:55:04 -> 00:55:08] example and then it will become even clearer after you read the slides and
+[00:55:08 -> 00:55:16] after class all right and you do it a second third time will come even
+[00:55:16 -> 00:55:23] clearer so all right and execute we are going to free the reorder buffer
+[00:55:23 -> 00:55:29] the reservation station and Thomas who knows we kept on with the reservation
+[00:55:29 -> 00:55:33] station entry we need the reservation station entry until the right back
+[00:55:33 -> 00:55:39] stage because that was our tag so we could not give that tag to another
+[00:55:39 -> 00:55:48] instruction okay here our tag is has nothing to do with the reservation
+[00:55:48 -> 00:55:53] station number it is the reorder buffer entry number so we are going we
+[00:55:53 -> 00:55:57] can give that reservation station to another instruction once this
+[00:55:57 -> 00:56:10] instruction is started executed all right and complete wait till you get
+[00:56:10 -> 00:56:14] the common data bus otherwise you have a structural hazard when you get the
+[00:56:14 -> 00:56:19] common data bus you write the value to the reorder buffer entry indicated
+[00:56:19 -> 00:56:26] by the reservation station tag okay mark that reorder buffer entry as
+[00:56:26 -> 00:56:34] complete then you also go to the map table entry and if the tag of the
+[00:56:34 -> 00:56:40] completed this completion completing instruction matches a tag in that map
+[00:56:40 -> 00:56:46] table you set the ready in reorder buffer bit corresponding to that tag
+[00:56:46 -> 00:56:56] corresponding to that entry okay and and that is if it would not be over
+[00:56:56 -> 00:57:03] it and it would match if some other instruction wrote a new tag into that
+[00:57:03 -> 00:57:12] map table see the exam then at retire you take the instruction at the
+[00:57:12 -> 00:57:18] reorder buffer head if it's not complete then you're going to stall if
+[00:57:18 -> 00:57:25] it's completed check to see any exceptions and any exceptions then
+[00:57:25 -> 00:57:30] write the reorder buffer head value into the register file if it's a store
+[00:57:30 -> 00:57:35] write this load store queue head into the data cache and then you free the
+[00:57:35 -> 00:57:46] broadband LSQ entries you know thinking more as he goes to the exam
+[00:57:46 -> 00:57:56] okay so dispatch let's see what all we do in dispatch in dispatch if the
+[00:57:56 -> 00:58:02] reservation station reorder buffer is fully installed otherwise you allocate a
+[00:58:02 -> 00:58:09] reservation station entry you allocate a the reorder buffer entry at the tail
+[00:58:09 -> 00:58:13] of the reorder buffer and then this reorder buffer entry that you
+[00:58:13 -> 00:58:19] allocated that number is the tag that goes into this reservation station
+[00:58:20 -> 00:58:31] okay and then what you do is you take a go to the map table for them with a
+[00:58:31 -> 00:58:38] destination register and set the map table entry to be the reorder buffer
+[00:58:38 -> 00:58:46] entry the tag basically and clear this ready in reorder buffer entry that
+[00:58:47 -> 00:59:01] all right you're also that you read the tags for the register you know I'm
+[00:59:01 -> 00:59:06] showing this part one part two really they're all together in some sense and
+[00:59:06 -> 00:59:10] I actually do my read the tags for the inputs before I write the update
+[00:59:10 -> 00:59:17] the map table the tank for the output okay so I read the tags form the
+[00:59:17 -> 00:59:24] input I go to the map table and read the tags for the two source registers
+[00:59:24 -> 00:59:32] okay if the tag is zero that means the values in the register file just
+[00:59:32 -> 00:59:37] like we did in Tamasulo we copy the value from the register file to the
+[00:59:37 -> 00:59:47] reservation station okay if the tag is not equal to zero and the ready in
+[00:59:47 -> 00:59:54] reorder buffer bit is zero then you copy the tag over into the reservation
+[00:59:54 -> 01:00:04] station okay if the tag is not equal to zero and the ready on reorder buffer
+[01:00:04 -> 01:00:08] bit is one which means hey the value corresponding to this register is
+[01:00:08 -> 01:00:15] actually there in the reorder buffer at that reorder buffer entry okay so
+[01:00:15 -> 01:00:20] you copy over the value from the reorder buffer into the reservation
+[01:00:20 -> 01:00:38] station questions yeah so can you go back one the plus bit is that that's
+[01:00:38 -> 01:00:42] not put in the tag table for it in the reservation station or like how does
+[01:00:42 -> 01:00:46] that get updated or do we don't we we don't go back to the map file find
+[01:00:46 -> 01:00:54] out if we're ready to go right if we do the issue everyone hear the
+[01:00:54 -> 01:01:12] question let's start then what is the purpose of this bit okay so in Tamasulo
+[01:01:12 -> 01:01:17] the value was either there in the register file and you copied it over or
+[01:01:17 -> 01:01:20] you were waiting for it to be written in which case you got it out of the
+[01:01:20 -> 01:01:31] common database all right now the value could be in the register file you
+[01:01:31 -> 01:01:37] could be waiting for an instruction to write the value or an instruction has
+[01:01:37 -> 01:01:46] completed but not committed and so the values in the reorder buffer and it's
+[01:01:46 -> 01:01:50] not there in the register file and it's not going to come around on the
+[01:01:50 -> 01:02:03] common data bus again so this so when you are you you are pulling out so
+[01:02:03 -> 01:02:08] basically if this ready on reorder buffer bit is set you know the value
+[01:02:08 -> 01:02:11] is not going to come out in the common data bus with this tag it already did
+[01:02:11 -> 01:02:17] come out instead of the reorder buffer copied over and if this bit is not
+[01:02:17 -> 01:02:20] set then you know the value is going to come out in the common data bus that
+[01:02:20 -> 01:02:31] that's so you don't go back to the map table again right so so when you are
+[01:02:31 -> 01:02:37] making the entry in the reservation station you you've got one of two
+[01:02:37 -> 01:02:40] things right it's either you're either going to get it from the
+[01:02:40 -> 01:02:45] register file well I guess it's one of three one of three now from the
+[01:02:45 -> 01:02:51] register file yeah you can you're going to have you look in the map table and
+[01:02:51 -> 01:02:56] you find out that there that it's there's a tag is there the tag the
+[01:02:56 -> 01:03:00] plus bit can be to be zero or one yeah so if it's one you grab it from
+[01:03:00 -> 01:03:06] the reorder buffer if it's zero you gotta wait right and so when that but
+[01:03:06 -> 01:03:10] how does the instruction how do we know that we can issue the
+[01:03:10 -> 01:03:16] instruction again are we watching the common data bus again in the same way
+[01:03:16 -> 01:03:23] okay we'll get to that side but again you know but let's go back to this tag
+[01:03:23 -> 01:03:35] ready and reorder buffer bit again okay if the ready on reorder bit is set
+[01:03:35 -> 01:03:40] then the rest of the tag in that gives you the reorder buffer entry number
+[01:03:40 -> 01:03:49] from which to read that okay so now in two of the three cases either the
+[01:03:49 -> 01:03:56] values in the register file or the value was you you read from the
+[01:03:56 -> 01:04:01] register file or you read from the reorder buffer it ended up in the
+[01:04:01 -> 01:04:07] value field of the reservation station okay it's not going to end up
+[01:04:07 -> 01:04:14] in the value field of the reservation station if the tag over here is non zero
+[01:04:14 -> 01:04:20] and ready and reorder buffer bit is not set then that tag you copy over
+[01:04:20 -> 01:04:24] and then you wait for that tag to basically that means a there's
+[01:04:24 -> 01:04:28] instruction that's going to write into this register but it still hasn't
+[01:04:28 -> 01:04:39] executed okay and so that tag can get cleared as soon as when it comes
+[01:04:39 -> 01:04:43] over the common data bus right you're gonna just start the I think the
+[01:04:43 -> 01:04:49] technical term you use a snarf you're gonna start the value we'll see that
+[01:04:49 -> 01:04:55] okay hold on to that okay we'll see that in gory detail what happens in
+[01:04:55 -> 01:05:05] the day how they get cleared that bit gets cleared etc so here now you know
+[01:05:05 -> 01:05:11] instruction execution issue is not that you know when this tags what when
+[01:05:11 -> 01:05:14] the reservation station both the values are then in the reservation station you
+[01:05:14 -> 01:05:21] can you know issue the instruction when an instruction completes the value
+[01:05:21 -> 01:05:26] comes out of the common data bus you wait to you get the you know you stall
+[01:05:26 -> 01:05:29] until you can get the common data bus once you get the common data bus
+[01:05:29 -> 01:05:37] you broadcast the value if you match the tags you write the value into the
+[01:05:37 -> 01:05:48] reservations station slots just like you also write the result into the
+[01:05:48 -> 01:05:54] reorder buffer entry and reorder buffer at an entry number corresponding
+[01:05:54 -> 01:06:02] to the day okay and then you also go to this map table and if there is a
+[01:06:02 -> 01:06:08] matching tag then what that matching tag is basically indicating here this
+[01:06:08 -> 01:06:13] register is being waiting to be written by this instruction and now that
+[01:06:13 -> 01:06:16] instruct and that instruction hasn't completed that instruction is now
+[01:06:16 -> 01:06:21] completed it's there in the reorder buffer so you set the ready in reorder
+[01:06:21 -> 01:06:38] buffer bit okay okay for retiring if the instruction at the head of the
+[01:06:38 -> 01:06:43] reorder buffer is not complete you stall otherwise you free the reorder
+[01:06:43 -> 01:06:48] buffer entry write the reorder buffer head result into the register file you
+[01:06:48 -> 01:06:53] know which register to write into and if it's still valid you clear the map
+[01:06:53 -> 01:06:58] table and what does it mean this is still valid okay this means that it has
+[01:06:58 -> 01:07:03] not been you know it's it has the same tag as this reorder buffer entry
+[01:07:03 -> 01:07:09] if it has a new tag means there's another instruction now writing into that so
+[01:07:09 -> 01:07:19] you don't clear this okay now let's walk through several cycles and you
+[01:07:19 -> 01:07:22] know we'll do how many we can in this class and then we take it we probably
+[01:07:22 -> 01:07:27] start from the beginning again next class okay cycle one again but so all
+[01:07:27 -> 01:07:31] right clock cycle one the reorder buffer is empty head and tail
+[01:07:31 -> 01:07:37] pointers you know you then you allocate this entry entry number one to the
+[01:07:37 -> 01:07:46] load you set the destination register field to f1 you go to the map table
+[01:07:46 -> 01:07:52] with r1 you see the tag is zero so you read the value from the register file
+[01:07:52 -> 01:07:59] for r1 pull it into the reservation station over here and then you go to
+[01:07:59 -> 01:08:07] the map table for f1 and you say okay now the entry is going to be the
+[01:08:07 -> 01:08:11] order buffer entry number one and this radio reorder buffer bit over
+[01:08:11 -> 01:08:18] here is not set when it is set I will put a plus over there okay so this it's
+[01:08:18 -> 01:08:28] zero clock cycle two this you know this load instruction is now its inputs
+[01:08:28 -> 01:08:37] are ready so it can issue in the clock cycle to when it issues okay it issues
+[01:08:38 -> 01:08:45] okay and then you dispatch the multiply instruction to the tail of the
+[01:08:45 -> 01:08:50] reorder buffer which is entry number two okay so by the after talk cycle one
+[01:08:50 -> 01:08:56] you also incremented the tail okay by one so it's pointing to do so now you
+[01:08:56 -> 01:09:02] dispatch the multiply to entry number rear buffer slot two set the
+[01:09:03 -> 01:09:10] destination register field to f2 you get a reservation station number four over
+[01:09:10 -> 01:09:17] here and now then you go to the map table and f0 is tag is zero so you read
+[01:09:17 -> 01:09:21] the contents of f0 to this value field here just like you did in
+[01:09:21 -> 01:09:27] tamasulo f1 says tag is reorder buffer entry one so you copy of the
+[01:09:27 -> 01:09:34] reorder buffer entry one over here for the tag number two you go to the map
+[01:09:34 -> 01:09:39] table with f2 and you set the tag for that to be the reorder buffer entry
+[01:09:39 -> 01:09:53] number two okay clock cycle three load proceeds to execute when now this
+[01:09:53 -> 01:10:00] load proceeds to execute you can free that reservation station okay the
+[01:10:00 -> 01:10:05] tail pointer is at three so you dispatch the store to at rear of
+[01:10:05 -> 01:10:11] affinity three that's it at the tail okay and so the store then you go to the
+[01:10:11 -> 01:10:16] map table what and it gets a reservation station number three you
+[01:10:16 -> 01:10:20] go to the map table with f2 it's reorder buffer entry two so the tag is
+[01:10:20 -> 01:10:24] reorder buffer entry two and the destination tag is reorder buffer entry
+[01:10:24 -> 01:10:30] three and the go with the second input are one tag is zero so you copy
+[01:10:30 -> 01:10:41] of the contents of r1 into the second value field any questions so far clock
+[01:10:41 -> 01:10:48] cycle four things start getting interesting okay this load instruction
+[01:10:48 -> 01:10:54] completes execution so out on the rear on the accommodate of us comes the
+[01:10:54 -> 01:11:01] tag which is reorder buffer entry one and the value f1 okay so let's say
+[01:11:01 -> 01:11:07] you go to the map table search for reorder buffer entry one you see a bag
+[01:11:07 -> 01:11:13] you see a match so you set the tag to be the to reorder buffer entry one
+[01:11:13 -> 01:11:17] plus which means now that a bit is set to one so the entries in the
+[01:11:17 -> 01:11:23] reorder buffer you write f1 into the value field of the reorder buffer
+[01:11:23 -> 01:11:33] entry one over here okay and and then you also broadcast it over on the
+[01:11:33 -> 01:11:38] reservation stations this multiply matches the tag so it snarf grabs it
+[01:11:38 -> 01:11:46] up the common data bus and reads the value field over here okay and you
+[01:11:46 -> 01:11:52] dispatch the next instruction to the tail slot that gets reorder buffer entry number
+[01:11:52 -> 01:11:57] four it's going to write into r1 and it's going to go to this reservation
+[01:11:57 -> 01:12:04] station number one you go and read r1 it's reorder buffer entry number four
+[01:12:04 -> 01:12:10] is the tag that's the tag okay and you also go sorry before you go and you
+[01:12:10 -> 01:12:14] saw you go and read it it was zero so you read the value of r1 into
+[01:12:14 -> 01:12:24] this value field here and then you updated the tag to be okay we'll take
+[01:12:24 -> 01:12:27] it from here we'll go back to the start.

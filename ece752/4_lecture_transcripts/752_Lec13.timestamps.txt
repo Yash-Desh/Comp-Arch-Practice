@@ -1,0 +1,1238 @@
+Title: 752_Lec13
+Source file: 752_Lec13.mp3
+Detected language: en
+------------------------------------------------------------
+
+[00:00:00 -> 00:00:08] the add, integer add instruction. And so you're going to allocate a reservation here. Then
+[00:00:08 -> 00:00:12] you would go to the map table. The map table, R1, is clear. So you copy over the value
+[00:00:12 -> 00:00:21] R1 over here. R1 over here. Okay, the contents of R1 over here. And now you're going
+[00:00:21 -> 00:00:26] to also, the destination register is also R1. So you'll go now and set the tag of
+[00:00:26 -> 00:00:37] R1 in the map table to be the reorder buffer entry number four. Okay, yeah.
+[00:00:37 -> 00:00:45] T1 and T2 means the values you have, V1 and V2 correspond to the values you are going to read, right?
+[00:00:45 -> 00:00:54] No, no, no. T1 and T2, sorry. V1 and V2 are the actual values. T1 and T2 are the tags
+[00:00:54 -> 00:00:58] corresponding to the registers for those values, the two source registers.
+[00:00:58 -> 00:01:07] So this store word doesn't write, right? So why does it have a ROV3 in T?
+[00:01:07 -> 00:01:34] Store does not write. Why does it have this ROV3 entry in T? We do agree that the
+[00:01:34 -> 00:01:46] ROV entry for this is three, right? I'm showing the stores over here, okay, in the
+[00:01:46 -> 00:01:55] tag. The store's destination is memory, if you will. When we talk to the load, when you see the load
+[00:01:55 -> 00:02:05] store queue, okay, we will see the importance of the ROV entry for that store. Because
+[00:02:05 -> 00:02:09] what's going to happen is that, to give you a preview, is that you will be
+[00:02:09 -> 00:02:21] searching the loads and stores in certain ranges, okay, and then this is the, when this ROV entry
+[00:02:21 -> 00:02:29] is ready to free, you will free also the corresponding store queue entry, or when that is
+[00:02:29 -> 00:02:43] ready to retire. Thank you for asking that. Other questions? Okay, clock cycle five, now this
+[00:02:43 -> 00:02:51] load is at the head of the reorder buffer, and it's ready to retire. Okay, no exceptions. Okay,
+[00:02:51 -> 00:03:03] so it retires, so you write the value of F1 into the register file, okay? Multiply proceeds
+[00:03:03 -> 00:03:11] to execute so you can free that reservation station. This add is ready to issue over here
+[00:03:11 -> 00:03:20] in C5, okay? And now that you've dispatched this load, so you allocate this reservation
+[00:03:20 -> 00:03:26] station for the load over here, okay? And then you, you know, again, you go to the
+[00:03:26 -> 00:03:31] map table with R1, it's getting the tag of reorder buffer entry number two. You
+[00:03:31 -> 00:03:39] go to the map table with F1, and you set the tag of F1 to be reorder buffer entry
+[00:03:39 -> 00:03:52] number, okay? Clock cycle six, you know, this load has gone, okay, it's retired. This
+[00:03:52 -> 00:04:04] multiply hasn't completed, so it cannot retire, okay? This add immediate starts to execute,
+[00:04:04 -> 00:04:17] you know, and so you can free that reservation station, and now you can dispatch the multiply
+[00:04:17 -> 00:04:22] to the tail to reorder buffer entry number six, and allocate a reservation station,
+[00:04:22 -> 00:04:29] and so the destination is reorder buffer entry six. For F0, you get the value from
+[00:04:29 -> 00:04:35] the register file because the tag is zero. For F1, there is a tag of reorder buffer
+[00:04:35 -> 00:04:52] entry number five, you copy over that tag over here. Clock cycle seven, this add completes,
+[00:04:52 -> 00:04:59] so what comes out of the Commodore data bus is the value for register R1, and
+[00:04:59 -> 00:05:05] the tag is reorder buffer entry number four. You match the tags in the reservation
+[00:05:05 -> 00:05:10] stations, you get a match for this load instruction over here, so you copy over
+[00:05:10 -> 00:05:15] the value and set, you know, and then basically now you set that, you know, the value is ready,
+[00:05:15 -> 00:05:25] okay? This tag also matches the map table, okay, and of course you write R1 into the
+[00:05:25 -> 00:05:31] reorder buffer entry number four, okay? And then this tag matches the map table,
+[00:05:31 -> 00:05:44] so you set the ready and reorder buffer entry to be one. You cannot dispatch it,
+[00:05:44 -> 00:05:49] why so? Because there is no free reservation station because the previous store occupying
+[00:05:49 -> 00:05:57] that reservation station has not executed, okay, has not reached the execute stage.
+[00:05:57 -> 00:06:08] Clock cycle eight, this multiply completes, when this multiply completes,
+[00:06:08 -> 00:06:14] out of the reorder on the Commodore data bus comes the value for F2, register F2,
+[00:06:14 -> 00:06:21] and tag reorder buffer entry number two, you write F2 into reorder buffer entry number two,
+[00:06:21 -> 00:06:30] broadcast this tag to the reservation stations, match it, so you snarf the value into this value
+[00:06:30 -> 00:06:38] field of the reservation station, so you grab that, okay? And now then also you try and look
+[00:06:38 -> 00:06:44] for a matching reorder buffer entry number two over here, okay? There is no match.
+[00:06:44 -> 00:07:05] So you don't do anything in the map table over here. And this load proceeds to execute,
+[00:07:05 -> 00:07:11] so you free this reservation station for the load over here, okay?
+[00:07:11 -> 00:07:26] Now this ad completed in clock cycle seven. However, you know, there is nothing more you
+[00:07:26 -> 00:07:32] can do about it in clock cycle eight because it is not at the head of the reorder buffer, okay?
+[00:07:32 -> 00:07:41] So this ad cannot retire because it's not at the head of the reorder buffer. It can only
+[00:07:41 -> 00:07:49] retire when it gets to the head of the reorder buffer, all right? Clock cycle nine,
+[00:07:49 -> 00:07:58] this is where we see all the different stages are active at the same time. Clock cycle nine,
+[00:07:58 -> 00:08:06] okay, at the end of clock cycle eight, this multiply has completed, okay? It has completed,
+[00:08:06 -> 00:08:11] is the multiplies at the head of the, or let me put it, say it a different way. The instruction
+[00:08:11 -> 00:08:18] at the head of the reorder buffer has completed without any exception. So in clock cycle nine,
+[00:08:18 -> 00:08:33] you can retire that. You can retire this multiply, okay? This store then, now, sorry,
+[00:08:33 -> 00:08:41] at the end of clock cycle eight that value corresponding to F2 and tag ROV2 also was
+[00:08:41 -> 00:08:48] broadcast and woke up this store over here. So the store issued, if you will, in clock
+[00:08:48 -> 00:08:55] cycle eight. And it could proceed to effectively the execute part of it, which is it will do
+[00:08:55 -> 00:09:02] stuff in the load store queue. We will see what that is next class, okay? And so it
+[00:09:02 -> 00:09:13] can proceed to execute over here. This load is going to complete execution in clock
+[00:09:13 -> 00:09:21] cycle nine. So the tag reorder buffer entry five and the value for F1 come out in
+[00:09:21 -> 00:09:29] the common data bus. F1 gets written into the reorder buffer. This tag gets broadcast
+[00:09:29 -> 00:09:36] and it matches this entry over here. So you, you know, clear that entry and grab
+[00:09:36 -> 00:09:45] the value of F1 of the common data bus. So now this multiply has both F0 and F1
+[00:09:45 -> 00:10:02] ready and so it can issue, okay? And this store now has started execution so you
+[00:10:02 -> 00:10:11] can free that reservation station and allocate it to this store over here, okay? And
+[00:10:11 -> 00:10:16] this store, again, what you'll do is you'll go to the, you know, map table
+[00:10:16 -> 00:10:27] with R1 and get reorder buffer entry number four, okay? And then it'll go to, for F2
+[00:10:27 -> 00:10:34] and get reorder buffer entry number six as the tag. And when it gets to reorder
+[00:10:34 -> 00:10:41] buffer with reorder buffer entry number four and the ready in reorder buffer bit
+[00:10:41 -> 00:10:48] is set, that means the value for R1 is in the reorder buffer. It is ready in
+[00:10:48 -> 00:10:56] the reorder buffer at entry number four. So you will get this value of R1 from
+[00:10:56 -> 00:11:05] the reorder buffer entry number four and copy it to this value field over here.
+[00:11:05 -> 00:11:21] Are you with me on that? Any questions? Okay. Clock cycle then. This store
+[00:11:21 -> 00:11:28] proceeds to complete, okay? And, you know, this multiply proceeds to execute
+[00:11:28 -> 00:11:34] and so you can free this reservation station over here. Clock cycle seven. You
+[00:11:34 -> 00:11:42] can retire the store, okay? And, you know, the other is, you know, the load
+[00:11:42 -> 00:11:46] is still waiting to retire. Add is still waiting to retire but the
+[00:11:46 -> 00:11:52] multiply is still going to be executing in clock cycle 11, okay? And then you
+[00:11:52 -> 00:12:09] can finish up the rest. Questions? Okay, let's hold on to that thought for a while, okay?
+[00:12:09 -> 00:12:14] So the whole point of the reorder buffer is to maintain a precise state, okay?
+[00:12:14 -> 00:12:21] And how do you make that work? It's really very, very simple actually, okay?
+[00:12:21 -> 00:12:27] What you do is you wait until the last good instruction retires and the
+[00:12:27 -> 00:12:33] first bad instruction is at the head of the reorder buffer, okay? And then you
+[00:12:33 -> 00:12:38] just zero everything out. You clear all the reorder buffer, clear the
+[00:12:38 -> 00:12:44] reservation stations, clear the map table, okay? And start them again.
+[00:12:44 -> 00:12:53] Why does this work? This works because if I have a zero in a reorder buffer
+[00:12:53 -> 00:13:01] reservation station, it's empty. Nothing there. Importantly, if the tag is zero
+[00:13:01 -> 00:13:07] in the map table, that means that the register, corresponding register has the
+[00:13:07 -> 00:13:22] latest correct value, all right? So when now in clock cycle nine, say this
+[00:13:22 -> 00:13:32] store had a page fault. We'll get to TLV stuff later on, all right? Say it had a page
+[00:13:32 -> 00:13:41] fault. If it had a page fault, now take a look at what that, you know, what the
+[00:13:41 -> 00:13:47] situation over here is. The situation over here is all the instructions
+[00:13:47 -> 00:13:58] before this instruction have retired, which means that any register that this
+[00:13:58 -> 00:14:04] previous instruction was going to write to has been written in the register
+[00:14:04 -> 00:14:15] file, okay? Further, no instruction at the store, including the store, has
+[00:14:15 -> 00:14:21] retired, which means none of their destination registers have been written
+[00:14:21 -> 00:14:30] into the register file, okay? So if I just zero out the reservation stations
+[00:14:30 -> 00:14:41] and further and further, okay? What is there in the map table? The
+[00:14:41 -> 00:14:49] tags in the map table correspond to tags, correspond to instructions that are
+[00:14:49 -> 00:15:00] still in the reorder buffer that are going to write to that register. If an
+[00:15:00 -> 00:15:05] instruction has already written into the register and no other instruction is
+[00:15:05 -> 00:15:12] going to be writing the register, the tag is zero, okay? So if I simply wipe
+[00:15:12 -> 00:15:17] out all these tags over here, where are all these tags? That's an indicator
+[00:15:17 -> 00:15:23] that hey, the registers have the correct value, which is they have the value of
+[00:15:23 -> 00:15:28] the instructions that occurred before the instruction at the head of the reorder
+[00:15:28 -> 00:15:35] buffer. That had been written by those. And no, once I clear these tags out,
+[00:15:35 -> 00:15:38] there is no other instruction after this that's going to be writing into
+[00:15:38 -> 00:15:52] those, okay? So I just cleared everything out and I'm done. Start all over.
+[00:15:52 -> 00:16:09] After the operating system fixes a page full. Now you asked about a TLB miss. So if
+[00:16:09 -> 00:16:15] there's a hardware walker of a TLB miss handler, you can actually allow it to
+[00:16:15 -> 00:16:23] proceed in parallel with, you don't have to clear out all these
+[00:16:23 -> 00:16:25] instructions later on.
+[00:16:25 -> 00:16:35] As far as I understand, basically what my understanding is is that you have a
+[00:16:35 -> 00:16:42] base address which corresponds to where your page table is and then you have
+[00:16:42 -> 00:16:48] hardware mapper or hardware walker will go there and do those things, right?
+[00:16:48 -> 00:16:55] It will perform what usually older OSs do.
+[00:16:55 -> 00:16:59] We talked about how we handle page faults later on, how the page table structure
+[00:16:59 -> 00:17:11] is and how you have to walk through the page table. Okay. And you can do
+[00:17:11 -> 00:17:18] that with a software miss handler. Okay. And these days, even if you
+[00:17:18 -> 00:17:24] have a software miss handler, which mostly you have hardware miss handlers,
+[00:17:24 -> 00:17:29] you have to handle the miss TLB miss in the hardware. So if you have a piece of
+[00:17:29 -> 00:17:34] hardware, you know, you say a piece of hardware does this thing, the store
+[00:17:34 -> 00:17:39] instructions still waiting at the head of the reorder buffer. Okay. And the
+[00:17:39 -> 00:17:45] instructions that are there elsewhere, they continue doing what they are
+[00:17:45 -> 00:17:51] doing. So you're overlapping that hardware miss handler. Okay. It does
+[00:17:51 -> 00:17:57] get a little complicated, okay, because what it does, et cetera, et cetera.
+[00:17:57 -> 00:18:02] Alternatively, also, if you have, if you're handling this miss handler in
+[00:18:02 -> 00:18:07] software, okay. Now, you know, what we have so far talked about is this
+[00:18:07 -> 00:18:12] very simple machine, one thing and something like that. You can actually
+[00:18:12 -> 00:18:19] maybe spawn a new little thread to handle that in the hardware, you know,
+[00:18:19 -> 00:18:23] and run it and then it comes back. There's stuff you have to handle that
+[00:18:23 -> 00:18:28] gets a little complicated because we have to share control registers and
+[00:18:28 -> 00:18:35] sharing control registers get a little more complicated. But the TLB miss
+[00:18:35 -> 00:18:41] handler occurs much more frequently than a baseball. So people have, you
+[00:18:41 -> 00:18:47] know, figured out how to not make it hurt that much. It still hurts. Okay.
+[00:18:47 -> 00:18:52] But by trying to not completely flush out the machine when you have a TLB
+[00:18:52 -> 00:18:56] miss handler. Page 40, pretty much after.
+[00:18:56 -> 00:19:04] My second, like, it's, what if we get a bad instruction exception and,
+[00:19:04 -> 00:19:09] but there is the common data bus is still valid. We never actually zero
+[00:19:09 -> 00:19:14] out the common data bus at any, like, rate. So what, like, can there
+[00:19:14 -> 00:19:20] be a base such that while you were flushing out the ROP, you accidentally
+[00:19:20 -> 00:19:22] load something back?
+[00:19:22 -> 00:19:30] No, common data bus. So we flush out sequential logic where state stays.
+[00:19:30 -> 00:19:38] Why is that? State doesn't stay. Okay. You know, I mean, when I say
+[00:19:38 -> 00:19:42] you're pulling stuff out from common data bus and so on like that,
+[00:19:42 -> 00:19:49] you're just clearing all the logic. It's not going to be doing anything.
+[00:19:49 -> 00:19:53] You're basically, you know, any sequential logic state that stays is
+[00:19:53 -> 00:19:55] what you have to clean out.
+[00:19:55 -> 00:19:59] So yeah, we could just disable the write control on the register file
+[00:19:59 -> 00:20:08] if we are worried about that resolution for that one clock.
+[00:20:08 -> 00:20:15] When you are clearing something out, you just clear it out. Okay.
+[00:20:15 -> 00:20:23] Zero it out. You're writing zero. That's what you're doing.
+[00:20:23 -> 00:20:27] Okay. So, you know, we go through cycle 12 and you just restart all
+[00:20:27 -> 00:20:32] over again. No big deal.
+[00:20:32 -> 00:20:38] So, you know, what is the cost of handling a precise state?
+[00:20:38 -> 00:20:42] Really, it's, you know, the whole point of, you know, when we did
+[00:20:42 -> 00:20:46] this is like, look, the reorder buffer can delay the write and
+[00:20:47 -> 00:20:52] aggravate latencies. But then, hey, when out of order, you can overlap
+[00:20:52 -> 00:20:54] the latencies and delay all of that.
+[00:20:54 -> 00:20:59] So, you know, as long as you have a big enough reorder buffer
+[00:20:59 -> 00:21:03] and you're not stalling for the reorder buffer, okay,
+[00:21:03 -> 00:21:07] the reorder buffer is not really hindering performance.
+[00:21:07 -> 00:21:11] And in fact, if by freeing up, allowing you to free up
+[00:21:11 -> 00:21:14] reservation stations earlier than you could,
+[00:21:14 -> 00:21:17] you can actually get by with smaller number of reservation
+[00:21:17 -> 00:21:21] stations. Alternatively, you're not going to be stalling for
+[00:21:21 -> 00:21:23] reservation stations for the same number.
+[00:21:23 -> 00:21:25] You're going to be stalling less with the reorder buffer
+[00:21:25 -> 00:21:29] and the same number of reservation stations.
+[00:21:29 -> 00:21:33] But if the reorder buffer is too small, then, you know,
+[00:21:33 -> 00:21:35] it becomes an issue.
+[00:21:35 -> 00:21:40] Now, you know, how big is it you want to make a reorder
+[00:21:40 -> 00:21:42] buffer? That's the question.
+[00:21:42 -> 00:21:48] So, you want it to be as big as as many instructions that you're
+[00:21:48 -> 00:21:53] going to have in flight at any given time, okay?
+[00:21:53 -> 00:21:56] So, what we've been talking about is, hey, you know,
+[00:21:56 -> 00:22:02] between dispatch and write back, if we have some number of
+[00:22:02 -> 00:22:07] pipeline stages, each one of them is doing n instructions,
+[00:22:07 -> 00:22:13] then you want to be at least number of entries in the reorder
+[00:22:13 -> 00:22:17] buffer to be, you know, the how many instructions I'm doing
+[00:22:17 -> 00:22:20] per cycle times the number of pipeline stages between
+[00:22:20 -> 00:22:28] dispatch and write back, okay?
+[00:22:28 -> 00:22:33] Now, one of the duties of these out of order machines is
+[00:22:33 -> 00:22:43] that, you know, is you design your L1 caches, you know,
+[00:22:43 -> 00:22:45] but they don't, I mean, they mess up frequently.
+[00:22:45 -> 00:22:49] And then you have a second level cache on chip, okay,
+[00:22:49 -> 00:22:53] which may be 10, 15 cycles, okay?
+[00:22:53 -> 00:22:57] So, these machines designed well can actually tolerate
+[00:22:57 -> 00:23:00] latencies of an L2 cache access.
+[00:23:00 -> 00:23:01] Why so?
+[00:23:01 -> 00:23:04] Because what I would do now, so say I was doing four white,
+[00:23:04 -> 00:23:10] and I had four stages between, you know, dispatch and write
+[00:23:10 -> 00:23:14] back, and one of those was a one cycle cache hit.
+[00:23:14 -> 00:23:19] So I'd have 16 entries in the reorder buffer, okay?
+[00:23:19 -> 00:23:23] Now, say I instead had like 100 entries in the reorder
+[00:23:23 -> 00:23:27] buffer, so when a load instruction had a cache miss
+[00:23:27 -> 00:23:30] and it took 15 cycles, it was sitting in the reorder
+[00:23:30 -> 00:23:34] buffer for 15 cycles, I could keep porting other
+[00:23:34 -> 00:23:39] instructions over there, okay, into the reorder buffer.
+[00:23:39 -> 00:23:44] So, you know, again, back with the unblocked calculation,
+[00:23:44 -> 00:23:47] if the load miss was 15 cycles and I was doing four
+[00:23:47 -> 00:23:50] instructions at a time, then in 15 cycles I would
+[00:23:50 -> 00:23:54] basically be issuing 60 instructions.
+[00:23:54 -> 00:23:58] So my reorder buffer is more, and so those, you
+[00:23:58 -> 00:24:01] know, dispatching, sorry, not dispatching, dispatching
+[00:24:01 -> 00:24:04] 60 instructions, touching and dispatching them into
+[00:24:04 -> 00:24:08] the backend, if you will, okay, so my reorder buffer
+[00:24:08 -> 00:24:11] is bigger than that, then I'm not going to stall.
+[00:24:11 -> 00:24:13] The front end is just going to keep fetching
+[00:24:13 -> 00:24:17] instructions that I can dispatch, okay?
+[00:24:17 -> 00:24:22] And, you know, so, you know, at least twice the L2
+[00:24:22 -> 00:24:25] hit latency that people do, but then people get
+[00:24:25 -> 00:24:28] greedy and say, look, man, I'm putting all this,
+[00:24:28 -> 00:24:32] if I get my branch prediction right, okay, then I
+[00:24:32 -> 00:24:36] can tolerate longer latencies, I can even start
+[00:24:36 -> 00:24:41] talking about L2 misses and maybe L3 hit miss latencies.
+[00:24:41 -> 00:24:45] Okay, so, you know, when you see these reorder
+[00:24:45 -> 00:24:48] buffers on 600 instructions, that's what they are
+[00:24:48 -> 00:24:51] in a sense, saying, hey, you know, I have enough
+[00:24:51 -> 00:24:53] resources to put in the reorder buffer, why don't
+[00:24:53 -> 00:24:56] I just spend resources on getting a good branch
+[00:24:56 -> 00:24:59] predictor so I can just keep filling the 600 entry
+[00:24:59 -> 00:25:03] reorder buffer and that will allow me to tolerate
+[00:25:03 -> 00:25:05] even L2 misses.
+[00:25:05 -> 00:25:09] Was this length of reorder buffer a significant
+[00:25:09 -> 00:25:12] factor in why, like, you had once said that you
+[00:25:12 -> 00:25:20] had basically wanted people to move to non-blocking
+[00:25:20 -> 00:25:26] cases with the little slot, so was this also a
+[00:25:26 -> 00:25:30] factor in having, like, cases that serve
+[00:25:30 -> 00:25:35] consequences even if they hit numbers?
+[00:25:35 -> 00:25:38] So we'll get to, we'll talk about this at the
+[00:25:38 -> 00:25:41] caches, but look, so very simply, very simply,
+[00:25:41 -> 00:25:44] okay, so where are we now? Where are we?
+[00:25:44 -> 00:25:48] Okay, where we are at is the following.
+[00:25:48 -> 00:26:16] Let's go to the first, okay, so, you know,
+[00:26:16 -> 00:26:19] what is it we want to do is we want to do
+[00:26:19 -> 00:26:23] the instruction recycle, and the latencies are
+[00:26:23 -> 00:26:25] getting bigger, maybe cache misses and so on
+[00:26:25 -> 00:26:28] like that, okay, so what you want to do is you
+[00:26:28 -> 00:26:34] want to have a large instruction window to
+[00:26:34 -> 00:26:36] tolerate latencies, tolerate the read off
+[00:26:36 -> 00:26:40] write hazards, and so then you need to be able
+[00:26:40 -> 00:26:46] to predict branches, okay, but then, now,
+[00:26:46 -> 00:26:49] you have to basically allow the execution of
+[00:26:49 -> 00:26:51] the instructions to overlap each other.
+[00:26:51 -> 00:26:59] If one in every six instructions is a load
+[00:26:59 -> 00:27:06] instruction, then you have to allow loads to
+[00:27:06 -> 00:27:11] overlap each other. If all loads hit in the
+[00:27:11 -> 00:27:15] cache, okay, fine, okay, who cares?
+[00:27:15 -> 00:27:19] Okay, but they don't, so then loads miss,
+[00:27:19 -> 00:27:22] so when a load misses, what do you do?
+[00:27:22 -> 00:27:25] Stop? No, you allow a load of a miss
+[00:27:25 -> 00:27:29] a missable load, you'd be able to handle a miss
+[00:27:29 -> 00:27:31] overlap the missable load with other
+[00:27:31 -> 00:27:35] instructions, other non-load instructions,
+[00:27:35 -> 00:27:39] okay, then it should be fairly obvious after
+[00:27:39 -> 00:27:41] that, then you'd also, hey, if I only do
+[00:27:41 -> 00:27:43] non-load instructions, there are only like
+[00:27:43 -> 00:27:47] three or four every load instructions, so,
+[00:27:47 -> 00:27:50] you know, if I'm going to take a 10 cycle
+[00:27:50 -> 00:27:52] miss latency, even if I'm doing only one
+[00:27:52 -> 00:27:54] instruction at a time, I have to overlap
+[00:27:54 -> 00:27:59] that miss and other load instructions,
+[00:27:59 -> 00:28:02] okay, and okay, then it is, you overlap the
+[00:28:02 -> 00:28:07] do those loads hit, like as good as they
+[00:28:07 -> 00:28:11] hit, but then there's reality, that they
+[00:28:11 -> 00:28:14] miss, so you have to overlap misses with
+[00:28:14 -> 00:28:16] each other. This is a very, this is,
+[00:28:16 -> 00:28:20] this is, you know, very simple queuing
+[00:28:20 -> 00:28:23] and, you know, we talk about Little's
+[00:28:23 -> 00:28:26] Law, very simple Little's Law argument is
+[00:28:26 -> 00:28:29] what you have to do. Unfortunately,
+[00:28:29 -> 00:28:31] people don't, you know, it's like,
+[00:28:31 -> 00:28:33] what's the saying, common sense and
+[00:28:33 -> 00:28:36] not that common? Little's Law is
+[00:28:36 -> 00:28:39] common sense. Unfortunately, many
+[00:28:39 -> 00:28:41] times it's not that common in systems
+[00:28:41 -> 00:28:45] design, so, we'll talk about non-locking
+[00:28:45 -> 00:28:49] catches later on. Other questions?
+[00:28:49 -> 00:28:53] Yeah, so how do branches fit into this?
+[00:28:53 -> 00:28:55] They get a reservation station and
+[00:28:55 -> 00:28:57] they...
+[00:28:57 -> 00:29:03] So, the branch unit, yes, you
+[00:29:03 -> 00:29:05] basically, how do branches fit into
+[00:29:05 -> 00:29:07] this? First thing, you go and
+[00:29:07 -> 00:29:11] speculate, okay, on what do you
+[00:29:11 -> 00:29:14] speculate on branch direction and get
+[00:29:14 -> 00:29:16] the target address of the branch. You
+[00:29:16 -> 00:29:19] do it even before that, and now the
+[00:29:19 -> 00:29:23] branches will get a slot, okay, and a
+[00:29:23 -> 00:29:26] branch is going to execute. Figure out
+[00:29:26 -> 00:29:29] if the direction is taken. Calculate
+[00:29:29 -> 00:29:31] the target to see if the target is
+[00:29:31 -> 00:29:36] correct. If it's not, it essentially
+[00:29:36 -> 00:29:38] stalls, does the same thing that we
+[00:29:38 -> 00:29:44] did with the other. If it's not,
+[00:29:44 -> 00:29:48] boom, wipe it up and start. And we
+[00:29:48 -> 00:29:51] talk about now, you know, wiping out,
+[00:29:51 -> 00:29:53] restarting for different things, yeah.
+[00:29:53 -> 00:29:56] Should we wait for the, like, if we
+[00:29:56 -> 00:29:57] have a regular address generation, that
+[00:29:57 -> 00:29:59] should be done by one year before,
+[00:29:59 -> 00:30:03] maybe two. Or three or four, yeah.
+[00:30:03 -> 00:30:05] Should we wait until the branch
+[00:30:05 -> 00:30:06] actually goes to the head of the
+[00:30:06 -> 00:30:08] ROV? No, no, no, no, no, no, no,
+[00:30:08 -> 00:30:10] no, no, no, no, no, no, no, no,
+[00:30:10 -> 00:30:12] yes, like, hey, bad branch, flush it
+[00:30:12 -> 00:30:20] off. So, you know, you, so the,
+[00:30:20 -> 00:30:23] you have the notion of the branch is
+[00:30:23 -> 00:30:26] resolved. The branch is resolved when
+[00:30:26 -> 00:30:29] you calculate the target address. And
+[00:30:29 -> 00:30:34] you calculate the branch condition. And
+[00:30:34 -> 00:30:36] you know what you're, what you're
+[00:30:36 -> 00:30:38] predicted? You do what the branch is
+[00:30:38 -> 00:30:40] going to work out and you see if
+[00:30:40 -> 00:30:42] they're the same. So, if they're
+[00:30:42 -> 00:30:43] the same with the branch that
+[00:30:43 -> 00:30:46] resolved, you're good. If not, if
+[00:30:46 -> 00:30:49] you waited for this branch to, you
+[00:30:49 -> 00:30:51] know, to reach the head of the
+[00:30:51 -> 00:30:54] ROV buffer, it's too late. So, you
+[00:30:54 -> 00:30:57] basically have to, you know, actually
+[00:30:57 -> 00:30:59] let other instructions before the
+[00:30:59 -> 00:31:00] branch keep going, but then just
+[00:31:00 -> 00:31:03] flush after that point on the ROV
+[00:31:03 -> 00:31:04] buffer, clear out from that branch
+[00:31:04 -> 00:31:06] point everything the ROV buffer
+[00:31:06 -> 00:31:09] will start. The ones before that
+[00:31:09 -> 00:31:12] still could have been executed. As
+[00:31:12 -> 00:31:14] long as you can make sure they
+[00:31:14 -> 00:31:17] are not, you know.
+[00:31:17 -> 00:31:19] This is where I think the MIPS
+[00:31:19 -> 00:31:23] ISAB has not used it very much.
+[00:31:23 -> 00:31:28] No, it's more than that. No, a
+[00:31:28 -> 00:31:30] lot of the issue has to do with,
+[00:31:30 -> 00:31:33] you know, you're going to have to,
+[00:31:33 -> 00:31:35] you know, where do you come back
+[00:31:35 -> 00:31:39] in the control? Okay. And what do
+[00:31:39 -> 00:31:40] you have to, when you have to
+[00:31:40 -> 00:31:42] predict, you know, when you
+[00:31:42 -> 00:31:45] predict a branch is, you know,
+[00:31:45 -> 00:31:47] there's an instruction that delays
+[00:31:47 -> 00:31:48] a lot, which is going to be
+[00:31:48 -> 00:31:49] executed when the branch is bigger
+[00:31:49 -> 00:31:50] than or taken. You have to
+[00:31:50 -> 00:31:53] remember all of that. That's
+[00:31:53 -> 00:32:00] quite complicated. Okay. So, you
+[00:32:00 -> 00:32:02] know, I mean, when out of order,
+[00:32:02 -> 00:32:04] you know, when we proposed this
+[00:32:04 -> 00:32:05] design many years ago, when
+[00:32:05 -> 00:32:06] people didn't have any idea what
+[00:32:06 -> 00:32:08] they were. So, the first
+[00:32:08 -> 00:32:11] processors, you know, were based
+[00:32:11 -> 00:32:14] on this PC standard design. Okay?
+[00:32:14 -> 00:32:16] And, you know, these days, you
+[00:32:16 -> 00:32:18] know, there are still several, in
+[00:32:18 -> 00:32:19] a sense, that uses, but what
+[00:32:19 -> 00:32:21] happens is people then try and
+[00:32:21 -> 00:32:23] take mixes of both, if you will.
+[00:32:23 -> 00:32:25] Okay? But it went away for a
+[00:32:25 -> 00:32:27] while. And why did it go away?
+[00:32:27 -> 00:32:29] Okay? We'll see that. We'll see
+[00:32:29 -> 00:32:31] the alternative. And then we'll
+[00:32:31 -> 00:32:32] see the alternative has a big
+[00:32:32 -> 00:32:34] plus, but it has a huge minus
+[00:32:34 -> 00:32:37] too. Okay? And we'll see what
+[00:32:37 -> 00:32:41] that is. So, the problem with
+[00:32:41 -> 00:32:43] the PC style is the following.
+[00:32:43 -> 00:32:47] Okay? There's too much value
+[00:32:47 -> 00:32:49] movement. So, we have the
+[00:32:49 -> 00:32:51] register file. We are copying
+[00:32:51 -> 00:32:53] values from the register file
+[00:32:53 -> 00:32:57] into the reservation stations.
+[00:32:57 -> 00:32:59] From the reservation stations,
+[00:32:59 -> 00:33:00] they go to the functional unit.
+[00:33:00 -> 00:33:01] From the functional unit, they
+[00:33:01 -> 00:33:03] go and get written in the
+[00:33:03 -> 00:33:05] reorder buffer. From the
+[00:33:05 -> 00:33:06] reorder buffer, they go into
+[00:33:06 -> 00:33:07] the register file, but they
+[00:33:07 -> 00:33:09] could also be copied over to
+[00:33:09 -> 00:33:11] the reservation stations. So,
+[00:33:11 -> 00:33:12] this copying over to the
+[00:33:12 -> 00:33:14] reservation station is actually
+[00:33:14 -> 00:33:16] really sort of the issue.
+[00:33:16 -> 00:33:18] Okay? And so, they have
+[00:33:18 -> 00:33:20] multi-multiple inputs. So,
+[00:33:20 -> 00:33:21] this multiplexer input over
+[00:33:21 -> 00:33:24] here, you know, is either from
+[00:33:24 -> 00:33:26] the register file now or from
+[00:33:26 -> 00:33:28] the common data bus or from
+[00:33:28 -> 00:33:32] the reorder buffer. And that
+[00:33:32 -> 00:33:34] ends up, you know,
+[00:33:34 -> 00:33:36] potentially slowing the clock
+[00:33:36 -> 00:33:39] a little bit. Alternatively,
+[00:33:39 -> 00:33:41] in the MIPS R10 style, this
+[00:33:41 -> 00:33:42] is going to be more of a
+[00:33:42 -> 00:33:44] damasulo versus the scoreboard
+[00:33:44 -> 00:33:46] kind of situation. In the
+[00:33:46 -> 00:33:48] scoreboard, values are only
+[00:33:48 -> 00:33:50] going in the register file and
+[00:33:50 -> 00:33:51] they were going from the
+[00:33:51 -> 00:33:52] register file to the functional
+[00:33:52 -> 00:33:57] units. So, you're going to
+[00:33:57 -> 00:33:59] have one physical register
+[00:33:59 -> 00:34:02] file that holds all the data.
+[00:34:02 -> 00:34:04] So, there is no copy from
+[00:34:04 -> 00:34:06] reorder buffer to the
+[00:34:06 -> 00:34:08] register file, et cetera.
+[00:34:08 -> 00:34:10] Okay? And the register files
+[00:34:10 -> 00:34:12] are close to the functional
+[00:34:12 -> 00:34:13] unit, so it's a small,
+[00:34:13 -> 00:34:16] fast data band. The
+[00:34:16 -> 00:34:19] reservation stations and the
+[00:34:19 -> 00:34:21] reorder buffer are on the
+[00:34:21 -> 00:34:24] side and they are going to be
+[00:34:24 -> 00:34:27] used mainly to do the, or
+[00:34:27 -> 00:34:29] only to do the control and
+[00:34:29 -> 00:34:33] the tagging. Okay? So, we'll
+[00:34:33 -> 00:34:36] see in gory detail what this
+[00:34:36 -> 00:34:40] means. So, you know, there
+[00:34:40 -> 00:34:42] is no architectural register
+[00:34:42 -> 00:34:44] file. The physical register
+[00:34:44 -> 00:34:47] file holds all the values.
+[00:34:47 -> 00:34:49] The number of values that you
+[00:34:49 -> 00:34:52] have over here that you want
+[00:34:52 -> 00:34:57] to hold is how many registers
+[00:34:57 -> 00:34:59] are there in your architectural
+[00:34:59 -> 00:35:02] register file plus how many
+[00:35:02 -> 00:35:04] values are instructions that
+[00:35:04 -> 00:35:05] are in flight that are
+[00:35:05 -> 00:35:07] producing. And the
+[00:35:07 -> 00:35:08] instructions that are in
+[00:35:08 -> 00:35:10] flight are the instructions
+[00:35:10 -> 00:35:12] in the reorder buffer. Okay?
+[00:35:12 -> 00:35:14] So, I have a 32 register and
+[00:35:14 -> 00:35:15] I have 40 instructions in
+[00:35:15 -> 00:35:17] flight. I need to have, you
+[00:35:17 -> 00:35:20] know, 72 plus physical
+[00:35:20 -> 00:35:28] registers. I'm going to see
+[00:35:28 -> 00:35:30] all the architectural registers
+[00:35:30 -> 00:35:31] are mapped to physical
+[00:35:31 -> 00:35:34] register. Okay? So, if I get
+[00:35:34 -> 00:35:36] out and I went to the
+[00:35:36 -> 00:35:38] machine with a clean state,
+[00:35:38 -> 00:35:42] okay? R0 could be in P13.
+[00:35:42 -> 00:35:43] And next time I went to it
+[00:35:43 -> 00:35:45] in a clean state, R0 could
+[00:35:45 -> 00:35:48] be in P9. Okay? Even though
+[00:35:48 -> 00:35:49] no other instructions are
+[00:35:49 -> 00:35:51] executing at any given time.
+[00:35:51 -> 00:35:59] Okay? So, we're going to
+[00:35:59 -> 00:36:00] map the architectural register
+[00:36:00 -> 00:36:02] to physical registers. And
+[00:36:02 -> 00:36:04] it's a physical register file
+[00:36:04 -> 00:36:06] that the multiple storage is
+[00:36:06 -> 00:36:09] going to allow us to remove
+[00:36:09 -> 00:36:11] these hazards. And the
+[00:36:11 -> 00:36:13] physical registers are really
+[00:36:13 -> 00:36:14] taking the place of the
+[00:36:14 -> 00:36:16] reservation station copies. So,
+[00:36:16 -> 00:36:19] rather than keep around copies
+[00:36:19 -> 00:36:20] of the register in these
+[00:36:20 -> 00:36:22] reservation stations, I'm in
+[00:36:22 -> 00:36:24] a sense keeping copies of the
+[00:36:24 -> 00:36:26] register in different physical
+[00:36:26 -> 00:36:30] registers. Okay? Are you
+[00:36:30 -> 00:36:32] with me in this conceptually?
+[00:36:32 -> 00:36:33] We'll see in detail exactly
+[00:36:33 -> 00:36:39] what happens. So, there's a
+[00:36:39 -> 00:36:40] fundamental change in the
+[00:36:40 -> 00:36:42] map table. Mappings cannot be
+[00:36:42 -> 00:36:44] zero because there is no
+[00:36:44 -> 00:36:46] architectural register file.
+[00:36:46 -> 00:36:49] Okay? So, a register, a
+[00:36:49 -> 00:36:51] physical register, sorry, a
+[00:36:51 -> 00:36:53] architectural register, there
+[00:36:53 -> 00:36:54] are as many map table
+[00:36:54 -> 00:36:55] entries as there are
+[00:36:55 -> 00:36:58] architectural registers. Each
+[00:36:58 -> 00:37:00] mapping, an entry for each
+[00:37:00 -> 00:37:01] architect of register is
+[00:37:01 -> 00:37:03] going to be non-zero because
+[00:37:03 -> 00:37:04] it has to be there in some
+[00:37:04 -> 00:37:06] physical register, which is
+[00:37:06 -> 00:37:11] non-zero. And you're going to
+[00:37:11 -> 00:37:12] have a free list. The free
+[00:37:12 -> 00:37:13] list is going to keep track
+[00:37:13 -> 00:37:15] of unallocated physical
+[00:37:15 -> 00:37:17] registers. And we're going to
+[00:37:17 -> 00:37:19] use a reorder buffer to
+[00:37:19 -> 00:37:20] return physical registers to
+[00:37:20 -> 00:37:21] this free list. So, another
+[00:37:21 -> 00:37:26] true renaming example. So,
+[00:37:26 -> 00:37:27] let's go back to this
+[00:37:27 -> 00:37:30] renaming example that we
+[00:37:30 -> 00:37:32] had a couple of few
+[00:37:32 -> 00:37:35] lectures ago. So, we had
+[00:37:35 -> 00:37:37] three architectural register
+[00:37:37 -> 00:37:39] names, R1, R2, R3, and then
+[00:37:39 -> 00:37:41] there were, you know, eight
+[00:37:41 -> 00:37:43] different physical register
+[00:37:43 -> 00:37:44] locations, seven different
+[00:37:44 -> 00:37:46] physical register locations.
+[00:37:46 -> 00:37:48] Originally, R1 was mapped to
+[00:37:48 -> 00:37:50] 11, R2 was mapped to 12,
+[00:37:50 -> 00:37:52] and R3 mapped to 13, 14,
+[00:37:52 -> 00:37:58] 15, 16, and 17. Okay? And
+[00:37:58 -> 00:38:02] now, I did this map,
+[00:38:02 -> 00:38:04] remapping and renaming, took,
+[00:38:04 -> 00:38:06] you know, register from the
+[00:38:06 -> 00:38:07] free list for the
+[00:38:07 -> 00:38:09] destination, and mapped the
+[00:38:09 -> 00:38:11] destination to the register
+[00:38:11 -> 00:38:12] that I got from the free
+[00:38:12 -> 00:38:13] list. And this is what
+[00:38:13 -> 00:38:17] happens over here. Okay?
+[00:38:17 -> 00:38:19] Now, what do I do for the
+[00:38:19 -> 00:38:21] next instruction? Next
+[00:38:21 -> 00:38:25] instruction does not have
+[00:38:25 -> 00:38:27] any register in the free
+[00:38:27 -> 00:38:29] list to work with. So, we
+[00:38:29 -> 00:38:31] are out of free list
+[00:38:31 -> 00:38:34] location. What really the
+[00:38:34 -> 00:38:36] question is, is, okay, hey,
+[00:38:36 -> 00:38:39] at some point, a physical
+[00:38:39 -> 00:38:42] register that I allocated, I
+[00:38:42 -> 00:38:45] need to free up, somehow.
+[00:38:45 -> 00:38:50] Okay? So far, so good? Let's
+[00:38:50 -> 00:39:09] step back a little bit. So,
+[00:39:09 -> 00:39:11] an instruction is writing into
+[00:39:11 -> 00:39:15] a register. Okay? And I'm
+[00:39:15 -> 00:39:16] going to give some place
+[00:39:16 -> 00:39:18] where the value that is
+[00:39:18 -> 00:39:19] going to go in that
+[00:39:19 -> 00:39:21] register is going to sit.
+[00:39:21 -> 00:39:24] Okay? You know, in your
+[00:39:24 -> 00:39:28] good old, you know, doing
+[00:39:28 -> 00:39:31] nothing fancy, the value
+[00:39:31 -> 00:39:34] that sits in the register
+[00:39:34 -> 00:39:40] file. Okay? And now, when
+[00:39:40 -> 00:39:43] we had Tamasulo algorithm,
+[00:39:43 -> 00:39:47] when we had the scoreboard
+[00:39:47 -> 00:39:49] algorithm, the value was only
+[00:39:49 -> 00:39:50] sitting in the register
+[00:39:50 -> 00:39:52] file. When we had the
+[00:39:52 -> 00:39:53] Tamasulo algorithm, the
+[00:39:53 -> 00:39:54] value could be in the
+[00:39:54 -> 00:39:55] register file, the value
+[00:39:55 -> 00:39:56] could be in the
+[00:39:56 -> 00:40:00] reservation station. When
+[00:40:00 -> 00:40:04] we had the B6, the value
+[00:40:04 -> 00:40:05] could be in the register
+[00:40:05 -> 00:40:06] file, it could be in the
+[00:40:06 -> 00:40:08] reservation station, it
+[00:40:08 -> 00:40:10] could be in the reorder
+[00:40:10 -> 00:40:14] buffer. Okay? At some
+[00:40:14 -> 00:40:16] point, I need to make the
+[00:40:16 -> 00:40:18] decision that, you know, I
+[00:40:18 -> 00:40:20] put a value somewhere in
+[00:40:20 -> 00:40:22] location X, it could be in
+[00:40:22 -> 00:40:23] register, it could be in
+[00:40:23 -> 00:40:25] map table, sorry, in
+[00:40:25 -> 00:40:27] reservation station, reorder
+[00:40:27 -> 00:40:29] buffer. I no longer need
+[00:40:29 -> 00:40:32] that value. Okay? When I
+[00:40:32 -> 00:40:35] no longer need that value,
+[00:40:35 -> 00:40:38] then some other value could
+[00:40:38 -> 00:40:40] be put in that storage
+[00:40:40 -> 00:40:46] location. Okay? So, when
+[00:40:46 -> 00:40:48] do I no longer need the
+[00:40:48 -> 00:40:50] value that an instruction
+[00:40:50 -> 00:40:53] has created? I no longer
+[00:40:53 -> 00:40:54] need the value that an
+[00:40:54 -> 00:40:55] instruction has created
+[00:40:55 -> 00:40:59] in writing into R3. When
+[00:40:59 -> 00:41:01] any instruction that is
+[00:41:01 -> 00:41:04] going to ever use that
+[00:41:04 -> 00:41:09] value of R3 is done, then
+[00:41:09 -> 00:41:10] they no longer need that
+[00:41:10 -> 00:41:12] value. I can be sure of
+[00:41:12 -> 00:41:15] that. Okay? When I can be
+[00:41:15 -> 00:41:16] sure that no other
+[00:41:16 -> 00:41:17] instruction is going to
+[00:41:17 -> 00:41:18] need the value that is
+[00:41:18 -> 00:41:20] sitting somewhere in some
+[00:41:20 -> 00:41:23] storage, I can free that
+[00:41:23 -> 00:41:26] storage. Otherwise, I cannot,
+[00:41:26 -> 00:41:27] because if there is any
+[00:41:27 -> 00:41:28] chance that an instruction
+[00:41:28 -> 00:41:29] is going to need that
+[00:41:29 -> 00:41:30] value, I have to keep
+[00:41:30 -> 00:41:33] that value around. Okay?
+[00:41:33 -> 00:41:34] You're fine with the
+[00:41:34 -> 00:41:40] concept? Okay. So, what
+[00:41:40 -> 00:41:42] happens in the physical
+[00:41:42 -> 00:41:46] register? So, you know,
+[00:41:46 -> 00:41:51] when I did, you know,
+[00:41:51 -> 00:41:53] this precise state over
+[00:41:53 -> 00:41:57] here is all the values of
+[00:41:57 -> 00:41:59] the prior instructions went
+[00:41:59 -> 00:42:01] into the register file. So,
+[00:42:01 -> 00:42:03] if I ever cleared all
+[00:42:03 -> 00:42:05] these instructions, then I
+[00:42:05 -> 00:42:06] could go and get the
+[00:42:06 -> 00:42:07] value from the register
+[00:42:07 -> 00:42:14] file. Okay? The
+[00:42:14 -> 00:42:15] architectural registers.
+[00:42:15 -> 00:42:17] But in this R10 case
+[00:42:17 -> 00:42:18] file architecture, there
+[00:42:18 -> 00:42:20] is no architectural
+[00:42:20 -> 00:42:22] register file to copy
+[00:42:22 -> 00:42:23] the value to. In the
+[00:42:23 -> 00:42:24] P6, we copied it. We
+[00:42:24 -> 00:42:25] had it in the re-article
+[00:42:25 -> 00:42:26] buffer, and then we
+[00:42:26 -> 00:42:27] copied it back to the
+[00:42:27 -> 00:42:28] architectural register file
+[00:42:28 -> 00:42:31] when the instruction
+[00:42:31 -> 00:42:35] retired. Okay? So, you
+[00:42:35 -> 00:42:36] cannot free the physical
+[00:42:36 -> 00:42:37] register when the
+[00:42:37 -> 00:42:40] instruction retires. When
+[00:42:40 -> 00:42:41] I go back to the
+[00:42:41 -> 00:42:42] example, it will come
+[00:42:42 -> 00:42:44] clear why you cannot do
+[00:42:44 -> 00:42:47] that. Okay? But what you
+[00:42:47 -> 00:42:50] can do is you can free
+[00:42:50 -> 00:42:53] the value when you are
+[00:42:53 -> 00:42:54] sure that no other
+[00:42:54 -> 00:42:56] instruction is ever going
+[00:42:56 -> 00:42:59] to read that value. Okay?
+[00:42:59 -> 00:43:01] And that you can be
+[00:43:01 -> 00:43:03] sure of is that you can
+[00:43:03 -> 00:43:04] be sure that no other
+[00:43:04 -> 00:43:05] instruction is going to
+[00:43:05 -> 00:43:07] read that value when any
+[00:43:07 -> 00:43:10] instruction that would
+[00:43:10 -> 00:43:12] read that value as
+[00:43:12 -> 00:43:15] retired. Okay? Are you
+[00:43:15 -> 00:43:17] with me on this? So,
+[00:43:17 -> 00:43:18] you can free the
+[00:43:18 -> 00:43:20] physical register that
+[00:43:20 -> 00:43:21] was previously mapped to
+[00:43:21 -> 00:43:22] the same logical
+[00:43:22 -> 00:43:24] register. This will
+[00:43:24 -> 00:43:25] come clear as I take
+[00:43:25 -> 00:43:29] the example. So, here
+[00:43:29 -> 00:43:31] are now, you know,
+[00:43:31 -> 00:43:32] the same example over
+[00:43:32 -> 00:43:34] here, and this, you
+[00:43:34 -> 00:43:36] know, add this, you
+[00:43:36 -> 00:43:37] know, R1 got mapped to
+[00:43:37 -> 00:43:40] 14, you know, R3 got
+[00:43:40 -> 00:43:43] mapped to 15, and so
+[00:43:43 -> 00:43:51] on. Okay? Now, let
+[00:43:51 -> 00:43:52] me just take a look
+[00:43:52 -> 00:43:53] at, say, this multiply
+[00:43:53 -> 00:43:55] instruction. Okay? This
+[00:43:55 -> 00:43:57] multiply instruction
+[00:43:57 -> 00:43:59] destination is going to
+[00:43:59 -> 00:44:02] be mapped to R1, and
+[00:44:02 -> 00:44:04] that R1 is mapped, you
+[00:44:04 -> 00:44:05] know, I mapped it to
+[00:44:05 -> 00:44:07] 16 over here. Okay?
+[00:44:07 -> 00:44:13] And, sorry. Let me
+[00:44:13 -> 00:44:14] go back to this add
+[00:44:14 -> 00:44:16] instruction. Okay? So,
+[00:44:16 -> 00:44:17] say this add
+[00:44:17 -> 00:44:19] instruction retires.
+[00:44:19 -> 00:44:22] Okay? This add
+[00:44:22 -> 00:44:24] instruction retires, and
+[00:44:24 -> 00:44:25] I have these
+[00:44:25 -> 00:44:26] instructions in the
+[00:44:26 -> 00:44:28] machine, and can I
+[00:44:28 -> 00:44:30] free physical register
+[00:44:30 -> 00:44:32] 14? Okay? What happens
+[00:44:32 -> 00:44:33] if I free physical
+[00:44:33 -> 00:44:35] register 14? Physical
+[00:44:35 -> 00:44:37] register 14 is free.
+[00:44:37 -> 00:44:38] Something else gets
+[00:44:38 -> 00:44:39] written to it. Who
+[00:44:39 -> 00:44:41] knows? Okay? And,
+[00:44:41 -> 00:44:43] you know, say this
+[00:44:43 -> 00:44:45] subtract had caused some
+[00:44:45 -> 00:44:47] exception, and this
+[00:44:47 -> 00:44:49] physical register 14 got
+[00:44:49 -> 00:44:51] free, and now I came
+[00:44:51 -> 00:44:52] back and restarted from
+[00:44:52 -> 00:44:54] the subtract, and I go
+[00:44:54 -> 00:44:56] look for 14. It's
+[00:44:56 -> 00:45:02] gone. So, I cannot
+[00:45:02 -> 00:45:05] free 14, which is the
+[00:45:05 -> 00:45:06] destination that this
+[00:45:06 -> 00:45:09] add, until I can be
+[00:45:09 -> 00:45:11] sure that no other
+[00:45:11 -> 00:45:13] instruction is going to
+[00:45:13 -> 00:45:17] need 14. What I can
+[00:45:17 -> 00:45:19] be sure of is the
+[00:45:19 -> 00:45:21] following. When I get
+[00:45:21 -> 00:45:22] to this add
+[00:45:22 -> 00:45:24] instruction, this add
+[00:45:24 -> 00:45:25] instruction is ready to
+[00:45:25 -> 00:45:28] retire, means all the
+[00:45:28 -> 00:45:29] previous instructions
+[00:45:29 -> 00:45:33] have retired. Okay?
+[00:45:33 -> 00:45:36] And, R1, which got
+[00:45:36 -> 00:45:38] mapped to 14, was
+[00:45:38 -> 00:45:39] previously mapped to
+[00:45:39 -> 00:45:41] 11. So, when this
+[00:45:41 -> 00:45:43] add retires, I can
+[00:45:43 -> 00:45:44] be sure that all
+[00:45:44 -> 00:45:46] previous instructions,
+[00:45:46 -> 00:45:47] which were going to
+[00:45:47 -> 00:45:49] read R1 from
+[00:45:49 -> 00:45:51] physical register 14,
+[00:45:51 -> 00:45:55] have retired. Okay?
+[00:45:55 -> 00:45:56] Which means there is
+[00:45:56 -> 00:45:57] no other instruction
+[00:45:57 -> 00:45:58] that's going to read
+[00:45:58 -> 00:45:59] the value that was
+[00:45:59 -> 00:46:01] mapped to physical
+[00:46:01 -> 00:46:04] register 11, which
+[00:46:04 -> 00:46:06] means I can free
+[00:46:06 -> 00:46:10] physical register 11.
+[00:46:10 -> 00:46:12] Okay? Very
+[00:46:12 -> 00:46:14] similarly, when subtract
+[00:46:14 -> 00:46:19] retires, okay, I can
+[00:46:19 -> 00:46:21] free the register that
+[00:46:21 -> 00:46:22] was previously mapped to
+[00:46:22 -> 00:46:29] R3, that was 13. When
+[00:46:29 -> 00:46:31] multiply retires, I can
+[00:46:31 -> 00:46:34] free whatever register
+[00:46:34 -> 00:46:35] was previously mapped to
+[00:46:35 -> 00:46:41] R1, which is 14. When
+[00:46:41 -> 00:46:43] divide retires, I can
+[00:46:43 -> 00:46:44] free whatever physical
+[00:46:44 -> 00:46:45] register was previously
+[00:46:45 -> 00:46:47] marked to R2, which
+[00:46:47 -> 00:46:50] is 12. Are you with me
+[00:46:50 -> 00:47:01] on this?
+[00:47:01 -> 00:47:09] You free the
+[00:47:09 -> 00:47:11] physical register that
+[00:47:11 -> 00:47:13] was previously mapped
+[00:47:13 -> 00:47:16] to the destination,
+[00:47:16 -> 00:47:18] that the destination
+[00:47:18 -> 00:47:19] register was previously
+[00:47:19 -> 00:47:21] mapped to when that
+[00:47:21 -> 00:47:23] instruction retires.
+[00:47:23 -> 00:47:25] You do not free the
+[00:47:25 -> 00:47:27] physical register that
+[00:47:27 -> 00:47:28] the destination is
+[00:47:28 -> 00:47:29] currently mapped to,
+[00:47:29 -> 00:47:30] because there are
+[00:47:30 -> 00:47:31] later instructions
+[00:47:31 -> 00:47:34] that could be using
+[00:47:34 -> 00:47:35] that value. Are you
+[00:47:35 -> 00:47:41] with me on this?
+[00:47:41 -> 00:47:47] Okay, now let us take
+[00:47:47 -> 00:47:50] a look at the R10k.
+[00:47:50 -> 00:47:52] Okay, so we have a
+[00:47:52 -> 00:47:53] different type of tag
+[00:47:53 -> 00:47:55] again. You know, in
+[00:47:55 -> 00:47:56] Tomasulo, they have a
+[00:47:56 -> 00:47:57] reservation station
+[00:47:57 -> 00:48:00] number was the tag.
+[00:48:00 -> 00:48:02] P6, the ROB entry
+[00:48:02 -> 00:48:04] number was the tag.
+[00:48:04 -> 00:48:05] In R10k, the
+[00:48:05 -> 00:48:06] physical register number
+[00:48:06 -> 00:48:08] is the tag.
+[00:48:08 -> 00:48:12] In the reorder buffer,
+[00:48:12 -> 00:48:14] you do not have values.
+[00:48:14 -> 00:48:17] You have the tag for the
+[00:48:17 -> 00:48:18] physical register
+[00:48:18 -> 00:48:19] corresponding to the
+[00:48:19 -> 00:48:20] instruction's logical
+[00:48:20 -> 00:48:22] output, and then you
+[00:48:22 -> 00:48:25] also have the tag for
+[00:48:25 -> 00:48:28] the physical register
+[00:48:28 -> 00:48:30] that was previously mapped
+[00:48:30 -> 00:48:31] to the instruction's
+[00:48:31 -> 00:48:35] logical output.
+[00:48:35 -> 00:48:36] The reservation stations
+[00:48:36 -> 00:48:37] do not have any values.
+[00:48:37 -> 00:48:38] The values are only in
+[00:48:38 -> 00:48:39] the physical register
+[00:48:39 -> 00:48:40] files. For the
+[00:48:40 -> 00:48:42] register, the reservation
+[00:48:42 -> 00:48:43] stations have tags for
+[00:48:43 -> 00:48:45] the inputs and tags
+[00:48:45 -> 00:48:46] for the output.
+[00:48:46 -> 00:48:52] The map table always
+[00:48:52 -> 00:48:54] has a non-zero tag,
+[00:48:54 -> 00:48:55] which is the physical
+[00:48:55 -> 00:48:58] register number, and
+[00:48:58 -> 00:48:59] it also has a ready
+[00:48:59 -> 00:49:01] bit to indicate
+[00:49:01 -> 00:49:02] whether the value is
+[00:49:02 -> 00:49:03] there in that physical
+[00:49:03 -> 00:49:09] register. All right?
+[00:49:09 -> 00:49:10] And then we have a
+[00:49:10 -> 00:49:12] free list of physical
+[00:49:12 -> 00:49:15] register numbers.
+[00:49:15 -> 00:49:16] There are no values
+[00:49:16 -> 00:49:17] in the reorder buffer
+[00:49:17 -> 00:49:18] reservation stations or
+[00:49:18 -> 00:49:21] on the common
+[00:49:21 -> 00:49:22] data bus. Values
+[00:49:22 -> 00:49:23] don't come out
+[00:49:23 -> 00:49:24] in the common data bus.
+[00:49:24 -> 00:49:25] Values are only
+[00:49:25 -> 00:49:27] going from register
+[00:49:27 -> 00:49:29] to functional unit.
+[00:49:29 -> 00:49:30] What's coming out
+[00:49:30 -> 00:49:31] in the common data bus
+[00:49:31 -> 00:49:33] is tags, and there's
+[00:49:33 -> 00:49:34] no values in the
+[00:49:34 -> 00:49:35] reservation stations,
+[00:49:35 -> 00:49:36] no values in the
+[00:49:36 -> 00:49:37] reorder buffer.
+[00:49:37 -> 00:49:45] So, you know, to
+[00:49:45 -> 00:49:46] start out with, you
+[00:49:46 -> 00:49:47] know, the reorder
+[00:49:47 -> 00:49:48] buffer is empty.
+[00:49:48 -> 00:49:50] Reservation stations
+[00:49:50 -> 00:49:51] are empty.
+[00:49:51 -> 00:49:52] There are no values
+[00:49:52 -> 00:49:53] anywhere.
+[00:49:53 -> 00:49:54] But the map table
+[00:49:54 -> 00:49:55] is never empty.
+[00:49:55 -> 00:49:56] It always has a
+[00:49:56 -> 00:49:57] mapping to a
+[00:49:57 -> 00:49:58] physical register,
+[00:49:58 -> 00:49:59] and then we have
+[00:49:59 -> 00:50:00] a free list of
+[00:50:00 -> 00:50:01] some kind.
+[00:50:01 -> 00:50:02] So, we'll work
+[00:50:02 -> 00:50:03] with this.
+[00:50:03 -> 00:50:04] So, the pipeline
+[00:50:04 -> 00:50:09] is, again,
+[00:50:09 -> 00:50:10] fetch, dispatch,
+[00:50:10 -> 00:50:11] issue, execute,
+[00:50:11 -> 00:50:12] complete,
+[00:50:12 -> 00:50:13] write back,
+[00:50:13 -> 00:50:14] or retire,
+[00:50:14 -> 00:50:15] sorry,
+[00:50:15 -> 00:50:16] retire.
+[00:50:16 -> 00:50:17] In dispatch,
+[00:50:17 -> 00:50:18] you check to see
+[00:50:18 -> 00:50:19] if you have
+[00:50:19 -> 00:50:20] a structural hazard,
+[00:50:20 -> 00:50:21] either for a
+[00:50:21 -> 00:50:22] reservation station
+[00:50:23 -> 00:50:25] or a reorder
+[00:50:25 -> 00:50:26] buffer entry,
+[00:50:26 -> 00:50:27] or load store
+[00:50:27 -> 00:50:28] queue,
+[00:50:28 -> 00:50:29] or your
+[00:50:29 -> 00:50:30] autophysical
+[00:50:30 -> 00:50:31] registers.
+[00:50:31 -> 00:50:32] If you have
+[00:50:32 -> 00:50:33] a structural hazard,
+[00:50:33 -> 00:50:34] you stall.
+[00:50:34 -> 00:50:35] Otherwise, you
+[00:50:35 -> 00:50:36] allocate the
+[00:50:36 -> 00:50:37] reservation station,
+[00:50:37 -> 00:50:38] reorder buffer,
+[00:50:38 -> 00:50:39] and load store
+[00:50:39 -> 00:50:40] entries,
+[00:50:40 -> 00:50:41] and a new
+[00:50:41 -> 00:50:42] physical register.
+[00:50:42 -> 00:50:43] How do you allocate
+[00:50:43 -> 00:50:44] a new physical
+[00:50:44 -> 00:50:45] register?
+[00:50:45 -> 00:50:46] You get a new
+[00:50:46 -> 00:50:47] physical register
+[00:50:47 -> 00:50:48] from the
+[00:50:48 -> 00:50:49] free list.
+[00:50:49 -> 00:50:50] Okay?
+[00:50:50 -> 00:50:51] And then what you
+[00:50:51 -> 00:50:52] do is
+[00:50:52 -> 00:50:53] you record
+[00:50:53 -> 00:50:54] the previously
+[00:50:54 -> 00:50:55] mapped physical
+[00:50:55 -> 00:50:56] register
+[00:50:56 -> 00:50:57] into the
+[00:50:57 -> 00:50:58] reorder
+[00:50:58 -> 00:50:59] buffer
+[00:50:59 -> 00:51:00] entry
+[00:51:00 -> 00:51:01] allocated to
+[00:51:01 -> 00:51:05] that
+[00:51:05 -> 00:51:06] instruction.
+[00:51:06 -> 00:51:07] Execute,
+[00:51:07 -> 00:51:08] nothing interesting.
+[00:51:08 -> 00:51:09] You issue
+[00:51:09 -> 00:51:10] when both
+[00:51:10 -> 00:51:11] the
+[00:51:11 -> 00:51:12] tags
+[00:51:12 -> 00:51:13] in the
+[00:51:13 -> 00:51:14] reservation station
+[00:51:14 -> 00:51:15] have their
+[00:51:15 -> 00:51:16] ready
+[00:51:16 -> 00:51:17] bits set.
+[00:51:17 -> 00:51:18] Okay?
+[00:51:18 -> 00:51:19] Indicating the
+[00:51:19 -> 00:51:20] values there
+[00:51:20 -> 00:51:21] in that
+[00:51:21 -> 00:51:22] physical register.
+[00:51:22 -> 00:51:23] And then you
+[00:51:23 -> 00:51:24] execute.
+[00:51:24 -> 00:51:25] When you
+[00:51:25 -> 00:51:26] complete,
+[00:51:26 -> 00:51:27] you simply
+[00:51:27 -> 00:51:28] write the
+[00:51:28 -> 00:51:29] result.
+[00:51:29 -> 00:51:30] When you
+[00:51:30 -> 00:51:31] complete,
+[00:51:31 -> 00:51:32] you write the
+[00:51:32 -> 00:51:33] result into
+[00:51:33 -> 00:51:34] the
+[00:51:34 -> 00:51:35] corresponding
+[00:51:35 -> 00:51:36] physical
+[00:51:36 -> 00:51:37] register.
+[00:51:37 -> 00:51:38] Okay?
+[00:51:38 -> 00:51:42] And you
+[00:51:42 -> 00:51:43] broadcast the
+[00:51:43 -> 00:51:44] tag.
+[00:51:44 -> 00:51:45] You broadcast
+[00:51:45 -> 00:51:46] the tag
+[00:51:46 -> 00:51:47] to wake up
+[00:51:47 -> 00:51:48] waiting
+[00:51:48 -> 00:51:49] instructions.
+[00:51:49 -> 00:51:50] For
+[00:51:50 -> 00:51:51] retire,
+[00:51:51 -> 00:51:52] if the
+[00:51:52 -> 00:51:53] instruction of
+[00:51:53 -> 00:51:54] the head of
+[00:51:54 -> 00:51:55] the reorder
+[00:51:55 -> 00:51:56] buffer
+[00:51:56 -> 00:51:57] applies,
+[00:51:57 -> 00:51:58] you handle
+[00:51:58 -> 00:51:59] the exceptions.
+[00:51:59 -> 00:52:00] Then,
+[00:52:00 -> 00:52:01] when you
+[00:52:01 -> 00:52:02] retire,
+[00:52:02 -> 00:52:03] you store
+[00:52:03 -> 00:52:04] the
+[00:52:04 -> 00:52:05] load
+[00:52:05 -> 00:52:06] store
+[00:52:06 -> 00:52:07] queue
+[00:52:07 -> 00:52:08] entries.
+[00:52:08 -> 00:52:09] And then
+[00:52:09 -> 00:52:10] you use
+[00:52:10 -> 00:52:11] the
+[00:52:11 -> 00:52:12] entries
+[00:52:12 -> 00:52:13] of the
+[00:52:13 -> 00:52:14] reorder
+[00:52:14 -> 00:52:15] buffer
+[00:52:15 -> 00:52:16] to
+[00:52:16 -> 00:52:19] free
+[00:52:19 -> 00:52:22] put this
+[00:52:22 -> 00:52:23] old
+[00:52:23 -> 00:52:26] physical
+[00:52:26 -> 00:52:27] register
+[00:52:27 -> 00:52:28] back into
+[00:52:28 -> 00:52:29] the
+[00:52:29 -> 00:52:30] free
+[00:52:30 -> 00:52:31] list.
+[00:52:31 -> 00:52:32] You
+[00:52:32 -> 00:52:33] allocate an
+[00:52:33 -> 00:52:34] entry at
+[00:52:34 -> 00:52:35] the
+[00:52:35 -> 00:52:36] tail
+[00:52:36 -> 00:52:37] of the
+[00:52:37 -> 00:52:38] reorder
+[00:52:38 -> 00:52:42] buffer.
+[00:52:42 -> 00:52:43] You have a
+[00:52:43 -> 00:52:44] free
+[00:52:44 -> 00:52:45] list.
+[00:52:45 -> 00:52:46] You allocate
+[00:52:46 -> 00:52:47] like even in
+[00:52:47 -> 00:52:48] a store
+[00:52:48 -> 00:52:49] where you're
+[00:52:49 -> 00:52:50] not going to
+[00:52:50 -> 00:52:54] be,
+[00:52:54 -> 00:52:55] you always
+[00:52:55 -> 00:52:56] allocate a
+[00:52:56 -> 00:52:57] register
+[00:52:57 -> 00:52:58] even if
+[00:52:58 -> 00:52:59] the
+[00:52:59 -> 00:53:00] instructions
+[00:53:00 -> 00:53:01] have a
+[00:53:01 -> 00:53:02] destination.
+[00:53:02 -> 00:53:03] No,
+[00:53:03 -> 00:53:04] not for
+[00:53:04 -> 00:53:05] it.
+[00:53:05 -> 00:53:06] We'll talk
+[00:53:06 -> 00:53:07] a little bit about
+[00:53:07 -> 00:53:08] it, but
+[00:53:08 -> 00:53:09] a store,
+[00:53:09 -> 00:53:10] you can only
+[00:53:10 -> 00:53:11] let go
+[00:53:11 -> 00:53:12] into the
+[00:53:12 -> 00:53:13] data cache
+[00:53:13 -> 00:53:14] when the
+[00:53:14 -> 00:53:15] store
+[00:53:15 -> 00:53:19] reaches the
+[00:53:19 -> 00:53:20] head of
+[00:53:20 -> 00:53:23] the reorder
+[00:53:23 -> 00:53:24] buffer,
+[00:53:24 -> 00:53:25] even if it's
+[00:53:25 -> 00:53:26] not doing
+[00:53:26 -> 00:53:27] any of
+[00:53:27 -> 00:53:28] this other
+[00:53:28 -> 00:53:29] stuff.
+[00:53:29 -> 00:53:30] Is the
+[00:53:30 -> 00:53:31] old value
+[00:53:31 -> 00:53:32] enough for
+[00:53:32 -> 00:53:33] us to
+[00:53:33 -> 00:53:39] handle
+[00:53:39 -> 00:53:40] the exceptions?
+[00:53:40 -> 00:53:41] We'll see that.
+[00:53:41 -> 00:53:43] We'll see that.
+[00:53:43 -> 00:53:46] Handling
+[00:53:46 -> 00:53:47] exceptions
+[00:53:47 -> 00:53:48] So
+[00:53:48 -> 00:53:51] what do you
+[00:53:51 -> 00:53:52] when you
+[00:53:52 -> 00:53:53] say
+[00:53:53 -> 00:53:54] register file,
+[00:53:54 -> 00:53:55] what are you
+[00:53:55 -> 00:53:56] meaning by a
+[00:53:56 -> 00:53:59] register file?
+[00:53:59 -> 00:54:03] So we
+[00:54:03 -> 00:54:04] have
+[00:54:04 -> 00:54:05] they exist
+[00:54:05 -> 00:54:06] in the
+[00:54:06 -> 00:54:07] register file
+[00:54:07 -> 00:54:08] because
+[00:54:08 -> 00:54:09] the pipeline
+[00:54:09 -> 00:54:10] diagram
+[00:54:10 -> 00:54:11] has the
+[00:54:11 -> 00:54:12] register file
+[00:54:12 -> 00:54:13] in between.
+[00:54:13 -> 00:54:14] So those
+[00:54:14 -> 00:54:15] are the
+[00:54:15 -> 00:54:16] registers
+[00:54:16 -> 00:54:17] that I know
+[00:54:17 -> 00:54:18] exist in the
+[00:54:18 -> 00:54:19] register file,
+[00:54:19 -> 00:54:20] but these
+[00:54:20 -> 00:54:21] registers
+[00:54:21 -> 00:54:22] the ones that
+[00:54:22 -> 00:54:23] we are
+[00:54:23 -> 00:54:24] going
+[00:54:24 -> 00:54:25] to
+[00:54:25 -> 00:54:26] use.
+[00:54:26 -> 00:54:27] Okay.
+[00:54:27 -> 00:54:28] So you
+[00:54:28 -> 00:54:31] have a
+[00:54:31 -> 00:54:32] bunch of
+[00:54:32 -> 00:54:33] storage
+[00:54:33 -> 00:54:34] that you're
+[00:54:34 -> 00:54:35] building some
+[00:54:35 -> 00:54:36] register
+[00:54:36 -> 00:54:37] storage.
+[00:54:37 -> 00:54:38] Now you
+[00:54:38 -> 00:54:39] have the
+[00:54:39 -> 00:54:40] architectural
+[00:54:40 -> 00:54:41] register file
+[00:54:41 -> 00:54:42] which is
+[00:54:42 -> 00:54:43] your
+[00:54:43 -> 00:54:44] R0, R1, R2, R3
+[00:54:44 -> 00:54:45] which is
+[00:54:45 -> 00:54:46] there the
+[00:54:46 -> 00:54:47] instructions
+[00:54:47 -> 00:54:48] and that you
+[00:54:48 -> 00:54:49] build with that
+[00:54:49 -> 00:54:52] typical
+[00:54:52 -> 00:54:53] storage.
+[00:54:53 -> 00:54:54] You can
+[00:54:54 -> 00:54:55] build and
+[00:54:55 -> 00:54:56] register
+[00:54:56 -> 00:54:57] with an
+[00:54:57 -> 00:54:58] R0, R2, R51
+[00:55:01 -> 00:55:02] and how
+[00:55:02 -> 00:55:03] you manage
+[00:55:03 -> 00:55:05] these registers
+[00:55:05 -> 00:55:06] some of them
+[00:55:06 -> 00:55:07] could be
+[00:55:07 -> 00:55:08] architectural,
+[00:55:08 -> 00:55:09] some of it
+[00:55:09 -> 00:55:10] could be
+[00:55:10 -> 00:55:11] physical if you
+[00:55:11 -> 00:55:12] will
+[00:55:12 -> 00:55:13] and actually
+[00:55:13 -> 00:55:14] different ones that
+[00:55:14 -> 00:55:15] will be
+[00:55:15 -> 00:55:16] architectural
+[00:55:16 -> 00:55:17] and physical
+[00:55:17 -> 00:55:18] will change
+[00:55:18 -> 00:55:19] at different
+[00:55:19 -> 00:55:20] times based
+[00:55:20 -> 00:55:21] on the
+[00:55:21 -> 00:55:22] map table.
+[00:55:22 -> 00:55:23] That is what
+[00:55:23 -> 00:55:24] we are
+[00:55:24 -> 00:55:25] doing over
+[00:55:25 -> 00:55:26] here.
+[00:55:26 -> 00:55:29] So it's just
+[00:55:29 -> 00:55:30] a bunch of
+[00:55:30 -> 00:55:34] types in the registers, like some special purpose registers.
+[00:55:34 -> 00:55:39] Nope, nope, nope. In this one you're just having a uniform set of registers.
+[00:55:39 -> 00:55:45] Okay. Uniform set of registers. Over here I could have
+[00:55:45 -> 00:55:50] 32 registers, I could have 70 registers, I could have 500 registers.
+[00:55:50 -> 00:55:54] Okay, whatever. They're the same, everything.
+[00:55:54 -> 00:55:58] What value goes in which register and
+[00:55:58 -> 00:56:03] what it corresponds to depends on how I manipulate the map table.
+[00:56:03 -> 00:56:15] Okay, so what do you do on dispatch? You
+[00:56:15 -> 00:56:20] go in to the map table, read the physical register
+[00:56:20 -> 00:56:28] tags for the two inputs. Okay.
+[00:56:28 -> 00:56:33] And then you go to the map table with the destination
+[00:56:33 -> 00:56:38] physical register. Take the tag of that physical register number
+[00:56:38 -> 00:56:43] and store it in the allocated reorder
+[00:56:43 -> 00:56:52] buffer entry, the T old field. Okay. You allocate
+[00:56:52 -> 00:56:57] a new physical register from the free list.
+[00:56:57 -> 00:57:02] Get that tag, copy it into the
+[00:57:02 -> 00:57:07] reservation station for the destination here, copy it into the reorder
+[00:57:07 -> 00:57:12] buffer entry over here, and write it
+[00:57:12 -> 00:57:20] into the map table for the destination.
+[00:57:20 -> 00:57:25] So read the physical register tags, store it in reservation stations.
+[00:57:25 -> 00:57:30] Read the previous register tag for the output register, store it in the reorder buffer,
+[00:57:30 -> 00:57:35] get a new physical register from the free list for the output register,
+[00:57:35 -> 00:57:45] store it in the reservation station reorder buffer in map table. When instruction completes, you
+[00:57:45 -> 00:57:50] broadcast the tag, which is basically the physical
+[00:57:50 -> 00:57:55] register number. Okay. You match it, you compare it against the
+[00:57:55 -> 00:58:00] tags of the reservation stations, set the ready-bets or the matching tags in the
+[00:58:00 -> 00:58:05] map table. And if the ready-bets for both inputs are set, that
+[00:58:05 -> 00:58:12] instruction can be issued. Then you also
+[00:58:12 -> 00:58:17] get the matching tag in the map table
+[00:58:17 -> 00:58:27] and set that output register ready-bet.
+[00:58:27 -> 00:58:32] When you retire, retire is very simple over here.
+[00:58:32 -> 00:58:37] What you do is you simply take the instruction at the head of the reorder
+[00:58:37 -> 00:58:42] buffer, the t old field, which is the physical
+[00:58:42 -> 00:58:57] register, you put it back on there. Let's work through the example.
+[00:58:57 -> 00:59:04] We still have ten minutes so we can get to the reasonable amount of it. Reorder buffer,
+[00:59:04 -> 00:59:09] reservation stations, map table, free list.
+[00:59:09 -> 00:59:14] Notice we started out with this situation where
+[00:59:14 -> 00:59:19] this was the mapping of F0 was mapped to physical register one and it was ready in the
+[00:59:19 -> 00:59:24] register file. F1 was mapped to two, ready in the register file. F2 was mapped
+[00:59:24 -> 00:59:29] to three, ready in the register file. R1 was mapped to four and was ready in
+[00:59:29 -> 00:59:34] physical register four. Free list had five, six, seven, and eight.
+[00:59:35 -> 00:59:45] We dispatch the load to the head of the reorder buffer
+[00:59:45 -> 00:59:50] and we allocate a reservation station
+[00:59:50 -> 00:59:55] for it. What do you do? You go to the map table with R1
+[00:59:55 -> 01:00:00] and you go to map table with R1, you get
+[01:00:00 -> 01:00:05] PR4 plus. PR4 plus means the value is ready in
+[01:00:05 -> 01:00:10] physical register four for R1. You copy that tag over here.
+[01:00:10 -> 01:00:15] You go to the free list and get a physical
+[01:00:15 -> 01:00:20] register for the destination F1. That's PR5. You
+[01:00:20 -> 01:00:25] write in the t entry of the reorder buffer. You write in the t entry of the
+[01:00:25 -> 01:00:30] reservation station.
+[01:00:30 -> 01:00:35] Then you go to the map table and write
+[01:00:35 -> 01:00:40] F2 into PR5.
+[01:00:40 -> 01:00:45] Change the entry for F1 into PR5.
+[01:00:45 -> 01:00:50] You also go to a map table and get the
+[01:00:50 -> 01:00:55] previous mapping for that which is PR2 and put it in the
+[01:00:55 -> 01:01:14] reorder buffer.
+[01:01:14 -> 01:01:22] Load issues.
+[01:01:22 -> 01:01:27] You dispatch, multiply.
+[01:01:27 -> 01:01:32] When you dispatch, multiply, you will get a
+[01:01:32 -> 01:01:37] reservation station for it. Go to the map table. Tag for F0 is
+[01:01:37 -> 01:01:42] plus. Copy it here. Tag for F1 is PR5. You copy it
+[01:01:42 -> 01:01:47] over here. Notice the plus is not set here. Why so? It's not set here because
+[01:01:47 -> 01:01:52] it's the destination of the load which still hasn't been complete.
+[01:01:52 -> 01:01:57] You go to the map table with F2.
+[01:01:57 -> 01:02:02] F2 was PR3. You copy over PR3 into the
+[01:02:02 -> 01:02:08] old field over here. Go to the free list to get
+[01:02:08 -> 01:02:13] a physical register for the destination. That is PR6.
+[01:02:13 -> 01:02:18] You put PR6 in this field of the reorder buffer. You put PR6
+[01:02:18 -> 01:02:23] in the destination tag of the reservation station.
+[01:02:23 -> 01:02:28] Then you go to the map table for entry F6 and
+[01:02:28 -> 01:02:40] put PR6 over there. Clock cycle three.
+[01:02:40 -> 01:02:45] Stores are not allocated physical registers but they get a reservation station.
+[01:02:45 -> 01:02:50] The load starts executing so you free that reservation station
+[01:02:50 -> 01:02:57] over there. The multiply cannot do anything yet.
+[01:02:57 -> 01:03:02] Clock cycle four. The load completes. When the load completes,
+[01:03:02 -> 01:03:07] it comes on the common data bus, the tag for that load,
+[01:03:07 -> 01:03:12] destination for the load, which is PR5. You compare
+[01:03:12 -> 01:03:17] PR5 against the tags in the reservation station. You see a match.
+[01:03:17 -> 01:03:22] You mark that to PR5 plus saying that
+[01:03:22 -> 01:03:27] physical register five is now ready in the
+[01:03:27 -> 01:03:36] physical register file. You also then went with
+[01:03:36 -> 01:03:41] the tag PR5 compared against the tags in the map table.
+[01:03:41 -> 01:03:47] Saw a match and set that to ready in
+[01:03:47 -> 01:03:52] the physical register file. Now value of
+[01:03:52 -> 01:04:06] F1 is there in physical register file. You dispatch this add
+[01:04:06 -> 01:04:11] and it gets dispatched to the tail of the reorder buffer, entry number four.
+[01:04:11 -> 01:04:16] This add goes to the map table
+[01:04:16 -> 01:04:21] for R1 input, gets PR7, allocates the reservation
+[01:04:21 -> 01:04:26] station.
+[01:04:26 -> 01:04:31] The map table for
+[01:04:31 -> 01:04:36] R1 has PR4 plus tag.
+[01:04:36 -> 01:04:41] You copy over the PR4 plus tag for the input of this add
+[01:04:41 -> 01:04:46] R1. Then you get a new physical register from
+[01:04:46 -> 01:04:51] the free list for the destination. You get PR7.
+[01:04:51 -> 01:04:56] Put that over here. Then you change the
+[01:04:56 -> 01:05:07] tag in the map table to be PR7.
+[01:05:07 -> 01:05:20] Clock cycle five.
+[01:05:20 -> 01:05:25] At the end of clock cycle four, load has completed. It's at the head of the
+[01:05:25 -> 01:05:30] reorder buffer so it can now retire.
+[01:05:30 -> 01:05:35] What happens when the load retires?
+[01:05:35 -> 01:05:40] You take the T old field, the physical register there,
+[01:05:40 -> 01:05:51] return it to the free list. Multiply got issued in
+[01:05:51 -> 01:05:56] clock cycle four. It starts executing in clock cycle five. You can
+[01:05:56 -> 01:06:05] free that reservation station in clock cycle five. This add gets
+[01:06:05 -> 01:06:13] issued in clock cycle five. You are ready now to dispatch this next load.
+[01:06:13 -> 01:06:18] This next load reads as input R1.
+[01:06:18 -> 01:06:23] You allocate this reservation station. The input tag is
+[01:06:23 -> 01:06:28] PR7. You put this as PR7.
+[01:06:28 -> 01:06:33] This load destination register is F1.
+[01:06:33 -> 01:06:38] You go to the map table F1. You got PR5 plus.
+[01:06:38 -> 01:06:43] That was the old T old.
+[01:06:43 -> 01:06:50] You copy that T old over here. PR5.
+[01:06:50 -> 01:06:55] You go to the free list for the destination for F1. You get PR8. You copy that
+[01:06:55 -> 01:07:00] over here. Then you make PR8 this destination register
+[01:07:00 -> 01:07:16] in the reservation station over here. Questions?
+[01:07:16 -> 01:07:21] That's a fair amount.

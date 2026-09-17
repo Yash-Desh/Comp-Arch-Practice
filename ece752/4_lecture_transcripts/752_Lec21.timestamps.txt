@@ -1,0 +1,1135 @@
+Title: 752_Lec21
+Source file: 752_Lec21.mp3
+Detected language: en
+------------------------------------------------------------
+
+[00:00:00 -> 00:00:06] instruction operating on a single data combination isn't very sort of clean.
+[00:00:06 -> 00:00:12] Okay, so the SIMD is what we will be talking, people will be referring to this as SIMD parallelism,
+[00:00:12 -> 00:00:19] which is basically you're carrying out the single operation repeatedly on multiple data elements.
+[00:00:19 -> 00:00:27] It's less general than our ILP marble because you have to, the parallel instructions,
+[00:00:27 -> 00:00:32] they're the same operation that you have to carry out on all the different data elements.
+[00:00:32 -> 00:00:39] Okay, go back to a simple SAXP code over here that we had.
+[00:00:39 -> 00:00:45] Okay, we've seen this code before and I was doing this loop, 100 iterations of the loop.
+[00:00:45 -> 00:00:54] Okay, and so, and here what I can do is each one of these iterations I'm carrying out
+[00:00:54 -> 00:01:04] are independent, so I'm operating upon the XI, YI, and getting ZI, they are all independent.
+[00:01:04 -> 00:01:08] So the iterations can all be performed in parallel.
+[00:01:08 -> 00:01:17] So the way, one way I'm going to exploit this data level parallelism is via vectors.
+[00:01:17 -> 00:01:19] Okay, you'll see what vectors are.
+[00:01:20 -> 00:01:27] Okay, so basically what we're going to do is in addition to our normal pipeline that we have,
+[00:01:27 -> 00:01:34] traditional, you know, integer registers, floating point registers, whatever it is that you've seen before,
+[00:01:34 -> 00:01:40] you're going to have a new construct, you're going to have a set of vector registers.
+[00:01:41 -> 00:01:49] Okay, what a vector is going to be is it's going to be a linear array of some length
+[00:01:49 -> 00:01:58] and then each, you know, and each element is going to be, say, a 30-qubit floating point number.
+[00:01:58 -> 00:02:17] Okay, so previously I had, previously I had my scalar register file.
+[00:02:17 -> 00:02:22] Now I'm going to start calling it a scalar register file, if you will, okay, to distinguish from vectors.
+[00:02:22 -> 00:02:32] See, I had eight registers, you know, R0 through R7, each one of these was, say, 32 bits over here.
+[00:02:32 -> 00:02:47] Okay, with vectors, a vector register is going to have some number of, say, I have 32, 32-bit elements.
+[00:02:47 -> 00:02:56] Okay, say, you know, like, you know, whatever, okay, you know, from 0 to 31 over here, okay.
+[00:02:56 -> 00:03:06] One of these is going to be one vector register, okay, and I'm going to have some number of vector registers,
+[00:03:06 -> 00:03:09] say I have, you know, seven vector registers.
+[00:03:09 -> 00:03:28] The number of elements in each vector register is also going to be called the maximum vector length.
+[00:03:28 -> 00:03:32] All right, so far so good?
+[00:03:32 -> 00:03:44] So, you know, if I have eight vector registers and I have 32 elements in each, okay, I have eight times 32, 32-bit registers, if you will.
+[00:03:44 -> 00:03:49] That's a lot of storage, okay.
+[00:03:49 -> 00:03:57] So what I'm going to do now is that, you know, I'm going to try and carry out this,
+[00:03:57 -> 00:04:05] the independent iterations of the loop in an overlap fashion, in a parallel fashion, okay, and I'm going to do that, okay.
+[00:04:05 -> 00:04:16] So what I'm going to have now is on these vector registers, I'm going to have a set of vector operations, okay.
+[00:04:16 -> 00:04:24] So, you know, I had scalar operations, you know, add, multiply, whatever it is, okay, load, store, okay,
+[00:04:24 -> 00:04:27] that all operated on, you know, one data item.
+[00:04:27 -> 00:04:42] I'm going to have vector analogs of those, okay, and each vector operation is going to carry out an implicit loop on so many elements,
+[00:04:42 -> 00:04:45] maximum vector length, okay.
+[00:04:45 -> 00:04:53] So basically, it's going to carry out that operation on, you know, MVL elements.
+[00:04:53 -> 00:05:03] In a sense, it's going to do this loop, not in software, but in hardware, all right.
+[00:05:03 -> 00:05:07] So I can have a load vector operation.
+[00:05:07 -> 00:05:19] A load vector operation is going to read so many elements from memory in consecutive memory addresses for this particular load over here.
+[00:05:19 -> 00:05:28] Say I have 32, maximum vector length is 32, I'm going to load 32 elements starting off from memory address,
+[00:05:28 -> 00:05:37] and, you know, offset of X from base address and register R1, then 32 consecutive addresses over there,
+[00:05:37 -> 00:05:41] I load and bring them into this vector register, okay.
+[00:05:41 -> 00:05:47] Here I'm loading into vector register V1 over here, okay.
+[00:05:47 -> 00:05:58] So basically, you know, what I have one instruction doing is doing the work of a loop that iterates 32 times, okay.
+[00:05:58 -> 00:06:06] And that loop, what it's doing, if I was just loading 32 elements, is calculating the address in memory,
+[00:06:06 -> 00:06:18] loading, incrementing, checking to see, ran to see if I'm done, if I'm done, is it 32 or less, and repeating, okay.
+[00:06:18 -> 00:06:23] So all that additional stuff that I'm doing in software is done in hardware.
+[00:06:23 -> 00:06:26] It's a very, very simple hardware controller.
+[00:06:26 -> 00:06:33] Just an incrementer, just an incrementer up until 32, okay.
+[00:06:33 -> 00:06:41] Very similarly, I can have a store instruction vector which is going to take, you know,
+[00:06:41 -> 00:06:46] maximum vector length elements from a vector register and then store them in memory,
+[00:06:46 -> 00:06:58] consecutive memory addresses starting at the base address that I calculate by adding an offset X to what's there in R1.
+[00:06:58 -> 00:07:03] Notice, by the way, these load and store operations over here, you know,
+[00:07:03 -> 00:07:09] one of them, since you are loading into a vector register, you are storing from a vector register,
+[00:07:09 -> 00:07:19] but I also need these scalar registers to carry out the address calculation, specification for the operation, okay.
+[00:07:19 -> 00:07:24] So, you know, it's not that, hey, I have this necessarily, I'm also going to need, you know,
+[00:07:24 -> 00:07:28] values from this integer register to carry out those operations.
+[00:07:28 -> 00:07:37] Okay, a vector add operation where I'm going to have two source vector registers,
+[00:07:37 -> 00:07:43] each has MVL elements in it, say 32, carry out the addition operation.
+[00:07:43 -> 00:07:50] So in this vector add operation, I'm actually carrying out 32 different add operations
+[00:07:50 -> 00:07:59] and storing the result into the different corresponding elements of the destination vector register, okay.
+[00:08:00 -> 00:08:12] Here now what I'm doing is I'm adding a scalar value to 32 different elements of the vector register, same scalar value.
+[00:08:12 -> 00:08:17] So the vector register, source vector register, I'm specifying in a vector register,
+[00:08:17 -> 00:08:24] but the scalar is a floating point value that's going to be now in one of those scalar registers.
+[00:08:24 -> 00:08:31] So far so good?
+[00:08:31 -> 00:08:36] So basically what I'm doing is here I'm taking four iterations of that loop
+[00:08:36 -> 00:08:44] and backing the loop body of the loop into corresponding vector instructions, okay.
+[00:08:44 -> 00:08:50] So here rather than loading into F1 and, you know, multiplying F0 and F1, F2,
+[00:08:50 -> 00:08:55] I'm loading F3, adding F2, F3, adding F4, storing F4.
+[00:08:55 -> 00:09:01] What I'm going to do is I'm going to load several elements into vector register V1,
+[00:09:01 -> 00:09:09] then I'm going to multiply the vector elements of the vector register V1 with scalar value F0,
+[00:09:09 -> 00:09:16] store the result in F0, load now also into vector register V3,
+[00:09:16 -> 00:09:22] add the elements of vector register V2 and V3, store it into V4,
+[00:09:22 -> 00:09:30] store the vector register 4 into maybe location there, okay.
+[00:09:30 -> 00:09:36] And then further now, I had four different adds and four different branches
+[00:09:36 -> 00:09:39] for the four different iterations dynamically.
+[00:09:39 -> 00:09:42] I'm going to combine and get that loop control now over here.
+[00:09:42 -> 00:09:45] This add is going to increment by 16 rather than 4,
+[00:09:45 -> 00:09:49] and this branch is in a sense still going to be the same, okay.
+[00:09:49 -> 00:09:53] All right.
+[00:09:53 -> 00:09:58] So to do this, basically, again, you know, my pipeline has to be such,
+[00:09:58 -> 00:10:01] I have to have those vector registers,
+[00:10:01 -> 00:10:04] and then I have to have some additional control.
+[00:10:04 -> 00:10:09] So it is saying, okay, you know, start off with element 0,
+[00:10:09 -> 00:10:13] increment that control next for element 1, then for element 2, et cetera.
+[00:10:13 -> 00:10:21] So let us see what I can get.
+[00:10:21 -> 00:10:24] Let me go to that Saxby code again.
+[00:10:24 -> 00:10:26] I, you know, we've seen this before.
+[00:10:26 -> 00:10:31] Five cycle multiplied, two cycle add, one cycle other operations,
+[00:10:31 -> 00:10:34] and I was doing 100 iterations.
+[00:10:34 -> 00:10:38] I, you know, draw out the timing, the pipeline for,
+[00:10:38 -> 00:10:41] I'm going to do this, you know, we did it a long time ago.
+[00:10:41 -> 00:10:44] It's taken 11 cycles per iteration.
+[00:10:44 -> 00:10:49] If I'm doing 100 iterations, it takes me 100 cycles.
+[00:10:49 -> 00:10:52] Okay.
+[00:10:52 -> 00:10:57] Now, let me take the vector version and say now,
+[00:10:57 -> 00:10:59] I didn't have 32 element vectors.
+[00:10:59 -> 00:11:01] I had four element vectors, okay.
+[00:11:01 -> 00:11:03] So there's four elements each.
+[00:11:03 -> 00:11:05] All right.
+[00:11:05 -> 00:11:11] And now, if I have that, draw the timing,
+[00:11:11 -> 00:11:15] pipeline diagram timing for this code,
+[00:11:15 -> 00:11:20] let's say, again, this load is, you know, fashion one cycle,
+[00:11:20 -> 00:11:24] decode into three, execute four, access the memory,
+[00:11:24 -> 00:11:25] five right back.
+[00:11:25 -> 00:11:31] As multiply comes along, it has to wait for the, you know,
+[00:11:31 -> 00:11:36] stall over here until the data has come back from memory,
+[00:11:36 -> 00:11:39] then carry out that five cycle latency.
+[00:11:39 -> 00:11:42] Multiply operation, write back the result,
+[00:11:42 -> 00:11:46] this load, I can again, you know, do that, take five cycles,
+[00:11:46 -> 00:11:48] access memory over here,
+[00:11:48 -> 00:11:54] and then for this add, add has to wait now both for the result
+[00:11:54 -> 00:11:57] of this as well as this result,
+[00:11:57 -> 00:11:59] so it can start in clock cycle 10.
+[00:11:59 -> 00:12:03] It takes two cycles, and then the store,
+[00:12:03 -> 00:12:05] wait for the write back of memory.
+[00:12:05 -> 00:12:08] I have to wait until, you know,
+[00:12:08 -> 00:12:11] the values are ready over here,
+[00:12:11 -> 00:12:15] and then I carry that right back over here.
+[00:12:15 -> 00:12:16] Okay.
+[00:12:16 -> 00:12:24] If I do this, then this is going to basically, you know,
+[00:12:24 -> 00:12:29] take 11 cycles per iteration,
+[00:12:29 -> 00:12:33] but now I only have one fourth of the number of iterations.
+[00:12:33 -> 00:12:36] Okay.
+[00:12:36 -> 00:12:39] So I only have 25 iterations, so I take, you know,
+[00:12:39 -> 00:12:43] so many cycles, that's about a factor of four.
+[00:12:43 -> 00:12:47] Yeah.
+[00:12:47 -> 00:12:48] Okay.
+[00:12:48 -> 00:12:53] Well, well, let us look at,
+[00:12:53 -> 00:12:56] we let reality hit in the next slide.
+[00:12:56 -> 00:12:58] Okay.
+[00:12:58 -> 00:13:02] So right now let's, hey, we are in academia, you know,
+[00:13:02 -> 00:13:04] let reality not hit right now.
+[00:13:04 -> 00:13:05] Okay.
+[00:13:05 -> 00:13:06] We'll get it.
+[00:13:06 -> 00:13:08] Hit next slide.
+[00:13:08 -> 00:13:09] Okay.
+[00:13:09 -> 00:13:10] Okay.
+[00:13:10 -> 00:13:15] So by the way, so what I'm saying over here now is,
+[00:13:15 -> 00:13:19] okay, that this load is going to,
+[00:13:19 -> 00:13:22] memory is taking only one cycle,
+[00:13:22 -> 00:13:27] and it's doing four, getting four items from memory.
+[00:13:27 -> 00:13:28] Okay.
+[00:13:28 -> 00:13:32] So that's basically saying I'm doing four memory operations in one cycle.
+[00:13:32 -> 00:13:35] That's the only way I'm going to do that load.
+[00:13:35 -> 00:13:36] Okay.
+[00:13:36 -> 00:13:38] If I have this vector length of,
+[00:13:38 -> 00:13:40] if I have vector size of 32,
+[00:13:40 -> 00:13:47] I'm doing 32 memory operations in that one cycle.
+[00:13:47 -> 00:13:49] Okay.
+[00:13:49 -> 00:13:53] That's just not working out.
+[00:13:53 -> 00:13:54] Okay.
+[00:13:54 -> 00:13:55] You know.
+[00:13:55 -> 00:13:57] And this multiply I'm saying over here,
+[00:13:57 -> 00:13:59] it's taking five cycles,
+[00:13:59 -> 00:14:02] is basically I'm doing four multiplies at the same time.
+[00:14:02 -> 00:14:04] Or if I have a 32 element vector,
+[00:14:04 -> 00:14:08] I'm doing 32 multiplies at the same time.
+[00:14:08 -> 00:14:10] Okay.
+[00:14:10 -> 00:14:14] That's not quite working out.
+[00:14:14 -> 00:14:16] So what do we do?
+[00:14:16 -> 00:14:17] Okay.
+[00:14:17 -> 00:14:19] These, you know, you can,
+[00:14:19 -> 00:14:22] you can have this kind of hardware.
+[00:14:22 -> 00:14:24] Okay.
+[00:14:24 -> 00:14:27] But you could also do something different.
+[00:14:27 -> 00:14:28] Okay.
+[00:14:28 -> 00:14:30] And that's something different you could do,
+[00:14:30 -> 00:14:33] is your units that you have,
+[00:14:33 -> 00:14:35] your multiply and your memory units,
+[00:14:35 -> 00:14:37] they are pipelined,
+[00:14:37 -> 00:14:41] and we only know how to make a pipeline.
+[00:14:41 -> 00:14:42] Okay.
+[00:14:42 -> 00:14:44] And further, I can, you know,
+[00:14:44 -> 00:14:47] I can have some, you know, pipeline floating units.
+[00:14:47 -> 00:14:51] I can also have multiple of those floating pipelines,
+[00:14:51 -> 00:14:55] pipeline execution units as well.
+[00:14:55 -> 00:14:56] Okay.
+[00:14:56 -> 00:15:02] And so the number of each type of execution unit is called,
+[00:15:02 -> 00:15:04] is the number of lanes that we have.
+[00:15:04 -> 00:15:05] Okay.
+[00:15:05 -> 00:15:10] So basically, you're going to stream through those vector instructions,
+[00:15:10 -> 00:15:12] you know, through the number of lanes,
+[00:15:12 -> 00:15:16] some number of data elements at a time.
+[00:15:16 -> 00:15:18] We see that in just a little while.
+[00:15:18 -> 00:15:21] And if we do that,
+[00:15:21 -> 00:15:27] then we are going to get this kind of a pipeline timing,
+[00:15:27 -> 00:15:30] and we'll come back to this after we understand how to do that.
+[00:15:30 -> 00:15:31] All right.
+[00:15:31 -> 00:15:33] Okay.
+[00:15:33 -> 00:15:38] So basically now what I'm saying is,
+[00:15:38 -> 00:15:42] hey, I'm not doing my memory access in one cycle.
+[00:15:42 -> 00:15:44] I'm doing four memory operations.
+[00:15:44 -> 00:15:48] And I'm doing only one memory operation in a cycle,
+[00:15:48 -> 00:15:53] so I can do these in a pipeline fashion like here.
+[00:15:53 -> 00:15:54] Okay.
+[00:15:54 -> 00:15:56] They're all still one cycle operations.
+[00:15:56 -> 00:15:58] They go one after the other,
+[00:15:58 -> 00:16:03] and now previously, instead of all being done in clock cycle four,
+[00:16:03 -> 00:16:05] they are going to be done until,
+[00:16:05 -> 00:16:08] they're going to be done in clock cycle seven.
+[00:16:08 -> 00:16:11] Okay.
+[00:16:11 -> 00:16:21] All the elements have been loaded from the memory into vector register V1.
+[00:16:21 -> 00:16:24] Then I can start the multiply.
+[00:16:24 -> 00:16:29] And now the multiply, I'm multiplying four elements one at a time.
+[00:16:29 -> 00:16:30] Okay.
+[00:16:30 -> 00:16:35] The first element is going to start in clock cycle eight.
+[00:16:35 -> 00:16:38] It's going to take eight, nine, 10, 11, 12.
+[00:16:38 -> 00:16:42] The second element, I'm going to start in clock cycle nine.
+[00:16:42 -> 00:16:46] It's going to take nine, 10, 11, 12, 13.
+[00:16:46 -> 00:16:49] Third, I'm going to start in clock cycle 10,
+[00:16:49 -> 00:16:51] which is going to take until 14.
+[00:16:51 -> 00:16:54] Fourth, I'm going to start in clock cycle 11,
+[00:16:54 -> 00:16:59] which is going to take until clock cycle 15.
+[00:16:59 -> 00:17:00] Okay.
+[00:17:00 -> 00:17:01] This is fine.
+[00:17:01 -> 00:17:03] This is fairly straightforward.
+[00:17:03 -> 00:17:05] No complexity over here.
+[00:17:05 -> 00:17:15] Then this memory operation, I can start, again, you know,
+[00:17:15 -> 00:17:18] this stall over here in decode,
+[00:17:18 -> 00:17:21] and this stall, in fact, because of the propagated stall.
+[00:17:21 -> 00:17:23] So I could start this load,
+[00:17:23 -> 00:17:27] and we start accessing the memory in clock cycle 10.
+[00:17:27 -> 00:17:30] It takes me 10, 11, 12, 13.
+[00:17:30 -> 00:17:33] And then I can carry out the distribution operation
+[00:17:33 -> 00:17:38] after both this and this have completed.
+[00:17:38 -> 00:17:40] So I can start it.
+[00:17:40 -> 00:17:42] This one's complete in 14.
+[00:17:42 -> 00:17:46] This one's complete in, sorry, this one's complete in 13.
+[00:17:46 -> 00:17:49] This one's complete in 15.
+[00:17:49 -> 00:17:52] So I can start this addition in clock cycle 16.
+[00:17:52 -> 00:17:54] Okay.
+[00:17:54 -> 00:17:58] You hear this?
+[00:17:58 -> 00:18:04] So now if I do that, I end up doing basically,
+[00:18:04 -> 00:18:08] you know, taking 20 cycles per iteration.
+[00:18:08 -> 00:18:14] So again, four element vectors, one lane.
+[00:18:14 -> 00:18:16] The load ends up being four cycles.
+[00:18:16 -> 00:18:19] The multipliers are being eight cycles,
+[00:18:19 -> 00:18:23] which is, you know, four cycles is one plus three.
+[00:18:23 -> 00:18:26] Eight is five plus three.
+[00:18:26 -> 00:18:28] Five for one and then three for the others.
+[00:18:28 -> 00:18:29] Okay.
+[00:18:29 -> 00:18:32] The addition takes, this add-f takes five cycles,
+[00:18:32 -> 00:18:37] and that is, you know, two plus three.
+[00:18:37 -> 00:18:41] And then here I can do the store, et cetera.
+[00:18:41 -> 00:18:45] So if you actually draw this all out,
+[00:18:45 -> 00:18:48] you'll end up seeing it takes 20 cycles per iteration.
+[00:18:48 -> 00:18:51] And I have 55 iterations.
+[00:18:51 -> 00:18:53] That gets 500 cycles.
+[00:18:53 -> 00:18:57] So I have a speed up of 2.2 over 1100.
+[00:18:57 -> 00:18:59] Okay.
+[00:18:59 -> 00:19:00] So far, so good.
+[00:19:00 -> 00:19:04] All right.
+[00:19:04 -> 00:19:12] So, again, over here that, you know,
+[00:19:12 -> 00:19:16] the time taken to carry out the operation in the vector
+[00:19:16 -> 00:19:18] is going to be the time with the scalar
+[00:19:18 -> 00:19:20] plus the maximum vector length
+[00:19:20 -> 00:19:24] divided by the number of lanes, minus one.
+[00:19:24 -> 00:19:27] So for, you know, memory, this was one,
+[00:19:27 -> 00:19:29] this was four, this was one,
+[00:19:29 -> 00:19:32] minus one, I was taking four cycles
+[00:19:32 -> 00:19:34] for the floating point.
+[00:19:34 -> 00:19:38] If I had to multiply over here, you know,
+[00:19:38 -> 00:19:42] this was five, this was four, this was one.
+[00:19:42 -> 00:19:44] So five plus four minus one,
+[00:19:44 -> 00:19:51] I end up taking eight cycles.
+[00:19:51 -> 00:20:03] This isn't bad, but that doesn't make us happy.
+[00:20:03 -> 00:20:08] And so what can we do?
+[00:20:08 -> 00:20:38] The vector register V1, this is V1 element zero,
+[00:20:38 -> 00:20:44] V1 element one, V1 element two, V1 element three.
+[00:20:44 -> 00:20:45] All right.
+[00:20:45 -> 00:20:50] And what I'm saying now is over here in this timing,
+[00:20:51 -> 00:20:56] this V1 element zero got ready in clock cycle five.
+[00:20:57 -> 00:20:59] This one was ready in clock cycle six.
+[00:20:59 -> 00:21:01] This one was ready in clock cycle seven.
+[00:21:01 -> 00:21:03] This one was ready in clock cycle eight.
+[00:21:03 -> 00:21:04] Sorry.
+[00:21:06 -> 00:21:08] Four, five, six, seven.
+[00:21:09 -> 00:21:10] All right.
+[00:21:10 -> 00:21:14] And then I didn't start this multiply.
+[00:21:14 -> 00:21:16] And what this multiply was doing
+[00:21:16 -> 00:21:21] is it was multiplying this with F0
+[00:21:22 -> 00:21:27] and writing the result into vector register V2.
+[00:21:28 -> 00:21:31] This was V2 element zero, V2 element one,
+[00:21:31 -> 00:21:37] V2 element three, V2 element four.
+[00:21:37 -> 00:21:40] Okay?
+[00:21:40 -> 00:21:44] So what I'm saying in this timing over here
+[00:21:44 -> 00:21:47] is I have to wait for the entire vector register
+[00:21:47 -> 00:21:50] to be written before I'm starting this
+[00:21:50 -> 00:21:52] multiply operation over here.
+[00:21:52 -> 00:21:59] But element zero is ready in clock cycle four.
+[00:21:59 -> 00:22:03] Why can't I start the multiplication of V1 zero
+[00:22:03 -> 00:22:08] and F0 and write into V2 zero in clock cycle five?
+[00:22:10 -> 00:22:13] Okay?
+[00:22:13 -> 00:22:14] So in a sense, bypassing, right?
+[00:22:14 -> 00:22:16] That's what we did is bypassing.
+[00:22:16 -> 00:22:20] Here what we are doing is we are doing a vector bypass.
+[00:22:21 -> 00:22:24] And this vector bypass, it gets a special term.
+[00:22:24 -> 00:22:26] It's called changing, vector changing.
+[00:22:26 -> 00:22:27] Okay?
+[00:22:27 -> 00:22:29] So you see what we are going to try and do?
+[00:22:29 -> 00:22:30] Okay?
+[00:22:30 -> 00:22:31] We are not going to wait for the,
+[00:22:31 -> 00:22:34] and especially if this is 32 over here, you know?
+[00:22:34 -> 00:22:35] I don't have to wait.
+[00:22:35 -> 00:22:37] This element is ready here.
+[00:22:37 -> 00:22:41] I don't have to wait 32 cycles to actually access it
+[00:22:41 -> 00:22:43] and carry out the operation.
+[00:22:47 -> 00:22:52] So that then leads to this bypassed version.
+[00:22:54 -> 00:22:55] Okay?
+[00:22:55 -> 00:22:59] Well, what we can do now is for the zeroth element,
+[00:22:59 -> 00:23:01] I can bypass that zeroth element
+[00:23:01 -> 00:23:05] and start the multiplication for the zeroth element
+[00:23:05 -> 00:23:08] in clock cycle five rather than previously
+[00:23:08 -> 00:23:13] I was waiting until clock cycle eight.
+[00:23:13 -> 00:23:16] All right?
+[00:23:17 -> 00:23:20] And then in clock cycle five, when this is ready,
+[00:23:20 -> 00:23:24] I can start element one in clock cycle two.
+[00:23:24 -> 00:23:26] In cycle six, three is ready,
+[00:23:26 -> 00:23:29] so I can start three in clock cycle seven,
+[00:23:29 -> 00:23:32] the multiplication, et cetera, et cetera.
+[00:23:33 -> 00:23:34] Okay?
+[00:23:34 -> 00:23:36] So what I'm doing is now I am bypassing
+[00:23:36 -> 00:23:38] with elements of each vector,
+[00:23:38 -> 00:23:42] bypassing the values from elements of each vector register
+[00:23:42 -> 00:23:46] to the needed computation to carry out
+[00:23:46 -> 00:23:49] the corresponding element of the computation
+[00:23:49 -> 00:23:51] and write the corresponding element
+[00:23:51 -> 00:23:55] in the resulting vector range.
+[00:23:55 -> 00:23:58] Are you with me on this?
+[00:23:58 -> 00:24:01] So that is what is called vector chaining.
+[00:24:01 -> 00:24:06] So, you know, while all the results are complete
+[00:24:06 -> 00:24:11] after this much time, the first results, okay,
+[00:24:12 -> 00:24:15] like vector S to V zero and V one, you know,
+[00:24:15 -> 00:24:19] you know, already if I have, you know,
+[00:24:19 -> 00:24:22] two legs already after this much time,
+[00:24:22 -> 00:24:25] I can start the dependent vector operation
+[00:24:25 -> 00:24:26] as soon as those are ready.
+[00:24:26 -> 00:24:29] Okay?
+[00:24:29 -> 00:24:33] So over here now, if I do a, you know,
+[00:24:33 -> 00:24:35] calculate, you know, how many cycles
+[00:24:35 -> 00:24:37] is it taking now with this bypassing
+[00:24:37 -> 00:24:39] or chaining, vector chaining,
+[00:24:39 -> 00:24:42] it ends up taking 11 cycles per iteration
+[00:24:42 -> 00:24:45] and if I have 25 iterations,
+[00:24:45 -> 00:24:47] I get to do a 35 cycles,
+[00:24:47 -> 00:24:51] I get back that time to us before.
+[00:24:51 -> 00:24:52] Okay?
+[00:24:52 -> 00:24:53] So with vector chaining,
+[00:24:53 -> 00:24:55] what's happening is the following.
+[00:24:55 -> 00:24:56] Okay?
+[00:24:56 -> 00:25:00] So one vector operation,
+[00:25:00 -> 00:25:02] the latency of one vector operation,
+[00:25:02 -> 00:25:05] okay, the latency of one vector operation begins.
+[00:25:05 -> 00:25:06] Okay?
+[00:25:06 -> 00:25:09] The latency of each vector operation begins.
+[00:25:09 -> 00:25:12] The latency of each vector operation
+[00:25:12 -> 00:25:15] still is the scalar latency
+[00:25:15 -> 00:25:17] plus the maximum vector length
+[00:25:17 -> 00:25:20] by the number of lanes minus one.
+[00:25:20 -> 00:25:22] So again, for memory,
+[00:25:22 -> 00:25:25] it was one plus four minus one.
+[00:25:25 -> 00:25:26] Okay?
+[00:25:26 -> 00:25:28] For multiplication,
+[00:25:28 -> 00:25:34] the latency was five plus four minus one eight.
+[00:25:34 -> 00:25:35] Okay?
+[00:25:35 -> 00:25:40] Now, if I want to do one and two together,
+[00:25:40 -> 00:25:46] you know, when I was doing,
+[00:25:46 -> 00:25:48] if I'm doing one and two together
+[00:25:48 -> 00:25:52] rather than add these two latencies,
+[00:25:52 -> 00:25:54] which is what would be the case with our bypassing,
+[00:25:54 -> 00:25:56] what effectively I'm able to do
+[00:25:56 -> 00:25:58] is the time to do this is going to be
+[00:25:58 -> 00:26:00] the time for scalar operation one,
+[00:26:00 -> 00:26:02] time for scalar operation two,
+[00:26:02 -> 00:26:04] plus the maximum vector length
+[00:26:04 -> 00:26:07] divided by the number of lanes minus one.
+[00:26:07 -> 00:26:10] So one cycle memory,
+[00:26:10 -> 00:26:13] five cycle multiplication,
+[00:26:13 -> 00:26:16] four element vector length, one lane.
+[00:26:16 -> 00:26:21] So it was one plus five plus four minus one.
+[00:26:21 -> 00:26:23] That's nine cycles.
+[00:26:23 -> 00:26:24] Okay?
+[00:26:24 -> 00:26:27] So the time taken to carry out is,
+[00:26:27 -> 00:26:31] you know, one, two, three, four, five, six, seven, eight, nine cycles
+[00:26:31 -> 00:26:38] to carry out these operations in a chain fashion.
+[00:26:38 -> 00:26:41] Not 13 cycles, which is, you know, five plus eight,
+[00:26:41 -> 00:26:45] or four plus eight, 12 cycles, yeah?
+[00:26:45 -> 00:26:47] Questions about this?
+[00:26:47 -> 00:26:54] So this, of course, is very widely used, okay?
+[00:26:54 -> 00:26:58] But, you know, the thing that you have to be careful of
+[00:26:58 -> 00:27:00] is the following, okay?
+[00:27:00 -> 00:27:04] You know, what did we do in that bypass?
+[00:27:04 -> 00:27:08] What did we do in that bypass in a simple amount of pipeline?
+[00:27:08 -> 00:27:11] Okay, you bypass from the output of the EX stage
+[00:27:11 -> 00:27:15] of the mem stage back to the input, okay?
+[00:27:15 -> 00:27:17] And if the dependent instruction
+[00:27:17 -> 00:27:20] wasn't in the EX stage at that time,
+[00:27:20 -> 00:27:24] you could not get the value of that bypass.
+[00:27:24 -> 00:27:25] Okay?
+[00:27:25 -> 00:27:31] So this multiply better be issued
+[00:27:31 -> 00:27:35] and be ready to pick the values of the bypass
+[00:27:35 -> 00:27:37] at precisely the correct time,
+[00:27:37 -> 00:27:42] otherwise the bypass doesn't work, okay?
+[00:27:42 -> 00:27:47] And so, you know, if you issue this, like, one cycle later,
+[00:27:47 -> 00:27:49] okay, one cycle later,
+[00:27:49 -> 00:27:52] so when you are looking for element zero,
+[00:27:52 -> 00:27:54] it's actually element one that's coming out on the bus
+[00:27:54 -> 00:27:56] and being written to the vector register.
+[00:27:56 -> 00:27:58] It's not going to work,
+[00:27:58 -> 00:28:00] because you're going to have to go back and read that then
+[00:28:00 -> 00:28:03] from vector register, zero to element of vector register.
+[00:28:03 -> 00:28:09] So, you know, doing the hardware to get that done
+[00:28:09 -> 00:28:13] takes a little effort, but, you know, it can be done.
+[00:28:13 -> 00:28:17] Initially, when, you know, it was quite a big deal,
+[00:28:17 -> 00:28:19] you know, when Gray first did it.
+[00:28:19 -> 00:28:23] Okay.
+[00:28:23 -> 00:28:28] So where is the benefit coming from for vector instructions?
+[00:28:28 -> 00:28:29] All right.
+[00:28:29 -> 00:28:33] First, there are many, many fewer loop control instructions,
+[00:28:33 -> 00:28:36] okay, many fewer, you know,
+[00:28:36 -> 00:28:39] add medians and branch, et cetera.
+[00:28:39 -> 00:28:42] And the vector instructions,
+[00:28:42 -> 00:28:44] they basically have this hardware counter
+[00:28:44 -> 00:28:47] doing all that controlling for them.
+[00:28:47 -> 00:28:49] There's no software.
+[00:28:49 -> 00:28:56] So, you know, there isn't that software.
+[00:28:59 -> 00:29:01] Those instructions aren't fetched,
+[00:29:01 -> 00:29:04] they aren't processed, et cetera.
+[00:29:04 -> 00:29:06] Okay.
+[00:29:06 -> 00:29:08] Further, these read-after-write stalls,
+[00:29:08 -> 00:29:12] again, you know, within the instructions
+[00:29:12 -> 00:29:14] on one iteration,
+[00:29:14 -> 00:29:16] only happen in the first iteration.
+[00:29:16 -> 00:29:19] After that, the vector pipelining
+[00:29:19 -> 00:29:22] basically overlaps the different iterations
+[00:29:22 -> 00:29:25] and hides the stalls of the subsequent iterations.
+[00:29:25 -> 00:29:28] Okay, so over here, you know,
+[00:29:28 -> 00:29:31] the first element is stalling.
+[00:29:31 -> 00:29:33] The element for the first iteration is stalling,
+[00:29:33 -> 00:29:36] seeing that stall, okay?
+[00:29:36 -> 00:29:41] But the other elements of the second, third, fourth iteration,
+[00:29:41 -> 00:29:44] they are not seeing that stall
+[00:29:44 -> 00:29:46] because that stall is completely overlapped
+[00:29:46 -> 00:29:48] with that stall from previous iterations.
+[00:29:48 -> 00:29:55] Okay.
+[00:29:55 -> 00:30:02] Now, you know, a little further ahead,
+[00:30:02 -> 00:30:04] what we will see is we talk about, you know,
+[00:30:04 -> 00:30:06] energy complications,
+[00:30:06 -> 00:30:08] and that's one of the reasons people, you know,
+[00:30:08 -> 00:30:10] are trying to also, you know,
+[00:30:10 -> 00:30:12] work with vectors or something.
+[00:30:12 -> 00:30:15] Say I'm doing, you know, say I'm doing,
+[00:30:15 -> 00:30:18] this is scalar, this is vector, okay?
+[00:30:18 -> 00:30:21] And now, you all know, you have a piece of code,
+[00:30:21 -> 00:30:24] you have the fetch and decode and yada, yada, yada,
+[00:30:24 -> 00:30:26] et cetera like this, okay?
+[00:30:26 -> 00:30:28] So in this vector code,
+[00:30:28 -> 00:30:31] I'm fetching one, two, three, four, five,
+[00:30:31 -> 00:30:34] six, seven instructions, okay?
+[00:30:34 -> 00:30:38] Here, I will be fetching seven times four.
+[00:30:38 -> 00:30:42] So many cache accesses, okay?
+[00:30:42 -> 00:30:44] So many decodes, et cetera, et cetera.
+[00:30:44 -> 00:30:48] You know, there are machines that, for this kind of code,
+[00:30:48 -> 00:30:51] actually have something called loop buffers
+[00:30:51 -> 00:30:53] where if the loop fits, you know,
+[00:30:53 -> 00:30:57] in the entire iteration fits in the loop buffer,
+[00:30:57 -> 00:31:00] you don't have to repeatedly go to the instruction cache.
+[00:31:00 -> 00:31:02] You just can get it out of the loop buffer.
+[00:31:02 -> 00:31:04] You know, even the early, you know,
+[00:31:04 -> 00:31:06] this is known for many, many years.
+[00:31:06 -> 00:31:09] But you're doing a lot more instruction catches
+[00:31:09 -> 00:31:12] in these scalar code
+[00:31:12 -> 00:31:17] that you aren't doing in this vector code.
+[00:31:17 -> 00:31:19] So in a sense, you know, that's a lot of that.
+[00:31:19 -> 00:31:23] The performance is coming there in multiple ways.
+[00:31:23 -> 00:31:26] How does the performance change with vector length?
+[00:31:26 -> 00:31:27] Okay?
+[00:31:27 -> 00:31:29] How big of a vector do I want?
+[00:31:29 -> 00:31:30] Okay?
+[00:31:30 -> 00:31:34] So, you know, this is the time that it takes
+[00:31:34 -> 00:31:37] to execute the code in vector mode
+[00:31:37 -> 00:31:42] as a scalar plus maximum vector length by L minus one.
+[00:31:42 -> 00:31:44] If my vector length is one,
+[00:31:44 -> 00:31:46] then basically it's the same as doing things
+[00:31:46 -> 00:31:48] in a scalar vector mode, okay?
+[00:31:48 -> 00:31:52] If this vector length says 1,000, okay?
+[00:31:52 -> 00:31:55] Then basically, you know,
+[00:31:55 -> 00:32:01] I'm in a sense doing one element per cycle.
+[00:32:01 -> 00:32:04] I'm doing 1,000 plus scalar, you know,
+[00:32:04 -> 00:32:06] scalar is the time that it takes
+[00:32:06 -> 00:32:09] to carry out that operation, okay?
+[00:32:09 -> 00:32:11] So what that argument is for is,
+[00:32:11 -> 00:32:14] hey, to amortize this latency
+[00:32:14 -> 00:32:16] or start up the scalar latency,
+[00:32:16 -> 00:32:20] I need to have long vectors, okay?
+[00:32:20 -> 00:32:22] And in fact, when we talk a little bit
+[00:32:22 -> 00:32:24] about these horrible machines,
+[00:32:24 -> 00:32:26] these are the first vector machines
+[00:32:26 -> 00:32:29] that were created worldwide in the CDC again,
+[00:32:29 -> 00:32:32] and they did not have vector registers.
+[00:32:32 -> 00:32:36] They were getting our vector operations on memory, okay?
+[00:32:36 -> 00:32:38] And the memory latencies are long,
+[00:32:38 -> 00:32:41] and so they had large vectors.
+[00:32:41 -> 00:32:43] And then Seymour Cray then went off
+[00:32:43 -> 00:32:45] and did his creative machines
+[00:32:45 -> 00:32:48] with the vector registers.
+[00:32:48 -> 00:32:51] When you have, if you now have vector registers,
+[00:32:51 -> 00:32:53] because my vectors are all in memory
+[00:32:53 -> 00:32:56] and I'm fetching them from memory, okay?
+[00:32:56 -> 00:33:00] I'm not having any storage in the register.
+[00:33:00 -> 00:33:02] If I have vector registers,
+[00:33:02 -> 00:33:04] then I need to have storage
+[00:33:04 -> 00:33:06] for all the vector registers,
+[00:33:06 -> 00:33:10] and that size can be done, okay?
+[00:33:10 -> 00:33:19] So say I had, you know,
+[00:33:19 -> 00:33:22] 16 vector registers.
+[00:33:22 -> 00:33:24] If I had 16 vector registers
+[00:33:24 -> 00:33:27] and each vector register had 32 elements,
+[00:33:27 -> 00:33:30] and each element was four bytes,
+[00:33:30 -> 00:33:34] that is 62, what did I just say,
+[00:33:34 -> 00:33:46] 32 times 32 times 8 bytes of storage
+[00:33:46 -> 00:33:50] as opposed to a scalar register file
+[00:33:51 -> 00:33:57] 32 times 8, 32 times 4 bytes, okay?
+[00:33:57 -> 00:34:01] So much, much, much larger, okay?
+[00:34:01 -> 00:34:03] So, you know, again, in this simple path fashion,
+[00:34:03 -> 00:34:07] again, this vector extra file is 32 times larger
+[00:34:07 -> 00:34:08] than this one.
+[00:34:08 -> 00:34:15] So that limits the,
+[00:34:15 -> 00:34:18] not only the size of each vector,
+[00:34:18 -> 00:34:24] but also how many vector registers you can have.
+[00:34:24 -> 00:34:27] Now, again, you know, the thing with vectors
+[00:34:27 -> 00:34:30] is that's where Amdahl's Law also comes in.
+[00:34:30 -> 00:34:33] And in fact, Amdahl's Law, you know,
+[00:34:33 -> 00:34:35] Gene Amdahl first proposed it,
+[00:34:35 -> 00:34:41] where the, you know, at the time this was proposed,
+[00:34:41 -> 00:34:44] the machine that was being proposed at that time
+[00:34:44 -> 00:34:46] as the future of whatever is in computing
+[00:34:46 -> 00:34:52] was a machine being built at Illinois called the ILLIAC, okay?
+[00:34:52 -> 00:34:55] And the ILLIAC was a, you know, a SIMD machine
+[00:34:55 -> 00:34:58] that it had at that time, I think 64 processors
+[00:34:58 -> 00:35:01] doing, you know, operations in parallel.
+[00:35:01 -> 00:35:03] And everyone was saying, hey, that's the future,
+[00:35:03 -> 00:35:06] not these silly IBM machines that, you know,
+[00:35:06 -> 00:35:08] IBM is making in some sense.
+[00:35:08 -> 00:35:11] And that's when he came up with this very simple
+[00:35:11 -> 00:35:15] Amdahl's Law calculation to say, hey, you know,
+[00:35:15 -> 00:35:20] if, you know, 90% of your code, say, is, you know,
+[00:35:20 -> 00:35:23] vectorized and you get a speed of 10, you know,
+[00:35:23 -> 00:35:26] you're still only going to get a speed of, you know,
+[00:35:26 -> 00:35:28] 5.3 or more if you will.
+[00:35:28 -> 00:35:31] And so people then would forget that, hey,
+[00:35:31 -> 00:35:35] spent a lot of effort on the 90%,
+[00:35:35 -> 00:35:38] but don't forget the 10%.
+[00:35:38 -> 00:35:41] And Cray did not forget the 10%, okay?
+[00:35:41 -> 00:35:44] He understood Amdahl's Law very well.
+[00:35:44 -> 00:35:47] That's why he did, his, the CDC machine,
+[00:35:47 -> 00:35:50] it did not worry about the scalar part of it.
+[00:35:50 -> 00:35:52] And it had that faster scalar unit
+[00:35:52 -> 00:35:57] and that's why it was much better.
+[00:35:57 -> 00:35:59] Questions so far?
+[00:35:59 -> 00:36:00] Yeah.
+[00:36:00 -> 00:36:03] In regards to the vector line fitting in,
+[00:36:03 -> 00:36:06] Intel actually had a problem with that recently.
+[00:36:06 -> 00:36:08] They had to completely drop their newest vector
+[00:36:08 -> 00:36:11] extension because five, or 16,
+[00:36:11 -> 00:36:14] 512 bit registers were just too much
+[00:36:14 -> 00:36:16] for the efficiency cores.
+[00:36:16 -> 00:36:18] So they, for like one of, like one of the few times
+[00:36:18 -> 00:36:21] actually dropped an extension because they just,
+[00:36:21 -> 00:36:24] it wouldn't work for the efficiency cores.
+[00:36:24 -> 00:36:28] Let me, let me bring that up in a few minutes.
+[00:36:28 -> 00:36:31] We'll bring that, we'll get to that point
+[00:36:31 -> 00:36:33] in a little bit, okay?
+[00:36:33 -> 00:36:38] I think that's an important thing is,
+[00:36:38 -> 00:36:41] we'll get to that.
+[00:36:41 -> 00:36:42] All right.
+[00:36:42 -> 00:36:46] So now I have this, you know, vector machine.
+[00:36:46 -> 00:36:48] And say I have, you know, you know,
+[00:36:48 -> 00:36:52] I have vector registers of a certain length.
+[00:36:52 -> 00:36:57] And so say I have a vector, you know,
+[00:36:59 -> 00:37:02] say I have vector registers where, you know,
+[00:37:02 -> 00:37:04] I have 30 developments in there,
+[00:37:04 -> 00:37:08] so the maximum vector length is 30.
+[00:37:08 -> 00:37:11] Okay, and you want to use a vector machine.
+[00:37:11 -> 00:37:15] And I say, okay, you can only use this machine
+[00:37:15 -> 00:37:18] and all your loops iterate a multiple of 32.
+[00:37:18 -> 00:37:23] You want to say go away.
+[00:37:23 -> 00:37:26] I want my loop to iterate 100 times.
+[00:37:26 -> 00:37:28] That's not a multiple of 32.
+[00:37:28 -> 00:37:30] What are you going to do?
+[00:37:30 -> 00:37:34] Okay, and that's what then brings up this notion
+[00:37:34 -> 00:37:38] of a vector length register.
+[00:37:38 -> 00:37:42] Okay, a vector length register is between zero
+[00:37:42 -> 00:37:46] and the maximum vector length and say, hey, you know,
+[00:37:46 -> 00:37:51] why I can carry out the operations on MVF elements.
+[00:37:52 -> 00:37:56] At this time I'm carrying out the length on,
+[00:37:56 -> 00:38:01] actually at all times I'm carrying out the vector operation
+[00:38:01 -> 00:38:05] on the number of elements that is, you know,
+[00:38:05 -> 00:38:07] on VL half.
+[00:38:07 -> 00:38:09] The contents of this vector length register
+[00:38:09 -> 00:38:11] that many elements.
+[00:38:11 -> 00:38:13] All right.
+[00:38:14 -> 00:38:18] So basically what you're doing is you're taking a loop
+[00:38:18 -> 00:38:20] that iterates a large number of times
+[00:38:20 -> 00:38:25] and you're chopping up that loop into multiple chunks
+[00:38:25 -> 00:38:30] that are of the size of the maximum vector length
+[00:38:30 -> 00:38:34] and then whatever's left over.
+[00:38:34 -> 00:38:37] Okay, so say I had a maximum vector length of 32
+[00:38:37 -> 00:38:40] and I wanted to carry out 100 iterations.
+[00:38:40 -> 00:38:44] What I will do is I will say, hey, you know,
+[00:38:44 -> 00:38:49] set the vector length register to 100 to modulo 32.
+[00:38:49 -> 00:38:55] Okay, and then, you know, that's my, you know,
+[00:38:55 -> 00:38:59] leftover orphan, okay, and then, you know,
+[00:38:59 -> 00:39:02] carry out those, you know,
+[00:39:02 -> 00:39:06] carry out the iterations plus 32,
+[00:39:07 -> 00:39:11] four left over first, then 32, 32, 32.
+[00:39:11 -> 00:39:16] Okay, and that's all, you know,
+[00:39:16 -> 00:39:20] that process in a sense is also called strip mining,
+[00:39:20 -> 00:39:23] but all these vector operations that we're talking about,
+[00:39:23 -> 00:39:28] all these vector operations that we talked about over here,
+[00:39:28 -> 00:39:31] all these vector operations, okay,
+[00:39:31 -> 00:39:35] while how many elements they operate upon
+[00:39:35 -> 00:39:41] is determined by the vector length register, all right,
+[00:39:41 -> 00:39:45] which can be up to so many.
+[00:39:45 -> 00:39:49] Are you with me on this?
+[00:39:49 -> 00:39:56] Okay, so the vector length register, okay.
+[00:39:56 -> 00:40:01] All right, so now all is good,
+[00:40:01 -> 00:40:06] except if you have branches.
+[00:40:06 -> 00:40:09] If you have a branch inside a loop,
+[00:40:09 -> 00:40:13] don't use my vector machine.
+[00:40:13 -> 00:40:16] Well, but I like your money,
+[00:40:16 -> 00:40:21] so let me figure out how I can get your money, okay,
+[00:40:22 -> 00:40:27] and, you know, so what you can further do,
+[00:40:27 -> 00:40:30] remember predicated execution?
+[00:40:30 -> 00:40:32] Okay, what did predicated execution do?
+[00:40:32 -> 00:40:34] Say, hey, you know, I'm going to,
+[00:40:34 -> 00:40:37] based on the branch, I'm going to compute some predicate,
+[00:40:37 -> 00:40:40] and then every operation is going to be,
+[00:40:40 -> 00:40:44] use that predicate, I'm going to do the operation, okay.
+[00:40:44 -> 00:40:47] If the predicate is true, the operation gets done
+[00:40:47 -> 00:40:48] and writes the result.
+[00:40:48 -> 00:40:55] If the predicate is false, it becomes a no-one.
+[00:40:55 -> 00:40:58] Very similarly for vector, what I'm going to do is,
+[00:40:58 -> 00:41:04] I'm going to have a vector mask register, okay.
+[00:41:04 -> 00:41:06] A vector mask register,
+[00:41:06 -> 00:41:08] if I have 32 element vectors,
+[00:41:08 -> 00:41:13] this could be a register of 32 bits, okay.
+[00:41:13 -> 00:41:16] If a bit is zero,
+[00:41:16 -> 00:41:19] then if a bit is one in the vector mask register,
+[00:41:19 -> 00:41:22] then the corresponding element,
+[00:41:22 -> 00:41:25] the vector operation gets done.
+[00:41:25 -> 00:41:27] I do the vector operation, but, you know,
+[00:41:27 -> 00:41:28] for that corresponding,
+[00:41:28 -> 00:41:31] I write it to the resulting destination register.
+[00:41:31 -> 00:41:36] If the bit is zero, then I do not write the result.
+[00:41:36 -> 00:41:38] Or if there's an exception,
+[00:41:38 -> 00:41:45] I do not recognize the exception, et cetera.
+[00:41:45 -> 00:41:48] We still end up loading.
+[00:41:48 -> 00:41:58] We still end up going through everything, right?
+[00:41:58 -> 00:41:59] Hold on to that question.
+[00:41:59 -> 00:42:01] Let me explain this first,
+[00:42:01 -> 00:42:05] and then we'll get to that question, okay.
+[00:42:05 -> 00:42:08] So say I have this piece of code,
+[00:42:08 -> 00:42:10] which is, you know,
+[00:42:10 -> 00:42:12] if xi not equal to zero,
+[00:42:12 -> 00:42:18] zi gets a divided by xi, okay.
+[00:42:18 -> 00:42:22] So basically, I don't want to do this division
+[00:42:22 -> 00:42:23] by zero.
+[00:42:23 -> 00:42:25] This is my, it's correct code,
+[00:42:25 -> 00:42:26] it's check and you see.
+[00:42:26 -> 00:42:28] I don't want to do a divide by zero,
+[00:42:28 -> 00:42:34] I don't want to do a divide by zero, okay.
+[00:42:34 -> 00:42:36] So I can have,
+[00:42:36 -> 00:42:38] I can vectorize this piece of code by,
+[00:42:38 -> 00:42:40] look, okay, you know,
+[00:42:40 -> 00:42:43] load those 32 elements into V1,
+[00:42:43 -> 00:42:47] and then carry out my, a vector set operation.
+[00:42:47 -> 00:42:49] Remember our scalar set instructions
+[00:42:49 -> 00:42:52] that was going to set a destination register
+[00:42:52 -> 00:42:57] to zero or one based on a comparison, okay.
+[00:42:57 -> 00:42:58] So what I'm going to do is
+[00:42:58 -> 00:43:03] I'm going to compare the element,
+[00:43:03 -> 00:43:07] vector after V1 element by element,
+[00:43:07 -> 00:43:12] compared to F0.
+[00:43:12 -> 00:43:15] And if they are, if, you know,
+[00:43:15 -> 00:43:17] that element is zero,
+[00:43:17 -> 00:43:19] it's the same as F0, which is zero,
+[00:43:19 -> 00:43:22] then that corresponding bit
+[00:43:22 -> 00:43:27] is going to be set to one, say, okay.
+[00:43:27 -> 00:43:29] I actually, I'm flipping,
+[00:43:29 -> 00:43:32] it's going to be set to zero, okay.
+[00:43:32 -> 00:43:34] Set not equal, okay.
+[00:43:34 -> 00:43:36] Then I'm going to divide,
+[00:43:36 -> 00:43:38] divide,
+[00:43:38 -> 00:43:43] carry out this division, okay,
+[00:43:43 -> 00:43:48] under this control of this mask
+[00:43:48 -> 00:43:51] so that for the elements
+[00:43:51 -> 00:43:53] that this, you know,
+[00:43:53 -> 00:43:57] the bit is set to one,
+[00:43:57 -> 00:44:00] for which the bit is set to zero,
+[00:44:00 -> 00:44:02] I do not actually write the value
+[00:44:02 -> 00:44:06] or even recognize the exception, okay.
+[00:44:06 -> 00:44:10] And then I store the entire vector back
+[00:44:10 -> 00:44:16] into Z over here,
+[00:44:16 -> 00:44:22] and then I clear my map.
+[00:44:22 -> 00:44:24] Now, getting to what you just said,
+[00:44:24 -> 00:44:28] this load operation,
+[00:44:28 -> 00:44:31] I am doing it under the control
+[00:44:31 -> 00:44:34] of the vector mask.
+[00:44:34 -> 00:44:35] It's actually zero,
+[00:44:35 -> 00:44:38] I do the operation, one, I do it.
+[00:44:38 -> 00:44:42] And so here, the vector mask is cleared.
+[00:44:42 -> 00:44:48] So I load all those values, okay.
+[00:44:48 -> 00:44:53] Then I set that vector mask, okay.
+[00:44:53 -> 00:44:56] Then divide based on this vector mask,
+[00:44:56 -> 00:44:59] under the control of this vector mask.
+[00:44:59 -> 00:45:02] And then also store only those elements
+[00:45:02 -> 00:45:10] for which the vector mask bit is correct.
+[00:45:10 -> 00:45:12] Now, if I, you know,
+[00:45:12 -> 00:45:16] if I set a vector mask over here to something
+[00:45:16 -> 00:45:18] and I did this load,
+[00:45:18 -> 00:45:20] then I would also do that load
+[00:45:20 -> 00:45:21] under that vector mask.
+[00:45:21 -> 00:45:26] Are you with me on this?
+[00:45:26 -> 00:45:33] This is, again, you know,
+[00:45:33 -> 00:45:36] very widely used because now, you know,
+[00:45:36 -> 00:45:38] when we have control like this,
+[00:45:38 -> 00:45:41] we can actually vectorize pieces of code like this,
+[00:45:41 -> 00:45:43] but you could not otherwise.
+[00:45:43 -> 00:45:51] Now, here's something else that is, you know,
+[00:45:51 -> 00:46:02] say I want to carry out this piece of code.
+[00:46:02 -> 00:46:06] I'm basically summing all the elements of a vector.
+[00:46:06 -> 00:46:11] And so, you know,
+[00:46:11 -> 00:46:13] the way I've written this code is, you know,
+[00:46:13 -> 00:46:17] s is, gets, it's like zero.
+[00:46:17 -> 00:46:21] It's s plus element xi.
+[00:46:21 -> 00:46:24] And so now you see the iterations,
+[00:46:25 -> 00:46:29] the different iterations are not independent
+[00:46:29 -> 00:46:32] of the arrow dependent, okay?
+[00:46:32 -> 00:46:37] And so that says I can't use, you know, vectors.
+[00:46:37 -> 00:46:43] But what I could do is the following, okay?
+[00:46:43 -> 00:47:04] 100 elements.
+[00:47:04 -> 00:47:07] First what I could do is I could add
+[00:47:07 -> 00:47:15] these elements like here, all right?
+[00:47:15 -> 00:47:17] So go from 50,
+[00:47:17 -> 00:47:22] go from 100 to a vector of 50.
+[00:47:22 -> 00:47:26] And this I can do as a vector.
+[00:47:26 -> 00:47:27] So now basically what I'm doing
+[00:47:27 -> 00:47:31] is I'm having two vectors, 50 each, okay?
+[00:47:31 -> 00:47:34] And, you know, adding the elements of those,
+[00:47:34 -> 00:47:36] and those I can do in better,
+[00:47:36 -> 00:47:40] in better fashion.
+[00:47:40 -> 00:47:46] Then from 50, I can go down to 25,
+[00:47:46 -> 00:47:55] and also as a vector, okay?
+[00:47:55 -> 00:47:58] Now from 25, I can go down to whatever it is,
+[00:47:58 -> 00:48:03] you know, 30 or whatever it is, you know?
+[00:48:03 -> 00:48:09] If it makes sense for me to do it faster with a vector, okay?
+[00:48:09 -> 00:48:12] Eventually I get down to some size
+[00:48:12 -> 00:48:15] where, you know, doing it as a vector
+[00:48:15 -> 00:48:16] isn't beneficial,
+[00:48:16 -> 00:48:25] so then I end up doing it in scalars.
+[00:48:25 -> 00:48:27] This is an idiom that, again,
+[00:48:27 -> 00:48:31] I think it's fairly, you know,
+[00:48:31 -> 00:48:34] well used to try and take, you know,
+[00:48:34 -> 00:48:35] code that you're doing
+[00:48:35 -> 00:48:39] and convert it somehow into a vectorizable.
+[00:48:39 -> 00:49:14] Yeah, I have an equation like this.
+[00:49:14 -> 00:49:28] We're now using resolved computing.
+[00:49:28 -> 00:49:33] The equations aren't necessarily independent.
+[00:49:33 -> 00:49:41] There are still vector construction constructs
+[00:49:41 -> 00:49:43] that can help in cases like this
+[00:49:43 -> 00:49:45] that are quite specialized.
+[00:49:45 -> 00:49:47] I won't go into that over there.
+[00:49:47 -> 00:49:49] Okay, so again, basically what happens is,
+[00:49:49 -> 00:49:51] you know, you come up with the basic ideas
+[00:49:51 -> 00:49:53] of vector machine, all right?
+[00:49:53 -> 00:49:55] And then, you know, you use it,
+[00:49:55 -> 00:49:57] but then there are all these different code types,
+[00:49:57 -> 00:50:01] et cetera, et cetera, and then, you know,
+[00:50:01 -> 00:50:05] and then you try and see what more you can add on
+[00:50:05 -> 00:50:08] a little bit to get those types.
+[00:50:08 -> 00:50:15] So, okay, stepping back, you know,
+[00:50:15 -> 00:50:19] the fundamental conflict in the ILP was,
+[00:50:19 -> 00:50:22] you know, higher clock frequency
+[00:50:22 -> 00:50:25] or high IPC, typically not both.
+[00:50:25 -> 00:50:27] If you had high clock frequency, deeper pipeline,
+[00:50:27 -> 00:50:30] more hazards, low IPC, high IPC,
+[00:50:30 -> 00:50:35] and superscalar complex, issue bypass, low clock.
+[00:50:35 -> 00:50:38] TLP, five steps this,
+[00:50:38 -> 00:50:40] because the operations within the vector are parallel,
+[00:50:40 -> 00:50:43] so they're not in a hazard, this loop control,
+[00:50:43 -> 00:50:45] and this is the key, you know.
+[00:50:45 -> 00:50:47] As I said, there are loop control hazards,
+[00:50:47 -> 00:50:51] you know, high frequency, deep pipeline with no hazards,
+[00:50:51 -> 00:50:56] and you have high IPC, and you have the high IPC,
+[00:50:56 -> 00:50:59] and you get the natural wipe.
+[00:50:59 -> 00:51:01] So, you know, I mean, if you take a look at it
+[00:51:01 -> 00:51:04] a different way, you know, if you take a look at it,
+[00:51:04 -> 00:51:09] what I am doing in this one decode and dispatch,
+[00:51:09 -> 00:51:12] if you will, if I had a four-element vector,
+[00:51:12 -> 00:51:17] I'm actually doing a 32, about four-element wide instruction.
+[00:51:17 -> 00:51:21] If I have a 32-element vector,
+[00:51:21 -> 00:51:29] it's as if I'm doing a 32 operation wide instruction, okay?
+[00:51:29 -> 00:51:33] So that allows me to, you know, get the high IPC
+[00:51:33 -> 00:51:40] without necessarily impacting the...
+[00:51:40 -> 00:51:43] So, you know, things started out, you know,
+[00:51:43 -> 00:51:46] with these memory-to-memory vector registers
+[00:51:46 -> 00:51:50] that I was talking about, Texas Instruments, CDC,
+[00:51:50 -> 00:51:53] and they were optimized for long vectors
+[00:51:53 -> 00:51:56] that required all vectors assigned in memory,
+[00:51:56 -> 00:51:59] and that required a lot of memory bandwidth.
+[00:51:59 -> 00:52:03] And they also had this long startup latency.
+[00:52:03 -> 00:52:07] This memory bandwidth thing is maybe a little bit of a red herring
+[00:52:07 -> 00:52:11] because, you know, I can reduce memory bandwidth
+[00:52:11 -> 00:52:13] with these vector architecture architectures
+[00:52:13 -> 00:52:17] only if I'm actually reusing data that has been loaded.
+[00:52:17 -> 00:52:21] Okay?
+[00:52:21 -> 00:52:23] Well, sometimes you can, but, you know,
+[00:52:23 -> 00:52:26] most often you necessarily can't do that.
+[00:52:26 -> 00:52:33] These, you know, the vector architectures, you know,
+[00:52:33 -> 00:52:36] crane, convex, they are optimized
+[00:52:36 -> 00:52:39] for short 8262-element vectors.
+[00:52:39 -> 00:52:42] Okay.
+[00:52:42 -> 00:52:45] So, you know, vectors great.
+[00:52:45 -> 00:52:48] Vectors great, okay?
+[00:52:48 -> 00:52:59] And, but many applications don't map onto vectors,
+[00:52:59 -> 00:53:01] and then further, actually,
+[00:53:01 -> 00:53:06] trying to compile for a vector machine gets to be quite hard.
+[00:53:06 -> 00:53:09] So, you know, you have to carry out the analysis,
+[00:53:09 -> 00:53:14] analyze all the, you know, loads and store operations,
+[00:53:14 -> 00:53:18] do the address, check to see what the addresses might be,
+[00:53:18 -> 00:53:19] doing all that.
+[00:53:19 -> 00:53:21] Just like that happened that we talked about
+[00:53:21 -> 00:53:24] in the, you know, IS64 kind of, you know,
+[00:53:24 -> 00:53:29] BIW scheduling, all of that you have to do in some sense.
+[00:53:29 -> 00:53:30] Okay.
+[00:53:30 -> 00:53:34] And because all of that is next to impossible to do
+[00:53:34 -> 00:53:37] when you have your genetic, you know, code that, you know,
+[00:53:37 -> 00:53:40] may learn or whatever it is, you know, that kind of code,
+[00:53:40 -> 00:53:42] okay, it doesn't quite work out.
+[00:53:42 -> 00:53:48] Vectors did not get used for your general purpose computing.
+[00:53:48 -> 00:53:50] General purpose computing, they're very good
+[00:53:50 -> 00:53:52] at scientific computing, okay?
+[00:53:52 -> 00:53:58] So, you know, I mean, so, you know,
+[00:53:58 -> 00:54:02] Cray, you know, built these machines that were very big
+[00:54:02 -> 00:54:06] and, you know, they were sold by putting them in a truck
+[00:54:06 -> 00:54:08] and leaving them in a parking lot in Maryland
+[00:54:08 -> 00:54:11] and money showed up in the bank.
+[00:54:11 -> 00:54:14] Someone broke that truck away
+[00:54:14 -> 00:54:17] and took it to some place that didn't exist.
+[00:54:17 -> 00:54:21] You know, at that time, NSA did not exist.
+[00:54:21 -> 00:54:22] No such agency.
+[00:54:22 -> 00:54:24] No such agency, you know.
+[00:54:24 -> 00:54:26] So it wasn't public, all right,
+[00:54:26 -> 00:54:28] and they bought a lot of machines.
+[00:54:28 -> 00:54:36] And in fact, you know, in fact, the Cray machines,
+[00:54:36 -> 00:54:40] they actually had instruction,
+[00:54:40 -> 00:54:47] which they also do called a population count instruction.
+[00:54:47 -> 00:54:50] What a population count is, count the number of ones
+[00:54:50 -> 00:54:54] in, you know, 64 bits or whatever it is,
+[00:54:54 -> 00:54:57] which they did specifically for the NSA
+[00:54:57 -> 00:54:59] because for the NSA wanted it,
+[00:54:59 -> 00:55:01] they wanted it to, you know,
+[00:55:01 -> 00:55:04] that was important for their code, you know.
+[00:55:04 -> 00:55:09] Okay, so then, you know, so, you know,
+[00:55:09 -> 00:55:14] I mean the, you know, you can have floating point,
+[00:55:14 -> 00:55:16] you know, scientific floating point,
+[00:55:16 -> 00:55:18] people all said, integers, okay.
+[00:55:18 -> 00:55:21] But then, you know, what happened, you know,
+[00:55:21 -> 00:55:25] what was big was the general focus, you know,
+[00:55:25 -> 00:55:29] process of things that Intel was making, you know.
+[00:55:29 -> 00:55:32] Intel got to be where it did
+[00:55:32 -> 00:55:39] because it won the, you know, IBM, you know.
+[00:55:39 -> 00:55:44] Apple came out with the, what was the first computer?
+[00:55:44 -> 00:55:46] I thought Mac was in the way there, okay.
+[00:55:46 -> 00:55:49] And IBM was big, okay.
+[00:55:49 -> 00:55:52] And so IBM, no, nobody's going to buy this computer.
+[00:55:52 -> 00:55:54] I mean, people buy it, but they don't have money.
+[00:55:54 -> 00:55:56] The money's at the banks.
+[00:55:56 -> 00:55:59] The banks don't buy stuff for tens of millions of dollars.
+[00:55:59 -> 00:56:01] Who cares if, you know,
+[00:56:01 -> 00:56:05] we don't want the $3,000 apiece machine.
+[00:56:05 -> 00:56:11] But then they saw this coming and had to react, you know.
+[00:56:11 -> 00:56:12] We had the big computer company.
+[00:56:12 -> 00:56:14] No one else is, whatever it is.
+[00:56:14 -> 00:56:17] So they came out with the IBM PC,
+[00:56:17 -> 00:56:21] but they didn't want to build their own processes for it, okay.
+[00:56:21 -> 00:56:23] They didn't want to build the own process for it
+[00:56:23 -> 00:56:26] because, you know, whatever, you know,
+[00:56:26 -> 00:56:29] the government could go after them, et cetera, et cetera.
+[00:56:29 -> 00:56:34] So they went to whoever had the best processor at that time,
+[00:56:34 -> 00:56:36] and that was Motorola.
+[00:56:36 -> 00:56:43] And IBM was very big on, hey, you know,
+[00:56:43 -> 00:56:46] that whole IBM management philosophies.
+[00:56:46 -> 00:56:48] You cannot rely only on one supplier.
+[00:56:48 -> 00:56:51] You have to have an alternate supplier, okay.
+[00:56:51 -> 00:56:58] So Motorola, is there an alternate supplier for your chips?
+[00:56:58 -> 00:57:00] Because I think you had to get a little competition
+[00:57:00 -> 00:57:01] to get a good price, too.
+[00:57:01 -> 00:57:02] They said, no.
+[00:57:02 -> 00:57:04] You can get it from us.
+[00:57:04 -> 00:57:06] They went to Intel.
+[00:57:06 -> 00:57:13] Intel said, well, we'll let AMD be the alternate supplier, okay.
+[00:57:13 -> 00:57:16] And so they gave AMD the license to all their stuff,
+[00:57:16 -> 00:57:20] and AMD was the second source for IBM, okay.
+[00:57:21 -> 00:57:28] And then for years, for years, Intel had to keep AMD alive
+[00:57:28 -> 00:57:31] or barely alive so they couldn't compete
+[00:57:31 -> 00:57:37] to keep that agreement for that second source alive, okay.
+[00:57:37 -> 00:57:40] Things change, all right.
+[00:57:40 -> 00:57:47] So, but then, you know, what was happening is that
+[00:57:47 -> 00:57:54] what started happening was people started coming up
+[00:57:54 -> 00:58:01] with other applications for your PCs, right.
+[00:58:01 -> 00:58:04] And there was a company called Real Networks,
+[00:58:04 -> 00:58:10] Real Networks that, you know,
+[00:58:10 -> 00:58:12] came up with a sort of a media player.
+[00:58:12 -> 00:58:15] So audio, where you could listen to radio,
+[00:58:15 -> 00:58:20] progressive radio on the internet, if you will.
+[00:58:20 -> 00:58:22] That's a side story, by the way.
+[00:58:22 -> 00:58:25] One of the people that, I mean, the Real Networks,
+[00:58:25 -> 00:58:28] who was one of the founders of the RCA department
+[00:58:28 -> 00:58:31] or what, Phil, I forget his last name,
+[00:58:31 -> 00:58:34] but one of the other people who was working there
+[00:58:34 -> 00:58:38] was, she's a senator now, Maria Cantwell.
+[00:58:38 -> 00:58:43] And there's an old story about exercising stop options
+[00:58:43 -> 00:58:46] and ordinary minimum banks, et cetera,
+[00:58:46 -> 00:58:48] and that's not relevant to this class.
+[00:58:48 -> 00:58:51] So these are things you end up having to deal with
+[00:58:51 -> 00:58:54] in video mode and so on.
+[00:58:54 -> 00:58:59] So, you know, for streaming audio,
+[00:58:59 -> 00:59:04] you know, listening to radio on your computer,
+[00:59:04 -> 00:59:08] and then, you know, there was, okay, you know,
+[00:59:08 -> 00:59:12] you can do images over there.
+[00:59:12 -> 00:59:17] That then led to the rise of these integer vectors
+[00:59:17 -> 00:59:21] where, you know, your images are this RGBA, you know,
+[00:59:21 -> 00:59:24] pixels, speech recognition, geometry, audio,
+[00:59:24 -> 00:59:26] whatever it is, okay.
+[00:59:26 -> 00:59:31] And what that then led to is this whole notion
+[00:59:31 -> 00:59:36] of multimedia extensions, all right?
+[00:59:36 -> 00:59:39] So you're designing a machine
+[00:59:39 -> 00:59:42] for so-called real application,
+[00:59:42 -> 00:59:46] which has your 32-bit or your 64-bit integer.
+[00:59:46 -> 00:59:50] Yeah, 32-bit, you know, 64-bit floating point.
+[00:59:50 -> 00:59:52] That's what you do, okay?
+[00:59:52 -> 00:59:57] But now, if you are working on pixels, okay,
+[00:59:57 -> 00:59:59] those aren't taken 64-bits,
+[00:59:59 -> 01:00:02] but your AMUs have been built for 64-bits,
+[01:00:02 -> 01:00:05] your integer AMUs have 64-bits.
+[01:00:05 -> 01:00:08] So if I want to carry out an operation
+[01:00:08 -> 01:00:14] on one byte, you know, of an audio stream,
+[01:00:14 -> 01:00:19] then seven of those eight bytes in that arithmetic operation
+[01:00:19 -> 01:00:23] I'm doing every time are zero, okay?
+[01:00:23 -> 01:00:28] Instead, I can now basically take my 64-bit ALU,
+[01:00:28 -> 01:00:34] also have it operate as eight 8-bit ALUs,
+[01:00:34 -> 01:00:39] and then feed it with data that is eight of these,
+[01:00:40 -> 01:00:46] you know, eight-bit streams from audio,
+[01:00:46 -> 01:00:49] or, you know, black and white pixel,
+[01:00:49 -> 01:00:51] or, you know, if I add color,
+[01:00:51 -> 01:00:53] then I feed multiple of those pixels.
+[01:00:53 -> 01:00:58] I can add, you know, four,
+[01:00:58 -> 01:01:04] two of these 32-bit pixels, four-byte pixels.
+[01:01:04 -> 01:01:05] Okay?
+[01:01:05 -> 01:01:12] So that led to this first set of techniques
+[01:01:12 -> 01:01:16] for, again, single instruction, multiple data.
+[01:01:16 -> 01:01:17] Okay?
+[01:01:17 -> 01:01:21] So when you are doing this single operation,
+[01:01:21 -> 01:01:24] you are doing it on multiple subwords,
+[01:01:24 -> 01:01:28] very similar to your normal vector operations, okay?
+[01:01:28 -> 01:01:33] But doing much more now at a word at a time.
+[01:01:33 -> 01:01:37] Okay?
+[01:01:37 -> 01:01:40] And then, of course, you know, like when you do these,
+[01:01:40 -> 01:01:44] you know, operations on, you know, sub, you know,
+[01:01:44 -> 01:01:48] on subwords, then it's like those parallel operations.
+[01:01:48 -> 01:01:51] You don't have getties propagate from one part to the other.
+[01:01:51 -> 01:01:53] You have, you know, saturating, et cetera,
+[01:01:53 -> 01:01:55] things like that.
+[01:01:55 -> 01:02:00] So after, you know, this came about,
+[01:02:00 -> 01:02:06] the Intel multimedia extensions, MMX extensions,
+[01:02:06 -> 01:02:08] then people started making them.
+[01:02:08 -> 01:02:11] So the Intel MMX had 64-bit integers
+[01:02:11 -> 01:02:14] where they could carry it out as multiple operations
+[01:02:14 -> 01:02:20] as either two 32-bit or four 16-bit or eight 8-bit operations.
+[01:02:20 -> 01:02:25] Then you have more instructions to support that.
+[01:02:25 -> 01:02:26] Okay?
+[01:02:26 -> 01:02:29] Then, once you do that, you have more and more of that.
+[01:02:29 -> 01:02:30] Okay?
+[01:02:30 -> 01:02:34] So, you know, SSC had 64-bit floating point,
+[01:02:34 -> 01:02:37] then SSC 2, and then, you know,
+[01:02:37 -> 01:02:39] once one company does it,
+[01:02:39 -> 01:02:41] every one other company does it.
+[01:02:41 -> 01:02:42] Okay?
+[01:02:42 -> 01:02:43] I can even keep track.
+[01:02:43 -> 01:02:46] I think one of those slides we'll go take a look at again,
+[01:02:46 -> 01:02:48] you know, has, you know,
+[01:02:48 -> 01:02:53] there are different types of things that you can do.
+[01:02:53 -> 01:03:00] So I'll get to your question in a minute, okay?
+[01:03:00 -> 01:03:01] You know?
+[01:03:01 -> 01:03:03] And so, again, you know,
+[01:03:03 -> 01:03:06] these array processors are also very similar,
+[01:03:06 -> 01:03:09] you know, single instruction, multiple data.
+[01:03:09 -> 01:03:12] You know, people try, and in GPUs, basically,
+[01:03:12 -> 01:03:13] in a sense, you know,
+[01:03:13 -> 01:03:15] started off as some kind of array processing.
+[01:03:15 -> 01:03:18] Okay.
+[01:03:18 -> 01:03:23] The problem with using any of these SIMB-type instructions
+[01:03:23 -> 01:03:26] and operations is that
+[01:03:26 -> 01:03:29] how do you actually create the code that uses this?
+[01:03:29 -> 01:03:31] How do you actually take your high-level code
+[01:03:31 -> 01:03:35] and translate it into vector operations?
+[01:03:35 -> 01:03:38] All right?
+[01:03:38 -> 01:03:41] And so there has been a whole body of work
+[01:03:41 -> 01:03:43] of trying to auto-take, you know,
+[01:03:43 -> 01:03:46] have compilers do that automatic vectorization.
+[01:03:46 -> 01:03:49] And it becomes quite hard, you know?
+[01:03:49 -> 01:03:53] And, you know, languages like Fortran, you know,
+[01:03:53 -> 01:03:58] is like, which, these things are easy to do,
+[01:03:58 -> 01:04:02] but, you know, people start writing in different languages.
+[01:04:03 -> 01:04:04] You know?
+[01:04:04 -> 01:04:06] If they only did one thing, life would be good,
+[01:04:06 -> 01:04:08] but they don't.
+[01:04:08 -> 01:04:09] You know?
+[01:04:09 -> 01:04:12] So, and many a times, it's just very simply,
+[01:04:12 -> 01:04:14] sometimes you have compiler directors say,
+[01:04:14 -> 01:04:15] ah, you know, I've looked at this code,
+[01:04:15 -> 01:04:18] just write a vector instruction.
+[01:04:18 -> 01:04:21] But typically what happens is that
+[01:04:21 -> 01:04:24] this MMX and SAC code and all this
+[01:04:24 -> 01:04:27] is not generated by them.
+[01:04:27 -> 01:04:31] It's typically written by some, in libraries,
+[01:04:31 -> 01:04:33] by someone who knows how to use it,
+[01:04:33 -> 01:04:37] and then you use the library with that extension.
+[01:04:37 -> 01:04:41] Now, you know, getting back to I think the point,
+[01:04:41 -> 01:04:43] what you're basically saying is,
+[01:04:43 -> 01:04:46] hey, you know, they had all these,
+[01:04:46 -> 01:04:49] they kept having more and more and more,
+[01:04:49 -> 01:04:51] and they couldn't use it.
+[01:04:51 -> 01:04:52] Okay?
+[01:04:52 -> 01:04:56] So, yes, even these MMX things and so on like that
+[01:04:56 -> 01:05:02] are for one, they work great.
+[01:05:02 -> 01:05:04] But any vector operation works great,
+[01:05:04 -> 01:05:06] when you can use it.
+[01:05:06 -> 01:05:07] Okay?
+[01:05:07 -> 01:05:09] If you can't use it, then it's hardware
+[01:05:09 -> 01:05:13] that you have to have, and there's a lot of it.
+[01:05:13 -> 01:05:17] So now, if you're actually trying to just,
+[01:05:17 -> 01:05:20] you know, do a word, you know,
+[01:05:20 -> 01:05:25] something for a lower end, if you will,
+[01:05:25 -> 01:05:27] do you want to have all this hardware
+[01:05:27 -> 01:05:29] that is rarely ever used?
+[01:05:29 -> 01:05:34] Okay, so that is, you know, some of the issues
+[01:05:35 -> 01:05:38] that people, can we have you just see,
+[01:05:38 -> 01:05:53] and I'll go back.
+[01:05:53 -> 01:05:59] I was actually going to add a side comment
+[01:05:59 -> 01:06:02] that all the companies, it had store companies,
+[01:06:02 -> 01:06:04] so all the companies that put in these sort of
+[01:06:04 -> 01:06:07] very simple DSP, fixed-life, SIM vectors
+[01:06:07 -> 01:06:09] are now turning them into Cray-style vectors,
+[01:06:09 -> 01:06:12] because a lot of this data processing stuff
+[01:06:12 -> 01:06:14] is namely popular, like ARM is supplanting
+[01:06:14 -> 01:06:17] NEON with the new instructions, and Intel,
+[01:06:18 -> 01:06:20] Okay, okay, okay, okay.
+[01:06:20 -> 01:06:22] Yes, okay, thank you.
+[01:06:22 -> 01:06:25] We'll talk a little bit about that.
+[01:06:25 -> 01:06:28] Okay, so here it is now, you know,
+[01:06:28 -> 01:06:31] the Qualcomm ARM, where they have
+[01:06:31 -> 01:06:33] vector execution blinds, or, you know,
+[01:06:33 -> 01:06:36] the NEON-style SIMD, or whatever it is,
+[01:06:36 -> 01:06:38] and then more for floating,
+[01:06:38 -> 01:06:40] it's more, you know, vector-like operations.
+[01:06:40 -> 01:06:45] And so, what happened recently is,
+[01:06:50 -> 01:06:53] again, life is good, making a lot of money,
+[01:06:53 -> 01:07:00] and then this, you know, grad students
+[01:07:00 -> 01:07:03] write something called AlexNet,
+[01:07:03 -> 01:07:12] and everybody goes GPU, GPU, GPU, GPU, GPU, okay,
+[01:07:12 -> 01:07:17] and then, you know, people building hardware,
+[01:07:19 -> 01:07:22] the first question the execs get asked,
+[01:07:22 -> 01:07:24] the execs typically don't know much,
+[01:07:24 -> 01:07:26] but they know buzzwords,
+[01:07:26 -> 01:07:29] is where's your AI hardware?
+[01:07:29 -> 01:07:32] What are you doing to compete against NVIDIA?
+[01:07:32 -> 01:07:35] What is your solution for AI?
+[01:07:35 -> 01:07:38] Okay, I mean, that's what, if you saw
+[01:07:38 -> 01:07:40] what's happening with Intel,
+[01:07:40 -> 01:07:42] that's exactly, you know, those guys,
+[01:07:42 -> 01:07:44] they have an AI technique,
+[01:07:44 -> 01:07:47] that, you're out, whatever, okay,
+[01:07:47 -> 01:07:50] and so, they are all now, then,
+[01:07:50 -> 01:07:53] trying to put in hardware to say,
+[01:07:53 -> 01:07:59] yeah, we have AI hardware,
+[01:07:59 -> 01:08:02] and, you know, so, you know,
+[01:08:02 -> 01:08:07] the pre-styled traditional vector machines
+[01:08:07 -> 01:08:10] and the GPUs are a lot more alike.
+[01:08:10 -> 01:08:22] It'll actually be interesting to see as the model.
+[01:08:22 -> 01:08:24] So, you know, one of the other things that's happening
+[01:08:24 -> 01:08:26] is this is sort of a...
+[01:08:26 -> 01:08:29] I have a few more slides on this one,
+[01:08:29 -> 01:08:33] but we can get back to this in a minute.
+[01:08:33 -> 01:08:39] Is, so, you know, NVIDIA, you know,
+[01:08:39 -> 01:08:41] building all these GPUs,
+[01:08:41 -> 01:08:44] I'm doing 64-bit floating point arithmetic,
+[01:08:44 -> 01:08:47] everything, doing a lot of computation,
+[01:08:47 -> 01:08:50] and the national labs, you know,
+[01:08:50 -> 01:08:52] building these huge machines.
+[01:08:52 -> 01:08:56] I'm going to build them with NVIDIA GPUs, you know,
+[01:08:56 -> 01:08:58] and I have 64-bit floating point,
+[01:08:58 -> 01:09:02] and, you know, my fire simulations,
+[01:09:02 -> 01:09:06] and I'm doing with my 64-bit floating point
+[01:09:06 -> 01:09:09] with the right underflow and whatever it is,
+[01:09:09 -> 01:09:12] deal with, I have my codes, okay,
+[01:09:12 -> 01:09:16] and now there's this AI thingy,
+[01:09:16 -> 01:09:18] and the AI thingy just says,
+[01:09:18 -> 01:09:23] more, more, more, more, more, more, more, more, more, more,
+[01:09:23 -> 01:09:28] and I don't need 64-bit floating point.
+[01:09:28 -> 01:09:33] I don't even need 32-bit floating point.
+[01:09:33 -> 01:09:38] Maybe 16-bit, but 8-bit floating point.
+[01:09:38 -> 01:09:41] You know, I can do eight times more
+[01:09:41 -> 01:09:48] with the same hardware that you use 64-bit floating point,
+[01:09:48 -> 01:09:53] and, yeah, if I want to make money,
+[01:09:53 -> 01:09:57] and my market is there versus, you know,
+[01:09:57 -> 01:10:01] here I have people spending hundreds of billions of dollars,
+[01:10:01 -> 01:10:03] I may lose that 64-bit floating point
+[01:10:03 -> 01:10:07] and go with the 8-bit.
+[01:10:07 -> 01:10:10] These guys are getting all very nervous.
+[01:10:10 -> 01:10:14] How are we going to carry out a scientific analysis?
+[01:10:14 -> 01:10:16] Maybe pay a few hundred billion dollars
+[01:10:16 -> 01:10:17] and then you can do that.
+[01:10:17 -> 01:10:18] I don't know.
+[01:10:18 -> 01:10:19] So, anyway.
+[01:10:19 -> 01:10:23] So, these are things that happen.
+[01:10:23 -> 01:10:27] So, these are things that happen.

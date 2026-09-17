@@ -1,0 +1,937 @@
+Title: 752_Lec3
+Source file: 752_Lec3.m4a
+Detected language: en
+------------------------------------------------------------
+
+[00:00:00 -> 00:00:05] and read those counter to measure certain values, okay?
+[00:00:05 -> 00:00:08] But, you know, you can get some gross measurements,
+[00:00:10 -> 00:00:12] but you do not know what's happening
+[00:00:12 -> 00:00:13] in need at a cycle level.
+[00:00:13 -> 00:00:15] These are very useful, by the way,
+[00:00:15 -> 00:00:17] to actually find you code and so on like that
+[00:00:17 -> 00:00:21] to understand what may be going on, okay?
+[00:00:21 -> 00:00:25] But, you know, it's still,
+[00:00:25 -> 00:00:31] you're doing it at a much more gross level.
+[00:00:31 -> 00:00:33] What you can also do is you can use
+[00:00:33 -> 00:00:35] cycle level micro-architectural simulators.
+[00:00:35 -> 00:00:39] So you can actually simulate the execution of the program
+[00:00:40 -> 00:00:42] in a software simulator, okay?
+[00:00:42 -> 00:00:47] Like GemFi, or GemSem that you will use in this class.
+[00:00:47 -> 00:00:51] It's not as detailed,
+[00:00:51 -> 00:00:54] not nearly as detailed as some kind of GemFi,
+[00:00:54 -> 00:00:55] but it gives you, you know,
+[00:00:55 -> 00:00:58] still a reasonable amount of ideas
+[00:00:58 -> 00:01:00] of the many important things that you do.
+[00:01:00 -> 00:01:03] So what computer architects have to do,
+[00:01:03 -> 00:01:04] or micro-architects have to do,
+[00:01:04 -> 00:01:09] is they routinely use simulation, okay?
+[00:01:10 -> 00:01:14] To try and understand, you know,
+[00:01:14 -> 00:01:17] how a program would execute
+[00:01:17 -> 00:01:19] on a particular micro-architecture.
+[00:01:19 -> 00:01:20] What would happen?
+[00:01:20 -> 00:01:21] I can simulate what would happen
+[00:01:21 -> 00:01:24] if I have a 32 kilobyte cache.
+[00:01:24 -> 00:01:27] I can simulate if I had a 64 kilobyte cache
+[00:01:27 -> 00:01:32] and a six cage pipeline with, you know, whatever, okay?
+[00:01:32 -> 00:01:35] So you can do, simulate these things.
+[00:01:35 -> 00:01:39] The negative of a simulation is
+[00:01:39 -> 00:01:44] it is orders of magnitude slower than the actual hardware.
+[00:01:45 -> 00:01:46] Okay?
+[00:01:46 -> 00:01:48] And typically you would need to run
+[00:01:48 -> 00:01:50] thousands of simulations,
+[00:01:50 -> 00:01:55] studying different parameters, okay?
+[00:01:55 -> 00:01:56] So despite all that,
+[00:01:56 -> 00:01:59] this still ends up being sort of the method of choice
+[00:01:59 -> 00:02:05] that is routinely used to try and evaluate stuff.
+[00:02:05 -> 00:02:13] Any questions so far?
+[00:02:13 -> 00:02:19] So this course, you know,
+[00:02:19 -> 00:02:22] we are more mainly talking about improving CPI
+[00:02:22 -> 00:02:24] rather than the block frequency.
+[00:02:24 -> 00:02:26] Historically, the, you know,
+[00:02:26 -> 00:02:28] we talked a little bit about more,
+[00:02:28 -> 00:02:31] now we see a little bit more, okay?
+[00:02:31 -> 00:02:34] The process technology improvement.
+[00:02:34 -> 00:02:36] That has accounted for, you know,
+[00:02:36 -> 00:02:40] a majority of the overall performance improvement, okay?
+[00:02:40 -> 00:02:45] And to do that is basically have faster and faster clocks,
+[00:02:45 -> 00:02:49] which means do less and less work in each clock cycle,
+[00:02:49 -> 00:02:53] which means have more and more pipeline, okay?
+[00:02:53 -> 00:02:56] That is historically where it's happening, okay?
+[00:02:56 -> 00:03:01] Now, you know, but that does not continue forward.
+[00:03:01 -> 00:03:03] That doesn't go, you know,
+[00:03:03 -> 00:03:06] it's reached a point where it's,
+[00:03:06 -> 00:03:08] the clock's not getting faster anymore.
+[00:03:08 -> 00:03:10] Your transistor's not getting faster anymore,
+[00:03:10 -> 00:03:12] and DCY a little bit, okay?
+[00:03:12 -> 00:03:15] So there are other techniques that you have to use
+[00:03:15 -> 00:03:18] to try and improve.
+[00:03:18 -> 00:03:19] What else can you do to get performance?
+[00:03:19 -> 00:03:36] You have to improve the CPI.
+[00:03:36 -> 00:03:39] So this is the set up slide for the different processor
+[00:03:39 -> 00:03:41] that I gave you a little while ago.
+[00:03:42 -> 00:03:43] You have a link?
+[00:03:44 -> 00:03:49] This is AMD talking about how they are getting
+[00:03:49 -> 00:03:53] their performance improvement, okay?
+[00:03:53 -> 00:03:57] So they are getting, you know, for Zen 3, you know,
+[00:03:57 -> 00:04:02] they have got a 19% IPC, okay?
+[00:04:02 -> 00:04:05] Newer processor CPI benefit over the previous generation.
+[00:04:05 -> 00:04:07] Next generation, they're getting 14% more.
+[00:04:07 -> 00:04:10] Next generation, 16% more.
+[00:04:10 -> 00:04:10] They aren't talking about the clock,
+[00:04:10 -> 00:04:13] but it's the clock period is the same.
+[00:04:13 -> 00:04:13] Very similar.
+[00:04:13 -> 00:04:18] Not much performance improvement over there, okay?
+[00:04:18 -> 00:04:22] So, you know, that's where, you know,
+[00:04:22 -> 00:04:24] for a while you can go down that faster transistor,
+[00:04:24 -> 00:04:27] faster, you know, clock period,
+[00:04:27 -> 00:04:30] but, you know, eventually start having to
+[00:04:32 -> 00:04:33] do different things.
+[00:04:34 -> 00:04:37] In fact, if you're getting performance improvement
+[00:04:37 -> 00:04:41] going forward, it's almost certainly gonna have to come
+[00:04:41 -> 00:04:46] with CPI improvements, so improvements in IPC.
+[00:04:47 -> 00:04:49] So we'll talk a lot about these,
+[00:04:49 -> 00:04:54] and now what helps is the bounty of transistors.
+[00:04:55 -> 00:04:57] The more transistors that you have,
+[00:04:57 -> 00:05:01] the more you can use to come up with clever techniques
+[00:05:03 -> 00:05:10] to improve the IPC.
+[00:05:10 -> 00:05:13] So things, you know, that you could never even
+[00:05:13 -> 00:05:16] contemplate when you had 100,000 transistors
+[00:05:16 -> 00:05:18] or a million transistors.
+[00:05:19 -> 00:05:21] Okay?
+[00:05:21 -> 00:05:22] Or 10 million transistors.
+[00:05:23 -> 00:05:27] Just sort of become routine now.
+[00:05:27 -> 00:05:31] So, you know, I remember, I remember,
+[00:05:31 -> 00:05:33] some of you may have done this too,
+[00:05:33 -> 00:05:35] because you still teach it, you know?
+[00:05:35 -> 00:05:37] When you take your, you know,
+[00:05:37 -> 00:05:38] hardware logic design class,
+[00:05:38 -> 00:05:42] you talk about building an add-in, integer add-in.
+[00:05:42 -> 00:05:43] You know?
+[00:05:43 -> 00:05:45] Okay, and you talk about how many gates
+[00:05:45 -> 00:05:47] is this add-in taking?
+[00:05:47 -> 00:05:48] You've done all of that, right?
+[00:05:48 -> 00:05:49] On the terms of, you know,
+[00:05:49 -> 00:05:50] does it take in so many gates
+[00:05:50 -> 00:05:52] or does this design take so many gates?
+[00:05:52 -> 00:05:56] And, you know, it used to be the case
+[00:05:56 -> 00:06:00] that you actually build an add-in with multiple tips.
+[00:06:00 -> 00:06:02] Build an ALU with multiple tips, okay?
+[00:06:02 -> 00:06:05] Then you worried about the cost of these gates, okay?
+[00:06:05 -> 00:06:09] And, you know, it's like, and so, you know,
+[00:06:09 -> 00:06:13] these days, you know, after that,
+[00:06:13 -> 00:06:15] okay, yeah, one ALU you want,
+[00:06:16 -> 00:06:18] I'll give you 10, 20, 100.
+[00:06:18 -> 00:06:20] You can have those if you want.
+[00:06:20 -> 00:06:21] No big deal.
+[00:06:21 -> 00:06:23] Compared to the transistor budget I had,
+[00:06:23 -> 00:06:27] it's not taking that much more, okay?
+[00:06:27 -> 00:06:30] And, in fact, you know, there's,
+[00:06:30 -> 00:06:33] Chris Rowan, who was one of the co-founders of MIPS,
+[00:06:33 -> 00:06:36] then went and did a couple other companies
+[00:06:36 -> 00:06:39] and then they had a process of design
+[00:06:39 -> 00:06:40] that had 300 cores in it
+[00:06:40 -> 00:06:42] and, you know, and the core that he would have
+[00:06:42 -> 00:06:47] is the CPU core is now the new transistor.
+[00:06:47 -> 00:06:48] It's like, in the good old days,
+[00:06:48 -> 00:06:50] you would worry about saving transistors,
+[00:06:50 -> 00:06:53] or, you know, the transistor wasn't that big a deal
+[00:06:53 -> 00:06:55] and so that you can have, you know,
+[00:06:55 -> 00:06:57] integer ALUs, no big deal, okay?
+[00:06:59 -> 00:07:00] So you have lots of transistors,
+[00:07:00 -> 00:07:02] but, as you will see, you know,
+[00:07:02 -> 00:07:04] power and energy start becoming an issue
+[00:07:04 -> 00:07:06] and then we'll see, you know,
+[00:07:06 -> 00:07:19] a little bit how the impact of that comes.
+[00:07:19 -> 00:07:21] Before we go further, I want to talk about
+[00:07:21 -> 00:07:24] sort of two rules of thumb, if you will.
+[00:07:24 -> 00:07:27] And, you know, these are both
+[00:07:27 -> 00:07:29] what is widely referred to
+[00:07:29 -> 00:07:31] what a lot of people say is common sense,
+[00:07:31 -> 00:07:34] but, as you all know, common sense is not very common.
+[00:07:36 -> 00:07:38] You know, and many a times,
+[00:07:38 -> 00:07:42] just get caught up and forget stuff, okay?
+[00:07:42 -> 00:07:44] And the first one is Amdahl's Law.
+[00:07:46 -> 00:07:50] And Amdahl's Law was first formulated by Jean Amdahl,
+[00:07:50 -> 00:07:52] who was actually one of our alums,
+[00:07:53 -> 00:07:55] built the first computer in the state of Wisconsin,
+[00:07:55 -> 00:07:57] actually was first worldwide,
+[00:07:58 -> 00:08:03] and then went off and did IBM's 360 architecture,
+[00:08:03 -> 00:08:05] and then went off and then, you know,
+[00:08:05 -> 00:08:11] started Amdahl computers as a competitor to IBM, okay?
+[00:08:11 -> 00:08:13] It's actually very interesting in its oral history,
+[00:08:13 -> 00:08:16] if you take a look about it, how we got it, you know,
+[00:08:18 -> 00:08:22] grew up in South Dakota and got a fellowship,
+[00:08:22 -> 00:08:25] war fellowship to come over here,
+[00:08:25 -> 00:08:30] and then how IBM actually had recruited him,
+[00:08:30 -> 00:08:33] and, you know, it's very interesting,
+[00:08:33 -> 00:08:35] but he used to come to our alumni receptions,
+[00:08:35 -> 00:08:38] so we have several pictures of them in Silicon Valley.
+[00:08:38 -> 00:08:43] So, but, so, so Amdahl was, you know,
+[00:08:43 -> 00:08:48] doing his uni process of Amdahl machines,
+[00:08:49 -> 00:08:52] and at that time, you know, DARPA, DOD, you know,
+[00:08:52 -> 00:08:54] they were funding the ILIAC,
+[00:08:57 -> 00:09:00] which was a huge multiprocessor, 70 multiprocessor,
+[00:09:00 -> 00:09:03] we'll talk a little bit, maybe talk about vector processor,
+[00:09:03 -> 00:09:05] we'll talk a little bit about that,
+[00:09:05 -> 00:09:07] and so this was in the 60s, even then,
+[00:09:07 -> 00:09:09] everything was going to be parallel
+[00:09:09 -> 00:09:11] and uni processor were going to die,
+[00:09:11 -> 00:09:13] not going any further, okay?
+[00:09:13 -> 00:09:17] And Amdahl came up with his very simple,
+[00:09:17 -> 00:09:20] you know, rule of Amdahl's law, saying, look,
+[00:09:20 -> 00:09:25] you know, if you have a program,
+[00:09:25 -> 00:09:30] and you can speed up a fraction X of the program
+[00:09:30 -> 00:09:34] by a certain amount, and the other part, you cannot,
+[00:09:34 -> 00:09:38] so there's a fraction that you can parallelize,
+[00:09:38 -> 00:09:43] execute in parallel, and speed up by parallel execution,
+[00:09:43 -> 00:09:47] and the remainder fraction, you cannot speed up at all.
+[00:09:47 -> 00:09:52] What is the overall speed up you can expect, okay?
+[00:09:52 -> 00:10:06] So, you know, the speed up,
+[00:10:06 -> 00:10:10] the speed up you're gonna get is, you know,
+[00:10:10 -> 00:10:13] the fraction of the program that you can speed up,
+[00:10:13 -> 00:10:15] the time it's gonna take is that fraction
+[00:10:15 -> 00:10:19] divided by the speed up, and one minus that fraction
+[00:10:19 -> 00:10:21] is not going to be sped up at all,
+[00:10:21 -> 00:10:24] so that's the time it's gonna take, okay?
+[00:10:24 -> 00:10:29] So if the old time that the program took was one,
+[00:10:29 -> 00:10:32] the new time is this fraction is gonna stay the same,
+[00:10:32 -> 00:10:35] this fraction is going to be sped up by this much,
+[00:10:35 -> 00:10:39] so the speed up is one over this, okay?
+[00:10:39 -> 00:10:42] And, you know, if I have a fraction,
+[00:10:42 -> 00:10:45] say five percent, that is sped up by infinity,
+[00:10:48 -> 00:10:52] you know, sorry, if I have a fraction of five percent,
+[00:10:52 -> 00:10:55] that can be sped up, even if I speed it up
+[00:10:55 -> 00:10:58] by a factor of infinity here, make it take zero time,
+[00:10:58 -> 00:11:01] 95% isn't sped up, the best speed up you can get
+[00:11:01 -> 00:11:05] is still only five percent, okay?
+[00:11:05 -> 00:11:08] So, basically, you know, the point being
+[00:11:08 -> 00:11:13] is do not ignore the non-parallel part,
+[00:11:13 -> 00:11:15] because you have to make that go faster, too,
+[00:11:15 -> 00:11:17] and these whole techniques of making
+[00:11:17 -> 00:11:19] uniprocess will go faster,
+[00:11:19 -> 00:11:21] or even if I have an application
+[00:11:21 -> 00:11:25] that I can do a lot in parallel, okay?
+[00:11:25 -> 00:11:27] Then, but it has a sequential portion,
+[00:11:27 -> 00:11:29] the overall speed up I'm going to get
+[00:11:29 -> 00:11:33] is still going to be limited by that sequential portion,
+[00:11:33 -> 00:11:34] okay?
+[00:11:34 -> 00:11:35] So, I think that you've all seen
+[00:11:35 -> 00:11:36] this Amdahl's Law stuff here before,
+[00:11:36 -> 00:11:39] but this is sort of a very important thing
+[00:11:39 -> 00:11:42] that people routinely forget, okay,
+[00:11:42 -> 00:11:43] coming up with designs.
+[00:11:44 -> 00:11:48] Now, another, you know, rule of thumb
+[00:11:48 -> 00:11:53] is to design what is called a balanced system, okay?
+[00:11:53 -> 00:11:56] So, what system balance is,
+[00:11:56 -> 00:12:01] if I have a system with different components in it, okay,
+[00:12:01 -> 00:12:04] each one of them has certain capabilities
+[00:12:04 -> 00:12:08] that I'm, you know, designing certain capabilities, okay?
+[00:12:08 -> 00:12:11] The capabilities of each component
+[00:12:11 -> 00:12:14] should be equal to the capabilities
+[00:12:14 -> 00:12:18] that other components ask of it, okay?
+[00:12:18 -> 00:12:22] So, if the capabilities aren't matched, okay,
+[00:12:22 -> 00:12:25] then I do not have a balanced system,
+[00:12:25 -> 00:12:27] there is no point in designing something
+[00:12:27 -> 00:12:29] to provision more capability
+[00:12:29 -> 00:12:34] than others are going to make use of, okay?
+[00:12:34 -> 00:12:37] You're just wasting money in that case, okay?
+[00:12:37 -> 00:12:42] So, you know, if you have designing a processor
+[00:12:42 -> 00:12:44] that it's like, hey, you know,
+[00:12:44 -> 00:12:48] everything is going, assuming that it can execute,
+[00:12:48 -> 00:12:50] you know, operations at a certain rate,
+[00:12:50 -> 00:12:53] and that requires fetching data from memory
+[00:12:53 -> 00:12:54] at a certain rate.
+[00:12:54 -> 00:12:59] If the memory has a capacity rate lower than that,
+[00:12:59 -> 00:13:00] the processor is not going to be able
+[00:13:00 -> 00:13:04] to execute at the rate that it's capable of, okay?
+[00:13:04 -> 00:13:05] So, in a balanced system,
+[00:13:05 -> 00:13:08] you have to make sure that all the capabilities,
+[00:13:08 -> 00:13:10] in other words, that, you know,
+[00:13:10 -> 00:13:15] if one resources operating is going to saturate,
+[00:13:15 -> 00:13:17] the other should also be saturating
+[00:13:17 -> 00:13:22] at about the same time, okay?
+[00:13:22 -> 00:13:27] Any questions about this?
+[00:13:27 -> 00:13:35] That's, you know, if you want to have a balance,
+[00:13:36 -> 00:13:38] means there's certain other parts,
+[00:13:38 -> 00:13:43] yes, you aren't going to have all of a sudden
+[00:13:43 -> 00:13:46] a more capable one part,
+[00:13:46 -> 00:13:48] because it's not going to work as well.
+[00:13:50 -> 00:13:53] Because the other, we're going to hold it behind.
+[00:13:53 -> 00:13:54] Now, of course, you know,
+[00:13:54 -> 00:13:57] typically you have a little extra here and there,
+[00:13:57 -> 00:14:00] but, you know, anytime you have extra capability,
+[00:14:00 -> 00:14:09] it means you're paying extra cost.
+[00:14:09 -> 00:14:16] So, this is another, you know, Little's Law.
+[00:14:17 -> 00:14:21] Little's Law, it's actually a very simple equation,
+[00:14:24 -> 00:14:26] which says, you know, if I have a system
+[00:14:26 -> 00:14:31] where requests are coming at a certain rate, okay?
+[00:14:32 -> 00:14:37] Okay, and the system takes a certain amount of time
+[00:14:37 -> 00:14:41] to service a request, okay?
+[00:14:42 -> 00:14:47] How many requests are going to be in the system
+[00:14:47 -> 00:14:53] at any given time, all right?
+[00:14:53 -> 00:14:56] So, what the Little's Law says,
+[00:14:56 -> 00:14:59] the average number in a system
+[00:14:59 -> 00:15:05] is the arrival time rate times the average holding time,
+[00:15:05 -> 00:15:07] all right?
+[00:15:07 -> 00:15:12] So, you know, one of my colleagues likes to age his wine
+[00:15:13 -> 00:15:17] and was wondering how big a wine cellar should he have?
+[00:15:18 -> 00:15:22] Okay, and okay, so if you are basically
+[00:15:23 -> 00:15:25] drinking four bottles of wine a week,
+[00:15:26 -> 00:15:29] means you have taken four out of that system,
+[00:15:29 -> 00:15:31] that cellar, and of course, you know,
+[00:15:31 -> 00:15:34] one to all, so then the input should be the same,
+[00:15:34 -> 00:15:36] right, okay?
+[00:15:36 -> 00:15:39] Otherwise, the cellar depletes.
+[00:15:39 -> 00:15:43] And if he wants to age the wine five years, okay?
+[00:15:43 -> 00:15:47] So, the number of requests, bottles in the cellar
+[00:15:47 -> 00:15:50] should be the arrival slash departure rate,
+[00:15:50 -> 00:15:52] which is four bottles per week,
+[00:15:52 -> 00:15:54] times 52 weeks per year,
+[00:15:54 -> 00:15:56] and the holding time is five years,
+[00:15:56 -> 00:16:01] so he needs to build a cellar this thick, okay?
+[00:16:02 -> 00:16:05] Closer to home, closer, you know,
+[00:16:05 -> 00:16:08] relevant to even the people who don't drink wine
+[00:16:08 -> 00:16:09] and want to build wine cellars,
+[00:16:09 -> 00:16:12] you're all here at UW Madison.
+[00:16:15 -> 00:16:18] You know, three chance for a go,
+[00:16:18 -> 00:16:22] a chance for John Wiley, he was an engineer,
+[00:16:22 -> 00:16:26] and he had this, he, everything he,
+[00:16:26 -> 00:16:27] not everything, a lot of things,
+[00:16:27 -> 00:16:31] he would analyze at little slide, okay?
+[00:16:31 -> 00:16:35] So, there was a huge push to increase
+[00:16:35 -> 00:16:40] the number of undergraduate students to admit
+[00:16:40 -> 00:16:43] into the university, okay?
+[00:16:43 -> 00:16:45] So, he did his engineering calculation,
+[00:16:45 -> 00:16:47] saying, hey, you know, you know,
+[00:16:47 -> 00:16:48] all of them are gonna have to take
+[00:16:48 -> 00:16:51] their introductory classes, you know,
+[00:16:51 -> 00:16:54] chemistry and math and so on like that,
+[00:16:54 -> 00:16:56] and you know, that's not, you know,
+[00:16:58 -> 00:17:01] we don't necessarily have the capacity to do that
+[00:17:01 -> 00:17:03] if they took their introductory classes
+[00:17:03 -> 00:17:05] two years in the junior college somewhere,
+[00:17:05 -> 00:17:08] so they only spent now three years in the university
+[00:17:08 -> 00:17:11] rather than four, okay?
+[00:17:11 -> 00:17:14] We can then increase the students, okay?
+[00:17:14 -> 00:17:18] Number of students, we can increase the arrival rate
+[00:17:19 -> 00:17:23] if the holding time goes from four to three years
+[00:17:23 -> 00:17:27] while still having the same number in the system, okay?
+[00:17:28 -> 00:17:33] And then, where are these people gonna stay?
+[00:17:33 -> 00:17:34] All right, so that's what you can say,
+[00:17:34 -> 00:17:36] look, we just don't have the housing capacity
+[00:17:36 -> 00:17:41] around here to have that many students.
+[00:17:41 -> 00:17:44] Out go the engineering, canceling,
+[00:17:44 -> 00:17:48] or tax coming economists.
+[00:17:48 -> 00:17:53] Only thing to understand is money.
+[00:17:53 -> 00:17:56] More students, more tuition.
+[00:17:56 -> 00:17:58] Where are they gonna stay?
+[00:17:58 -> 00:18:01] Not my problem, okay?
+[00:18:01 -> 00:18:02] Haven't they even more?
+[00:18:03 -> 00:18:05] So, whatever, okay?
+[00:18:05 -> 00:18:09] So, but you know, so this is,
+[00:18:09 -> 00:18:11] this little law and something
+[00:18:11 -> 00:18:17] that you all are experiencing, all right?
+[00:18:17 -> 00:18:22] How does that relate to what we are talking about, okay?
+[00:18:22 -> 00:18:27] So, you know, if I want to design a processor
+[00:18:27 -> 00:18:31] that can access memory at, you know,
+[00:18:31 -> 00:18:33] a rate of five gigabytes per second,
+[00:18:33 -> 00:18:35] and the way it's accessing memory,
+[00:18:35 -> 00:18:37] it's going to have a cache miss
+[00:18:37 -> 00:18:38] and it's gonna bring in a block
+[00:18:38 -> 00:18:40] from memory to the cache.
+[00:18:40 -> 00:18:43] A block is 64 bytes.
+[00:18:43 -> 00:18:48] And the latency to service a miss is 100 nanoseconds, okay?
+[00:18:48 -> 00:18:51] So, how many requests must be there
+[00:18:51 -> 00:18:56] in the memory being serviced, okay, if you will?
+[00:18:57 -> 00:18:59] So, the requests in the memory are gonna be
+[00:18:59 -> 00:19:02] the arrival rate, times in the system.
+[00:19:02 -> 00:19:04] So, I'm trying to do five gigabytes per second.
+[00:19:04 -> 00:19:08] These are cache blocks coming in, each record, you know,
+[00:19:08 -> 00:19:10] and they're 64 byte blocks,
+[00:19:10 -> 00:19:13] so I'm making so many requests per second.
+[00:19:13 -> 00:19:16] Each request is taking so much time,
+[00:19:16 -> 00:19:18] so I must be able to handle
+[00:19:18 -> 00:19:20] at least so many requests in the memory,
+[00:19:20 -> 00:19:23] so I must have the cache.
+[00:19:23 -> 00:19:25] I need to be able to handle, basically,
+[00:19:25 -> 00:19:28] eight cache misses at a time.
+[00:19:30 -> 00:19:33] This is the kind of analysis that allowed,
+[00:19:33 -> 00:19:35] you know, me to argue many years ago,
+[00:19:35 -> 00:19:38] we needed caches that allowed multiple misses,
+[00:19:38 -> 00:19:39] whereas the whole Silicon Valley
+[00:19:39 -> 00:19:42] was operating very differently at that time.
+[00:19:42 -> 00:19:43] Pretty simple analysis.
+[00:19:43 -> 00:19:46] If you just do it, you can get a much better solution
+[00:19:46 -> 00:19:49] than someone who's not understanding that, okay?
+[00:19:49 -> 00:19:51] And so, that is an average.
+[00:19:51 -> 00:19:53] Typically, you need to design your system
+[00:19:53 -> 00:19:55] to be more than that,
+[00:19:55 -> 00:19:59] because things rarely happen at a constant rate, okay?
+[00:19:59 -> 00:20:05] There are ebbs and flows, okay?
+[00:20:05 -> 00:20:12] Any questions about these?
+[00:20:12 -> 00:20:15] Now, let's go back to technology, okay?
+[00:20:15 -> 00:20:18] So, we talked about some of the, you know,
+[00:20:18 -> 00:20:20] the CPI and all of that,
+[00:20:20 -> 00:20:23] and we'll go back to that in gory detail later on.
+[00:20:23 -> 00:20:26] Let's talk a little bit about transistors and technology.
+[00:20:26 -> 00:20:31] Transistor speed, power, and reliability, okay?
+[00:20:31 -> 00:20:32] So, the transistor,
+[00:20:32 -> 00:20:34] we can see the transistor characteristics
+[00:20:34 -> 00:20:35] and scaling them back
+[00:20:35 -> 00:20:38] in the switching speed, power, and reliability,
+[00:20:38 -> 00:20:42] and, you know, and talk about, you know,
+[00:20:42 -> 00:20:43] a little bit of the delays.
+[00:20:43 -> 00:20:46] And in your undergraduate architecture class,
+[00:20:46 -> 00:20:47] you probably learned that, hey, you know,
+[00:20:47 -> 00:20:49] how do you calculate the delay of the circuit?
+[00:20:49 -> 00:20:51] You have a number of gate delays
+[00:20:51 -> 00:20:54] and how many levels of gate length logic you take,
+[00:20:54 -> 00:20:56] and if each level has a delay e,
+[00:20:56 -> 00:20:58] then levels times d
+[00:20:58 -> 00:21:01] is the delay through that piece of logic, okay?
+[00:21:01 -> 00:21:02] Reality, in a sense, unfortunately,
+[00:21:02 -> 00:21:07] is not that simple, we'll talk more about it.
+[00:21:07 -> 00:21:12] Okay, so, this now is a view of,
+[00:21:13 -> 00:21:15] we talked about the semiconductor process,
+[00:21:15 -> 00:21:17] all those masks, doing different stuff
+[00:21:17 -> 00:21:19] and depositing it and stuff like that.
+[00:21:19 -> 00:21:23] This is now the side part view of the actual chip, okay?
+[00:21:23 -> 00:21:28] Silicon vapor, oxide insulator, silicon, you know,
+[00:21:28 -> 00:21:31] insulator, these are the transistors,
+[00:21:31 -> 00:21:36] these are the vias, okay, the tungsten vias,
+[00:21:36 -> 00:21:42] and these are the wires, okay,
+[00:21:42 -> 00:21:46] on different levels in the third dimension, all right?
+[00:21:48 -> 00:21:49] Can I ask a question?
+[00:21:49 -> 00:21:49] Go ahead.
+[00:21:49 -> 00:21:50] Is this a real picture?
+[00:21:50 -> 00:21:51] This is a real picture.
+[00:21:51 -> 00:21:55] So, what's in the void space here?
+[00:21:55 -> 00:21:59] Is it just, is it really just empty air?
+[00:22:00 -> 00:22:05] So, here, when we have copper wires,
+[00:22:06 -> 00:22:09] this is actually a barrier,
+[00:22:09 -> 00:22:10] which you know, sometimes,
+[00:22:10 -> 00:22:12] that prevents the copper ions
+[00:22:12 -> 00:22:15] from getting into the substrate, okay?
+[00:22:15 -> 00:22:17] In the time of the tungsten wires,
+[00:22:18 -> 00:22:19] there was no need for any of that, yep.
+[00:22:19 -> 00:22:21] And so, it was just open like this.
+[00:22:21 -> 00:22:24] I mean, if we could get down to being the microns tall,
+[00:22:24 -> 00:22:26] we could walk around in here?
+[00:22:26 -> 00:22:27] Oh, you could.
+[00:22:28 -> 00:22:30] Huh, okay.
+[00:22:30 -> 00:22:32] I just figured, I always assumed
+[00:22:32 -> 00:22:33] there was something left behind
+[00:22:33 -> 00:22:36] that they built up on top of, but.
+[00:22:37 -> 00:22:39] And it is.
+[00:22:39 -> 00:22:44] I mean, this is a diffusion barrier, all right?
+[00:22:44 -> 00:22:47] This is a diffusion barrier over there, so.
+[00:22:48 -> 00:22:50] But if you deposit stuff and you etch stuff out,
+[00:22:51 -> 00:22:53] you know, I mean, you know,
+[00:22:56 -> 00:22:57] that stuff.
+[00:22:58 -> 00:23:00] I just assumed they filled it in,
+[00:23:00 -> 00:23:01] because how do you get that wire,
+[00:23:01 -> 00:23:05] that top wire there to kind of breach the gaps then?
+[00:23:05 -> 00:23:06] Because,
+[00:23:07 -> 00:23:12] so, the top wire over here came about a hundred times.
+[00:23:15 -> 00:23:17] It was sitting on photoresist at the time.
+[00:23:17 -> 00:23:18] Yeah, yeah.
+[00:23:19 -> 00:23:25] Okay.
+[00:23:25 -> 00:23:26] No, this is remarkable.
+[00:23:26 -> 00:23:29] Semiconductor technology is just remarkable,
+[00:23:29 -> 00:23:33] you know, what people have been able to do.
+[00:23:33 -> 00:23:35] And again, it's, you know, it's like,
+[00:23:35 -> 00:23:39] hey, there is a lot of money at stake,
+[00:23:39 -> 00:23:44] and so then, people innovate.
+[00:23:44 -> 00:23:49] Okay, so, you know, this is now another side picture
+[00:23:49 -> 00:23:54] of the IBM process with the six layers of copper wiring.
+[00:23:54 -> 00:23:56] These are the vias and timescren stuff,
+[00:23:56 -> 00:23:58] and these are the copper wires.
+[00:23:58 -> 00:24:00] We'll talk a little bit more about this now,
+[00:24:00 -> 00:24:01] some of these now.
+[00:24:01 -> 00:24:05] Okay.
+[00:24:05 -> 00:24:10] So, let us, you know, talk about now
+[00:24:10 -> 00:24:14] a simple timing model, a simple RC to A model.
+[00:24:15 -> 00:24:17] So, we talked about, you know,
+[00:24:17 -> 00:24:20] transistor driving some other circuit,
+[00:24:20 -> 00:24:23] a gate driving, another gate system inverter
+[00:24:23 -> 00:24:26] driving two inverters over there.
+[00:24:26 -> 00:24:27] Okay.
+[00:24:27 -> 00:24:31] And, you know, what is the time that it's going to take
+[00:24:31 -> 00:24:35] to go through this four people video, switching time.
+[00:24:38 -> 00:24:42] So, the switching time, the time when the input,
+[00:24:42 -> 00:24:44] this goes from one to zero,
+[00:24:44 -> 00:24:47] and the output goes from zero to one, you know,
+[00:24:47 -> 00:24:50] and the next one goes from one to zero,
+[00:24:50 -> 00:24:54] there is going to be the resistance, okay,
+[00:24:54 -> 00:24:58] which is going to depend upon the material of the wires,
+[00:24:58 -> 00:25:01] the length of the wires and the cross-section of the wires.
+[00:25:01 -> 00:25:04] We'll talk a little bit about each one of these.
+[00:25:04 -> 00:25:06] There is a capacitance,
+[00:25:06 -> 00:25:10] which is going to depend on the material, okay,
+[00:25:10 -> 00:25:15] the area, okay, and the distance.
+[00:25:15 -> 00:25:20] And then also the voltage is going to impact the speed.
+[00:25:20 -> 00:25:23] The higher the voltage, the greater the swing,
+[00:25:23 -> 00:25:25] the faster you can be.
+[00:25:25 -> 00:25:28] Okay, the greater the swing would be one and zero,
+[00:25:28 -> 00:25:30] the faster you can be.
+[00:25:30 -> 00:25:32] Okay, one is the supply voltage,
+[00:25:32 -> 00:25:36] zero is near ground, not quite ground, but near ground.
+[00:25:40 -> 00:25:42] So, what is the resistance?
+[00:25:42 -> 00:25:45] The resistance is going to be, now, you know,
+[00:25:45 -> 00:25:46] you go from here,
+[00:25:46 -> 00:25:48] the resistance is going to be the resistance
+[00:25:48 -> 00:25:51] of this gate over here, the channel,
+[00:25:51 -> 00:25:58] resistance of this wire,
+[00:25:58 -> 00:26:01] and this is going to be also a function
+[00:26:01 -> 00:26:08] of the gate voltage that you have over here.
+[00:26:08 -> 00:26:13] The capacitance is going to be the source
+[00:26:14 -> 00:26:19] and the brain capacitance, okay, all right.
+[00:26:19 -> 00:26:24] And then the gate capacitance is that this is driving
+[00:26:26 -> 00:26:31] over here and the capacitance of the wires, okay.
+[00:26:31 -> 00:26:34] So the capacitance that this gate is going to see
+[00:26:35 -> 00:26:38] is going to be the capacitance of the gates
+[00:26:38 -> 00:26:46] that it is driving over here and the wire, okay.
+[00:26:46 -> 00:26:50] So a simple RC delay model, okay,
+[00:26:50 -> 00:26:53] is going to basically be proportional
+[00:26:53 -> 00:26:55] to a resistance times capacitance.
+[00:26:55 -> 00:27:00] That's going to be the delay over there, right.
+[00:27:01 -> 00:27:06] So, you know, let me ask you a question.
+[00:27:06 -> 00:27:10] I have two circuits, one is one inverter
+[00:27:10 -> 00:27:12] and then one, two, three, four, five, six, seven,
+[00:27:12 -> 00:27:17] you know, these eight over here at the next level.
+[00:27:17 -> 00:27:20] And here I have one gate here, two gates at this level,
+[00:27:20 -> 00:27:24] four gates at this level, eight gates at this level,
+[00:27:24 -> 00:27:24] which is faster.
+[00:27:26 -> 00:27:28] Why, no, why?
+[00:27:28 -> 00:27:33] Less capacitor, less load on the, oh, right, sorry.
+[00:27:33 -> 00:27:35] I've been teaching my students wrong there.
+[00:27:35 -> 00:27:38] I've been telling them, hey, this has two levels of logic.
+[00:27:38 -> 00:27:41] This is faster, two levels, here is one, two, three, four.
+[00:27:42 -> 00:27:49] No, yeah, but this is faster in undergrad, okay.
+[00:27:52 -> 00:27:58] In the real world, this is faster, okay.
+[00:27:58 -> 00:28:00] Why so?
+[00:28:00 -> 00:28:05] Because this is driving so much capacitance over here.
+[00:28:07 -> 00:28:08] All right.
+[00:28:08 -> 00:28:11] And this over here, each gate is driving
+[00:28:11 -> 00:28:14] only two other gates over here.
+[00:28:14 -> 00:28:18] Seeing much less capacitance, okay.
+[00:28:18 -> 00:28:25] So the RC is going to be small, all right.
+[00:28:25 -> 00:28:30] But then there is also these wires
+[00:28:30 -> 00:28:33] that come into the picture, right.
+[00:28:33 -> 00:28:37] So this is undergrad level delay calculation.
+[00:28:37 -> 00:28:41] This is more the real, this used to be the real world.
+[00:28:41 -> 00:28:44] Life was good.
+[00:28:44 -> 00:28:45] Unfortunately, the real world
+[00:28:45 -> 00:28:47] starts getting complicated, you know.
+[00:28:47 -> 00:28:50] But that's what keeps people in jobs
+[00:28:50 -> 00:28:52] and well-paid jobs too, so.
+[00:28:52 -> 00:28:55] All right.
+[00:28:55 -> 00:28:59] And so what happens is when you have wider transistors,
+[00:28:59 -> 00:29:02] they have lower resistance and they also have more drive.
+[00:29:02 -> 00:29:05] The drive is the amount of current a transistor
+[00:29:05 -> 00:29:08] is going to be able to supply to, you know,
+[00:29:08 -> 00:29:11] charge anything else, and the more drive it has,
+[00:29:11 -> 00:29:17] the faster the transistor is going to be.
+[00:29:17 -> 00:29:26] Okay, now let us take a look at some ramifications.
+[00:29:27 -> 00:29:31] Of that very simple delay model.
+[00:29:31 -> 00:29:35] So if I want to have a faster transistor,
+[00:29:35 -> 00:29:39] if I want a faster circuit, I reduce R, I reduce C.
+[00:29:40 -> 00:29:43] That's what I do.
+[00:29:43 -> 00:29:46] If I want to reduce R,
+[00:29:46 -> 00:29:51] I want to have, you know, wider transistors
+[00:29:51 -> 00:29:55] that have lower resistance and I want to have shorter wires.
+[00:29:55 -> 00:29:57] If I want to reduce capacitance,
+[00:29:57 -> 00:29:59] I want to reduce the number of connected devices.
+[00:30:00 -> 00:30:01] Okay?
+[00:30:01 -> 00:30:04] And I also want to reduce the capacitance,
+[00:30:04 -> 00:30:07] less wide transistors, okay?
+[00:30:07 -> 00:30:10] Because less, the width of this transistor,
+[00:30:10 -> 00:30:12] here there's more capacitance here.
+[00:30:12 -> 00:30:15] The smaller the collective capacitance,
+[00:30:15 -> 00:30:17] this seems to be here,
+[00:30:17 -> 00:30:19] to drive this and calibrate this way.
+[00:30:21 -> 00:30:25] And I want that short wire.
+[00:30:25 -> 00:30:26] Okay?
+[00:30:26 -> 00:30:27] So we keep this in mind.
+[00:30:27 -> 00:30:28] We'll come back, okay?
+[00:30:28 -> 00:30:32] So now let's go back to a,
+[00:30:33 -> 00:30:36] sort of a more regular picture of wires,
+[00:30:36 -> 00:30:41] unlike this one, unlike things like this, okay?
+[00:30:42 -> 00:30:45] And talk about a few things.
+[00:30:45 -> 00:30:48] So here is a source of the transistor,
+[00:30:48 -> 00:30:51] drain, the gate, okay?
+[00:30:51 -> 00:30:54] And lambda is sort of called the feature size
+[00:30:54 -> 00:30:57] of the technology, okay?
+[00:30:57 -> 00:31:01] And the transistor has a certain length, okay?
+[00:31:01 -> 00:31:05] So here is a three-dimensional view of that source,
+[00:31:05 -> 00:31:09] drain, gate, length of the gate over here, okay?
+[00:31:09 -> 00:31:14] Width of the gate over here.
+[00:31:14 -> 00:31:16] If I shrink the transistor length,
+[00:31:17 -> 00:31:22] there is a smaller channel, shorter channel,
+[00:31:22 -> 00:31:27] so the resistance of the channel goes down, okay?
+[00:31:27 -> 00:31:32] And the gate and the source drain capacitance goes down,
+[00:31:32 -> 00:31:36] goes down, okay?
+[00:31:36 -> 00:31:41] But then also the drive of the transistor goes down.
+[00:31:41 -> 00:31:44] So if I want to have a bigger drive,
+[00:31:44 -> 00:31:52] of course I have to have a bigger transistor.
+[00:31:52 -> 00:31:58] Let's talk a little bit about wires.
+[00:31:58 -> 00:32:00] So I have wires.
+[00:32:01 -> 00:32:05] They have some rectangular cross-section,
+[00:32:05 -> 00:32:09] rectangular-like cross-section, okay?
+[00:32:09 -> 00:32:10] All right?
+[00:32:10 -> 00:32:15] And so they have a height, they have a width,
+[00:32:17 -> 00:32:23] and then they have a length, all right?
+[00:32:23 -> 00:32:28] So the resistance of a wire is going
+[00:32:28 -> 00:32:33] to be dependent upon the resistivity of the material,
+[00:32:34 -> 00:32:39] the length of the wire divided
+[00:32:39 -> 00:32:45] by the cross-section area of the wire, all right?
+[00:32:45 -> 00:32:48] So the bigger the length,
+[00:32:49 -> 00:32:53] bigger the longer the resistance, more the resistance,
+[00:32:54 -> 00:32:59] the lower the resistivity of the material,
+[00:32:59 -> 00:33:02] the lower the resistance, okay?
+[00:33:02 -> 00:33:05] Tons from higher resistivity than copper,
+[00:33:05 -> 00:33:08] copper is going to have lower, you know,
+[00:33:08 -> 00:33:09] if I can build a wire with copper,
+[00:33:09 -> 00:33:12] it's going to have lower resistivity.
+[00:33:12 -> 00:33:15] And therefore, for a certain cross-section and length,
+[00:33:16 -> 00:33:23] lower overall resistance, okay?
+[00:33:23 -> 00:33:25] The capacitance depends on the geometry
+[00:33:25 -> 00:33:29] of the permissivity of the dielectric,
+[00:33:29 -> 00:33:35] as well as the geometry of the surrounding wires, okay?
+[00:33:35 -> 00:33:41] So if I want to reduce resistance,
+[00:33:41 -> 00:33:44] lower resistivity, smaller red,
+[00:33:45 -> 00:33:50] larger height, larger width, okay?
+[00:33:50 -> 00:33:53] If I want to reduce capacitance,
+[00:33:55 -> 00:33:57] increase the separation between wires,
+[00:33:58 -> 00:34:05] and hire a material with a lower k dielectric, okay?
+[00:34:08 -> 00:34:13] This is now a representation of multiple layers of wires,
+[00:34:14 -> 00:34:19] representation of multiple layers of wires, okay?
+[00:34:19 -> 00:34:23] The transistors are over here.
+[00:34:23 -> 00:34:26] And what you're going to see is, hey, you know,
+[00:34:26 -> 00:34:28] these are the tungsten vias,
+[00:34:28 -> 00:34:33] these are wires in this level,
+[00:34:33 -> 00:34:35] wires at this level, and so on like that.
+[00:34:35 -> 00:34:39] What you see is, you see the cross-section of the wires
+[00:34:39 -> 00:34:42] at this level be smaller than the cross-section
+[00:34:42 -> 00:34:45] of the wires in the upper level, okay?
+[00:34:45 -> 00:34:51] Which means these are going to have more resistance,
+[00:34:51 -> 00:34:53] which means we are only going to run them
+[00:34:53 -> 00:35:00] for smaller lengths to maintain the resistance, okay?
+[00:35:00 -> 00:35:05] So for wires that need to go longer distances,
+[00:35:05 -> 00:35:06] while still being fast enough,
+[00:35:08 -> 00:35:10] the way they're going to lower their resistance,
+[00:35:10 -> 00:35:11] their length of reach,
+[00:35:11 -> 00:35:13] the way they're going to lower their resistance
+[00:35:13 -> 00:35:20] is increase the cross-section area at that level.
+[00:35:20 -> 00:35:23] Okay?
+[00:35:23 -> 00:35:28] When you have a die size of a certain area, okay?
+[00:35:28 -> 00:35:30] If I have a die size of a certain area,
+[00:35:30 -> 00:35:34] this is the area of the die over here.
+[00:35:34 -> 00:35:39] If I have wider wires, I can have fewer of them.
+[00:35:40 -> 00:35:42] I can have fewer of them.
+[00:35:42 -> 00:35:44] If I want to have more wires in a layer,
+[00:35:44 -> 00:35:46] in a given area of the die,
+[00:35:48 -> 00:35:53] they have to be less wide, okay?
+[00:35:53 -> 00:35:57] So in the layer where I have lots of wires
+[00:35:57 -> 00:36:00] to connect nearby transistors,
+[00:36:01 -> 00:36:06] I'm going to have less wide wires and shorter ones
+[00:36:08 -> 00:36:09] to maintain the resistance committee,
+[00:36:09 -> 00:36:11] okay, the overall resistance.
+[00:36:11 -> 00:36:16] In the upper layers, I can have more wires, wider,
+[00:36:16 -> 00:36:18] I can, sorry, I can have wider wires
+[00:36:18 -> 00:36:20] and thus fewer wires,
+[00:36:20 -> 00:36:22] and this is where I will need fewer wires overall.
+[00:36:23 -> 00:36:30] Okay, to make up for the increase in length, all right?
+[00:36:30 -> 00:36:35] So parts are good?
+[00:36:35 -> 00:36:39] So the RC of the wires,
+[00:36:39 -> 00:36:41] the resistance is proportional to length,
+[00:36:41 -> 00:36:43] capacitance is proportional to length,
+[00:36:43 -> 00:36:45] so basically the delay of the wire
+[00:36:45 -> 00:36:48] is going to be quadratic in length.
+[00:36:48 -> 00:36:50] And so what you typically do
+[00:36:50 -> 00:36:53] is you actually have to have repeaters
+[00:36:53 -> 00:36:56] that you basically have to,
+[00:36:57 -> 00:37:00] that effectively reduce the length
+[00:37:00 -> 00:37:02] and the capacitance of this,
+[00:37:02 -> 00:37:04] and then you have another transistor then
+[00:37:04 -> 00:37:09] going ahead and driving that to make the length of the wire.
+[00:37:09 -> 00:37:16] Okay, bring it back to the linear delay.
+[00:37:16 -> 00:37:21] Now let us see how technology impacts RC delay.
+[00:37:22 -> 00:37:27] What does scaling do?
+[00:37:27 -> 00:37:30] Scaling helps reduce the wire and gate delays.
+[00:37:31 -> 00:37:32] Why?
+[00:37:32 -> 00:37:34] Because wires become shorter,
+[00:37:34 -> 00:37:38] so length decreases, so resistance decreases, okay?
+[00:37:40 -> 00:37:42] Wires surface area becomes small,
+[00:37:42 -> 00:37:47] so capacitance decreases, okay?
+[00:37:47 -> 00:37:50] Transistors become shorter, resistance decreases.
+[00:37:52 -> 00:37:54] Transistors become narrower,
+[00:37:54 -> 00:37:56] capacitance decreases,
+[00:37:56 -> 00:37:58] but then the resistance decreases,
+[00:37:58 -> 00:38:02] you know, because it's short times narrow.
+[00:38:03 -> 00:38:08] The height times width is basically the resistance,
+[00:38:08 -> 00:38:14] if you will, impacts the resistance.
+[00:38:14 -> 00:38:17] But it can also increase the wire and gate delays.
+[00:38:17 -> 00:38:18] Why?
+[00:38:19 -> 00:38:21] Because wires have become narrower.
+[00:38:22 -> 00:38:24] Okay, the cross section of the wire became narrower,
+[00:38:24 -> 00:38:26] so the resistance decreases.
+[00:38:26 -> 00:38:30] Wires become close together, okay?
+[00:38:30 -> 00:38:33] So then there are the resistance
+[00:38:33 -> 00:38:38] of the impacts of the wires coming close together.
+[00:38:38 -> 00:38:40] Please, just putting them close together,
+[00:38:40 -> 00:38:42] that messes with capacitance,
+[00:38:42 -> 00:38:46] not the resistance of, doesn't?
+[00:38:46 -> 00:38:49] That messes with the capacitance.
+[00:38:49 -> 00:38:53] It does mess a little with the resistance, too.
+[00:38:55 -> 00:38:58] I mean, this is quantum effects happening, or?
+[00:38:58 -> 00:39:03] Like, because, okay, we'll talk a little bit, okay,
+[00:39:04 -> 00:39:06] hold on to that part for the, okay?
+[00:39:06 -> 00:39:11] Because temperature starts also coming into the picture,
+[00:39:11 -> 00:39:12] okay?
+[00:39:12 -> 00:39:13] Why temperature?
+[00:39:13 -> 00:39:17] Because power density starts increasing.
+[00:39:17 -> 00:39:18] That affects the resistance.
+[00:39:18 -> 00:39:19] Sure.
+[00:39:21 -> 00:39:22] Okay?
+[00:39:22 -> 00:39:23] Thank you.
+[00:39:23 -> 00:39:25] Thank you for asking that, yeah, okay?
+[00:39:25 -> 00:39:29] I should have been a little more with that,
+[00:39:29 -> 00:39:31] why is that happening with that?
+[00:39:31 -> 00:39:32] Okay?
+[00:39:33 -> 00:39:35] This means the wires become smaller
+[00:39:35 -> 00:39:41] for the capacitance starts to increase.
+[00:39:41 -> 00:39:46] So, how do we, you know, improve RC delay?
+[00:39:47 -> 00:39:51] So, for one, you can use different materials.
+[00:39:51 -> 00:39:53] The decrease of resistivity,
+[00:39:53 -> 00:39:56] use calc for the spread movement,
+[00:39:56 -> 00:39:59] use lower dielectric insulators.
+[00:39:59 -> 00:40:00] Okay, and this is what people have done over the years
+[00:40:00 -> 00:40:04] to improve the performance, okay?
+[00:40:04 -> 00:40:05] People, okay?
+[00:40:08 -> 00:40:11] For design-wise, you use bigger cross-section,
+[00:40:11 -> 00:40:16] but the bigger cross-section is gonna increase the area.
+[00:40:16 -> 00:40:17] Okay?
+[00:40:17 -> 00:40:19] Typically, that means taller,
+[00:40:19 -> 00:40:21] otherwise you have fewer of them, okay?
+[00:40:21 -> 00:40:25] So, you know, typically you have more taller, okay?
+[00:40:25 -> 00:40:28] Except on, especially, you know,
+[00:40:28 -> 00:40:29] you have taller over here,
+[00:40:29 -> 00:40:30] and then as you go more,
+[00:40:30 -> 00:40:33] when you have fewer in the same area,
+[00:40:33 -> 00:40:41] you can have more wider too, okay?
+[00:40:41 -> 00:40:46] So, typically taller always have fewer of them.
+[00:40:47 -> 00:40:51] And, but you need more layers
+[00:40:51 -> 00:40:56] to that increase the fabrication power.
+[00:40:56 -> 00:40:58] But you also increase the surface area
+[00:40:58 -> 00:41:05] and the capacitance, and therefore the capacitance.
+[00:41:05 -> 00:41:07] You can use wider transistors.
+[00:41:08 -> 00:41:12] If you have wider transistors, they take more area,
+[00:41:12 -> 00:41:14] but the resistance goes down.
+[00:41:15 -> 00:41:17] And it increases the capacitance,
+[00:41:17 -> 00:41:20] because your capacitance goes up.
+[00:41:21 -> 00:41:24] So the capacitance that someone who's driving you
+[00:41:24 -> 00:41:31] sees goes up, okay?
+[00:41:31 -> 00:41:33] And then, of course, you know,
+[00:41:33 -> 00:41:36] you need to increase the power.
+[00:41:36 -> 00:41:38] So, again, you know, this is just to sort of
+[00:41:38 -> 00:41:40] give you a bird's eye view
+[00:41:40 -> 00:41:48] of the different competing parameters that are happening.
+[00:41:48 -> 00:41:51] Now, the next factor.
+[00:41:51 -> 00:41:55] We talked about speed, transistor speed.
+[00:41:55 -> 00:41:58] We saw a little bit in the transistor speed.
+[00:41:58 -> 00:42:01] Now let's talk a little bit about power and energy.
+[00:42:01 -> 00:42:03] And then we'll talk a little bit about
+[00:42:03 -> 00:42:09] the light energy before I go into this.
+[00:42:09 -> 00:42:13] So, power is also now,
+[00:42:13 -> 00:42:16] is an important concern too.
+[00:42:16 -> 00:42:19] Initially, for a while, it simply used to be,
+[00:42:19 -> 00:42:20] hey, you know, I have a lot of, you know,
+[00:42:20 -> 00:42:24] power that I have to dissipate, okay?
+[00:42:24 -> 00:42:27] And it's generating some amount of heat,
+[00:42:27 -> 00:42:29] I have to dissipate that heat.
+[00:42:29 -> 00:42:32] Okay, and how do I go about dissipating that heat?
+[00:42:33 -> 00:42:35] Okay, and you can have different cooling systems,
+[00:42:35 -> 00:42:38] and fan, and whatever, liquid cooling,
+[00:42:38 -> 00:42:42] et cetera, et cetera, okay?
+[00:42:42 -> 00:42:47] But these days, you know,
+[00:42:47 -> 00:42:49] given that you have so many devices
+[00:42:49 -> 00:42:51] connected together, data centers,
+[00:42:51 -> 00:42:53] I have hundreds of thousands, okay?
+[00:42:53 -> 00:42:54] Over there.
+[00:42:55 -> 00:42:58] There is a dollar concern too.
+[00:42:59 -> 00:43:01] When it was all distributed
+[00:43:01 -> 00:43:03] and you only saw one person's computer,
+[00:43:03 -> 00:43:04] okay, fine, you take a few extra watts,
+[00:43:04 -> 00:43:07] I cool it, no big deal, I have a few watts.
+[00:43:07 -> 00:43:10] So this adds up.
+[00:43:10 -> 00:43:12] More important, I think,
+[00:43:12 -> 00:43:14] there is a related metric,
+[00:43:14 -> 00:43:15] which is the power density,
+[00:43:15 -> 00:43:22] which is the number of watts per square centimeter.
+[00:43:22 -> 00:43:25] Because what that does is, okay,
+[00:43:25 -> 00:43:28] it gets you into this thermal cycle,
+[00:43:28 -> 00:43:31] where as the power dissipation goes up,
+[00:43:31 -> 00:43:34] the power density goes up,
+[00:43:34 -> 00:43:36] temperature goes up,
+[00:43:36 -> 00:43:37] the resistance goes up,
+[00:43:39 -> 00:43:44] the power dissipation goes up, okay?
+[00:43:45 -> 00:43:48] And then of course, you have to bear the costs
+[00:43:48 -> 00:43:54] of all the packaging, et cetera.
+[00:43:54 -> 00:43:57] Energy is also concerned,
+[00:43:57 -> 00:43:59] especially if you're having a device
+[00:43:59 -> 00:44:01] that lives off a battery, okay?
+[00:44:01 -> 00:44:05] There is a battery of a certain capacity,
+[00:44:05 -> 00:44:07] energy capacity that it can hold
+[00:44:07 -> 00:44:09] and that's going to then determine
+[00:44:09 -> 00:44:11] how much energy you drain from that battery
+[00:44:11 -> 00:44:16] is gonna determine how long you can keep that system going.
+[00:44:19 -> 00:44:20] And there should be,
+[00:44:20 -> 00:44:21] low power implies low energy,
+[00:44:21 -> 00:44:23] but it's not the other way around, okay?
+[00:44:23 -> 00:44:25] Low energy doesn't necessarily mean more power
+[00:44:25 -> 00:44:28] because you can expend that power on you.
+[00:44:29 -> 00:44:31] Power is energy per unit time
+[00:44:31 -> 00:44:39] and this full-time power can be quite high, okay.
+[00:44:41 -> 00:44:45] So, I mean, this is a data block
+[00:44:45 -> 00:44:48] of the power density of different processors
+[00:44:48 -> 00:44:50] and these days it's even much higher.
+[00:44:50 -> 00:44:54] I mean, I think the, from what I heard,
+[00:44:54 -> 00:44:56] is some of the newer Nvidia GPUs,
+[00:44:56 -> 00:45:02] they are running one and a half kilowatts, okay?
+[00:45:02 -> 00:45:07] And that adds up pretty quickly.
+[00:45:07 -> 00:45:12] Okay, so technology impact,
+[00:45:12 -> 00:45:13] we saw a little bit, you know,
+[00:45:13 -> 00:45:18] bird's-eye view of that on the delays.
+[00:45:20 -> 00:45:22] Let us get an idea now of
+[00:45:22 -> 00:45:26] what are the sources of energy consumption in the circuit?
+[00:45:26 -> 00:45:27] Why so?
+[00:45:27 -> 00:45:29] Because then we try and see
+[00:45:29 -> 00:45:31] how in our design we can tackle
+[00:45:31 -> 00:45:33] several of those energy sources to try
+[00:45:33 -> 00:45:38] and have our energy consumption under control, okay?
+[00:45:42 -> 00:45:45] So, if this is a circuit that we had,
+[00:45:45 -> 00:45:47] you know, we had the circuit, okay,
+[00:45:47 -> 00:45:50] there is a dynamic power component
+[00:45:50 -> 00:45:52] and a static power component.
+[00:45:52 -> 00:45:54] A dynamic power component happens
+[00:45:54 -> 00:45:58] when the circuit is switching, okay?
+[00:45:58 -> 00:46:02] The static power is consumed even if the circuit
+[00:46:02 -> 00:46:05] is just sitting idle and not doing anything at all.
+[00:46:05 -> 00:46:11] It's awake, but it's not doing anything.
+[00:46:11 -> 00:46:16] The dynamic power is going to be typically
+[00:46:16 -> 00:46:20] mostly expended on charging the capacitance.
+[00:46:20 -> 00:46:22] So, if there is an overall circuit,
+[00:46:22 -> 00:46:25] that circuit has a capacitance of C
+[00:46:25 -> 00:46:28] and is operating at a voltage of V,
+[00:46:28 -> 00:46:32] the energy spent for transition is half C squared, okay?
+[00:46:33 -> 00:46:37] Okay, so if I have, you know,
+[00:46:37 -> 00:46:40] say this is a transistor over here, okay?
+[00:46:40 -> 00:46:42] This is a gate, okay?
+[00:46:42 -> 00:46:46] Typically, a design is going to have many gates.
+[00:46:46 -> 00:46:49] So, the overall dynamic power is going to be
+[00:46:49 -> 00:46:52] the power of each of those gates switching,
+[00:46:52 -> 00:46:55] each of those transistors switching, okay?
+[00:46:55 -> 00:46:57] It's going to be the summation of that, okay?
+[00:46:57 -> 00:47:00] So, now you can say, hey, if I ask you,
+[00:47:00 -> 00:47:04] how am I going to reduce dynamic power, static power?
+[00:47:04 -> 00:47:10] Well, yeah, reduce V and reduce C, and then reduce.
+[00:47:11 -> 00:47:14] We'll keep that in mind, okay?
+[00:47:16 -> 00:47:20] There is a short circuit power also
+[00:47:20 -> 00:47:23] when, you know, both P and N transistors turn out,
+[00:47:23 -> 00:47:25] which ends up being a small percentage
+[00:47:25 -> 00:47:29] of the active power.
+[00:47:29 -> 00:47:31] The static power is what is also called
+[00:47:31 -> 00:47:33] sub-threshold leakage power.
+[00:47:33 -> 00:47:36] I mean, the important component is the sub-threshold leakage
+[00:47:36 -> 00:47:40] because transistors don't turn off completely
+[00:47:40 -> 00:47:44] unless you actually turn off the power to them, okay?
+[00:47:44 -> 00:47:49] So, we are sitting there, and so what you,
+[00:47:49 -> 00:47:54] and still, still taking some power,
+[00:47:55 -> 00:47:56] you know, burning some power,
+[00:47:56 -> 00:48:00] and the amount of power is that the static leakage
+[00:48:01 -> 00:48:03] is going to be dependent on,
+[00:48:03 -> 00:48:05] we'll see a little bit what it depends on,
+[00:48:05 -> 00:48:06] and, you know, what are the issues
+[00:48:06 -> 00:48:13] in dealing with some of that.
+[00:48:13 -> 00:48:16] Okay, I'll go to this slide,
+[00:48:16 -> 00:48:17] and then I'll come, you know,
+[00:48:17 -> 00:48:20] we'll stop over there if we have one minute left.
+[00:48:20 -> 00:48:24] Now, scaling is generally good for local power.
+[00:48:24 -> 00:48:26] Why?
+[00:48:26 -> 00:48:29] Shorter wires means, and smaller transistors,
+[00:48:29 -> 00:48:32] length goes down, capacitance going down.
+[00:48:32 -> 00:48:35] Shorter transistor length means resistance goes down,
+[00:48:35 -> 00:48:38] capacitance goes down, okay?
+[00:48:38 -> 00:48:44] So, per transistor, the power is going down, okay?
+[00:48:44 -> 00:48:48] But, I'm having many more transistors, okay?
+[00:48:48 -> 00:48:54] So, I end up having, spending the same power budget.
+[00:48:54 -> 00:48:59] However, the effect on power density
+[00:48:59 -> 00:49:03] is largely negative because the transistor
+[00:49:03 -> 00:49:06] and wire power increases linearly,
+[00:49:06 -> 00:49:10] however, the density increases quadratically,
+[00:49:10 -> 00:49:12] as we saw, okay?
+[00:49:12 -> 00:49:15] With strengths, high strengths, okay?
+[00:49:19 -> 00:49:24] And thus, the power density increases linearly, okay?
+[00:49:24 -> 00:49:26] We'll come, we'll talk about this slide again next time,
+[00:49:26 -> 00:49:28] when we're finished as well.
+[00:49:28 -> 00:49:31] And, we control that somewhat
+[00:49:31 -> 00:49:36] by reducing the voltage, reducing the,
+[00:49:36 -> 00:49:41] not somewhat, we control it a lot.
+[00:49:41 -> 00:49:42] So, okay.
+[00:49:42 -> 00:49:43] Any questions so far?
+[00:49:43 -> 00:49:45] We'll come back about this slide again next lecture,
+[00:49:45 -> 00:49:49] so hold off on the questions on this one.
+[00:49:49 -> 00:49:52] Other questions?
+[00:49:52 -> 00:49:57] Okay, we'll see you Wednesday then.
+[00:49:57 -> 00:50:01] BDD, does it come into plane C, V squared, right?
+[00:50:01 -> 00:50:03] Like, in the half C, V squared,
+[00:50:03 -> 00:50:05] this BDD is what is,
+[00:50:05 -> 00:50:09] how long, like, what about the source and gate?
+[00:50:10 -> 00:50:14] But, you considered only BDD for the main power source.
+[00:50:14 -> 00:50:17] BDD is the main power source, right?
+[00:50:17 -> 00:50:17] Now, okay.
+[00:50:21 -> 00:50:23] So, what is VSS?
+[00:50:23 -> 00:50:25] Nothing?
+[00:50:25 -> 00:50:28] That is drain source.
+[00:50:28 -> 00:50:29] Oh, that is VSS?
+[00:50:29 -> 00:50:31] I said something like VSS.
+[00:50:31 -> 00:50:32] VSS is something like...
+[00:50:32 -> 00:50:36] Broke our 10th chapter of interconnecting in single class.
+[00:50:36 -> 00:50:37] What did you say?
+[00:50:37 -> 00:50:40] Broke our 10th chapter of interconnecting in single class.
+[00:50:40 -> 00:50:42] Yeah, that is why I probably found
+[00:50:42 -> 00:50:43] all of this very boring.
+[00:50:43 -> 00:50:44] Broke it, bro.
+[00:50:44 -> 00:50:46] I just felt sleepy.
+[00:50:46 -> 00:50:48] Bro, even I felt sleepy.
+[00:50:48 -> 00:50:50] Thank God.
+[00:50:50 -> 00:50:52] So, he must have seen me sleep through today.
+[00:50:56 -> 00:50:57] Five, five, five.
+[00:50:59 -> 00:51:00] He's telling that only.
+[00:51:00 -> 00:51:01] Five, five, five.
+[00:51:01 -> 00:51:03] Seven, five is the first one.
+[00:51:03 -> 00:51:03] Everything.
+[00:51:03 -> 00:51:05] Seven, five, five.
+[00:51:05 -> 00:51:07] Everything happened until now it's seven, five, five.
+[00:51:10 -> 00:51:12] Tomorrow, we'll get more trouble.
+[00:51:12 -> 00:51:15] Oh, it's just two or three slides more.
+[00:51:15 -> 00:51:16] That's it.
+[00:51:16 -> 00:51:17] Like, by the way,
+[00:51:17 -> 00:51:18] Ometogara's teaching is this way only.
+[00:51:18 -> 00:51:19] Huh?
+[00:51:19 -> 00:51:20] Ometogara's teaching is this way only.
+[00:51:20 -> 00:51:22] Question 265.
+[00:51:22 -> 00:51:22] Ah, no, bro.
+[00:51:22 -> 00:51:24] He's trying to scare us.
+[00:51:24 -> 00:51:25] Oh, he's trying to make people leave.
+[00:51:25 -> 00:51:27] Oh, he heard we ask questions.
+[00:51:27 -> 00:51:28] Yeah, wait.
+[00:51:28 -> 00:51:30] He came to class.
+[00:51:30 -> 00:51:31] He asked questions.
+[00:51:31 -> 00:51:32] I mean, he asked questions,
+[00:51:32 -> 00:51:35] but not this frequent and not this, like, you know?
+[00:51:35 -> 00:51:35] Everyday.
+[00:51:35 -> 00:51:37] Everyday, line to line.
+[00:51:37 -> 00:51:39] He'll ask questions.
+[00:51:39 -> 00:51:40] Like, randomly.

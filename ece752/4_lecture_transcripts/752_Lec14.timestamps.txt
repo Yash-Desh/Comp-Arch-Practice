@@ -1,0 +1,1762 @@
+Title: 752_Lec14
+Source file: 752_Lec14.mp3
+Detected language: en
+------------------------------------------------------------
+
+[00:00:01 -> 00:00:05] You don't talk to me, you don't have anyone on the phone.
+[00:00:05 -> 00:00:09] I, you know, it would be best if you would get, you know, uh, scheduled,
+[00:00:09 -> 00:00:13] sent me mail saying you're coming to the office hours is fine,
+[00:00:13 -> 00:00:18] but, you know, um, um, um, sometimes people ask, you know,
+[00:00:18 -> 00:00:21] I can go and I'll say that.
+[00:00:21 -> 00:00:25] And if we scheduled like 15 minutes, half hour?
+[00:00:25 -> 00:00:28] Oh, uh, 15 minutes should be more than an hour.
+[00:00:28 -> 00:00:29] Okay.
+[00:00:29 -> 00:00:34] What I think it's just going to be is because, you know,
+[00:00:34 -> 00:00:39] you know, people talk about, hey, you know,
+[00:00:39 -> 00:00:45] they're going to like, you know, do some project with some software
+[00:00:45 -> 00:00:48] they're going to download somewhere and, you know,
+[00:00:48 -> 00:00:52] the first question I'll ask is are you aware how long it might take you
+[00:00:52 -> 00:00:57] to get some third party software actually up and running?
+[00:00:57 -> 00:00:58] Okay.
+[00:00:58 -> 00:01:01] And, you know, that kind of stuff, okay.
+[00:01:01 -> 00:01:04] I need to, you know, make sure people have an understanding,
+[00:01:04 -> 00:01:11] make them aware of the things that they are likely to be dealing with.
+[00:01:11 -> 00:01:14] And a lot of that is going to be, you know,
+[00:01:14 -> 00:01:19] can you get this project done in the time frame of, you know,
+[00:01:19 -> 00:01:23] five or six weeks that you have?
+[00:01:23 -> 00:01:25] That is the biggest issue.
+[00:01:25 -> 00:01:30] You know, there are people who have to make a lot of money.
+[00:01:30 -> 00:01:33] You know, I think, you know, it's like that's true.
+[00:01:33 -> 00:01:38] As I say, you think you can do things a lot, and that's true.
+[00:01:38 -> 00:01:43] But some of these things take more time.
+[00:01:43 -> 00:01:45] Okay.
+[00:01:45 -> 00:01:48] My boss used to give me a factor of four.
+[00:01:48 -> 00:01:50] If I said something would take a week,
+[00:01:50 -> 00:01:53] she knew it would be about four weeks and it would really do it.
+[00:01:53 -> 00:01:56] And you weren't even a grad student.
+[00:01:56 -> 00:02:02] One of the early 20s who thinks that, yeah, yeah.
+[00:02:02 -> 00:02:03] Estimating is hard.
+[00:02:03 -> 00:02:05] Okay.
+[00:02:05 -> 00:02:07] All right.
+[00:02:07 -> 00:02:20] So, all right, let's get back to where we got off last time.
+[00:02:20 -> 00:02:25] And, you know, I don't want to go through,
+[00:02:25 -> 00:02:27] well, let's just quickly run through, okay.
+[00:02:27 -> 00:02:29] Basically, you know, what we did,
+[00:02:29 -> 00:02:31] I'm not going to go through the reservation stuff,
+[00:02:31 -> 00:02:35] and you allocated a new physical register from the free list
+[00:02:35 -> 00:02:42] and read the old physical register that was mapped in the map table
+[00:02:42 -> 00:02:44] and brought it to the RAB.
+[00:02:44 -> 00:02:48] Next cycle, you know, the same for the next destination register
+[00:02:48 -> 00:02:51] and so on.
+[00:02:51 -> 00:02:56] So basically, you were taking stuff off the free list physical registers
+[00:02:56 -> 00:03:01] and updating the map table with the new physical register
+[00:03:01 -> 00:03:05] and then also updating the map table with the instruction completed.
+[00:03:05 -> 00:03:06] Okay.
+[00:03:06 -> 00:03:10] And then when the instruction retired,
+[00:03:10 -> 00:03:14] you freed that old physical register because you saw
+[00:03:14 -> 00:03:17] that's what we would need to maintain precise interrupts.
+[00:03:17 -> 00:03:19] If you didn't need to maintain precise interrupts,
+[00:03:19 -> 00:03:22] you could have freed that physical register well before.
+[00:03:22 -> 00:03:24] Okay.
+[00:03:24 -> 00:03:31] And, you know, basically updating the map table
+[00:03:31 -> 00:03:36] and pulling up an entry from the previous physical register.
+[00:03:36 -> 00:03:38] Okay.
+[00:03:38 -> 00:03:43] Now, the issue with the R10K compared to, so, you know,
+[00:03:43 -> 00:03:44] what gives, okay, what gives?
+[00:03:44 -> 00:03:45] Something else gives.
+[00:03:45 -> 00:03:49] And what gives is that the physical registers are written
+[00:03:49 -> 00:03:53] out of order, okay.
+[00:03:53 -> 00:03:57] And, you know, since there is no architectural register file,
+[00:03:57 -> 00:04:00] that's not necessarily a problem.
+[00:04:00 -> 00:04:06] However, how do you actually recover a precise state
+[00:04:06 -> 00:04:07] of the machine?
+[00:04:07 -> 00:04:08] Okay.
+[00:04:08 -> 00:04:11] So say I wanted to have a precise state at this cycle.
+[00:04:11 -> 00:04:13] What I really want is to give the appearance
+[00:04:13 -> 00:04:16] that all the instructions before it had completed
+[00:04:16 -> 00:04:19] and written their results into the registers
+[00:04:19 -> 00:04:21] and memory or whatever it is.
+[00:04:21 -> 00:04:27] And none of the instructions after that have even started.
+[00:04:27 -> 00:04:28] Okay.
+[00:04:28 -> 00:04:33] And basically what we need to do is the state
+[00:04:33 -> 00:04:38] that we are constantly updating speculatively,
+[00:04:38 -> 00:04:41] which is the free list and the map table.
+[00:04:41 -> 00:04:42] Okay.
+[00:04:42 -> 00:04:47] We are going to have to restore the map table
+[00:04:47 -> 00:04:51] and the free list to what they were, you know,
+[00:04:51 -> 00:04:53] what is needed for a precise exception.
+[00:04:53 -> 00:04:57] And we are going to be able to do this
+[00:04:57 -> 00:05:01] by manipulating the free list and the map table
+[00:05:01 -> 00:05:03] and not bothering the register file.
+[00:05:03 -> 00:05:04] So let us see.
+[00:05:04 -> 00:05:05] There are two options.
+[00:05:05 -> 00:05:09] The first option is a serial rollback using these,
+[00:05:09 -> 00:05:12] the key and the physical register,
+[00:05:12 -> 00:05:15] those fields in the reorder buffer.
+[00:05:15 -> 00:05:16] Okay.
+[00:05:16 -> 00:05:17] And we will go through that
+[00:05:17 -> 00:05:19] when we come back to the slide.
+[00:05:19 -> 00:05:20] Okay.
+[00:05:20 -> 00:05:23] So here was now the state at cycle five.
+[00:05:23 -> 00:05:26] And say you wanted to have a precise exception.
+[00:05:26 -> 00:05:29] Say this multiply caused some exception.
+[00:05:29 -> 00:05:30] I don't care what it is.
+[00:05:30 -> 00:05:31] You just say it caused it.
+[00:05:31 -> 00:05:36] And now you wanted to recover the precise state.
+[00:05:36 -> 00:05:37] Okay.
+[00:05:37 -> 00:05:38] So what you are going to have to do now
+[00:05:38 -> 00:05:40] is you are going to have to give the appearance
+[00:05:40 -> 00:05:43] that none of these actually even started.
+[00:05:43 -> 00:05:46] So you are going to have to undo them one at a time.
+[00:05:46 -> 00:05:48] And the way you are going to undo them
+[00:05:48 -> 00:05:52] is from the tail of the reorder buffer backwards
+[00:05:52 -> 00:05:56] until you get to the head of the reorder buffer.
+[00:05:56 -> 00:05:57] Okay.
+[00:05:57 -> 00:06:03] So what we will do is we will first undo this load,
+[00:06:03 -> 00:06:06] which is in reorder buffer entry number five.
+[00:06:06 -> 00:06:08] And the way we will undo this load
+[00:06:08 -> 00:06:11] is this physical register eight that we got
+[00:06:11 -> 00:06:16] for the destination, return it to the free list.
+[00:06:16 -> 00:06:19] This T old map table entry.
+[00:06:19 -> 00:06:25] We will go now and update the map table for F1 with PR5,
+[00:06:25 -> 00:06:30] which is what it was before I updated to PR8.
+[00:06:30 -> 00:06:31] Okay.
+[00:06:31 -> 00:06:35] And free this reorder buffer entry.
+[00:06:35 -> 00:06:38] While this is happening,
+[00:06:38 -> 00:06:42] the other instructions that are between the head and the tail
+[00:06:42 -> 00:06:46] still could be processing.
+[00:06:46 -> 00:06:47] You aren't basically,
+[00:06:47 -> 00:06:50] and the machines have stuff happening all over the place.
+[00:06:50 -> 00:06:52] You aren't just zeroing everything out
+[00:06:52 -> 00:06:54] like we were in the P6.
+[00:06:54 -> 00:06:57] Stuff is just going on too.
+[00:06:57 -> 00:07:00] Then we undo the add.
+[00:07:00 -> 00:07:04] And so we undo the add by returning P7 to the free list
+[00:07:04 -> 00:07:07] and going back and updating the map table
+[00:07:07 -> 00:07:10] for R1 to be PR4.
+[00:07:10 -> 00:07:11] Okay.
+[00:07:11 -> 00:07:13] And of course, free the reservation station entry
+[00:07:13 -> 00:07:16] and then free the reorder buffer entry number four.
+[00:07:16 -> 00:07:20] Next cycle, we undo the store.
+[00:07:20 -> 00:07:22] We free the reservation station.
+[00:07:22 -> 00:07:26] We free reorder buffer entry number four.
+[00:07:26 -> 00:07:29] Number three, there are no physical,
+[00:07:29 -> 00:07:31] I didn't take anything off the free list
+[00:07:31 -> 00:07:33] and I didn't bother the map table.
+[00:07:33 -> 00:07:38] So those structures need not be,
+[00:07:38 -> 00:07:42] nothing is going to happen to those structures.
+[00:07:42 -> 00:07:44] Okay.
+[00:07:44 -> 00:07:46] However, you know,
+[00:07:46 -> 00:07:50] what about the store writing into the data cache?
+[00:07:50 -> 00:07:56] If the store wrote into the data cache,
+[00:07:56 -> 00:08:00] then I have to undo that store somehow.
+[00:08:00 -> 00:08:01] Okay.
+[00:08:01 -> 00:08:02] And in a multiprocessor,
+[00:08:02 -> 00:08:05] that store could have gone from the data cache
+[00:08:05 -> 00:08:11] to some other cache maintaining coherence, et cetera.
+[00:08:11 -> 00:08:12] Okay.
+[00:08:12 -> 00:08:14] And you cannot, in a sense,
+[00:08:14 -> 00:08:16] once you let something out to memory,
+[00:08:16 -> 00:08:19] recall it back.
+[00:08:19 -> 00:08:20] Okay.
+[00:08:20 -> 00:08:23] So you don't do the store
+[00:08:23 -> 00:08:28] until you know that the store is actually going to retire.
+[00:08:28 -> 00:08:30] And, you know, there was a question last time
+[00:08:30 -> 00:08:32] when we had the, you know,
+[00:08:32 -> 00:08:34] reorder buffer entry number with the store
+[00:08:34 -> 00:08:36] and the reservation station.
+[00:08:36 -> 00:08:39] We'll talk a little bit more now, later today,
+[00:08:39 -> 00:08:42] about how loads in stores actually happen.
+[00:08:42 -> 00:08:45] Okay.
+[00:08:45 -> 00:08:48] So we don't ever write into the data cache,
+[00:08:48 -> 00:08:55] so you don't have to undo that.
+[00:08:55 -> 00:08:57] Basically, what you can see now
+[00:08:57 -> 00:09:01] is every time I want to have a store,
+[00:09:01 -> 00:09:03] the map table and free list,
+[00:09:03 -> 00:09:07] I can either roll it back serially.
+[00:09:07 -> 00:09:09] Okay.
+[00:09:09 -> 00:09:13] Alternatively, what I can do is that
+[00:09:13 -> 00:09:17] for any instruction that I want to
+[00:09:17 -> 00:09:20] have precise state for.
+[00:09:20 -> 00:09:22] Okay.
+[00:09:22 -> 00:09:25] Whenever that instruction is dispatched,
+[00:09:25 -> 00:09:27] I make a copy, a checkpoint,
+[00:09:27 -> 00:09:29] a copy of the entire free list
+[00:09:29 -> 00:09:31] and a copy of the entire map table.
+[00:09:31 -> 00:09:40] Are you with me on this?
+[00:09:40 -> 00:09:42] So you can restore that.
+[00:09:42 -> 00:09:44] So now you can actually do the design
+[00:09:44 -> 00:09:46] where you have all the copies of the free list
+[00:09:46 -> 00:09:49] and you have multiple copies of them.
+[00:09:49 -> 00:09:50] Okay.
+[00:09:50 -> 00:09:53] And you can copy, restore the copies back
+[00:09:53 -> 00:09:55] fairly easily or just like that.
+[00:09:55 -> 00:09:58] You can even have them in sort of a queue-like manner,
+[00:09:58 -> 00:10:00] like a reorder buffer,
+[00:10:00 -> 00:10:02] and you restore them from the checkpoint.
+[00:10:02 -> 00:10:06] This is fast, but this ends up being quite expensive.
+[00:10:06 -> 00:10:13] So you cannot do this for every instruction.
+[00:10:13 -> 00:10:18] So you try and do this for situations
+[00:10:18 -> 00:10:20] where are common.
+[00:10:20 -> 00:10:23] So when you have a low-concept branch
+[00:10:23 -> 00:10:25] which you may have to come back to
+[00:10:25 -> 00:10:28] because the branch was misprinted correctly,
+[00:10:28 -> 00:10:32] you use checkpoints
+[00:10:32 -> 00:10:35] and otherwise for arbitrary instructions,
+[00:10:35 -> 00:10:38] then you can have a severe rollback.
+[00:10:38 -> 00:10:41] Okay.
+[00:10:41 -> 00:10:43] The point being is that the recovering the precise state
+[00:10:43 -> 00:10:45] is much, much more involved
+[00:10:45 -> 00:10:47] in these kind of,
+[00:10:47 -> 00:10:51] on NK kind of architectures.
+[00:10:51 -> 00:10:55] Any questions about how you restore the precise state?
+[00:10:55 -> 00:10:56] Over here?
+[00:10:56 -> 00:11:08] This multi-cycle rollback finishes, right?
+[00:11:08 -> 00:11:09] Okay.
+[00:11:09 -> 00:11:11] What do you mean by recovery?
+[00:11:11 -> 00:11:15] Let's say we got an exception or an interrupt, right?
+[00:11:15 -> 00:11:18] And we have designed such that
+[00:11:18 -> 00:11:20] when an external interrupt comes,
+[00:11:20 -> 00:11:23] we need to jump to this handler.
+[00:11:23 -> 00:11:24] Okay.
+[00:11:24 -> 00:11:25] All right.
+[00:11:25 -> 00:11:28] So the reason why I ask that is when you use
+[00:11:28 -> 00:11:30] a term recovery code,
+[00:11:30 -> 00:11:33] that typically goes to the recovery code
+[00:11:33 -> 00:11:35] for the static state.
+[00:11:35 -> 00:11:37] This is not recovery code, which I executed.
+[00:11:37 -> 00:11:41] This is an exception handler that is being executed.
+[00:11:41 -> 00:11:52] To execute,
+[00:11:52 -> 00:11:54] say this is the instruction that caused the exception,
+[00:11:54 -> 00:11:57] you have to restore the precise state here
+[00:11:57 -> 00:12:01] before you start the exception handler for that.
+[00:12:01 -> 00:12:05] But actually, maybe you're going to, you know,
+[00:12:05 -> 00:12:08] if you have a TLB miss, for example,
+[00:12:08 -> 00:12:11] and you have it in the hardware exception,
+[00:12:11 -> 00:12:16] hardware TLB page water, then...
+[00:12:16 -> 00:12:19] It will just stall that while it will allow it.
+[00:12:19 -> 00:12:22] Yeah, so that won't be considered
+[00:12:22 -> 00:12:24] as something that you need to recover from.
+[00:12:24 -> 00:12:29] People write super fast software, right?
+[00:12:29 -> 00:12:32] Like all these financial people
+[00:12:32 -> 00:12:36] who write very fast software in C++ or something like that
+[00:12:36 -> 00:12:38] where microseconds matter.
+[00:12:38 -> 00:12:41] There's this kind of, you know,
+[00:12:41 -> 00:12:45] this multi-cycle on-end rule.
+[00:12:45 -> 00:12:47] Oh.
+[00:12:47 -> 00:12:49] So people who write that kind of stuff,
+[00:12:49 -> 00:12:51] they actually buy dedicated machines.
+[00:12:51 -> 00:12:55] They build machines on FPGAs because every, you know,
+[00:12:55 -> 00:13:01] tens of milliseconds matter in making money.
+[00:13:01 -> 00:13:02] Okay.
+[00:13:02 -> 00:13:04] No, you won't be using this kind of stuff
+[00:13:04 -> 00:13:09] to do training, or you do it in a way
+[00:13:09 -> 00:13:11] that's not doing any exceptions, yeah.
+[00:13:11 -> 00:13:13] What about, like, when a context switch happens?
+[00:13:13 -> 00:13:16] What do we, like, these physical registers,
+[00:13:16 -> 00:13:19] like, do we get them all so that we have
+[00:13:19 -> 00:13:21] this final state in them
+[00:13:21 -> 00:13:23] and then start pushing them to the stack
+[00:13:23 -> 00:13:26] and, like, they don't have to keep their
+[00:13:26 -> 00:13:29] actual physical registers when we come back
+[00:13:29 -> 00:13:32] from the context switch to the new process?
+[00:13:32 -> 00:13:36] Like, it seems a little complicated.
+[00:13:36 -> 00:13:39] What was your question?
+[00:13:39 -> 00:13:43] My question was, is this necessarily a serial event,
+[00:13:43 -> 00:13:45] or would you do it in parallel,
+[00:13:45 -> 00:13:47] but would it be so painfully expensive
+[00:13:47 -> 00:13:51] if you do it in serial, a serial rollback?
+[00:13:51 -> 00:13:53] Could you do this in parallel?
+[00:13:53 -> 00:13:55] I suppose.
+[00:13:55 -> 00:13:59] I mean, in a sense, you are doing this in parallel,
+[00:13:59 -> 00:14:01] because if you're doing four wide,
+[00:14:01 -> 00:14:03] you're undoing four at a time.
+[00:14:03 -> 00:14:04] Yeah.
+[00:14:04 -> 00:14:05] Okay.
+[00:14:05 -> 00:14:08] But these have dependencies on each other.
+[00:14:09 -> 00:14:11] All right, these have dependencies on each other.
+[00:14:11 -> 00:14:17] It's a little more involved.
+[00:14:17 -> 00:14:19] Okay, getting back to your question.
+[00:14:19 -> 00:14:23] What happens if you have a context switch?
+[00:14:23 -> 00:14:25] Don't have it.
+[00:14:25 -> 00:14:26] Don't do it?
+[00:14:26 -> 00:14:27] No.
+[00:14:27 -> 00:14:28] No.
+[00:14:28 -> 00:14:29] No.
+[00:14:29 -> 00:14:31] At the context switch point,
+[00:14:31 -> 00:14:35] you basically now have to give a clear state of the machine.
+[00:14:35 -> 00:14:36] Okay?
+[00:14:36 -> 00:14:38] And that is a...
+[00:14:38 -> 00:14:41] At that point, you know,
+[00:14:41 -> 00:14:45] you will be saving your registers
+[00:14:45 -> 00:14:48] to the...wherever you're saving them to,
+[00:14:48 -> 00:14:51] and then give a clean state of the machine.
+[00:14:51 -> 00:14:55] So the...
+[00:14:55 -> 00:14:57] That doesn't have anything to do with rollback
+[00:14:57 -> 00:14:58] or anything like that.
+[00:14:58 -> 00:15:00] I get that, right?
+[00:15:00 -> 00:15:02] But you still got to reassign physical registers
+[00:15:02 -> 00:15:04] when you come back, and...
+[00:15:04 -> 00:15:06] So when you basically...
+[00:15:06 -> 00:15:09] When you are going to context switch,
+[00:15:09 -> 00:15:11] you basically have to coerce your machine
+[00:15:11 -> 00:15:13] so you are out.
+[00:15:13 -> 00:15:15] Your thread is out of there, if you will.
+[00:15:15 -> 00:15:18] That means that any state map table
+[00:15:18 -> 00:15:21] and all the free lists and anything that it was using
+[00:15:21 -> 00:15:23] is effectively cleared.
+[00:15:23 -> 00:15:24] Okay?
+[00:15:24 -> 00:15:27] Which means that all the, you know,
+[00:15:27 -> 00:15:30] the registers will have to be stored out to memory
+[00:15:30 -> 00:15:32] wherever they have been stored out.
+[00:15:32 -> 00:15:34] Definitely free list and anything.
+[00:15:34 -> 00:15:35] When you come back again,
+[00:15:35 -> 00:15:37] you will come back with, you know,
+[00:15:37 -> 00:15:40] map table entry all clear,
+[00:15:40 -> 00:15:43] free list full of physical registers,
+[00:15:43 -> 00:15:45] and then you start calculating them
+[00:15:45 -> 00:15:49] as you are doing right with those registers.
+[00:15:49 -> 00:15:50] So you're just like...
+[00:15:50 -> 00:15:51] As you're doing,
+[00:15:51 -> 00:15:54] bringing in loads of values into those registers.
+[00:15:54 -> 00:15:56] Okay?
+[00:15:56 -> 00:16:00] No, you can't not do context switching.
+[00:16:00 -> 00:16:03] Yeah.
+[00:16:03 -> 00:16:05] No, you used to be able to not do context switch.
+[00:16:05 -> 00:16:06] You do not do context switches.
+[00:16:06 -> 00:16:08] Life was good.
+[00:16:08 -> 00:16:09] Okay.
+[00:16:09 -> 00:16:10] All right.
+[00:16:10 -> 00:16:11] Other questions?
+[00:16:11 -> 00:16:17] Okay.
+[00:16:17 -> 00:16:22] So, you know, just to sort of do a little side-by-side
+[00:16:22 -> 00:16:25] with the P6 and the R10k,
+[00:16:25 -> 00:16:30] you know, the P6 style has more value passing around,
+[00:16:30 -> 00:16:32] more bypassing,
+[00:16:32 -> 00:16:35] but the precise state is very simple, very clear.
+[00:16:35 -> 00:16:37] In the R10k, there's less, you know,
+[00:16:37 -> 00:16:38] value riding around,
+[00:16:38 -> 00:16:43] but it's a more complex checkpoint recovery situation.
+[00:16:43 -> 00:16:45] And this was a lot of faster clock.
+[00:16:45 -> 00:16:47] So when people wanted to get a faster clock,
+[00:16:47 -> 00:16:49] they were chasing down this path.
+[00:16:49 -> 00:16:52] You know, and in reality now,
+[00:16:52 -> 00:16:58] you're, in a sense, using a little combination support.
+[00:16:58 -> 00:17:06] If you just take the top at this point
+[00:17:06 -> 00:17:09] before I go to memory, load this course,
+[00:17:09 -> 00:17:15] because that is quite involved and quite interesting.
+[00:17:15 -> 00:17:38] So we saw this last time,
+[00:17:38 -> 00:17:40] instruction caches and so on like that,
+[00:17:40 -> 00:17:42] multiple branch predictors,
+[00:17:42 -> 00:17:44] a decode per cycle,
+[00:17:44 -> 00:17:49] and then the decode rename and retire.
+[00:17:49 -> 00:17:52] So they have, you know,
+[00:17:52 -> 00:17:54] they have separate pools for the integer,
+[00:17:54 -> 00:17:55] and then they have this vector.
+[00:17:55 -> 00:17:57] So they have the integer execution unit
+[00:17:57 -> 00:17:59] where they execute a lot of the integer operations,
+[00:17:59 -> 00:18:01] load store, and they have, sorry,
+[00:18:01 -> 00:18:05] instruction execution, which has the, you know,
+[00:18:05 -> 00:18:07] a lot of your normal operations, your load store,
+[00:18:07 -> 00:18:09] and then these vector units.
+[00:18:09 -> 00:18:11] We'll see a little bit of the vector instruction types
+[00:18:11 -> 00:18:14] when we get to unit seven.
+[00:18:14 -> 00:18:16] Okay?
+[00:18:16 -> 00:18:19] Huge reorder buffer over there.
+[00:18:19 -> 00:18:21] And then, you know,
+[00:18:21 -> 00:18:23] so then the integer execution pipeline,
+[00:18:23 -> 00:18:25] six ALU operations per cycle,
+[00:18:25 -> 00:18:27] two branches to multiply,
+[00:18:27 -> 00:18:30] vector we'll see a little bit more
+[00:18:30 -> 00:18:34] in order retirement with eight operations per cycle.
+[00:18:34 -> 00:18:36] They actually would break one instruction
+[00:18:36 -> 00:18:39] into more than one micro operation, if you will.
+[00:18:39 -> 00:18:41] Okay?
+[00:18:41 -> 00:18:46] And then, you know,
+[00:18:46 -> 00:18:49] a big general purpose register file here now.
+[00:18:49 -> 00:18:53] The reservation stations are divvied up.
+[00:18:53 -> 00:18:57] Okay, so one, two, three, four, six sets of 20
+[00:18:57 -> 00:19:00] entering each reservation stations.
+[00:19:00 -> 00:19:02] Okay, so there is no either or.
+[00:19:02 -> 00:19:04] You know, we talked about, you know,
+[00:19:04 -> 00:19:06] techniques here and there.
+[00:19:06 -> 00:19:08] And in general, you're, you know,
+[00:19:08 -> 00:19:10] using mixes of everything.
+[00:19:13 -> 00:19:16] And are those one-to-one with the execution units
+[00:19:16 -> 00:19:18] down below?
+[00:19:18 -> 00:19:20] I don't know the answer to that.
+[00:19:20 -> 00:19:22] They don't get that level of detail.
+[00:19:22 -> 00:19:24] Very likely they are.
+[00:19:24 -> 00:19:26] So that can kind of screw your scheduling
+[00:19:26 -> 00:19:28] if you put the instruction into the wrong execution,
+[00:19:28 -> 00:19:31] you know, one that's going to take longer.
+[00:19:32 -> 00:19:37] So, you know, there is a whole body of research
+[00:19:37 -> 00:19:42] that deals with steering an instruction to where.
+[00:19:42 -> 00:19:45] And typically what you try and do is,
+[00:19:45 -> 00:19:48] you know, you figure out the dependencies
+[00:19:48 -> 00:19:51] and you steer it to the same slice
+[00:19:51 -> 00:19:54] where the instruction producing the values.
+[00:19:54 -> 00:19:56] You also cut down on the forwarding.
+[00:19:56 -> 00:19:58] There was a question I was going to ask you
+[00:19:58 -> 00:20:00] about the R10K.
+[00:20:00 -> 00:20:03] Is that when you get these instructions
+[00:20:03 -> 00:20:05] in the reorder buffer,
+[00:20:05 -> 00:20:08] it doesn't just grab them in order
+[00:20:08 -> 00:20:11] or does it to the next free unit?
+[00:20:11 -> 00:20:14] Because you could imagine that there's
+[00:20:14 -> 00:20:16] certain dependencies among those instructions.
+[00:20:16 -> 00:20:18] Like if you grab the third one down,
+[00:20:18 -> 00:20:22] we can finish some other ones faster or sooner.
+[00:20:22 -> 00:20:25] The reorder buffer is always going to have them in order.
+[00:20:25 -> 00:20:27] It has them in order because they have to be
+[00:20:27 -> 00:20:29] they have to be retired in order.
+[00:20:29 -> 00:20:32] So you don't have to send them to the functional unit in order.
+[00:20:32 -> 00:20:35] No, but they don't go from the reorder buffer
+[00:20:35 -> 00:20:38] to the functional units.
+[00:20:38 -> 00:20:41] We'll get there.
+[00:20:41 -> 00:20:43] Once I pop the other slides, we'll get there.
+[00:20:43 -> 00:20:45] Okay.
+[00:20:45 -> 00:20:52] And, okay.
+[00:20:52 -> 00:20:54] So now today we'll actually talk a little bit
+[00:20:54 -> 00:20:57] about this load queue and store queue.
+[00:20:57 -> 00:20:58] Okay.
+[00:20:58 -> 00:21:00] And they're doing a full combination
+[00:21:00 -> 00:21:02] of load and store.
+[00:21:02 -> 00:21:04] And then next lecture on we'll see
+[00:21:04 -> 00:21:07] what the different caches are going to look like.
+[00:21:07 -> 00:21:18] So, okay.
+[00:21:18 -> 00:21:21] So the
+[00:21:21 -> 00:21:23] what's happening is they're going
+[00:21:23 -> 00:21:24] that's the RTLK.
+[00:21:24 -> 00:21:25] Okay.
+[00:21:25 -> 00:21:26] The reorder buffer's here.
+[00:21:26 -> 00:21:27] Okay.
+[00:21:27 -> 00:21:28] The registrar is here.
+[00:21:28 -> 00:21:30] The instructions are going to the functional units
+[00:21:30 -> 00:21:35] from the reservation stations.
+[00:21:35 -> 00:21:36] Okay.
+[00:21:36 -> 00:21:38] Yes, I misspoke there.
+[00:21:38 -> 00:21:40] But what I'm saying is that
+[00:21:40 -> 00:21:42] if two instructions become available
+[00:21:42 -> 00:21:44] the registries that they're depending on
+[00:21:44 -> 00:21:46] become available.
+[00:21:46 -> 00:21:50] Like, do you care which one?
+[00:21:50 -> 00:21:52] Like, one could be more efficient to dispatch
+[00:21:52 -> 00:21:55] for future or later instructions.
+[00:21:55 -> 00:21:56] Right?
+[00:21:56 -> 00:21:58] Absolutely.
+[00:21:58 -> 00:22:00] Absolutely.
+[00:22:00 -> 00:22:01] Okay.
+[00:22:01 -> 00:22:02] So now, okay.
+[00:22:02 -> 00:22:05] Now, this just goes back to the previous unit
+[00:22:05 -> 00:22:07] over there, which is
+[00:22:07 -> 00:22:11] not the slide job.
+[00:22:11 -> 00:22:13] Well, let's go back.
+[00:22:13 -> 00:22:43] You know, you're splitting
+[00:22:43 -> 00:22:46] the reservation stations into different banks.
+[00:22:46 -> 00:22:48] Okay.
+[00:22:48 -> 00:22:50] Then, you know,
+[00:22:50 -> 00:22:52] once you do that then you have to have
+[00:22:52 -> 00:22:55] the notion of some steering logic.
+[00:22:55 -> 00:22:57] Which would decide which bank of
+[00:22:57 -> 00:22:59] reservation stations it goes to.
+[00:22:59 -> 00:23:00] Okay.
+[00:23:00 -> 00:23:02] And then further
+[00:23:02 -> 00:23:04] can you issue
+[00:23:04 -> 00:23:06] from any reservation station or only
+[00:23:06 -> 00:23:08] from the head of that
+[00:23:08 -> 00:23:09] reservation station.
+[00:23:09 -> 00:23:11] Okay.
+[00:23:11 -> 00:23:13] So we're here now, then your
+[00:23:13 -> 00:23:15] scheduler has to decide
+[00:23:15 -> 00:23:17] of the instructions
+[00:23:17 -> 00:23:19] that are woken up.
+[00:23:19 -> 00:23:20] Okay.
+[00:23:20 -> 00:23:22] Which one to actually schedule.
+[00:23:22 -> 00:23:27] And yes, you know,
+[00:23:27 -> 00:23:29] you
+[00:23:29 -> 00:23:31] you implement a
+[00:23:31 -> 00:23:33] scheduler which is
+[00:23:33 -> 00:23:35] almost certainly there will be
+[00:23:35 -> 00:23:37] a piece of code for which that scheduler
+[00:23:37 -> 00:23:39] does worse than a different one.
+[00:23:39 -> 00:23:41] But generally
+[00:23:41 -> 00:23:43] for what you're trying to do and you try
+[00:23:43 -> 00:23:45] to evaluate it for
+[00:23:45 -> 00:23:47] watch out for your benchmarks and so on like that
+[00:23:47 -> 00:23:49] and see, hey, you know, how
+[00:23:49 -> 00:23:51] well a particular scheduler would do.
+[00:23:51 -> 00:23:55] Can compilers
+[00:23:55 -> 00:23:57] not provide hints to
+[00:23:57 -> 00:24:01] these hardware schedulers?
+[00:24:01 -> 00:24:03] The question is, can the compiler
+[00:24:03 -> 00:24:05] not provide hint
+[00:24:05 -> 00:24:07] to the
+[00:24:07 -> 00:24:09] scheduler? Of course it can.
+[00:24:09 -> 00:24:11] But tell me
+[00:24:11 -> 00:24:14] how it would do it.
+[00:24:14 -> 00:24:16] The scheduler
+[00:24:16 -> 00:24:18] takes problem space
+[00:24:18 -> 00:24:20] only the number of instructions
+[00:24:20 -> 00:24:22] it can see.
+[00:24:22 -> 00:24:24] But if we have lots of
+[00:24:24 -> 00:24:26] interleaving, the compiler could
+[00:24:26 -> 00:24:28] basically organize
+[00:24:28 -> 00:24:30] thread to one
+[00:24:30 -> 00:24:32] reservation station and then like
+[00:24:32 -> 00:24:34] have some sort of helper bit that says
+[00:24:34 -> 00:24:36] okay, this is all thread 0.
+[00:24:36 -> 00:24:38] So might as well just put it in
+[00:24:38 -> 00:24:40] one queue of reservations.
+[00:24:40 -> 00:24:42] Okay.
+[00:24:42 -> 00:24:44] Compiler creates
+[00:24:44 -> 00:24:46] a set of bits
+[00:24:46 -> 00:24:48] goes away.
+[00:24:48 -> 00:24:50] Hardware looks at the set of bits
+[00:24:50 -> 00:24:52] and figures out what to do.
+[00:24:52 -> 00:24:54] Compiler has to convey through the set of bits
+[00:24:54 -> 00:24:56] something.
+[00:24:56 -> 00:24:58] What do you have in mind?
+[00:24:58 -> 00:25:00] I'm thinking
+[00:25:00 -> 00:25:02] we have
+[00:25:02 -> 00:25:04] bunch of bits pertaining to bunch of
+[00:25:04 -> 00:25:06] bits.
+[00:25:06 -> 00:25:08] We have to change the instruction set.
+[00:25:08 -> 00:25:10] How else do you do it?
+[00:25:10 -> 00:25:12] How else does a compiler create a set of bits?
+[00:25:12 -> 00:25:14] Compiler creates a set of instructions.
+[00:25:20 -> 00:25:22] So you have to have
+[00:25:22 -> 00:25:24] you have to have more end bits
+[00:25:24 -> 00:25:26] than the software creates.
+[00:25:26 -> 00:25:28] Sort of like the IA-64 did.
+[00:25:32 -> 00:25:34] Okay, but you know
+[00:25:34 -> 00:25:36] yes, you can have more bits.
+[00:25:42 -> 00:25:44] The next 600 instructions
+[00:25:44 -> 00:25:46] that might be coming in
+[00:25:46 -> 00:25:48] are all for this thread.
+[00:25:48 -> 00:25:50] So do your best.
+[00:25:50 -> 00:25:52] You could do lots of stuff.
+[00:25:52 -> 00:25:54] Tell lots of stuff.
+[00:25:54 -> 00:25:56] All that takes bits.
+[00:25:56 -> 00:25:58] Bits increases code
+[00:25:58 -> 00:26:00] size. Increases
+[00:26:00 -> 00:26:02] what goes in your
+[00:26:02 -> 00:26:04] for the same size of cache you can have fewer
+[00:26:04 -> 00:26:06] instructions because some of it is
+[00:26:06 -> 00:26:08] taken up by these end bits
+[00:26:08 -> 00:26:10] which may or may not be useful.
+[00:26:10 -> 00:26:12] And then
+[00:26:12 -> 00:26:14] if you could in a sense, you know, do that
+[00:26:14 -> 00:26:16] remember that all the
+[00:26:16 -> 00:26:18] interprocedural and so on
+[00:26:18 -> 00:26:20] if you're calling, you know, code
+[00:26:20 -> 00:26:22] the way people write code these days
+[00:26:22 -> 00:26:24] is like not stuff I ever learned.
+[00:26:24 -> 00:26:26] Hey, you call this library
+[00:26:26 -> 00:26:28] here and it gets dynamically linked
+[00:26:28 -> 00:26:30] and then you go to some dispatch table
+[00:26:30 -> 00:26:32] go somewhere else and do this wherever
+[00:26:32 -> 00:26:34] you don't even know. You don't even know what
+[00:26:34 -> 00:26:36] the code you're calling ever looks like.
+[00:26:36 -> 00:26:38] Or what it does.
+[00:26:38 -> 00:26:40] Okay.
+[00:26:40 -> 00:26:42] So the compiler to do all that
+[00:26:42 -> 00:26:44] analysis has to figure out
+[00:26:44 -> 00:26:46] what code you're going to be calling
+[00:26:46 -> 00:26:48] when you're compiling.
+[00:26:48 -> 00:26:50] I don't think that's going to go
+[00:26:50 -> 00:26:52] too well with the way a lot of people
+[00:26:52 -> 00:26:58] write code. I'm kind of
+[00:26:58 -> 00:27:00] a related question. Does it
+[00:27:00 -> 00:27:02] matter again like how the compiler does
+[00:27:02 -> 00:27:04] the register assignment if we're doing
+[00:27:04 -> 00:27:06] these register renames? It doesn't seem like
+[00:27:06 -> 00:27:08] it matters too much at all.
+[00:27:08 -> 00:27:10] So the
+[00:27:10 -> 00:27:12] the question is
+[00:27:12 -> 00:27:14] would it matter whether the compiler
+[00:27:14 -> 00:27:16] how the compiler does the register assignments?
+[00:27:16 -> 00:27:18] It wouldn't matter at all.
+[00:27:18 -> 00:27:20] So actually
+[00:27:20 -> 00:27:22] paradoxically, you know
+[00:27:22 -> 00:27:24] what compilers try to do is they try
+[00:27:24 -> 00:27:26] and increase the separation between loads
+[00:27:26 -> 00:27:28] and uses. That
+[00:27:28 -> 00:27:30] means you have to use more registers.
+[00:27:30 -> 00:27:32] Okay. That increases
+[00:27:32 -> 00:27:34] the live range of register values.
+[00:27:34 -> 00:27:36] And when you're increasing the live
+[00:27:36 -> 00:27:38] range of values, you
+[00:27:38 -> 00:27:40] and you run out of registers and you have to
+[00:27:40 -> 00:27:42] spill the registers
+[00:27:42 -> 00:27:44] to the top of the stack and
+[00:27:44 -> 00:27:46] bring them back in.
+[00:27:46 -> 00:27:48] And that seems to have worked.
+[00:27:48 -> 00:27:50] Okay. But what we want
+[00:27:50 -> 00:27:52] in some of these dynamically scheduled
+[00:27:52 -> 00:27:54] is precisely
+[00:27:54 -> 00:27:56] the opposite where we
+[00:27:56 -> 00:27:58] want all the instructions that are dependent
+[00:27:58 -> 00:28:00] on each other not to be separated
+[00:28:00 -> 00:28:02] by the software.
+[00:28:02 -> 00:28:04] Because the hardware
+[00:28:04 -> 00:28:06] you go, yeah, they are dependent.
+[00:28:06 -> 00:28:08] Put them in the same set of
+[00:28:08 -> 00:28:10] reservation stations.
+[00:28:10 -> 00:28:12] I'll deal with the others
+[00:28:12 -> 00:28:14] later on. So, you know, that
+[00:28:14 -> 00:28:16] is sort of the paradox over there
+[00:28:16 -> 00:28:18] where you actually try and compile
+[00:28:18 -> 00:28:20] the opposite.
+[00:28:20 -> 00:28:22] But, yeah.
+[00:28:22 -> 00:28:37] Okay.
+[00:28:37 -> 00:28:39] Now let us go to some really interesting
+[00:28:39 -> 00:28:41] stuff is how do you do
+[00:28:41 -> 00:28:43] memory operations?
+[00:28:43 -> 00:28:45] Okay. Loads and stores.
+[00:28:45 -> 00:28:47] Register, the other instructions
+[00:28:47 -> 00:28:49] only have register inputs and outputs
+[00:28:49 -> 00:28:51] and the register renaming captures all
+[00:28:51 -> 00:28:53] the dependencies.
+[00:28:53 -> 00:28:55] And tags can tell you when to
+[00:28:55 -> 00:28:57] execute.
+[00:28:57 -> 00:28:59] Except that for loads, you
+[00:28:59 -> 00:29:01] have register inputs
+[00:29:01 -> 00:29:03] also have memory inputs.
+[00:29:03 -> 00:29:05] Which is the
+[00:29:05 -> 00:29:07] result, you know, you are loading from an address.
+[00:29:07 -> 00:29:09] And a previous store could have
+[00:29:09 -> 00:29:11] written into that address.
+[00:29:11 -> 00:29:13] Register renaming does not tell you
+[00:29:13 -> 00:29:15] about all the dependencies
+[00:29:15 -> 00:29:17] and how you're going to find
+[00:29:17 -> 00:29:19] all the other instructions
+[00:29:19 -> 00:29:21] that are in flight.
+[00:29:21 -> 00:29:23] So let me just scribble out some
+[00:29:23 -> 00:29:25] nonsense piece of code
+[00:29:25 -> 00:29:27] go to some address A
+[00:29:27 -> 00:29:29] then I'm going to
+[00:29:29 -> 00:29:31] store to some address B
+[00:29:31 -> 00:29:33] go to some address C
+[00:29:33 -> 00:29:35] store to address D
+[00:29:35 -> 00:29:41] You know, and
+[00:29:41 -> 00:29:43] these are arbitrary addresses and I don't
+[00:29:43 -> 00:29:45] know what the addresses are.
+[00:29:45 -> 00:29:47] They could not be the same.
+[00:29:47 -> 00:29:49] A, B, C, D, E, they are just addresses.
+[00:29:49 -> 00:29:51] They could or could not be the same.
+[00:29:51 -> 00:29:53] Okay?
+[00:29:53 -> 00:29:55] And so now, you know
+[00:29:55 -> 00:29:57] if B is equal
+[00:29:57 -> 00:30:01] to C, alright
+[00:30:01 -> 00:30:03] these addresses are the same, then this
+[00:30:03 -> 00:30:05] load must happen after this
+[00:30:05 -> 00:30:07] store over here.
+[00:30:07 -> 00:30:09] Let's take a look at load E.
+[00:30:09 -> 00:30:11] Okay?
+[00:30:11 -> 00:30:13] If load E is the same
+[00:30:13 -> 00:30:15] as B, then this
+[00:30:15 -> 00:30:17] load must happen after
+[00:30:17 -> 00:30:19] this store B.
+[00:30:19 -> 00:30:21] But if D and E are different
+[00:30:21 -> 00:30:23] this can happen before this store.
+[00:30:23 -> 00:30:35] Okay?
+[00:30:35 -> 00:30:37] We talked about, you know, the integer function
+[00:30:37 -> 00:30:39] units, floating point function units.
+[00:30:39 -> 00:30:41] The data memory can also be
+[00:30:41 -> 00:30:43] viewed just like a functional unit.
+[00:30:43 -> 00:30:45] Okay?
+[00:30:45 -> 00:30:47] And this data memory
+[00:30:47 -> 00:30:49] has the data
+[00:30:49 -> 00:30:51] cache and the TLB plus structures
+[00:30:51 -> 00:30:53] and these are these load store queues that
+[00:30:53 -> 00:30:55] we'll talk about to handle
+[00:30:55 -> 00:30:57] all the loads and stores that are still
+[00:30:57 -> 00:30:59] in flight that are in the machine.
+[00:30:59 -> 00:31:01] And this
+[00:31:01 -> 00:31:03] memory, this
+[00:31:03 -> 00:31:05] function unit is going to do four things.
+[00:31:05 -> 00:31:07] First, it's going to
+[00:31:07 -> 00:31:09] store,
+[00:31:09 -> 00:31:11] retire the stores in order.
+[00:31:11 -> 00:31:13] Okay? Because, you know,
+[00:31:13 -> 00:31:15] you must give the appearance that
+[00:31:15 -> 00:31:17] the program executed in order, the stores
+[00:31:17 -> 00:31:19] are actually writing to memory.
+[00:31:19 -> 00:31:21] Once something goes to memory, some other
+[00:31:21 -> 00:31:23] processor, some other thread, whatever
+[00:31:23 -> 00:31:25] you see it.
+[00:31:25 -> 00:31:27] Okay? That has to be in order.
+[00:31:27 -> 00:31:29] So
+[00:31:29 -> 00:31:31] this is a basic functionality
+[00:31:31 -> 00:31:33] that's going to be implemented by a
+[00:31:33 -> 00:31:37] store queue. Then, there's
+[00:31:37 -> 00:31:39] also going to be the store load
+[00:31:39 -> 00:31:41] forwarding, which is going to
+[00:31:41 -> 00:31:43] allow loads to
+[00:31:43 -> 00:31:45] read values from order
+[00:31:45 -> 00:31:48] and under time. And
+[00:31:48 -> 00:31:50] what is this store load forwarding?
+[00:31:50 -> 00:31:52] Okay?
+[00:31:52 -> 00:31:54] So, let me go to
+[00:31:54 -> 00:31:56] this load here again.
+[00:31:56 -> 00:31:58] Okay? It's loading from address
+[00:31:58 -> 00:32:00] C, and the store is
+[00:32:00 -> 00:32:02] writing to address B, and
+[00:32:02 -> 00:32:04] say B and C happen to be the same.
+[00:32:04 -> 00:32:06] Okay?
+[00:32:06 -> 00:32:08] Which means, now, this load
+[00:32:08 -> 00:32:10] must read
+[00:32:10 -> 00:32:12] the value
+[00:32:12 -> 00:32:16] that was written by the store.
+[00:32:16 -> 00:32:20] Alright? How does the load
+[00:32:20 -> 00:32:22] go and read something
+[00:32:22 -> 00:32:24] across the cache?
+[00:32:24 -> 00:32:26] And get something from the cache?
+[00:32:26 -> 00:32:30] Alright? What does the store do
+[00:32:30 -> 00:32:32] and write something into the cache?
+[00:32:32 -> 00:32:34] That's how this load got it.
+[00:32:34 -> 00:32:37] Okay?
+[00:32:37 -> 00:32:39] But, this
+[00:32:39 -> 00:32:41] store cannot retire
+[00:32:41 -> 00:32:43] until it's at the head of the reorder
+[00:32:43 -> 00:32:47] buffer, which could be many
+[00:32:47 -> 00:32:49] tens of cycles away.
+[00:32:49 -> 00:32:53] It could take many tens of cycles in the
+[00:32:53 -> 00:32:55] time this value is ready
+[00:32:55 -> 00:32:57] until the store retires and
+[00:32:57 -> 00:33:00] the value ends up in memory.
+[00:33:00 -> 00:33:02] So, this load, if you, say, you have
+[00:33:02 -> 00:33:04] to wait until
+[00:33:04 -> 00:33:06] this value is in memory
+[00:33:06 -> 00:33:08] in the cache,
+[00:33:08 -> 00:33:10] might as well go home,
+[00:33:10 -> 00:33:12] you know,
+[00:33:12 -> 00:33:14] have lunch, come back,
+[00:33:14 -> 00:33:16] the load will still be there
+[00:33:16 -> 00:33:18] waiting to retire out of here.
+[00:33:18 -> 00:33:20] Okay?
+[00:33:20 -> 00:33:22] So, you can't do that.
+[00:33:22 -> 00:33:24] This load's value, the store's
+[00:33:24 -> 00:33:26] value, is going to be sitting
+[00:33:26 -> 00:33:28] in the store queue.
+[00:33:28 -> 00:33:30] You have to allow the load
+[00:33:30 -> 00:33:32] to get the value from
+[00:33:32 -> 00:33:34] that store queue, and that is
+[00:33:34 -> 00:33:36] what is called store-load forwarding.
+[00:33:36 -> 00:33:38] Okay?
+[00:33:38 -> 00:33:40] So, this
+[00:33:40 -> 00:33:42] store-load forwarding is going to allow loads
+[00:33:42 -> 00:33:44] to read values from older
+[00:33:44 -> 00:33:51] unretired stores.
+[00:33:51 -> 00:33:53] There's also basic functionality going to be
+[00:33:53 -> 00:33:55] implemented by the store queue, and we'll see it
+[00:33:55 -> 00:33:57] in detail.
+[00:33:57 -> 00:33:59] Okay?
+[00:33:59 -> 00:34:01] Life gets even more interesting
+[00:34:01 -> 00:34:03] where
+[00:34:03 -> 00:34:05] you have the store
+[00:34:05 -> 00:34:07] writing into
+[00:34:07 -> 00:34:09] four bytes, or eight bytes,
+[00:34:09 -> 00:34:11] and
+[00:34:11 -> 00:34:13] this load reading
+[00:34:13 -> 00:34:15] two of those bytes,
+[00:34:15 -> 00:34:17] or one of those bytes,
+[00:34:17 -> 00:34:19] or six of those bytes,
+[00:34:19 -> 00:34:23] or whatever. Okay?
+[00:34:23 -> 00:34:29] We'll make life even more interesting
+[00:34:29 -> 00:34:31] where we
+[00:34:31 -> 00:34:33] will allow load speculation.
+[00:34:33 -> 00:34:35] And what is this
+[00:34:35 -> 00:34:42] load speculation? Today I want to
+[00:34:42 -> 00:34:44] take a look at
+[00:34:44 -> 00:34:46] I have this load that's
+[00:34:46 -> 00:34:52] loading from address E.
+[00:34:52 -> 00:34:54] For this load to get the
+[00:34:54 -> 00:34:56] value from
+[00:34:56 -> 00:34:58] the correct store,
+[00:34:58 -> 00:35:00] if you will, it must
+[00:35:00 -> 00:35:02] check all the stores that are
+[00:35:02 -> 00:35:04] still waiting, check their addresses
+[00:35:04 -> 00:35:06] to see if there's a match.
+[00:35:06 -> 00:35:11] And only when it has
+[00:35:11 -> 00:35:13] those addresses,
+[00:35:13 -> 00:35:15] where you can compare those
+[00:35:15 -> 00:35:17] addresses, then it can
+[00:35:17 -> 00:35:22] execute safely. But that may take
+[00:35:22 -> 00:35:24] too long, and
+[00:35:24 -> 00:35:26] you know, the chances
+[00:35:26 -> 00:35:28] of this load executing
+[00:35:28 -> 00:35:30] before a prior store
+[00:35:30 -> 00:35:32] that still has not
+[00:35:32 -> 00:35:34] retired, but that still hasn't
+[00:35:34 -> 00:35:36] maybe executed, that's going
+[00:35:36 -> 00:35:38] to write to the same address
+[00:35:38 -> 00:35:40] that's quite low.
+[00:35:40 -> 00:35:42] So you will let this
+[00:35:42 -> 00:35:44] load speculate and execute before
+[00:35:44 -> 00:35:46] the store, just like we did in
+[00:35:46 -> 00:35:48] software. Okay?
+[00:35:48 -> 00:35:50] And when the store came,
+[00:35:50 -> 00:35:52] we recorded this address
+[00:35:52 -> 00:35:54] in the ALAT and the store came
+[00:35:54 -> 00:35:56] and checked the ALAT or whatever
+[00:35:56 -> 00:35:58] it is. Here we'll record this in a
+[00:35:58 -> 00:36:00] load queue and the store will come and check
+[00:36:00 -> 00:36:03] the load queue.
+[00:36:03 -> 00:36:05] Okay? And then we'll
+[00:36:05 -> 00:36:07] further make it even more interesting
+[00:36:07 -> 00:36:09] is we'll use prediction techniques
+[00:36:09 -> 00:36:11] to try and improve this accuracy
+[00:36:11 -> 00:36:13] of this load store speculation.
+[00:36:13 -> 00:36:17] Alright?
+[00:36:17 -> 00:36:19] So
+[00:36:19 -> 00:36:21] we will carry out load
+[00:36:21 -> 00:36:23] speculation and
+[00:36:23 -> 00:36:25] check to see whether there is a memory
+[00:36:25 -> 00:36:27] ordering violation where
+[00:36:27 -> 00:36:29] a load executed before
+[00:36:29 -> 00:36:31] a prior store, before
+[00:36:31 -> 00:36:35] it was dependent upon.
+[00:36:35 -> 00:36:37] And then we'll briefly
+[00:36:37 -> 00:36:39] talk about memory ordering violence
+[00:36:39 -> 00:36:41] ordering violation avoidance
+[00:36:41 -> 00:36:43] using memory dependence predictors.
+[00:36:43 -> 00:36:47] Okay.
+[00:36:47 -> 00:36:49] So here is
+[00:36:49 -> 00:36:51] now basically
+[00:36:51 -> 00:36:53] a data memory function unit.
+[00:36:53 -> 00:36:55] Okay?
+[00:36:55 -> 00:36:57] It has two inputs, just like, you know,
+[00:36:57 -> 00:36:59] ALU had two inputs,
+[00:36:59 -> 00:37:01] register inputs and one output.
+[00:37:01 -> 00:37:03] Here you have basically
+[00:37:03 -> 00:37:05] two inputs. One is
+[00:37:05 -> 00:37:07] the address and the other is the
+[00:37:07 -> 00:37:09] data input and it has
+[00:37:09 -> 00:37:11] one output and the output is
+[00:37:11 -> 00:37:13] the data output.
+[00:37:13 -> 00:37:15] Okay? So
+[00:37:15 -> 00:37:17] this has an
+[00:37:17 -> 00:37:19] address input,
+[00:37:19 -> 00:37:21] data input
+[00:37:21 -> 00:37:28] and a data output.
+[00:37:28 -> 00:37:30] Then it also has another
+[00:37:30 -> 00:37:32] input over
+[00:37:32 -> 00:37:34] here, which
+[00:37:34 -> 00:37:36] is an input
+[00:37:36 -> 00:37:38] for a load position.
+[00:37:38 -> 00:37:40] It's not a register, it's not a
+[00:37:40 -> 00:37:42] value, it's not a value,
+[00:37:42 -> 00:37:44] it's the position that we
+[00:37:44 -> 00:37:46] will see of the
+[00:37:46 -> 00:37:48] of a load
+[00:37:48 -> 00:37:50] in a store.
+[00:37:50 -> 00:37:52] Just like we had a reorder of an entry
+[00:37:52 -> 00:37:56] number. Okay?
+[00:37:56 -> 00:37:58] So the store queue,
+[00:37:58 -> 00:38:00] okay, what it has is
+[00:38:00 -> 00:38:02] it has multiple entries,
+[00:38:02 -> 00:38:04] okay, one for each in-flight
+[00:38:04 -> 00:38:06] store, okay,
+[00:38:06 -> 00:38:08] and the entries are in
+[00:38:08 -> 00:38:10] program order
+[00:38:10 -> 00:38:12] and for each entry I have the address
+[00:38:12 -> 00:38:14] and the value
+[00:38:14 -> 00:38:16] that, and
+[00:38:16 -> 00:38:18] corresponding to the store, when that
+[00:38:18 -> 00:38:20] store queue, when that entry
+[00:38:20 -> 00:38:22] becomes the head of the store queue
+[00:38:22 -> 00:38:24] in the reorder buffer, that
+[00:38:24 -> 00:38:26] value is going to get written
+[00:38:26 -> 00:38:28] to the corresponding address
+[00:38:28 -> 00:38:33] in the, okay?
+[00:38:33 -> 00:38:35] And we're going to be able to
+[00:38:35 -> 00:38:37] search these addresses
+[00:38:37 -> 00:38:39] associatively, why? So we will see.
+[00:38:39 -> 00:38:41] And typically
+[00:38:41 -> 00:38:43] it's going to be of the size of
+[00:38:43 -> 00:38:45] 1 sixth to 1 fifth of the
+[00:38:45 -> 00:38:47] reorder buffer because
+[00:38:47 -> 00:38:49] 1 fifth to 1 sixth
+[00:38:49 -> 00:38:51] of the total instructions
+[00:38:51 -> 00:38:55] are likely to be store instructions. Okay?
+[00:38:55 -> 00:38:57] Any questions about this?
+[00:38:57 -> 00:38:59] Basic stuff?
+[00:38:59 -> 00:39:01] What it does is
+[00:39:01 -> 00:39:05] we'll see next. Okay.
+[00:39:05 -> 00:39:07] So how does this work?
+[00:39:07 -> 00:39:09] So when you
+[00:39:09 -> 00:39:11] have a store,
+[00:39:11 -> 00:39:13] when you dispatch the store,
+[00:39:13 -> 00:39:15] you allocate the entry
+[00:39:15 -> 00:39:17] at the store queue tail.
+[00:39:17 -> 00:39:19] Okay? So the store queue,
+[00:39:19 -> 00:39:21] you know the store queue has a head and a tail,
+[00:39:21 -> 00:39:23] you allocate an entry at the
+[00:39:23 -> 00:39:27] store queue tail. Okay?
+[00:39:27 -> 00:39:30] When the store
+[00:39:30 -> 00:39:32] is executed,
+[00:39:32 -> 00:39:34] okay,
+[00:39:34 -> 00:39:36] you write the address and data
+[00:39:36 -> 00:39:38] into the corresponding store
+[00:39:38 -> 00:39:40] queue slot. Okay? So when the store executes,
+[00:39:40 -> 00:39:42] you write the data,
+[00:39:42 -> 00:39:44] the address into the entry
+[00:39:44 -> 00:39:46] and the data into that corresponding entry.
+[00:39:46 -> 00:39:53] Alright? When that store
+[00:39:53 -> 00:39:55] retires, you write the
+[00:39:55 -> 00:39:57] address and data from the store queue head
+[00:39:57 -> 00:39:59] to the data cache and you free
+[00:39:59 -> 00:40:01] that store queue tail.
+[00:40:01 -> 00:40:03] So basically you write the data
+[00:40:03 -> 00:40:05] from the
+[00:40:05 -> 00:40:07] value entry to the address
+[00:40:07 -> 00:40:09] and the address entry.
+[00:40:09 -> 00:40:14] And you're done.
+[00:40:14 -> 00:40:16] That's all fairly straightforward, nothing too
+[00:40:16 -> 00:40:18] interesting over there.
+[00:40:18 -> 00:40:20] The interesting stuff happens for
+[00:40:20 -> 00:40:22] loads now.
+[00:40:22 -> 00:40:24] Okay, so going back over here, hey,
+[00:40:24 -> 00:40:26] these stores are just coming, I just
+[00:40:26 -> 00:40:28] put them in the store queue just like
+[00:40:28 -> 00:40:30] I, you know, dispatch, execute,
+[00:40:30 -> 00:40:32] or retire. I'm like, yes.
+[00:40:32 -> 00:40:38] What happens for loads?
+[00:40:38 -> 00:40:40] Okay. When you dispatch
+[00:40:40 -> 00:40:42] a load,
+[00:40:42 -> 00:40:44] you record the
+[00:40:44 -> 00:40:46] current store queue tail as the
+[00:40:46 -> 00:40:50] load position. Okay?
+[00:40:50 -> 00:40:52] And when you execute
+[00:40:52 -> 00:40:54] the load, that's where the
+[00:40:54 -> 00:41:09] interesting stuff happens.
+[00:41:09 -> 00:41:13] Let me go back there. So
+[00:41:15 -> 00:41:17] say, you know, say I have this
+[00:41:17 -> 00:41:19] piece of code, so when I have that
+[00:41:19 -> 00:41:21] store queue over here,
+[00:41:21 -> 00:41:23] you know, I dispatch the stores and I have,
+[00:41:23 -> 00:41:25] you know, this is the
+[00:41:25 -> 00:41:27] head and this is the tail.
+[00:41:27 -> 00:41:29] So I have address B,
+[00:41:29 -> 00:41:31] address D,
+[00:41:31 -> 00:41:35] address F over here.
+[00:41:35 -> 00:41:37] Okay? Now,
+[00:41:37 -> 00:41:39] when I do a load of
+[00:41:39 -> 00:41:41] A,
+[00:41:41 -> 00:41:43] okay, I want to make sure
+[00:41:43 -> 00:41:45] that there is no other
+[00:41:45 -> 00:41:47] store before this
+[00:41:47 -> 00:41:49] that's writing to the same address A.
+[00:41:49 -> 00:41:51] Okay. When I
+[00:41:51 -> 00:41:53] do this load, I want to compare
+[00:41:53 -> 00:41:55] to make sure that there is no address
+[00:41:55 -> 00:41:57] before
+[00:41:57 -> 00:41:59] this load that's writing to
+[00:41:59 -> 00:42:01] B. Okay? When I
+[00:42:01 -> 00:42:03] do this load, I want to make sure
+[00:42:03 -> 00:42:05] that, you know, the addresses
+[00:42:05 -> 00:42:07] B and D are
+[00:42:07 -> 00:42:13] different from E. So
+[00:42:13 -> 00:42:15] now this piece of code is gone. I've done
+[00:42:15 -> 00:42:17] the loads. The load is sitting over here.
+[00:42:17 -> 00:42:19] When I do load C,
+[00:42:19 -> 00:42:21] when I do
+[00:42:21 -> 00:42:23] load C,
+[00:42:23 -> 00:42:25] I want to compare
+[00:42:25 -> 00:42:27] the addresses
+[00:42:27 -> 00:42:29] C only to
+[00:42:29 -> 00:42:31] B.
+[00:42:31 -> 00:42:33] Okay. Not to B and F
+[00:42:33 -> 00:42:35] because they are from stores
+[00:42:35 -> 00:42:39] after that. Okay?
+[00:42:39 -> 00:42:41] So
+[00:42:41 -> 00:42:43] what I want to do is
+[00:42:43 -> 00:42:45] now I have a position
+[00:42:45 -> 00:42:47] of this store
+[00:42:47 -> 00:42:49] when this,
+[00:42:49 -> 00:42:51] you know, when this load
+[00:42:51 -> 00:42:53] was executed
+[00:42:53 -> 00:42:55] or dispatched. And even though
+[00:42:55 -> 00:42:57] other stores came into the store
+[00:42:57 -> 00:42:59] queue after that, I only
+[00:42:59 -> 00:43:01] want to compare the address C
+[00:43:01 -> 00:43:05] to this address B only. Not to
+[00:43:05 -> 00:43:07] B and F. Okay. If D was
+[00:43:07 -> 00:43:09] the same as C, that's alright.
+[00:43:09 -> 00:43:11] I don't want the value, I mean
+[00:43:11 -> 00:43:13] I don't want the value from this
+[00:43:13 -> 00:43:17] store over here. Are you near
+[00:43:17 -> 00:43:23] this? So
+[00:43:23 -> 00:43:25] that is
+[00:43:25 -> 00:43:27] what this store,
+[00:43:27 -> 00:43:29] current store queue tail, which is
+[00:43:29 -> 00:43:31] this was the current store queue tail
+[00:43:31 -> 00:43:33] when this load C was dispatched.
+[00:43:33 -> 00:43:35] Okay?
+[00:43:35 -> 00:43:39] So I'm going to record that.
+[00:43:39 -> 00:43:41] Okay. So when you
+[00:43:41 -> 00:43:43] do a load of execution,
+[00:43:43 -> 00:43:45] okay, load
+[00:43:45 -> 00:43:47] execution, you
+[00:43:47 -> 00:43:49] start accessing the data
+[00:43:49 -> 00:43:53] cache. Okay?
+[00:43:53 -> 00:43:55] But there is like a 10% chance
+[00:43:55 -> 00:43:57] that the load,
+[00:43:57 -> 00:43:59] you're going to be loading from an address
+[00:43:59 -> 00:44:01] that is corresponding to a store value
+[00:44:01 -> 00:44:03] still in the
+[00:44:03 -> 00:44:05] store queue.
+[00:44:05 -> 00:44:07] So you have to bypass it,
+[00:44:07 -> 00:44:09] read it from the store queue.
+[00:44:09 -> 00:44:11] Okay? So
+[00:44:11 -> 00:44:13] you're going to compare with all the store
+[00:44:13 -> 00:44:15] addresses, B, D, F.
+[00:44:15 -> 00:44:17] Okay? And that's like
+[00:44:17 -> 00:44:19] a cam. Okay?
+[00:44:19 -> 00:44:21] Just like, you know, then you
+[00:44:21 -> 00:44:23] select all the matching
+[00:44:23 -> 00:44:25] addresses.
+[00:44:25 -> 00:44:27] And then you have this age select
+[00:44:27 -> 00:44:29] logic, which selects
+[00:44:29 -> 00:44:31] the youngest store that is
+[00:44:31 -> 00:44:33] older than the load.
+[00:44:33 -> 00:44:35] And that's what it's going to use this
+[00:44:35 -> 00:44:39] load position input for.
+[00:44:39 -> 00:44:41] If there is a match, then
+[00:44:41 -> 00:44:43] the load forwards the value
+[00:44:43 -> 00:44:45] from that selected
+[00:44:45 -> 00:44:47] entry in the store
+[00:44:47 -> 00:44:49] queue.
+[00:44:49 -> 00:44:51] If there is no match, then the load is going to get
+[00:44:51 -> 00:44:53] its value from the
+[00:44:53 -> 00:44:57] data cache. Okay?
+[00:44:57 -> 00:44:59] So, again,
+[00:44:59 -> 00:45:01] you know, store
+[00:45:01 -> 00:45:03] B, D, F got
+[00:45:03 -> 00:45:05] dispatched in the store queue.
+[00:45:05 -> 00:45:07] When this load
+[00:45:07 -> 00:45:09] is dispatched, the store queue
+[00:45:09 -> 00:45:11] tail was
+[00:45:11 -> 00:45:13] only for entry B. Okay?
+[00:45:13 -> 00:45:15] When this load got dispatched,
+[00:45:15 -> 00:45:17] the store queue tail was
+[00:45:17 -> 00:45:19] corresponding to entry B and D.
+[00:45:19 -> 00:45:21] The D was
+[00:45:21 -> 00:45:23] at the store queue tail.
+[00:45:23 -> 00:45:25] Okay? So now when load C
+[00:45:25 -> 00:45:27] gets executed,
+[00:45:27 -> 00:45:30] say it matches F.
+[00:45:30 -> 00:45:32] Okay?
+[00:45:32 -> 00:45:36] But not B and D.
+[00:45:36 -> 00:45:38] It's going to go get the value from the cache
+[00:45:38 -> 00:45:40] because F
+[00:45:40 -> 00:45:42] is occurring after this load,
+[00:45:42 -> 00:45:44] so the value this writes into memory
+[00:45:44 -> 00:45:46] will not be the value that this
+[00:45:46 -> 00:45:48] load is going to
+[00:45:48 -> 00:45:56] read from memory. So
+[00:45:56 -> 00:45:58] then when this load
+[00:45:58 -> 00:46:00] E matches
+[00:46:00 -> 00:46:02] over here, okay,
+[00:46:02 -> 00:46:04] say this load E matches
+[00:46:04 -> 00:46:06] matches
+[00:46:06 -> 00:46:08] okay.
+[00:46:08 -> 00:46:10] When this
+[00:46:10 -> 00:46:12] load to address E
+[00:46:12 -> 00:46:14] dispatches, it will now compare
+[00:46:14 -> 00:46:16] against
+[00:46:16 -> 00:46:18] the entries,
+[00:46:18 -> 00:46:20] all the entries, okay,
+[00:46:20 -> 00:46:22] say B matches.
+[00:46:22 -> 00:46:24] Alright? If B matches,
+[00:46:24 -> 00:46:26] now
+[00:46:26 -> 00:46:28] it will take all the, say B and F
+[00:46:28 -> 00:46:30] match. Say B and F match. Okay?
+[00:46:30 -> 00:46:32] The load position,
+[00:46:32 -> 00:46:34] the store position,
+[00:46:34 -> 00:46:36] the load position over here,
+[00:46:36 -> 00:46:38] so it will see all these matches,
+[00:46:38 -> 00:46:40] but these are the
+[00:46:40 -> 00:46:46] younger ones.
+[00:46:46 -> 00:46:48] B and B are the two younger entries
+[00:46:48 -> 00:46:50] that matched because of
+[00:46:50 -> 00:46:52] the load position. And
+[00:46:52 -> 00:46:54] B is the youngest
+[00:46:54 -> 00:46:56] entry that
+[00:46:56 -> 00:46:58] matched. B, even though it's
+[00:46:58 -> 00:47:00] younger, did not match.
+[00:47:00 -> 00:47:02] Okay? So it's going to
+[00:47:02 -> 00:47:04] forward the value from
+[00:47:04 -> 00:47:06] this entry,
+[00:47:06 -> 00:47:08] B in the store queue, to this
+[00:47:08 -> 00:47:14] load E over here. Are you with me on this?
+[00:47:14 -> 00:47:21] Okay. So
+[00:47:21 -> 00:47:23] you know,
+[00:47:23 -> 00:47:25] I have
+[00:47:25 -> 00:47:27] out of order codes, in a sense,
+[00:47:27 -> 00:47:29] why do we sort of, why do we sort of
+[00:47:29 -> 00:47:31] do that? Okay. So in general,
+[00:47:31 -> 00:47:33] loads can execute out of order
+[00:47:33 -> 00:47:35] with this, with
+[00:47:35 -> 00:47:37] respect to other loads. Notice I'm not comparing
+[00:47:37 -> 00:47:39] any load address, so the load
+[00:47:39 -> 00:47:41] can be, you know, I could use any
+[00:47:41 -> 00:47:43] I could, the loads could happen
+[00:47:43 -> 00:47:45] completely out of order with respect
+[00:47:45 -> 00:47:50] to each other. Very similarly,
+[00:47:50 -> 00:47:52] the stores could also
+[00:47:52 -> 00:47:54] execute out of order
+[00:47:54 -> 00:47:56] with respect to other stores.
+[00:47:56 -> 00:47:59] Because, you know,
+[00:47:59 -> 00:48:01] what's happening is they are being
+[00:48:01 -> 00:48:03] dispatched in order,
+[00:48:03 -> 00:48:05] and they could execute in any order,
+[00:48:05 -> 00:48:07] it doesn't matter. They just put the
+[00:48:07 -> 00:48:09] values in the store queue
+[00:48:09 -> 00:48:11] out of order.
+[00:48:11 -> 00:48:13] But that's not a problem.
+[00:48:13 -> 00:48:18] Okay.
+[00:48:18 -> 00:48:20] However, the loads must
+[00:48:20 -> 00:48:22] execute in order with
+[00:48:22 -> 00:48:24] respect to other stores.
+[00:48:24 -> 00:48:26] That's what we have to solve. Okay.
+[00:48:26 -> 00:48:28] And so that requires knowledge
+[00:48:28 -> 00:48:30] of all the other store addresses.
+[00:48:30 -> 00:48:32] Okay. We'll get there.
+[00:48:32 -> 00:48:34] Okay. And
+[00:48:34 -> 00:48:36] you have to do this
+[00:48:36 -> 00:48:38] to basically, for the load to get
+[00:48:38 -> 00:48:46] the correct value. Any questions?
+[00:48:46 -> 00:48:48] Yeah.
+[00:48:48 -> 00:48:50] So by executing stores
+[00:48:50 -> 00:48:52] out of order, you mean the address and the value
+[00:48:52 -> 00:48:54] is computed out of order,
+[00:48:54 -> 00:48:56] but accessing the cache is in order.
+[00:48:56 -> 00:48:58] The stores are all
+[00:48:58 -> 00:49:01] accessing the cache,
+[00:49:01 -> 00:49:03] accessing the cache is going to happen when the
+[00:49:03 -> 00:49:05] store retires. That will
+[00:49:05 -> 00:49:07] absolutely be in order.
+[00:49:07 -> 00:49:09] Execute is
+[00:49:09 -> 00:49:11] when you are writing the addresses and data
+[00:49:11 -> 00:49:13] into the corresponding
+[00:49:13 -> 00:49:17] store.
+[00:49:17 -> 00:49:36] I'm just scribbling
+[00:49:36 -> 00:49:38] this out. You know,
+[00:49:38 -> 00:49:40] go back
+[00:49:40 -> 00:49:42] to this
+[00:49:42 -> 00:49:44] piece of code that we had all along here.
+[00:49:44 -> 00:49:46] I'm loading into F1
+[00:49:46 -> 00:49:48] multiplying into
+[00:49:48 -> 00:49:50] I'm loading into F1
+[00:49:50 -> 00:49:52] multiplying with F1 as an import
+[00:49:52 -> 00:49:54] writing into F2
+[00:49:54 -> 00:49:56] and then I'm storing F2.
+[00:49:56 -> 00:49:58] Okay. And then the
+[00:49:58 -> 00:50:00] storing F2 was an offset
+[00:50:00 -> 00:50:02] of C of register R1.
+[00:50:02 -> 00:50:04] And then
+[00:50:04 -> 00:50:06] say I had some other store
+[00:50:06 -> 00:50:08] something else.
+[00:50:08 -> 00:50:10] That had zero of
+[00:50:10 -> 00:50:12] R1, I was storing
+[00:50:12 -> 00:50:14] R2 to this address over here.
+[00:50:18 -> 00:50:20] Now, this store
+[00:50:20 -> 00:50:22] when we have
+[00:50:22 -> 00:50:24] it's going to execute
+[00:50:24 -> 00:50:26] only when its inputs are ready.
+[00:50:26 -> 00:50:28] This store is
+[00:50:28 -> 00:50:30] going to execute when its inputs are ready.
+[00:50:30 -> 00:50:32] So,
+[00:50:32 -> 00:50:34] this F2 is going to take
+[00:50:34 -> 00:50:36] a while to become
+[00:50:36 -> 00:50:38] ready.
+[00:50:38 -> 00:50:40] This import is ready, so this store
+[00:50:40 -> 00:50:42] could actually execute before this store.
+[00:50:42 -> 00:50:44] Means it's going to
+[00:50:44 -> 00:50:46] write the address
+[00:50:46 -> 00:50:48] and the register value
+[00:50:48 -> 00:50:50] into the corresponding entry in the store
+[00:50:50 -> 00:50:56] queue for this store. Okay?
+[00:50:56 -> 00:50:58] Are you with me on this?
+[00:50:58 -> 00:51:03] Which also
+[00:51:03 -> 00:51:05] brings up another thing.
+[00:51:05 -> 00:51:07] Which is another important point.
+[00:51:07 -> 00:51:09] So,
+[00:51:09 -> 00:51:11] the way I have talked about
+[00:51:11 -> 00:51:13] what is stored now is when the
+[00:51:13 -> 00:51:15] executing the store when both
+[00:51:15 -> 00:51:17] the address and the data are ready.
+[00:51:17 -> 00:51:19] Both the inputs are ready.
+[00:51:19 -> 00:51:21] Okay? And now
+[00:51:21 -> 00:51:23] a node needs the addresses
+[00:51:23 -> 00:51:25] of all the previous stores.
+[00:51:25 -> 00:51:28] To compare.
+[00:51:28 -> 00:51:30] Okay?
+[00:51:30 -> 00:51:32] So,
+[00:51:32 -> 00:51:34] typically what happens
+[00:51:34 -> 00:51:36] is that the data
+[00:51:36 -> 00:51:38] that the store is going
+[00:51:38 -> 00:51:40] to write, the store to memory
+[00:51:40 -> 00:51:42] takes a while to become available.
+[00:51:42 -> 00:51:44] Because it's a result of a computation.
+[00:51:44 -> 00:51:46] But the address
+[00:51:46 -> 00:51:48] typically is available
+[00:51:48 -> 00:51:50] well before it.
+[00:51:50 -> 00:51:52] Well ahead of time.
+[00:51:52 -> 00:51:54] Alright? As in this case.
+[00:51:54 -> 00:51:56] The store address was, you know,
+[00:51:56 -> 00:51:58] you would compute the store. R1 was known
+[00:51:58 -> 00:52:00] and the other was constant.
+[00:52:00 -> 00:52:02] You know, so you could add the constant to R1
+[00:52:02 -> 00:52:04] and figure out the address long before you knew
+[00:52:04 -> 00:52:06] what was going to go in F2.
+[00:52:06 -> 00:52:11] Okay?
+[00:52:11 -> 00:52:13] Now, if I
+[00:52:13 -> 00:52:15] do what
+[00:52:15 -> 00:52:17] I just talked about.
+[00:52:17 -> 00:52:19] Is I have a store queue
+[00:52:19 -> 00:52:27] where I'm going to
+[00:52:27 -> 00:52:29] if I'm going to have a store queue
+[00:52:29 -> 00:52:31] where I
+[00:52:31 -> 00:52:33] write the address and the
+[00:52:33 -> 00:52:35] data into the corresponding store queue
+[00:52:35 -> 00:52:37] slot at the same time.
+[00:52:37 -> 00:52:39] Okay?
+[00:52:39 -> 00:52:41] Then I have to wait until the data is available.
+[00:52:41 -> 00:52:43] And then
+[00:52:43 -> 00:52:45] I'm comparing, for a node
+[00:52:45 -> 00:52:47] I'm comparing against the addresses of the store queue.
+[00:52:47 -> 00:52:51] Okay?
+[00:52:51 -> 00:52:53] So typically what you will have
+[00:52:53 -> 00:52:55] is you will actually break the store queue down
+[00:52:55 -> 00:52:59] to a store address queue
+[00:52:59 -> 00:53:01] and a store
+[00:53:01 -> 00:53:04] data queue.
+[00:53:04 -> 00:53:06] Okay?
+[00:53:06 -> 00:53:08] There will be matching entries.
+[00:53:08 -> 00:53:10] And you can actually
+[00:53:10 -> 00:53:12] write the address
+[00:53:12 -> 00:53:14] into the store address queue much earlier
+[00:53:14 -> 00:53:16] than the data.
+[00:53:16 -> 00:53:18] Which will allow the later
+[00:53:18 -> 00:53:20] nodes to carry out the comparison
+[00:53:20 -> 00:53:22] correctly much earlier.
+[00:53:22 -> 00:53:24] Because the node needs to know the address
+[00:53:24 -> 00:53:28] of the prior store.
+[00:53:28 -> 00:53:30] Are you familiar with this?
+[00:53:30 -> 00:53:32] And if you don't do that, then
+[00:53:32 -> 00:53:34] you are going to be basically making the node
+[00:53:34 -> 00:53:36] necessarily wait quite a long time.
+[00:53:36 -> 00:53:38] When we talk about memory dependence breakers
+[00:53:38 -> 00:53:40] we will see the alpha didn't do this.
+[00:53:40 -> 00:53:42] One of the alphas
+[00:53:42 -> 00:53:44] didn't have these separate queues.
+[00:53:44 -> 00:53:46] And it tried to do
+[00:53:46 -> 00:53:48] load speculation and got killed.
+[00:53:48 -> 00:53:50] Because the misspeculation
+[00:53:50 -> 00:53:52] took many tens of cycles
+[00:53:52 -> 00:53:54] longer to detect than it could have.
+[00:53:54 -> 00:53:56] And so they needed these
+[00:53:56 -> 00:53:58] dependence predictors even more.
+[00:53:58 -> 00:54:00] Okay.
+[00:54:00 -> 00:54:02] So this load
+[00:54:02 -> 00:54:04] execution now requires the knowledge of
+[00:54:04 -> 00:54:06] all the store addresses. It's simple
+[00:54:06 -> 00:54:08] but it restricts performance
+[00:54:08 -> 00:54:12] a little bit. Are you familiar with this?
+[00:54:12 -> 00:54:14] Yeah.
+[00:54:14 -> 00:54:16] Let's say that we have
+[00:54:16 -> 00:54:18] 20 processors on the same chip.
+[00:54:18 -> 00:54:20] Yeah.
+[00:54:20 -> 00:54:22] The load store forwarding can
+[00:54:22 -> 00:54:24] effectively let the load
+[00:54:24 -> 00:54:26] part kind of
+[00:54:26 -> 00:54:28] move the case coherence part.
+[00:54:28 -> 00:54:30] But what
+[00:54:30 -> 00:54:32] happens if you want something
+[00:54:32 -> 00:54:34] from a different processor core
+[00:54:34 -> 00:54:36] and like that
+[00:54:36 -> 00:54:38] wouldn't that like when that load
+[00:54:38 -> 00:54:40] comes in, so the store
+[00:54:40 -> 00:54:42] goes to retire, writes the value.
+[00:54:42 -> 00:54:44] Then some case
+[00:54:44 -> 00:54:46] coherence thing happens.
+[00:54:46 -> 00:54:48] And by the time the load comes to retire
+[00:54:48 -> 00:54:50] that case value
+[00:54:50 -> 00:54:52] has changed.
+[00:54:52 -> 00:54:54] Will that, what will you do
+[00:54:54 -> 00:54:56] then because up till now your
+[00:54:56 -> 00:54:58] work has been invalidated because
+[00:54:58 -> 00:55:00] the data you were using to
+[00:55:00 -> 00:55:02] work with just
+[00:55:02 -> 00:55:04] became invalid.
+[00:55:04 -> 00:55:06] That's why we have blocks and
+[00:55:06 -> 00:55:08] monitors and stuff like
+[00:55:08 -> 00:55:10] that. And cache coherency
+[00:55:10 -> 00:55:12] protocols and lots of things
+[00:55:12 -> 00:55:14] like that. It's
+[00:55:14 -> 00:55:16] a different problem. You start out by saying you have multiple
+[00:55:16 -> 00:55:18] processors on a chip. That has
+[00:55:18 -> 00:55:20] the multi-process could be anywhere.
+[00:55:20 -> 00:55:22] It could be on the chip, on the moon, whatever.
+[00:55:22 -> 00:55:24] You know it's like as long as
+[00:55:24 -> 00:55:26] you're doing a little, if you're
+[00:55:26 -> 00:55:28] maintaining coherence it would be those.
+[00:55:28 -> 00:55:30] Okay. We will
+[00:55:30 -> 00:55:32] towards the end of the lecture we talk about
+[00:55:32 -> 00:55:34] cache coherence, okay.
+[00:55:34 -> 00:55:36] But
+[00:55:36 -> 00:55:38] the only way,
+[00:55:38 -> 00:55:40] only way something executing
+[00:55:40 -> 00:55:42] on a processor is going to see
+[00:55:42 -> 00:55:44] something executed on a different processor
+[00:55:44 -> 00:55:46] is via software
+[00:55:46 -> 00:55:49] instructions.
+[00:55:49 -> 00:55:51] The software has to see it.
+[00:55:51 -> 00:55:53] Okay. So then
+[00:55:53 -> 00:55:55] that state,
+[00:55:55 -> 00:55:57] the software has to make sure it's
+[00:55:57 -> 00:55:59] protected by the locks.
+[00:55:59 -> 00:56:01] We'll see that when we get to the cache
+[00:56:01 -> 00:56:03] coherence and see if you don't
+[00:56:03 -> 00:56:05] put the locks then you get stuff wrong
+[00:56:05 -> 00:56:07] even though your coherence protocol is
+[00:56:07 -> 00:56:09] right.
+[00:56:09 -> 00:56:11] Okay. Now
+[00:56:11 -> 00:56:13] outside
+[00:56:13 -> 00:56:15] of the process in core,
+[00:56:15 -> 00:56:17] no one is ever seeing what's
+[00:56:17 -> 00:56:19] happening inside. No one is seeing
+[00:56:19 -> 00:56:28] anything except when we
+[00:56:28 -> 00:56:30] beat one advantage.
+[00:56:30 -> 00:56:32] But that you'll see
+[00:56:32 -> 00:56:34] within 7.57.
+[00:56:34 -> 00:56:36] Okay.
+[00:56:36 -> 00:56:42] Other questions? So
+[00:56:42 -> 00:56:44] a critical observation
+[00:56:44 -> 00:56:46] people have made is
+[00:56:46 -> 00:56:48] typically less than 10% of the loads
+[00:56:48 -> 00:56:50] are being forwarded.
+[00:56:50 -> 00:56:52] Even if
+[00:56:52 -> 00:56:54] older store addresses are known,
+[00:56:54 -> 00:56:56] chances are it's not going to
+[00:56:56 -> 00:57:01] bench. So, you know,
+[00:57:01 -> 00:57:03] store address B is not known.
+[00:57:03 -> 00:57:05] I'm trying to do
+[00:57:05 -> 00:57:07] load to address
+[00:57:07 -> 00:57:09] E.
+[00:57:09 -> 00:57:11] Chances are B and E
+[00:57:11 -> 00:57:13] are different addresses.
+[00:57:13 -> 00:57:15] So I could actually execute this E
+[00:57:15 -> 00:57:19] before. Somehow I happen
+[00:57:19 -> 00:57:21] to know that D and E. D
+[00:57:21 -> 00:57:23] address is known and because
+[00:57:23 -> 00:57:25] the stores executed out of order, the address of D is
+[00:57:25 -> 00:57:27] known and it's different from D.
+[00:57:27 -> 00:57:32] So what we want to do
+[00:57:32 -> 00:57:34] is this
+[00:57:34 -> 00:57:36] is what, you know, we started
+[00:57:36 -> 00:57:38] talking about the codes separating the
+[00:57:38 -> 00:57:40] loads from the users.
+[00:57:40 -> 00:57:42] You want to let the loads go
+[00:57:42 -> 00:57:44] as early as possible.
+[00:57:44 -> 00:57:46] Before prior
+[00:57:46 -> 00:57:48] stores whose addresses are not
+[00:57:48 -> 00:57:52] known. Okay.
+[00:57:52 -> 00:57:54] So we want to have the
+[00:57:54 -> 00:57:56] loads execute in the presence of
+[00:57:56 -> 00:57:58] ambiguous stores.
+[00:57:58 -> 00:58:00] You know, just like in the IA 64,
+[00:58:00 -> 00:58:02] you did that
+[00:58:02 -> 00:58:07] advanced load.
+[00:58:07 -> 00:58:09] What happens if the ambiguous
+[00:58:09 -> 00:58:11] store does match?
+[00:58:11 -> 00:58:13] We must detect that
+[00:58:13 -> 00:58:15] and
+[00:58:15 -> 00:58:17] we
+[00:58:17 -> 00:58:22] fix it.
+[00:58:22 -> 00:58:24] We will see how we detect it.
+[00:58:24 -> 00:58:26] Fixing
+[00:58:26 -> 00:58:28] is just like we fixed anything else.
+[00:58:28 -> 00:58:30] Just like a
+[00:58:30 -> 00:58:32] mis-speculation, we
+[00:58:32 -> 00:58:34] restore the state to the branch.
+[00:58:34 -> 00:58:36] Okay.
+[00:58:36 -> 00:58:38] Just like the
+[00:58:38 -> 00:58:40] load
+[00:58:40 -> 00:58:42] mis-speculated, we'll just
+[00:58:42 -> 00:58:44] recover the state
+[00:58:44 -> 00:58:46] as if the load had not even
+[00:58:46 -> 00:58:48] gotten out of the store.
+[00:58:48 -> 00:58:50] We just basically recover the state
+[00:58:50 -> 00:58:52] from the point of the store.
+[00:58:52 -> 00:58:54] Okay.
+[00:58:54 -> 00:58:56] So this is
+[00:58:56 -> 00:58:58] by now it should be
+[00:58:58 -> 00:59:00] complete.
+[00:59:00 -> 00:59:02] It may not have been last week,
+[00:59:02 -> 00:59:04] but last Monday, but now
+[00:59:04 -> 00:59:06] we should learn this. Yeah. Did you have a question?
+[00:59:06 -> 00:59:08] Okay.
+[00:59:08 -> 00:59:10] So how do we do this?
+[00:59:10 -> 00:59:13] This is now what the
+[00:59:13 -> 00:59:17] load queue does.
+[00:59:17 -> 00:59:19] So this is our store queue,
+[00:59:19 -> 00:59:21] store address, store data,
+[00:59:21 -> 00:59:23] load position.
+[00:59:23 -> 00:59:25] This load queue
+[00:59:25 -> 00:59:28] doesn't have any values.
+[00:59:28 -> 00:59:30] Because the value of a load
+[00:59:30 -> 00:59:32] is what it loads from memory, and it's not loading
+[00:59:32 -> 00:59:34] anything yet.
+[00:59:34 -> 00:59:36] Or even if it's loaded, that's not
+[00:59:36 -> 00:59:38] an interesting part.
+[00:59:38 -> 00:59:40] It has addresses.
+[00:59:40 -> 00:59:42] So it has all the in-flight load
+[00:59:42 -> 00:59:44] addresses in program order,
+[00:59:44 -> 00:59:46] and it's associated with research.
+[00:59:46 -> 00:59:48] Okay.
+[00:59:48 -> 00:59:50] So again,
+[00:59:50 -> 00:59:52] scientifically, typically it's going to be
+[00:59:52 -> 00:59:54] one-fifth to one-th, you know,
+[00:59:54 -> 00:59:56] 30% of there are, because
+[00:59:56 -> 00:59:58] that fraction of the
+[00:59:58 -> 01:00:00] fractions are
+[01:00:00 -> 01:00:02] loads.
+[01:00:02 -> 01:00:07] And
+[01:00:07 -> 01:00:12] here's what you would do.
+[01:00:12 -> 01:00:14] For loads, when you dispatch a load,
+[01:00:14 -> 01:00:16] you allocate an entry at the
+[01:00:16 -> 01:00:18] load queue tail, allocate an entry
+[01:00:18 -> 01:00:20] at the load queue tail.
+[01:00:20 -> 01:00:22] When you execute the load,
+[01:00:22 -> 01:00:24] you write the address into the
+[01:00:24 -> 01:00:26] corresponding load queue
+[01:00:26 -> 01:00:28] slot.
+[01:00:28 -> 01:00:30] In addition to getting the value
+[01:00:30 -> 01:00:32] from somewhere and
+[01:00:32 -> 01:00:35] putting it in the register.
+[01:00:35 -> 01:00:37] Okay.
+[01:00:37 -> 01:00:39] Stores. What a store does
+[01:00:39 -> 01:00:41] is it's going to record the
+[01:00:41 -> 01:00:43] current load queue tail
+[01:00:43 -> 01:00:45] as a store position.
+[01:00:47 -> 01:00:49] And in the execute,
+[01:00:49 -> 01:00:51] it's going to detect to
+[01:00:51 -> 01:00:53] see if there was a later
+[01:00:53 -> 01:00:55] load that executed
+[01:00:55 -> 01:00:57] before the store.
+[01:00:57 -> 01:01:02] Okay.
+[01:01:02 -> 01:01:04] Again, going
+[01:01:04 -> 01:01:06] back to this picture over here.
+[01:01:06 -> 01:01:08] Okay.
+[01:01:08 -> 01:01:10] So, you know, the store
+[01:01:10 -> 01:01:12] B hasn't executed.
+[01:01:12 -> 01:01:14] It dispatched, so it has an entry
+[01:01:14 -> 01:01:16] in the store queue.
+[01:01:16 -> 01:01:18] The load C comes along, executed.
+[01:01:18 -> 01:01:20] Okay.
+[01:01:20 -> 01:01:22] Store D comes along, executed.
+[01:01:22 -> 01:01:24] Load E comes along, executed.
+[01:01:24 -> 01:01:26] And these C and D executed
+[01:01:26 -> 01:01:28] speculatively because this
+[01:01:28 -> 01:01:30] address was
+[01:01:30 -> 01:01:34] not known.
+[01:01:34 -> 01:01:36] So what you will do is,
+[01:01:36 -> 01:01:38] what you will do is,
+[01:01:38 -> 01:01:40] you know, when this load
+[01:01:40 -> 01:01:42] executes, record the current store
+[01:01:42 -> 01:01:44] queue position, tail position over here.
+[01:01:44 -> 01:01:46] Sorry.
+[01:01:46 -> 01:01:48] Okay. Sorry. When this store executes,
+[01:01:48 -> 01:01:50] record the current
+[01:01:50 -> 01:01:52] load queue position as the
+[01:01:52 -> 01:01:54] store queue
+[01:01:54 -> 01:01:56] position. So that would be the
+[01:01:56 -> 01:01:58] tail of the load queue over here.
+[01:01:58 -> 01:02:00] When this store executes,
+[01:02:00 -> 01:02:02] the tail of the load queue
+[01:02:02 -> 01:02:04] corresponding to this load would be this store
+[01:02:04 -> 01:02:06] position. Okay.
+[01:02:06 -> 01:02:08] When this store executes,
+[01:02:08 -> 01:02:10] sorry, when this store executes,
+[01:02:10 -> 01:02:12] the
+[01:02:12 -> 01:02:14] tail of the load queue
+[01:02:14 -> 01:02:16] which is corresponding to this position
+[01:02:16 -> 01:02:20] would be the load position.
+[01:02:20 -> 01:02:23] Okay. Now I'm going to store
+[01:02:23 -> 01:02:27] executes. Okay.
+[01:02:27 -> 01:02:31] And it compares
+[01:02:31 -> 01:02:33] all the addresses of the loads
+[01:02:33 -> 01:02:35] to see if there's a match.
+[01:02:35 -> 01:02:40] If A matched,
+[01:02:40 -> 01:02:44] that's not a problem. But if
+[01:02:44 -> 01:02:46] E matched,
+[01:02:46 -> 01:02:48] that's a problem.
+[01:02:48 -> 01:02:50] This load executed before this.
+[01:02:50 -> 01:02:52] This load, if it executed before this,
+[01:02:52 -> 01:02:54] that's fine because it should have executed
+[01:02:54 -> 01:02:59] before this. Then what you're going to do is,
+[01:02:59 -> 01:03:01] you will detect that there's
+[01:03:01 -> 01:03:03] a violation between
+[01:03:03 -> 01:03:05] the address this store wrote to
+[01:03:05 -> 01:03:07] and then this
+[01:03:07 -> 01:03:09] is the, all the loads
+[01:03:09 -> 01:03:11] corresponding to
+[01:03:11 -> 01:03:13] after this load should be
+[01:03:13 -> 01:03:15] wiped out.
+[01:03:15 -> 01:03:17] Basically all the states should be wiped out.
+[01:03:17 -> 01:03:23] Okay. So
+[01:03:23 -> 01:03:25] the store queue sends the address
+[01:03:25 -> 01:03:27] the store sends the address to the load queue,
+[01:03:27 -> 01:03:29] compare with all
+[01:03:29 -> 01:03:31] the load addresses, compare with
+[01:03:31 -> 01:03:33] all the load addresses,
+[01:03:33 -> 01:03:35] select the matching address,
+[01:03:35 -> 01:03:37] if there's a matching address,
+[01:03:37 -> 01:03:39] there's a load
+[01:03:39 -> 01:03:41] executed before the store
+[01:03:41 -> 01:03:43] probably
+[01:03:43 -> 01:03:45] and there's this age selection
+[01:03:45 -> 01:03:47] logic
+[01:03:47 -> 01:03:49] selects the oldest store
+[01:03:49 -> 01:03:51] that is the
+[01:03:51 -> 01:03:53] younger than the store
+[01:03:53 -> 01:03:55] using the store position.
+[01:03:55 -> 01:03:57] Okay.
+[01:03:57 -> 01:03:59] Then the processor flushes
+[01:03:59 -> 01:04:01] and restarts
+[01:04:01 -> 01:04:07] from that point. Are you
+[01:04:07 -> 01:04:16] with me on this?
+[01:04:16 -> 01:04:18] Here you talk about the loads
+[01:04:18 -> 01:04:20] when the loads execute.
+[01:04:20 -> 01:04:23] We don't,
+[01:04:23 -> 01:04:25] the pipeline is deeper than just
+[01:04:25 -> 01:04:27] execute, right? Like we don't update
+[01:04:27 -> 01:04:29] the registers
+[01:04:29 -> 01:04:31] until we hit write back
+[01:04:31 -> 01:04:33] base, right?
+[01:04:33 -> 01:04:35] What do we mean by
+[01:04:35 -> 01:04:37] execute?
+[01:04:37 -> 01:04:39] Because you can't really
+[01:04:39 -> 01:04:45] actually
+[01:04:45 -> 01:05:00] I'll go back to the B6, this is easier.
+[01:05:00 -> 01:05:02] This is what we mean by load executing.
+[01:05:02 -> 01:05:06] By load executing means
+[01:05:06 -> 01:05:08] you wake up all the
+[01:05:08 -> 01:05:10] instructions after
+[01:05:10 -> 01:05:12] that are dependent on that
+[01:05:12 -> 01:05:14] write the value
+[01:05:14 -> 01:05:16] set the
+[01:05:16 -> 01:05:18] map table,
+[01:05:18 -> 01:05:20] etc, etc.
+[01:05:20 -> 01:05:23] Okay.
+[01:05:23 -> 01:05:25] Don't think of it, or
+[01:05:25 -> 01:05:27] in the R10k
+[01:05:27 -> 01:05:29] in the R10k
+[01:05:29 -> 01:05:37] what we mean by this
+[01:05:37 -> 01:05:39] load executing
+[01:05:39 -> 01:05:41] is
+[01:05:41 -> 01:05:43] freeing up that reservation station
+[01:05:43 -> 01:05:45] and then getting the value
+[01:05:45 -> 01:05:47] written with the correct physical register.
+[01:05:47 -> 01:05:50] I'm not retired yet.
+[01:05:50 -> 01:05:52] Different from retired.
+[01:05:52 -> 01:05:56] Are you with me on this?
+[01:05:56 -> 01:06:06] So this opportunistic
+[01:06:06 -> 01:06:08] scheduling, which is
+[01:06:08 -> 01:06:10] allow a load to execute
+[01:06:10 -> 01:06:12] before a previous store, was
+[01:06:12 -> 01:06:14] actually slightly, you know, sometimes better
+[01:06:14 -> 01:06:16] than this conservative
+[01:06:16 -> 01:06:18] scheduling, which was you had to actually
+[01:06:18 -> 01:06:22] wait for all the addresses to be
+[01:06:22 -> 01:06:24] Now
+[01:06:24 -> 01:06:26] appreciate
+[01:06:26 -> 01:06:28] over here that when I talked about
+[01:06:28 -> 01:06:30] in the alpha processor
+[01:06:30 -> 01:06:32] initially, they were not writing
+[01:06:32 -> 01:06:34] into the store queue
+[01:06:34 -> 01:06:36] until both the data and the address
+[01:06:36 -> 01:06:38] of the store were known.
+[01:06:38 -> 01:06:40] You have a storing point code,
+[01:06:40 -> 01:06:42] long latency operation feeding into a store
+[01:06:42 -> 01:06:44] this load
+[01:06:44 -> 01:06:46] okay, if you made
+[01:06:46 -> 01:06:48] it wait
+[01:06:48 -> 01:06:50] if you made it wait for the store address
+[01:06:50 -> 01:06:52] to be known, then
+[01:06:52 -> 01:06:54] basically you were waiting too long
+[01:06:54 -> 01:06:56] in the conservative schedule.
+[01:06:56 -> 01:06:58] But then if you did
+[01:06:58 -> 01:07:00] this opportunistic one
+[01:07:00 -> 01:07:02] you let it go
+[01:07:02 -> 01:07:04] before the previous store
+[01:07:04 -> 01:07:06] 90% of the stores there was no problem
+[01:07:06 -> 01:07:08] but if there was a problem
+[01:07:08 -> 01:07:10] then
+[01:07:10 -> 01:07:12] you waited much
+[01:07:12 -> 01:07:14] longer to detect the problem
+[01:07:14 -> 01:07:16] then you
+[01:07:16 -> 01:07:18] you could have detected
+[01:07:18 -> 01:07:20] the problem when the address
+[01:07:20 -> 01:07:22] was known
+[01:07:22 -> 01:07:24] when the address was known
+[01:07:24 -> 01:07:29] before the data that you are storing
+[01:07:29 -> 01:07:37] okay, are you with me on this?
+[01:07:37 -> 01:07:39] So the observation
+[01:07:39 -> 01:07:41] that some of us made
+[01:07:41 -> 01:07:43] is
+[01:07:43 -> 01:07:45] hey, these loads and stores
+[01:07:45 -> 01:07:47] that cause violations
+[01:07:47 -> 01:07:49] are stable
+[01:07:49 -> 01:07:51] they are a property of the program
+[01:07:51 -> 01:07:53] mostly program based and the program
+[01:07:53 -> 01:07:55] does not change
+[01:07:55 -> 01:07:57] okay
+[01:07:57 -> 01:08:08] so let's say I have a
+[01:08:08 -> 01:08:10] piece of code
+[01:08:10 -> 01:08:12] I make a call to some function
+[01:08:12 -> 01:08:14] alright
+[01:08:14 -> 01:08:16] and
+[01:08:16 -> 01:08:18] you know, this is my
+[01:08:18 -> 01:08:20] function code over here
+[01:08:20 -> 01:08:22] okay
+[01:08:22 -> 01:08:24] and how would I
+[01:08:24 -> 01:08:26] you know
+[01:08:26 -> 01:08:28] pass parameters
+[01:08:28 -> 01:08:32] of this call to
+[01:08:32 -> 01:08:34] this function
+[01:08:34 -> 01:08:36] or how would I pass the return value from this
+[01:08:36 -> 01:08:38] function back to this call
+[01:08:38 -> 01:08:40] okay
+[01:08:40 -> 01:08:42] so
+[01:08:42 -> 01:08:44] typically via stack, right?
+[01:08:44 -> 01:08:46] okay, so what do I do over here?
+[01:08:46 -> 01:08:48] I store
+[01:08:48 -> 01:08:50] to the top of the stack
+[01:08:50 -> 01:08:52] okay
+[01:08:52 -> 01:08:54] and then I
+[01:08:54 -> 01:08:56] load from the top of the stack
+[01:08:56 -> 01:09:03] and here I
+[01:09:03 -> 01:09:05] store to the top of the stack
+[01:09:05 -> 01:09:07] and here I
+[01:09:07 -> 01:09:09] load from the top of the stack
+[01:09:09 -> 01:09:15] so what you see is
+[01:09:15 -> 01:09:17] that, hey, now
+[01:09:17 -> 01:09:19] what will happen
+[01:09:19 -> 01:09:21] dynamically is
+[01:09:21 -> 01:09:30] a piece of code like this
+[01:09:30 -> 01:09:32] okay
+[01:09:32 -> 01:09:34] and you know
+[01:09:34 -> 01:09:36] that this load is going to be
+[01:09:36 -> 01:09:38] from, this load is going to be from
+[01:09:38 -> 01:09:40] the same address, this load is
+[01:09:40 -> 01:09:42] going to be from the same address as this
+[01:09:42 -> 01:09:47] store at this VC
+[01:09:47 -> 01:09:49] and if I execute this load before
+[01:09:49 -> 01:09:51] this store, there will be
+[01:09:51 -> 01:09:53] a violation
+[01:09:53 -> 01:09:56] if I execute this load before
+[01:09:56 -> 01:10:01] this store, there will be a violation
+[01:10:01 -> 01:10:04] however, every time I
+[01:10:04 -> 01:10:06] execute, every time I make
+[01:10:06 -> 01:10:08] this function call
+[01:10:08 -> 01:10:10] okay
+[01:10:10 -> 01:10:12] the store
+[01:10:12 -> 01:10:14] corresponding to this VC
+[01:10:14 -> 01:10:16] and the load at this VC
+[01:10:16 -> 01:10:22] are going to be independent
+[01:10:22 -> 01:10:24] and if there was some other
+[01:10:24 -> 01:10:26] store over here to
+[01:10:26 -> 01:10:28] heap
+[01:10:28 -> 01:10:30] somewhere, you know
+[01:10:30 -> 01:10:32] this load from the top of the stack
+[01:10:32 -> 01:10:34] if it was, did not
+[01:10:34 -> 01:10:36] conflict with this store
+[01:10:36 -> 01:10:38] the first time I ran the program
+[01:10:38 -> 01:10:40] one time, it's almost never
+[01:10:40 -> 01:10:42] going to, it's never going to conflict
+[01:10:42 -> 01:10:44] period, I know that
+[01:10:44 -> 01:10:48] okay, so
+[01:10:48 -> 01:10:50] these are all
+[01:10:50 -> 01:10:52] instructions at different BCs
+[01:10:52 -> 01:10:54] you know, this is PCA
+[01:10:54 -> 01:10:56] this is PCB
+[01:10:56 -> 01:10:58] this is PCC
+[01:10:58 -> 01:11:00] and this is
+[01:11:00 -> 01:11:02] PCB
+[01:11:02 -> 01:11:04] okay, these are all
+[01:11:04 -> 01:11:06] instructions, load and store instructions at different
+[01:11:06 -> 01:11:08] BCs, the
+[01:11:08 -> 01:11:10] dependence relationships between them
+[01:11:10 -> 01:11:12] they are either always dependent
+[01:11:12 -> 01:11:14] or not
+[01:11:14 -> 01:11:19] dependent, so these dependence
+[01:11:19 -> 01:11:21] relationships are mostly
+[01:11:21 -> 01:11:23] program based
+[01:11:23 -> 01:11:25] and the program does not
+[01:11:25 -> 01:11:27] change in some sense
+[01:11:27 -> 01:11:29] yeah, doesn't Intel
+[01:11:29 -> 01:11:31] do a lot of special stuff
+[01:11:31 -> 01:11:33] for their calls, churns
+[01:11:33 -> 01:11:35] and pops and pushes, because they have those
+[01:11:35 -> 01:11:37] instructions that specifically
+[01:11:37 -> 01:11:39] give context to a stack
+[01:11:39 -> 01:11:43] they do
+[01:11:43 -> 01:11:45] okay, they do, but still
+[01:11:45 -> 01:11:47] the scheduler now
+[01:11:47 -> 01:11:49] is basically, you know
+[01:11:51 -> 01:11:53] the scheduler is just saying
+[01:11:53 -> 01:11:55] hey, can this load go or not
+[01:11:55 -> 01:11:57] this is the address now, you know
+[01:11:57 -> 01:11:59] in comparing, this load scheduler
+[01:11:59 -> 01:12:01] is scheduling to see if there are
+[01:12:01 -> 01:12:03] prior stores
+[01:12:03 -> 01:12:05] many times you don't even want to wait for
+[01:12:05 -> 01:12:07] necessarily those stores
+[01:12:07 -> 01:12:09] but again, going back to this over here
+[01:12:09 -> 01:12:11] you know, this store
+[01:12:11 -> 01:12:13] at the top of the stack
+[01:12:13 -> 01:12:15] this was maybe waiting for some value
+[01:12:15 -> 01:12:17] to be created
+[01:12:17 -> 01:12:19] I call this instruction
+[01:12:19 -> 01:12:21] this load is saying, hey
+[01:12:21 -> 01:12:23] I'm ready to go
+[01:12:23 -> 01:12:25] okay, so that's when you have to
+[01:12:25 -> 01:12:27] do the comparison against the addresses
+[01:12:27 -> 01:12:29] it doesn't, you know, I mean
+[01:12:29 -> 01:12:31] this is a
+[01:12:31 -> 01:12:33] very common idiom where that's happening
+[01:12:33 -> 01:12:35] but there are many
+[01:12:35 -> 01:12:37] other places, anytime you
+[01:12:37 -> 01:12:39] spill registers
+[01:12:39 -> 01:12:41] and load them back, dependencies
+[01:12:41 -> 01:12:43] or many times
+[01:12:43 -> 01:12:45] you're writing something to a
+[01:12:45 -> 01:12:47] variable and you're loading back from the
+[01:12:47 -> 01:12:49] variable, global variable
+[01:12:49 -> 01:12:51] the same
+[01:12:51 -> 01:12:53] construct state
+[01:12:53 -> 01:12:55] okay, so these
+[01:12:55 -> 01:12:57] loads and stores that cause violations
+[01:12:57 -> 01:12:59] are stable
+[01:12:59 -> 01:13:01] and they are program based, and if they are stable
+[01:13:01 -> 01:13:03] then you can
+[01:13:03 -> 01:13:05] actually use the predict
+[01:13:05 -> 01:13:09] and this is something that we actually
+[01:13:09 -> 01:13:11] came up with many years ago, trying to
+[01:13:11 -> 01:13:13] figure out our own violations
+[01:13:13 -> 01:13:15] that we couldn't deal with
+[01:13:15 -> 01:13:17] for years until we came up with this
+[01:13:17 -> 01:13:19] and then
+[01:13:19 -> 01:13:21] you can store it
+[01:13:21 -> 01:13:30] okay
+[01:13:30 -> 01:13:32] I'll briefly
+[01:13:32 -> 01:13:34] go into the
+[01:13:34 -> 01:13:36] we'll come back to this slide
+[01:13:36 -> 01:13:38] and continue with the next couple of other slides
+[01:13:40 -> 01:13:42] any questions?

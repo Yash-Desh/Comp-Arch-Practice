@@ -1,0 +1,1386 @@
+Title: 752_Lec16
+Source file: 752_Lec16.mp3
+Detected language: en
+------------------------------------------------------------
+
+[00:00:11 -> 00:00:20] Okay, let's continue with our caches then.
+[00:00:20 -> 00:00:24] So we were talking about the ABCs of caches,
+[00:00:24 -> 00:00:30] capacity, associativity, and log size.
+[00:00:30 -> 00:00:34] And the larger the capacity you have,
+[00:00:34 -> 00:00:38] the fewer the capacity misses you're going to have.
+[00:00:38 -> 00:00:40] But you're going to increase the egg latency.
+[00:00:40 -> 00:00:43] And plus, there's a limit to what the size can be.
+[00:00:43 -> 00:00:47] That is a whole memory hierarchy trade-off.
+[00:00:47 -> 00:00:50] Associativity, we'll see it's going to decrease
+[00:00:50 -> 00:00:51] the conflict misses.
+[00:00:51 -> 00:00:52] How?
+[00:00:52 -> 00:00:53] We'll see that.
+[00:00:53 -> 00:00:55] But it's going to increase the egg latency.
+[00:00:55 -> 00:00:56] Why?
+[00:00:56 -> 00:00:56] We'll see that.
+[00:00:57 -> 00:01:00] Block size is going to increase the capacity
+[00:01:00 -> 00:01:03] and conflict misses because there are fewer primes
+[00:01:03 -> 00:01:05] and we'll see that.
+[00:01:05 -> 00:01:08] But it's going to perhaps decrease some compulsory
+[00:01:08 -> 00:01:10] and the less capacity misses,
+[00:01:10 -> 00:01:13] some of the spatial precetions, we'll see that.
+[00:01:13 -> 00:01:18] And it really has no effect on the head latency.
+[00:01:18 -> 00:01:19] Again, we'll see that.
+[00:01:19 -> 00:01:22] But it's going to increase the miss latency.
+[00:01:22 -> 00:01:25] May increase that and we'll see why that's the case.
+[00:01:25 -> 00:01:26] So let's take these one by one.
+[00:01:28 -> 00:01:32] And in general, if you do a plot of the miss rate
+[00:01:32 -> 00:01:34] versus the cache size,
+[00:01:34 -> 00:01:38] and it has some curve that looks like this
+[00:01:38 -> 00:01:41] where it decreases initially quite rapidly
+[00:01:41 -> 00:01:44] and then it's still going to increase degrees
+[00:01:44 -> 00:01:46] but we're diminishing returns after a certain point.
+[00:01:49 -> 00:01:52] However, the bigger cache is of course
+[00:01:52 -> 00:01:57] going to have more of a head latency.
+[00:01:57 -> 00:02:00] And typically, there is some size of a cache
+[00:02:00 -> 00:02:05] that in a sense works well for a program.
+[00:02:08 -> 00:02:12] However, when you have a workload,
+[00:02:12 -> 00:02:13] you typically have multiple programs.
+[00:02:13 -> 00:02:16] And furthermore, even during, within a program,
+[00:02:16 -> 00:02:18] there are phases that have different demands
+[00:02:18 -> 00:02:21] for different workloads.
+[00:02:21 -> 00:02:23] Okay, so people try and do a lot of analysis
+[00:02:23 -> 00:02:25] or different workloads, do lots of simulations
+[00:02:25 -> 00:02:27] like of the kind that you've been doing
+[00:02:29 -> 00:02:33] and try and get an idea of what cache size
+[00:02:33 -> 00:02:35] works well enough.
+[00:02:35 -> 00:02:37] And of course, this is not the only,
+[00:02:37 -> 00:02:39] miss rate is not the only parameter.
+[00:02:39 -> 00:02:42] There's also the access latency,
+[00:02:42 -> 00:02:45] how many resources you have available to use for this,
+[00:02:45 -> 00:02:47] how many total resources you have,
+[00:02:47 -> 00:02:51] what else you could use it for, et cetera, et cetera.
+[00:02:51 -> 00:02:54] So, just increasing the cache size,
+[00:02:54 -> 00:02:56] changing the cache size in a sense is quite boring.
+[00:02:56 -> 00:02:58] It's like whatever resources you have,
+[00:02:58 -> 00:03:00] how much budget you have,
+[00:03:00 -> 00:03:02] that is going to impact your cache size.
+[00:03:04 -> 00:03:07] But the block size and the associativity,
+[00:03:07 -> 00:03:08] there are lots of issues over there.
+[00:03:08 -> 00:03:13] So let's spend some time talking about those.
+[00:03:13 -> 00:03:18] Okay, the block size is the size of, you know,
+[00:03:19 -> 00:03:23] data that you're moving between the cache and the memory
+[00:03:23 -> 00:03:25] or between one level of the memory
+[00:03:25 -> 00:03:28] and the next level of the memory.
+[00:03:28 -> 00:03:31] And what you have to do now is your cache
+[00:03:31 -> 00:03:34] is going to have some number of blocks over here.
+[00:03:34 -> 00:03:37] Okay, so previously the cache,
+[00:03:37 -> 00:03:39] previously the cache that we had,
+[00:03:39 -> 00:03:44] had blocks of 32 bytes and I had one K of them.
+[00:03:47 -> 00:03:50] And if I increase the block size,
+[00:03:50 -> 00:03:54] say I make it 512 bits,
+[00:03:54 -> 00:03:58] for the same size of cache, which is 32 kilobytes,
+[00:03:58 -> 00:04:01] okay, I'm going to have a fewer number,
+[00:04:01 -> 00:04:03] half the number, if I double the blocks,
+[00:04:03 -> 00:04:06] I'm going to have half the number of block frames
+[00:04:06 -> 00:04:07] of the blocks to be put.
+[00:04:09 -> 00:04:13] Okay, notice the total size of the cache hasn't changed.
+[00:04:16 -> 00:04:18] It's just how I've organized it.
+[00:04:18 -> 00:04:24] I have, you know, bigger blocks and fewer block frames.
+[00:04:24 -> 00:04:28] So what does happen is that the number of bytes,
+[00:04:28 -> 00:04:33] bits, the bits that select the byte within each block.
+[00:04:33 -> 00:04:37] Now if I had 64, you know, byte blocks,
+[00:04:37 -> 00:04:39] then I have to have two to the sixth
+[00:04:39 -> 00:04:44] of six bits, 64, and I have to select between 64 bytes.
+[00:04:45 -> 00:04:49] So I have to have two to the sixth,
+[00:04:49 -> 00:04:51] six bits of address to select between
+[00:04:51 -> 00:04:54] one of those two to the sixth bytes, okay.
+[00:04:54 -> 00:04:58] So the way I split up my address is six bits,
+[00:04:58 -> 00:05:00] bottom six bits are going to select the byte
+[00:05:00 -> 00:05:02] within the 64 byte block.
+[00:05:02 -> 00:05:05] Then the next nine bits are going to be
+[00:05:05 -> 00:05:08] an address of the particular block frame
+[00:05:08 -> 00:05:10] I'm going to access, okay.
+[00:05:10 -> 00:05:12] And the remaining bits of the tag
+[00:05:12 -> 00:05:14] and the tag bits haven't changed
+[00:05:14 -> 00:05:17] the size of the cache hasn't changed.
+[00:05:21 -> 00:05:24] So I am actually reducing the tag overhead.
+[00:05:24 -> 00:05:26] Why am I reducing the tag overhead?
+[00:05:26 -> 00:05:29] Because the size of the tag hasn't changed
+[00:05:29 -> 00:05:31] but now rather than having one K,
+[00:05:31 -> 00:05:36] I only have five, 12 tags, okay.
+[00:05:36 -> 00:05:40] So if tag storage is, overall storage is important,
+[00:05:40 -> 00:05:46] that is a plus for a larger block size.
+[00:05:46 -> 00:05:48] A larger block size is also going
+[00:05:48 -> 00:05:49] to exploit spatial locality.
+[00:05:49 -> 00:05:52] So if I'm referencing some address
+[00:05:52 -> 00:05:53] and with a larger block size,
+[00:05:53 -> 00:05:55] I'm going to bring other addresses around it.
+[00:05:55 -> 00:05:58] So when I go and reference that other address,
+[00:05:58 -> 00:06:00] if I do have spatial locality,
+[00:06:00 -> 00:06:05] I'm going to have a hit rather than a miss.
+[00:06:05 -> 00:06:10] However, now there are multiple negatives.
+[00:06:11 -> 00:06:16] One is that if I'm referencing 64 bytes
+[00:06:16 -> 00:06:18] and I bring in 64, okay,
+[00:06:18 -> 00:06:21] if I don't reference some of those other bytes,
+[00:06:21 -> 00:06:25] then I'm transferring that data unnecessarily,
+[00:06:25 -> 00:06:30] it's useless and that's going to be more bandwidth.
+[00:06:30 -> 00:06:33] Furthermore, there's going to be fragmentation.
+[00:06:33 -> 00:06:37] So if I'm not using data that's there in the block,
+[00:06:37 -> 00:06:42] then in effect that much of the cache I'm not using.
+[00:06:43 -> 00:06:48] Okay, so if I only use half the data in each block,
+[00:06:48 -> 00:06:53] then effectively I'm only using half the cache.
+[00:06:53 -> 00:06:57] And furthermore, because now I can have
+[00:06:57 -> 00:06:59] fewer different blocks in the cache,
+[00:07:00 -> 00:07:05] okay, so I'm likely to replace a block
+[00:07:05 -> 00:07:08] that I could be using because I have
+[00:07:08 -> 00:07:09] fewer blocks that I can have.
+[00:07:10 -> 00:07:14] Okay, you with me on this?
+[00:07:14 -> 00:07:16] Okay.
+[00:07:16 -> 00:07:20] So these two effects, there are two effects on miss rate,
+[00:07:20 -> 00:07:22] the spatial prefetching.
+[00:07:22 -> 00:07:26] So, you know, if I'm referencing adjacent addresses,
+[00:07:26 -> 00:07:29] if I have, you know, two blocks, you know,
+[00:07:29 -> 00:07:31] I'd miss the first time on one block,
+[00:07:31 -> 00:07:33] second time on the next block.
+[00:07:33 -> 00:07:36] If they're particular and I combine them into one block,
+[00:07:36 -> 00:07:37] I would have only one miss.
+[00:07:37 -> 00:07:40] Okay, so rather than having the miss miss on two blocks,
+[00:07:40 -> 00:07:47] I'd get a miss and a hit on those same addresses.
+[00:07:47 -> 00:07:50] However, there's the interference
+[00:07:50 -> 00:07:53] because blocks that are not adjacent in adjacent frames,
+[00:07:53 -> 00:07:55] they could be conflicting.
+[00:07:55 -> 00:07:57] So I could have had hits over that,
+[00:07:57 -> 00:08:01] but now because those cannot be resonant simultaneously,
+[00:08:01 -> 00:08:05] I end up having misses.
+[00:08:05 -> 00:08:07] Both these effects are present.
+[00:08:07 -> 00:08:09] So typically, you know, you see a curve like this
+[00:08:09 -> 00:08:12] as the block size increases.
+[00:08:12 -> 00:08:15] Initially, the spatial prefetching dominates,
+[00:08:15 -> 00:08:17] reduces the miss rate, but after a point,
+[00:08:17 -> 00:08:19] the interference increases.
+[00:08:19 -> 00:08:22] And so typically, I end up having a point
+[00:08:22 -> 00:08:26] where I have a, you know, good block size, if you will.
+[00:08:27 -> 00:08:30] It's gonna depend on the size of the cache.
+[00:08:30 -> 00:08:30] It's gonna, of course,
+[00:08:30 -> 00:08:33] depend on the program referencing pattern.
+[00:08:33 -> 00:08:37] And, you know, typically, you know,
+[00:08:37 -> 00:08:40] 16 to 128 byte blocks at 64
+[00:08:40 -> 00:08:45] is a very common block size people use.
+[00:08:45 -> 00:08:49] Okay, so that's the block size,
+[00:08:49 -> 00:08:51] affected the block size and the miss rate.
+[00:08:51 -> 00:08:53] The tag overhead now,
+[00:08:53 -> 00:08:57] if I had the 32 kilobyte cache with 1K and 32 byte frames,
+[00:08:57 -> 00:09:02] I have, you know, the 17 bits plus one bit overhead
+[00:09:03 -> 00:09:07] times so many frames at 16 kilobits of tags,
+[00:09:07 -> 00:09:10] 2.2 kilobytes, that's about a 6% overhead.
+[00:09:10 -> 00:09:14] Now, if I had 64 byte blocks,
+[00:09:14 -> 00:09:16] I only have five, 12 of them.
+[00:09:16 -> 00:09:20] So now I have 18 bits of overhead times five, 12 frames,
+[00:09:20 -> 00:09:23] that's nine kilobits or 1.1 kilobits.
+[00:09:23 -> 00:09:28] That's, you know, half the overhead.
+[00:09:28 -> 00:09:35] Questions?
+[00:09:35 -> 00:09:38] So I'm actually not gonna go through the, you know,
+[00:09:38 -> 00:09:39] this chart over here.
+[00:09:39 -> 00:09:42] You can see the same reference pattern,
+[00:09:42 -> 00:09:46] and, you know, some previously things that were hits
+[00:09:46 -> 00:09:48] that misses become hits,
+[00:09:48 -> 00:09:52] and sometimes previously that were hits become misses.
+[00:09:52 -> 00:09:54] The hits, because of the spatial locality
+[00:09:55 -> 00:09:58] misses because of the interference that will come.
+[00:09:58 -> 00:10:02] You can take this off of mine.
+[00:10:02 -> 00:10:03] All right.
+[00:10:03 -> 00:10:09] So now let's see how things become
+[00:10:09 -> 00:10:11] a little more involved and interesting.
+[00:10:11 -> 00:10:18] So here is my cache,
+[00:10:19 -> 00:10:22] and, you know, here is, say, my memory audit
+[00:10:22 -> 00:10:25] could be the second level cache or whatever it is.
+[00:10:25 -> 00:10:26] Okay?
+[00:10:26 -> 00:10:29] And I'm moving, whenever, you know,
+[00:10:29 -> 00:10:32] when I'm moving information back and forth,
+[00:10:32 -> 00:10:35] it is entire cache blocks.
+[00:10:35 -> 00:10:36] Okay?
+[00:10:36 -> 00:10:40] And this is going to be moved over a set of wires,
+[00:10:40 -> 00:10:45] and that is going to be N bytes, white.
+[00:10:47 -> 00:10:49] Okay?
+[00:10:49 -> 00:10:54] So if now I'm moving a block size of P bytes,
+[00:10:55 -> 00:10:59] and I'm only moving N bytes per cycle,
+[00:10:59 -> 00:11:03] I'm going to take B over N cycles
+[00:11:03 -> 00:11:05] to actually move that block in.
+[00:11:06 -> 00:11:07] Correct?
+[00:11:08 -> 00:11:13] So let me say I took one cycle to hit in the cache,
+[00:11:14 -> 00:11:18] and 10 cycles to miss in the cache.
+[00:11:18 -> 00:11:19] Okay?
+[00:11:19 -> 00:11:26] So the hit latency is one,
+[00:11:26 -> 00:11:31] and the miss latency is 10.
+[00:11:32 -> 00:11:34] Right?
+[00:11:34 -> 00:11:37] Well, not quite,
+[00:11:37 -> 00:11:42] because the miss latency is the time to access the data
+[00:11:43 -> 00:11:48] plus the time to transfer this data.
+[00:11:48 -> 00:11:49] Okay?
+[00:11:49 -> 00:11:53] So if my block size was 64,
+[00:11:53 -> 00:11:58] and I was transferring eight bytes at a time,
+[00:11:58 -> 00:12:01] then it's going to take me eight cycles
+[00:12:01 -> 00:12:04] to transfer the entire block over.
+[00:12:04 -> 00:12:05] All right?
+[00:12:05 -> 00:12:07] So this miss latency
+[00:12:07 -> 00:12:11] is going to be the 10 cycles to access this
+[00:12:11 -> 00:12:18] plus the eight to transfer this block over.
+[00:12:18 -> 00:12:19] Okay?
+[00:12:19 -> 00:12:21] The larger my block size,
+[00:12:21 -> 00:12:25] now the larger the miss latency.
+[00:12:26 -> 00:12:29] Question.
+[00:12:29 -> 00:12:30] Okay?
+[00:12:30 -> 00:12:32] So when I say the block size
+[00:12:32 -> 00:12:35] may increase the latency of a miss,
+[00:12:35 -> 00:12:37] now you see what that's doing over there.
+[00:12:37 -> 00:12:40] Latency of the miss is increasing.
+[00:12:40 -> 00:12:40] Okay?
+[00:12:40 -> 00:12:43] And the latency of the hit isn't increasing
+[00:12:43 -> 00:12:47] because I'm reading the entire block,
+[00:12:47 -> 00:12:51] and then shifting that entire 64 bits,
+[00:12:51 -> 00:12:55] and shifting whatever I need to pull out
+[00:12:55 -> 00:12:59] that exact set of bytes I'm reading over there.
+[00:13:00 -> 00:13:01] Yes?
+[00:13:01 -> 00:13:03] Those two clocks,
+[00:13:03 -> 00:13:05] like the hit latency,
+[00:13:05 -> 00:13:07] we're talking about essentially the processor
+[00:13:07 -> 00:13:09] is clock speed, right?
+[00:13:09 -> 00:13:12] But the memory bandwidth is substantially,
+[00:13:12 -> 00:13:16] or the memory's clock is way slower than the CPU.
+[00:13:16 -> 00:13:17] So yeah.
+[00:13:17 -> 00:13:19] So this is just some numbers up there.
+[00:13:19 -> 00:13:20] Okay.
+[00:13:20 -> 00:13:21] So, you know, I mean,
+[00:13:21 -> 00:13:22] assume that second,
+[00:13:22 -> 00:13:27] what I'm saying memory is the second level of cache.
+[00:13:27 -> 00:13:28] Okay.
+[00:13:28 -> 00:13:31] Well, like if that was L2 though,
+[00:13:31 -> 00:13:33] that thing gets to move,
+[00:13:33 -> 00:13:35] it moves data between L2 and L1
+[00:13:35 -> 00:13:38] is cache line wide, isn't it?
+[00:13:38 -> 00:13:40] It depends.
+[00:13:40 -> 00:13:43] Cache line wide is, you know,
+[00:13:45 -> 00:13:46] quite wide.
+[00:13:46 -> 00:13:48] 512 bytes in a real machine.
+[00:13:48 -> 00:13:49] 512 bits.
+[00:13:49 -> 00:13:50] Bits.
+[00:13:50 -> 00:13:51] Bits.
+[00:13:51 -> 00:13:52] Yeah.
+[00:13:52 -> 00:13:54] You know, it depends.
+[00:13:54 -> 00:13:55] Okay.
+[00:13:55 -> 00:13:57] And then still would be the L2
+[00:13:57 -> 00:14:02] and the L2 and L3 or whatever it is in memory.
+[00:14:03 -> 00:14:07] Eventually, if this is going off memory, okay,
+[00:14:07 -> 00:14:10] the width of the bus is going,
+[00:14:10 -> 00:14:11] if it's going off the chip,
+[00:14:11 -> 00:14:13] the width of the bus is going to determine
+[00:14:13 -> 00:14:17] how many pins I need to have on that package.
+[00:14:17 -> 00:14:18] The number of pins,
+[00:14:18 -> 00:14:20] in addition to being able to,
+[00:14:20 -> 00:14:22] whether you can put them or not,
+[00:14:22 -> 00:14:26] that also adds a lot of expense too.
+[00:14:26 -> 00:14:29] Okay.
+[00:14:29 -> 00:14:30] All right.
+[00:14:30 -> 00:14:32] So it's never going to be the case
+[00:14:32 -> 00:14:34] that you're just going to be dumping that
+[00:14:35 -> 00:14:38] cache on the entire block in one shot.
+[00:14:40 -> 00:14:41] Okay.
+[00:14:41 -> 00:14:43] So what can we do?
+[00:14:43 -> 00:14:44] Okay.
+[00:14:44 -> 00:14:46] What we can do is, you know,
+[00:14:46 -> 00:14:50] larger cache blocks take a long time to refill.
+[00:14:50 -> 00:14:52] So what you can do is,
+[00:14:52 -> 00:14:55] you can actually refill this cache line
+[00:14:55 -> 00:14:58] critical word first.
+[00:14:58 -> 00:14:59] All right.
+[00:14:59 -> 00:15:03] So, you know, say I had a,
+[00:15:03 -> 00:15:05] you know, 64 point,
+[00:15:05 -> 00:15:06] you know,
+[00:15:08 -> 00:15:10] cache block.
+[00:15:10 -> 00:15:11] Okay.
+[00:15:12 -> 00:15:12] Whatever.
+[00:15:12 -> 00:15:13] Okay.
+[00:15:13 -> 00:15:18] And I make a reference to this word over here.
+[00:15:20 -> 00:15:21] Okay.
+[00:15:21 -> 00:15:24] So rather than start from this word
+[00:15:24 -> 00:15:27] and transfer the words one by one like yay,
+[00:15:27 -> 00:15:28] this is the critical word.
+[00:15:28 -> 00:15:32] I will send this back to the processor.
+[00:15:34 -> 00:15:35] Okay.
+[00:15:35 -> 00:15:38] Let the processor start going.
+[00:15:39 -> 00:15:40] In which case now,
+[00:15:40 -> 00:15:43] the latency for that access
+[00:15:43 -> 00:15:46] is still only going to be the latency
+[00:15:46 -> 00:15:48] to get the critical word.
+[00:15:48 -> 00:15:51] And then the time that it takes to transfer
+[00:15:51 -> 00:15:53] the cycle that it takes to transfer that
+[00:15:53 -> 00:15:54] can be happening
+[00:15:55 -> 00:15:58] as the processor is doing its stuff.
+[00:15:59 -> 00:16:00] Okay.
+[00:16:00 -> 00:16:03] So refill the cache line
+[00:16:03 -> 00:16:05] critical word first
+[00:16:05 -> 00:16:08] and restart the cache access
+[00:16:08 -> 00:16:13] before the complete refill, if you will.
+[00:16:13 -> 00:16:16] All right.
+[00:16:16 -> 00:16:19] Put the critical word first, right?
+[00:16:19 -> 00:16:22] What if they are not properly aligned?
+[00:16:22 -> 00:16:26] Let's say that we are fetching,
+[00:16:26 -> 00:16:29] but if they are not in the sixth ring,
+[00:16:29 -> 00:16:31] they're not in the first 64,
+[00:16:31 -> 00:16:34] first 16 bits or something like that.
+[00:16:34 -> 00:16:37] If they're kind of somewhere in the middle,
+[00:16:37 -> 00:16:39] then we will have to have extra logic
+[00:16:39 -> 00:16:41] that takes that first,
+[00:16:43 -> 00:16:46] that maybe some memory complexity
+[00:16:46 -> 00:16:47] down the line.
+[00:16:48 -> 00:16:50] Forget memory.
+[00:16:50 -> 00:16:52] Say this is a second-level cache too.
+[00:16:52 -> 00:16:53] Okay.
+[00:16:53 -> 00:16:57] You have to have logic that figures out
+[00:16:57 -> 00:16:59] rather than transferring,
+[00:16:59 -> 00:17:01] having a counter starting from this address
+[00:17:01 -> 00:17:02] and counting up,
+[00:17:02 -> 00:17:04] you have to first do this
+[00:17:04 -> 00:17:06] and then count the others in.
+[00:17:06 -> 00:17:08] Remember that this was done.
+[00:17:08 -> 00:17:09] Yeah, it's a little extra logic,
+[00:17:09 -> 00:17:14] but hey, it's saving on a lot of latency.
+[00:17:14 -> 00:17:15] Okay.
+[00:17:16 -> 00:17:17] All right.
+[00:17:17 -> 00:17:20] So restart that before the complete refill over there.
+[00:17:20 -> 00:17:25] Are you with me on this critical word first?
+[00:17:25 -> 00:17:26] Okay.
+[00:17:26 -> 00:17:27] When going forward,
+[00:17:27 -> 00:17:31] we'll see what a lockup-free or non-locking cache is.
+[00:17:31 -> 00:17:34] Now, while this word,
+[00:17:34 -> 00:17:37] while this line is being transferred,
+[00:17:37 -> 00:17:38] I gave,
+[00:17:38 -> 00:17:39] and I'm not waiting for the entire line
+[00:17:39 -> 00:17:41] to let the processor go
+[00:17:41 -> 00:17:42] to be transferred.
+[00:17:42 -> 00:17:43] Okay.
+[00:17:43 -> 00:17:44] The processor goes,
+[00:17:44 -> 00:17:45] gets its word,
+[00:17:45 -> 00:17:47] starts it, you know,
+[00:17:47 -> 00:17:48] doing its thing,
+[00:17:48 -> 00:17:51] and makes another reference to the same cache line.
+[00:17:51 -> 00:17:56] A different word in that cache line.
+[00:17:56 -> 00:17:59] Okay.
+[00:17:59 -> 00:18:00] We'll see what happens
+[00:18:00 -> 00:18:02] when something in that happens.
+[00:18:02 -> 00:18:04] Or even if there's no mess.
+[00:18:04 -> 00:18:04] Okay.
+[00:18:04 -> 00:18:07] So you have to actually then keep track of
+[00:18:07 -> 00:18:10] which all sub-blocks
+[00:18:11 -> 00:18:14] of that cache block have been transferred.
+[00:18:14 -> 00:18:16] And then if you have another reference
+[00:18:16 -> 00:18:17] to a sub-block,
+[00:18:18 -> 00:18:21] you have to determine whether it was transferred
+[00:18:21 -> 00:18:26] or whether you're waiting for it still to be transferred.
+[00:18:26 -> 00:18:27] All right.
+[00:18:27 -> 00:18:28] But, hey, you know,
+[00:18:28 -> 00:18:29] the easy thing is,
+[00:18:29 -> 00:18:31] yeah, I'm gonna wait for the entire block
+[00:18:31 -> 00:18:32] to be transferred.
+[00:18:32 -> 00:18:33] You can do that.
+[00:18:35 -> 00:18:36] If you like doing things slow,
+[00:18:36 -> 00:18:37] that's fine.
+[00:18:37 -> 00:18:39] Sometimes people like doing things slow.
+[00:18:39 -> 00:18:40] Okay.
+[00:18:40 -> 00:18:42] You're just going to increase latency significantly
+[00:18:42 -> 00:18:47] with that.
+[00:18:47 -> 00:18:49] Okay.
+[00:18:49 -> 00:18:50] Now,
+[00:18:50 -> 00:18:52] the other thing
+[00:18:52 -> 00:18:54] that people do is they say,
+[00:18:54 -> 00:18:55] look, you know,
+[00:18:55 -> 00:18:56] if I have a larger,
+[00:18:56 -> 00:18:59] if I have a larger block,
+[00:18:59 -> 00:19:00] then say,
+[00:19:00 -> 00:19:02] I'm making a reference to this part of the block,
+[00:19:02 -> 00:19:03] this part of the block,
+[00:19:03 -> 00:19:05] and this part of the block,
+[00:19:05 -> 00:19:07] and not the other parts of the block.
+[00:19:08 -> 00:19:09] Okay.
+[00:19:09 -> 00:19:10] So,
+[00:19:11 -> 00:19:12] should I
+[00:19:13 -> 00:19:15] even transfer the other parts of the block?
+[00:19:15 -> 00:19:17] Because it's going to waste bandwidth.
+[00:19:19 -> 00:19:20] All right.
+[00:19:20 -> 00:19:21] And so,
+[00:19:21 -> 00:19:22] what you can do is,
+[00:19:22 -> 00:19:25] you can divide the block
+[00:19:25 -> 00:19:29] into sub-blocks.
+[00:19:29 -> 00:19:31] You still have only one tag.
+[00:19:33 -> 00:19:34] Okay.
+[00:19:34 -> 00:19:37] Rather than transfer the entire
+[00:19:40 -> 00:19:41] block,
+[00:19:41 -> 00:19:44] you only transfer the sub-blocks
+[00:19:44 -> 00:19:47] as you reference the sub-blocks.
+[00:19:47 -> 00:19:48] Okay.
+[00:19:48 -> 00:19:50] And then you have to have a valid bit
+[00:19:50 -> 00:19:52] for each sub-block.
+[00:19:53 -> 00:19:54] Now, you may ask me,
+[00:19:54 -> 00:19:55] hey, what's the,
+[00:19:55 -> 00:19:57] you know, why did you do this?
+[00:19:57 -> 00:19:58] What are you saving?
+[00:19:58 -> 00:20:02] You aren't saving any fragmentation in the cache
+[00:20:02 -> 00:20:06] because you still reserve the entire block in the cache
+[00:20:06 -> 00:20:09] for the data even that you want to transfer.
+[00:20:09 -> 00:20:10] Okay.
+[00:20:10 -> 00:20:11] But you are saving on the tag.
+[00:20:11 -> 00:20:14] You only have one tag for the entire block.
+[00:20:15 -> 00:20:19] Now, you have some extra valid bits over here.
+[00:20:19 -> 00:20:21] But you aren't also that,
+[00:20:21 -> 00:20:22] you aren't,
+[00:20:22 -> 00:20:24] you're saving on the
+[00:20:25 -> 00:20:26] busband where if that is,
+[00:20:26 -> 00:20:27] you can still resource
+[00:20:27 -> 00:20:29] that you see as your own option.
+[00:20:31 -> 00:20:31] Okay.
+[00:20:31 -> 00:20:32] By only,
+[00:20:32 -> 00:20:35] by not transferring data
+[00:20:35 -> 00:20:37] that you haven't referenced.
+[00:20:39 -> 00:20:43] Are you paying on the sub-block cache?
+[00:20:43 -> 00:20:47] Actually, the very first cache was a sub-block cache.
+[00:20:47 -> 00:20:48] It was called a sector cache
+[00:20:48 -> 00:20:50] because what you're saying now,
+[00:20:50 -> 00:20:51] block has multiple sectors
+[00:20:51 -> 00:20:54] and you are transferring sectors of that
+[00:20:54 -> 00:21:03] and you saved a lot of the data over there.
+[00:21:03 -> 00:21:05] And, you know, I mean, you know,
+[00:21:05 -> 00:21:07] with a sparse access pattern,
+[00:21:07 -> 00:21:10] if you have S sub-blocks,
+[00:21:10 -> 00:21:12] you could only be referencing one block
+[00:21:12 -> 00:21:14] in effect using only one S of the cache.
+[00:21:16 -> 00:21:17] You know, that is what you have to do.
+[00:21:17 -> 00:21:19] You have to do all your studies to figure out
+[00:21:19 -> 00:21:20] and see, hey,
+[00:21:20 -> 00:21:23] does it make sense to do a sub-blocking?
+[00:21:23 -> 00:21:25] What should be the block size, et cetera, et cetera.
+[00:21:26 -> 00:21:27] But this critical word first,
+[00:21:27 -> 00:21:35] there's something that is that everyone has questions.
+[00:21:36 -> 00:21:37] Yeah.
+[00:21:37 -> 00:21:37] So are these,
+[00:21:37 -> 00:21:40] does modern DIM support this sub-blocking like this?
+[00:21:42 -> 00:21:47] Though this has nothing to do with the DIM.
+[00:21:47 -> 00:21:47] You know, from the DIM,
+[00:21:47 -> 00:21:49] you are just unnecessarily assembling
+[00:21:49 -> 00:21:52] the entire line, if you will.
+[00:21:52 -> 00:21:54] But the transfer over to the processor
+[00:21:54 -> 00:21:56] depends on whatever logic you have.
+[00:21:56 -> 00:21:59] So that's in the chipset side of it.
+[00:21:59 -> 00:22:01] It's not like,
+[00:22:01 -> 00:22:03] so the memory is not coming here.
+[00:22:03 -> 00:22:06] The bits aren't coming out of the memory in parallel.
+[00:22:06 -> 00:22:07] Are they?
+[00:22:07 -> 00:22:08] No, no, no, no.
+[00:22:08 -> 00:22:10] I mean, you can, you know,
+[00:22:13 -> 00:22:17] the bits, they get assembled somewhere on the memory end
+[00:22:17 -> 00:22:19] and then they have to be transferred over
+[00:22:19 -> 00:22:21] based on the width.
+[00:22:21 -> 00:22:22] Right.
+[00:22:22 -> 00:22:25] But so like in a modern DIM,
+[00:22:25 -> 00:22:27] can we take advantage of the sub-block or not?
+[00:22:27 -> 00:22:30] Because at some point you're limited
+[00:22:30 -> 00:22:32] by what the DIM is going to do.
+[00:22:32 -> 00:22:35] It's gonna send, it'll have to send it all out.
+[00:22:35 -> 00:22:37] It's like, no matter.
+[00:22:37 -> 00:22:38] It sends it out,
+[00:22:38 -> 00:22:41] but you don't have to transfer it to the processor.
+[00:22:41 -> 00:22:44] That, it depends on your memory controller.
+[00:22:44 -> 00:22:45] Okay.
+[00:22:45 -> 00:22:45] All right.
+[00:22:45 -> 00:22:47] So the logic, you know,
+[00:22:47 -> 00:22:49] you could have the entire, you know,
+[00:22:49 -> 00:22:51] in fact, you know, a lot of the,
+[00:22:51 -> 00:22:52] you know, you see when we talk about memory,
+[00:22:52 -> 00:22:56] you actually read entire pages, if you will,
+[00:22:56 -> 00:22:57] you know, like the entire,
+[00:22:57 -> 00:23:01] you read the entire set of columns.
+[00:23:01 -> 00:23:04] You read the entire row, okay?
+[00:23:04 -> 00:23:06] And then how much of that row
+[00:23:06 -> 00:23:08] and how you want to transfer it
+[00:23:08 -> 00:23:13] depends upon the controller.
+[00:23:13 -> 00:23:14] Isn't it?
+[00:23:14 -> 00:23:18] Soft, logically, having more associativity,
+[00:23:18 -> 00:23:20] in a sense, you know, having to pay for the...
+[00:23:20 -> 00:23:23] That is, and it is absolutely not more associativity.
+[00:23:23 -> 00:23:25] It is just very simply,
+[00:23:25 -> 00:23:28] I want, I'm having a larger block,
+[00:23:29 -> 00:23:34] and a larger block allows me to have fewer tags.
+[00:23:34 -> 00:23:35] Storage.
+[00:23:35 -> 00:23:40] And now, rather than transfer data
+[00:23:40 -> 00:23:43] I'm never going to use and waste plus bandwidth,
+[00:23:43 -> 00:23:46] I am saving on the transfer of that data
+[00:23:46 -> 00:23:51] and saving on that bandwidth.
+[00:23:51 -> 00:23:52] All right.
+[00:23:52 -> 00:23:56] But, you know, this also feeds in very naturally
+[00:23:56 -> 00:24:00] to this critical word for us, okay?
+[00:24:00 -> 00:24:02] Because we are going to be, in a sense,
+[00:24:02 -> 00:24:04] transferring sub-blocks,
+[00:24:04 -> 00:24:08] and while this may not be in the cache,
+[00:24:08 -> 00:24:09] somewhere there is something,
+[00:24:09 -> 00:24:12] we will see in the misstatus handling registers,
+[00:24:12 -> 00:24:16] where this stuff happens, is there.
+[00:24:16 -> 00:24:18] Even if you're transferring all the sub-blocks,
+[00:24:18 -> 00:24:19] because these bandwidths
+[00:24:19 -> 00:24:21] for to indicate the validity of that sub-block
+[00:24:21 -> 00:24:27] has been transferred, is there.
+[00:24:27 -> 00:24:28] Okay?
+[00:24:28 -> 00:24:31] So, you know, I mean, the thing to remember,
+[00:24:31 -> 00:24:35] you know, at a high level is,
+[00:24:35 -> 00:24:38] we're going to be learning several tricks, okay?
+[00:24:38 -> 00:24:40] And the tricks are played,
+[00:24:40 -> 00:24:43] and you have this bag of tricks, you know?
+[00:24:43 -> 00:24:46] Given the situation, you can decide what bag of tricks,
+[00:24:46 -> 00:24:48] which tricks from your bag of tricks
+[00:24:48 -> 00:24:54] makes sense to use at that particular instance.
+[00:24:54 -> 00:24:56] Okay.
+[00:24:56 -> 00:24:59] So, all right.
+[00:24:59 -> 00:25:01] So, we'll get back to a little bit more
+[00:25:01 -> 00:25:02] about block sizes and so on
+[00:25:02 -> 00:25:05] when we talk about non-blocking caches.
+[00:25:05 -> 00:25:14] But, so, now, you have access fantasy
+[00:25:14 -> 00:25:19] that given any cache, you know, a cache size,
+[00:25:19 -> 00:25:21] and, you know, regardless of block size,
+[00:25:21 -> 00:25:23] you're going to keep generating misses,
+[00:25:23 -> 00:25:26] because both of these aren't going to be
+[00:25:26 -> 00:25:28] resident in the cache simultaneously.
+[00:25:28 -> 00:25:29] Again, I won't go through this,
+[00:25:29 -> 00:25:30] you can go through this and see,
+[00:25:30 -> 00:25:34] hey, yeah, you are getting misses over here,
+[00:25:34 -> 00:25:37] because you cannot have, you know,
+[00:25:37 -> 00:25:42] 3030 and 0030 resident in the cache at the same time,
+[00:25:42 -> 00:25:46] given that the, you know, what bits,
+[00:25:46 -> 00:25:52] how I was indexing and accessing the frames of the cache.
+[00:25:52 -> 00:25:53] Okay?
+[00:25:53 -> 00:25:55] So, to deal with conflicts,
+[00:25:55 -> 00:26:00] I am going to have set associativity,
+[00:26:00 -> 00:26:03] where previously, if I, you know,
+[00:26:03 -> 00:26:07] in the cache that I had over here, you know,
+[00:26:08 -> 00:26:11] a particular block could be resonant
+[00:26:11 -> 00:26:15] in only one and only one block frame in the cache.
+[00:26:15 -> 00:26:18] Okay, and that was determined by the index bits over here.
+[00:26:19 -> 00:26:20] Okay?
+[00:26:20 -> 00:26:24] Now, what I'm going to do is I'm going to say that
+[00:26:24 -> 00:26:29] a block can be resonant in more than one frame
+[00:26:29 -> 00:26:32] in the cache.
+[00:26:32 -> 00:26:37] And the number of block frames that a block could reside
+[00:26:38 -> 00:26:41] is called, you know, the number of them
+[00:26:41 -> 00:26:44] is the associativity of the cache.
+[00:26:44 -> 00:26:49] And then, my total 1K frames that I had, if you will,
+[00:26:50 -> 00:26:53] I'm going to divide them into a bunch of sets,
+[00:26:53 -> 00:26:56] and each set, I'm going to have a set of block frames
+[00:26:56 -> 00:27:01] and each frame in a set is called a wave over here.
+[00:27:01 -> 00:27:01] Okay?
+[00:27:01 -> 00:27:05] So, here is a cache where a frame, at this frame,
+[00:27:05 -> 00:27:10] I have, at this set, I have frame zero and 512,
+[00:27:11 -> 00:27:15] so a block could reside in either,
+[00:27:15 -> 00:27:18] block in set zero could reside either in frame zero
+[00:27:18 -> 00:27:23] or in frame 512.
+[00:27:23 -> 00:27:25] So, I have two waves over here,
+[00:27:25 -> 00:27:27] and so, the number of waves is what's called
+[00:27:27 -> 00:27:29] the associativity, and here is what I have,
+[00:27:29 -> 00:27:35] a two-way set associative cache.
+[00:27:35 -> 00:27:37] The way I'm going to access the set associative cache,
+[00:27:37 -> 00:27:42] okay, number of bytes within a block is still the same.
+[00:27:43 -> 00:27:48] Then, the index bits over here are going to select a set.
+[00:27:50 -> 00:27:50] Okay?
+[00:27:50 -> 00:27:53] So, if I have now 512 sets,
+[00:27:53 -> 00:27:54] I'm going to have nine bits of index
+[00:27:54 -> 00:27:57] to select one of the 512 sets.
+[00:27:57 -> 00:28:02] Then, I will read all the data and all the frames
+[00:28:02 -> 00:28:08] in a set in parallel, and the tags of those,
+[00:28:08 -> 00:28:13] and then I'll compare with the tag of the address.
+[00:28:13 -> 00:28:17] If there is a match, then I will,
+[00:28:17 -> 00:28:19] through this multiplexer,
+[00:28:19 -> 00:28:23] select one of those two blocks that I have read
+[00:28:23 -> 00:28:27] and pull out the exact byte from that block.
+[00:28:30 -> 00:28:31] Okay?
+[00:28:31 -> 00:28:34] So, now, what an addition that I have over here is,
+[00:28:34 -> 00:28:36] I'm reading more than one block,
+[00:28:36 -> 00:28:41] I'm reading as many blocks as there are waves in a set,
+[00:28:42 -> 00:28:46] and then I have a multiplexer that's going to take
+[00:28:46 -> 00:28:49] and determine which one of these blocks
+[00:28:49 -> 00:28:51] am I actually going to read,
+[00:28:51 -> 00:28:54] and this additional logic over here
+[00:28:54 -> 00:28:56] is going to increase the latency
+[00:28:56 -> 00:28:58] of accessing data in the cache,
+[00:28:58 -> 00:29:03] so I can see it increasing this hit latency.
+[00:29:03 -> 00:29:04] Okay?
+[00:29:04 -> 00:29:05] You all seen this before, right?
+[00:29:05 -> 00:29:06] Okay?
+[00:29:06 -> 00:29:07] Now, you get me on this?
+[00:29:09 -> 00:29:11] We'll make it a lot more interesting.
+[00:29:11 -> 00:29:12] Okay?
+[00:29:12 -> 00:29:15] So, you know, what is there is a two-way set
+[00:29:15 -> 00:29:17] associated cache.
+[00:29:17 -> 00:29:20] If I have only one way, if I have only one way,
+[00:29:20 -> 00:29:23] okay, that is what we had all over,
+[00:29:23 -> 00:29:25] previously was a direct map cache.
+[00:29:25 -> 00:29:27] If I have only one set,
+[00:29:27 -> 00:29:31] and so all the block frames are in different ways of it,
+[00:29:31 -> 00:29:33] it is a fully associated cache.
+[00:29:33 -> 00:29:46] I use the index bits to find a set,
+[00:29:46 -> 00:29:49] read the data and tags and all the frames in parallel,
+[00:29:49 -> 00:29:53] and any match, any one of these batch,
+[00:29:53 -> 00:29:55] I have a hit,
+[00:29:55 -> 00:29:58] and the, you know, the bit indexes,
+[00:29:58 -> 00:30:02] now I have only nine bits versus 10 bits
+[00:30:02 -> 00:30:03] that I had previously,
+[00:30:03 -> 00:30:08] and I have the same number of bits in the tag,
+[00:30:09 -> 00:30:15] the number of bits in the tag hasn't changed, okay?
+[00:30:15 -> 00:30:18] Now, notice that block zero through five 11
+[00:30:18 -> 00:30:21] are in this way, in different sets.
+[00:30:21 -> 00:30:25] Block five 12 is in set zero,
+[00:30:25 -> 00:30:26] first in way number one,
+[00:30:26 -> 00:30:32] five 13 is in way number one of set one, et cetera.
+[00:30:32 -> 00:30:33] Okay?
+[00:30:34 -> 00:30:37] You've seen this before, okay?
+[00:30:38 -> 00:30:41] Soon we will see this numbering,
+[00:30:42 -> 00:30:43] we can make it different,
+[00:30:43 -> 00:30:46] why we may want to make it different,
+[00:30:46 -> 00:30:49] and how we make it different, okay?
+[00:30:49 -> 00:30:51] There is nothing magic about this numbering here,
+[00:30:51 -> 00:30:53] in a set associated cache,
+[00:30:53 -> 00:31:01] but this is the natural numbering.
+[00:31:01 -> 00:31:02] So again, I'm not going to go through this
+[00:31:02 -> 00:31:05] to show you, you can go off, you know,
+[00:31:05 -> 00:31:07] is how previously, you know,
+[00:31:07 -> 00:31:09] what were misses become hits
+[00:31:09 -> 00:31:18] because you were able to avoid a conflict.
+[00:31:18 -> 00:31:23] So again, you study how much associativity you can have
+[00:31:23 -> 00:31:25] by doing a lot of simulations,
+[00:31:25 -> 00:31:30] and higher associativity tends to have better miss rates.
+[00:31:32 -> 00:31:36] However, the hit latency can increase.
+[00:31:36 -> 00:31:37] Why does the hit latency increase?
+[00:31:37 -> 00:31:40] Because if I now have a four-way set associative,
+[00:31:40 -> 00:31:44] I'm reading four blocks in parallel,
+[00:31:44 -> 00:31:47] and I'm doing four of these comparisons against tags,
+[00:31:47 -> 00:31:53] and this multiplexer now is selecting one of four
+[00:31:53 -> 00:31:58] for the hit latency increases, okay?
+[00:31:59 -> 00:32:02] And so typically, the curve that you get is,
+[00:32:02 -> 00:32:05] that's the, you know, this is a direct map cache,
+[00:32:05 -> 00:32:07] and then this is a fully associated cache over here,
+[00:32:07 -> 00:32:10] and the miss rate decreases,
+[00:32:10 -> 00:32:12] and there are diminishing returns for a,
+[00:32:12 -> 00:32:14] you know, single thread, if you will,
+[00:32:14 -> 00:32:17] and there is some associativity
+[00:32:17 -> 00:32:21] beyond which the decrease isn't, you know,
+[00:32:21 -> 00:32:26] that much, if you will.
+[00:32:26 -> 00:32:30] So this curve says, I have a five, this is a mistake.
+[00:32:30 -> 00:32:34] Associativity needs to be a power of two.
+[00:32:34 -> 00:32:37] That's like a cache size needs to be a power of two.
+[00:32:37 -> 00:32:44] 40, it should be four.
+[00:32:44 -> 00:32:48] Associativity can be not a power of two,
+[00:32:48 -> 00:32:50] why not?
+[00:32:50 -> 00:32:51] It's just, why?
+[00:32:51 -> 00:32:52] How would it?
+[00:32:52 -> 00:32:56] Associativity doesn't map to any bits in the address,
+[00:32:56 -> 00:32:58] so you can have anything you want.
+[00:32:58 -> 00:32:59] It would be wasted space,
+[00:32:59 -> 00:33:03] so it's better to have a power of two.
+[00:33:03 -> 00:33:04] Yeah, so bits.
+[00:33:04 -> 00:33:07] The tag doesn't tag to the weights,
+[00:33:07 -> 00:33:09] it just simply randomly puts.
+[00:33:09 -> 00:33:13] That's why you get the 192-meter-long R.
+[00:33:13 -> 00:33:16] It weighs into the set, like the multiplexer,
+[00:33:16 -> 00:33:19] you make a two is two four multiplexer,
+[00:33:19 -> 00:33:21] and if you just occupy three of them,
+[00:33:21 -> 00:33:26] four is just a step, so it's there, right?
+[00:33:26 -> 00:33:30] It has a, it's naked, and it's all there.
+[00:33:30 -> 00:33:34] Okay, how many people say five is correct?
+[00:33:34 -> 00:33:37] I can have an associativity that's not a power of two.
+[00:33:37 -> 00:33:47] How many say you have to have a power of two?
+[00:33:47 -> 00:33:49] Majority rules, sorry.
+[00:33:49 -> 00:33:51] Except majority typically is wrong.
+[00:33:52 -> 00:33:56] So, that's why you don't get majority rule.
+[00:33:56 -> 00:33:59] But, again, if we're doing this
+[00:33:59 -> 00:34:03] on a software simulation, we can't do it.
+[00:34:03 -> 00:34:05] No, let's go.
+[00:34:05 -> 00:34:07] What is associativity?
+[00:34:08 -> 00:34:13] Okay, associativity is how many ways I read in parallel
+[00:34:15 -> 00:34:21] and select one of those, okay?
+[00:34:21 -> 00:34:25] Anytime I'm using bits to select something in the cache,
+[00:34:26 -> 00:34:31] that something needs to be a power of two, okay?
+[00:34:31 -> 00:34:34] What am I using bits to select in the cache?
+[00:34:34 -> 00:34:38] I'm using bits to select a set.
+[00:34:38 -> 00:34:41] So the set has to be a power of two.
+[00:34:41 -> 00:34:44] Number of sets has to be a power of two.
+[00:34:44 -> 00:34:47] How many blocks, frames, are in each set?
+[00:34:48 -> 00:34:49] This can be anything,
+[00:34:50 -> 00:34:52] because I'm reading all of them in parallel,
+[00:34:52 -> 00:34:54] and I'm selecting one of them.
+[00:34:55 -> 00:35:00] If it is three, then this is basically
+[00:35:01 -> 00:35:04] going to be a three-to-one multiplexer,
+[00:35:04 -> 00:35:05] and you're saying, hey, I know how to do
+[00:35:05 -> 00:35:08] a four-to-one multiplexer, two bits import,
+[00:35:08 -> 00:35:11] four, you know, two bits select, four bits import,
+[00:35:11 -> 00:35:13] and I select one of them.
+[00:35:13 -> 00:35:15] If I have a three-to-one multiplexer,
+[00:35:15 -> 00:35:19] one of the imports I want to use, who cares?
+[00:35:19 -> 00:35:23] Okay, the hardware isn't in the multiplexer.
+[00:35:23 -> 00:35:29] The hardware is in the storage, okay?
+[00:35:29 -> 00:35:33] So not only is a associativity
+[00:35:33 -> 00:35:37] that's not a power of two meaningful,
+[00:35:38 -> 00:35:43] it is very widely used, okay?
+[00:35:43 -> 00:35:47] And why is it very widely used?
+[00:35:47 -> 00:35:50] It is very widely used because you do a cache.
+[00:35:51 -> 00:35:54] Again, you figure out, you know,
+[00:35:54 -> 00:35:56] this is how much fast storage I can have.
+[00:35:56 -> 00:35:59] This is some area of the chip where this is going to go.
+[00:35:59 -> 00:36:01] This is where something else is going to go.
+[00:36:01 -> 00:36:03] You know, by the way, I have this much area
+[00:36:03 -> 00:36:05] of the chip left over.
+[00:36:06 -> 00:36:09] I cannot have double the cache size,
+[00:36:10 -> 00:36:15] but maybe I could add a little more, okay?
+[00:36:15 -> 00:36:18] And the only way I can add a little bit more
+[00:36:18 -> 00:36:22] than my cache size becomes not to be a power of two,
+[00:36:22 -> 00:36:25] and to do that, I can have a cache size
+[00:36:25 -> 00:36:27] that's not a power of two
+[00:36:27 -> 00:36:35] by having an additional way in the associativity, okay?
+[00:36:35 -> 00:36:38] So the, you know, the number of ways
+[00:36:39 -> 00:36:41] need not be a power of two.
+[00:36:41 -> 00:36:44] The associativity, which is the number of ways,
+[00:36:44 -> 00:36:48] need not be a power of two, okay?
+[00:36:48 -> 00:36:53] And it is widely, very commonly,
+[00:36:53 -> 00:36:58] not a power of two.
+[00:36:58 -> 00:37:06] Going back to a Qualcomm processor,
+[00:37:06 -> 00:37:11] 192 kilobyte cache, six-way associative, okay?
+[00:37:15 -> 00:37:16] Not a power of two.
+[00:37:16 -> 00:37:20] So this typically is going to be 64.
+[00:37:20 -> 00:37:23] It's going to be six ways of 32-gauge, okay?
+[00:37:25 -> 00:37:30] So if it's a, I don't know what the block size is.
+[00:37:30 -> 00:37:32] I'm assuming it's a 64-byte block.
+[00:37:32 -> 00:37:36] If it's a 64-byte block, okay,
+[00:37:36 -> 00:37:41] and I have 32 K bytes in each way,
+[00:37:41 -> 00:37:46] then it is, I have 512 SATs, okay?
+[00:37:46 -> 00:37:50] So I have 512 SATs, six-way set associativity,
+[00:37:50 -> 00:37:54] 64-byte block for this instruction cache over here.
+[00:37:54 -> 00:37:57] Definitely not a power of two.
+[00:37:57 -> 00:38:07] And if I go take a look at the data cache,
+[00:38:07 -> 00:38:11] 96 kilobyte, six-way, okay?
+[00:38:11 -> 00:38:16] So it's 16 kilobytes per way,
+[00:38:16 -> 00:38:19] six ways, 96 kilobytes in total,
+[00:38:19 -> 00:38:24] 64-byte block size, asset coherency, granularity.
+[00:38:24 -> 00:38:29] So 16 kilobytes per way divided by 64, sorry.
+[00:38:32 -> 00:38:37] Yeah, that is 256 SATs going to be there in this cache.
+[00:38:37 -> 00:38:44] Okay, are you going to be on this?
+[00:38:46 -> 00:38:50] By the way, there was a time that many professors
+[00:38:52 -> 00:38:54] also said that cache has to be a power of two.
+[00:38:54 -> 00:38:57] Associativity is a power of two, so, you know.
+[00:38:59 -> 00:39:03] And these non-power of two associativities,
+[00:39:03 -> 00:39:07] non-power of two size caches were very rarely used.
+[00:39:07 -> 00:39:09] In fact, the first time, you know,
+[00:39:09 -> 00:39:12] we had one, like, are you sure that's right?
+[00:39:12 -> 00:39:15] It must be off.
+[00:39:15 -> 00:39:19] Questions about this?
+[00:39:19 -> 00:39:21] So you talk about latency increase in for this,
+[00:39:21 -> 00:39:25] but like, the latency candidate,
+[00:39:25 -> 00:39:29] the change if it's two-way versus four-way,
+[00:39:29 -> 00:39:31] like it's really just that multiplexer
+[00:39:31 -> 00:39:34] deciding which one to, which set to,
+[00:39:34 -> 00:39:39] or cache line to return, isn't it?
+[00:39:39 -> 00:39:43] Yes, yes, okay.
+[00:39:45 -> 00:39:51] But you're reading all of these in parallel, okay?
+[00:39:53 -> 00:39:56] Transferring all that data to that multiplexer
+[00:39:56 -> 00:40:01] and then the wires and the wire length and all that.
+[00:40:01 -> 00:40:03] But really, all you have to do is make it
+[00:40:03 -> 00:40:05] so that it runs fast enough
+[00:40:05 -> 00:40:08] that you get to do it in one clock cycle.
+[00:40:08 -> 00:40:11] And at that point, you don't care about the,
+[00:40:11 -> 00:40:13] if you can get it done in that amount of time,
+[00:40:13 -> 00:40:15] you don't care about the latency, do you?
+[00:40:15 -> 00:40:17] Or is it just too hard to get it
+[00:40:17 -> 00:40:20] to happen in a single clock cycle?
+[00:40:20 -> 00:40:22] Well, okay, okay, okay, okay.
+[00:40:23 -> 00:40:28] So, yes, yes, I care about getting it done
+[00:40:29 -> 00:40:30] in one CPU clock cycle.
+[00:40:32 -> 00:40:35] And if I have enough left over in the clock cycle,
+[00:40:35 -> 00:40:39] then maybe whatever it is, latency doesn't matter.
+[00:40:39 -> 00:40:48] And in a single clock cycle,
+[00:40:48 -> 00:40:50] having that extra relay for that latency,
+[00:40:52 -> 00:40:53] people found it very hard.
+[00:40:55 -> 00:40:57] But these days, even level one caches
+[00:40:57 -> 00:41:00] aren't accessed in a single clock cycle, okay?
+[00:41:00 -> 00:41:04] They take three or four clock cycles to access.
+[00:41:04 -> 00:41:06] You have a little more leaving,
+[00:41:06 -> 00:41:11] you get that extra for that six-day associated meeting.
+[00:41:14 -> 00:41:16] Okay, so again, like I said,
+[00:41:16 -> 00:41:20] there is no this or that, okay?
+[00:41:21 -> 00:41:23] So we're just learning what the issues are
+[00:41:23 -> 00:41:26] on the bricks and in that particular situation.
+[00:41:27 -> 00:41:30] More than two more followers on the same thing.
+[00:41:30 -> 00:41:38] We get that, we get that.
+[00:41:38 -> 00:41:46] Okay, other questions?
+[00:41:46 -> 00:41:51] So now, previously when we had that previous cache
+[00:41:51 -> 00:41:56] and direct mapped and I made a reference to a block,
+[00:41:56 -> 00:41:59] I looked in the cache to see if it was there,
+[00:41:59 -> 00:42:02] not there, there was only one place I would look, okay?
+[00:42:02 -> 00:42:06] And now, if it's not there, then I go to that one place
+[00:42:06 -> 00:42:09] and replace whatever the old block was there
+[00:42:09 -> 00:42:13] and put the new block in.
+[00:42:13 -> 00:42:16] When I have a set associated cache now,
+[00:42:16 -> 00:42:21] I have a choice as to in which frame of the set
+[00:42:21 -> 00:42:24] should I put the block, okay?
+[00:42:24 -> 00:42:26] Then I just bring in the cache.
+[00:42:26 -> 00:42:34] Or alternatively, which block to actually kick out?
+[00:42:34 -> 00:42:37] So then I had to come up with a replacement policy
+[00:42:37 -> 00:42:39] and there are a variety of replacement policies
+[00:42:39 -> 00:42:42] that have been proposed, okay?
+[00:42:42 -> 00:42:46] Many years ago, Biladi, there were lots of people
+[00:42:46 -> 00:42:48] proposing different replacement policies.
+[00:42:48 -> 00:42:51] He said, hey, let's see what you could do.
+[00:42:51 -> 00:42:52] What is the optimum policy?
+[00:42:52 -> 00:42:54] So that ends up being sort of the bar
+[00:42:54 -> 00:42:59] against which you compare your replacement policies.
+[00:43:04 -> 00:43:06] Now, if you've taken an operating system class,
+[00:43:06 -> 00:43:07] you'll see very similarly,
+[00:43:07 -> 00:43:12] you have these replacement policies over here, okay?
+[00:43:12 -> 00:43:14] And we'll talk about them a little bit, okay?
+[00:43:14 -> 00:43:17] The one difference between what gets done
+[00:43:17 -> 00:43:20] in an operating system and what gets done in a cache
+[00:43:20 -> 00:43:22] is in the operating system,
+[00:43:22 -> 00:43:26] it gets implemented in software, okay?
+[00:43:26 -> 00:43:30] You can spend many tens of clock cycles,
+[00:43:30 -> 00:43:32] or hundreds of clock cycles perhaps,
+[00:43:32 -> 00:43:37] to figure out the implementation of the replacement policy.
+[00:43:38 -> 00:43:40] In a cache, it's all done in hardware,
+[00:43:40 -> 00:43:44] so it has to be very, very quick.
+[00:43:44 -> 00:43:47] And that limits the options that you get.
+[00:43:47 -> 00:43:51] So, you know, one option is random,
+[00:43:51 -> 00:43:54] that just pick any of those blocks at random, okay?
+[00:43:54 -> 00:43:56] Fairly straightforward to implement.
+[00:43:56 -> 00:44:01] It actually does reasonably well, but not that bad.
+[00:44:01 -> 00:44:03] Another one is now just, you know,
+[00:44:03 -> 00:44:05] you're used to keeping head and tail pointers
+[00:44:05 -> 00:44:07] all over the place now, okay?
+[00:44:07 -> 00:44:10] You could just keep head and tail pointers
+[00:44:10 -> 00:44:13] and figuring out, doing FIFO order,
+[00:44:13 -> 00:44:15] replace the blocks in FIFO order.
+[00:44:18 -> 00:44:21] The least recently used is a policy
+[00:44:21 -> 00:44:24] that people are well aware of, studied.
+[00:44:25 -> 00:44:28] You know, a block that is recently used
+[00:44:28 -> 00:44:31] is least likely to be used in the future, okay?
+[00:44:31 -> 00:44:36] However, implementing a least recently used policy
+[00:44:36 -> 00:44:42] in a cache can get to be quite complicated, all right?
+[00:44:42 -> 00:44:44] But you really try, you know,
+[00:44:44 -> 00:44:47] another policy that people talk about and use is,
+[00:44:47 -> 00:44:50] hey, you know, maybe random is fine,
+[00:44:50 -> 00:44:53] but I really don't want to reference the block
+[00:44:53 -> 00:44:55] that I referenced most recently
+[00:44:55 -> 00:44:58] because I'm likely to reference it, okay?
+[00:44:58 -> 00:45:03] So I can have a not most recently used policy, okay?
+[00:45:05 -> 00:45:08] And which is basically, don't choose the block
+[00:45:08 -> 00:45:10] that I most recently referenced,
+[00:45:10 -> 00:45:12] but then any of the others I can get now.
+[00:45:14 -> 00:45:16] It's a easy implement.
+[00:45:16 -> 00:45:19] We'll see how we implement this in the next slide.
+[00:45:19 -> 00:45:21] And if it's a two-way set associated cache,
+[00:45:21 -> 00:45:24] it's effectively, if it's not the most recently used,
+[00:45:24 -> 00:45:29] then it is the least recently used.
+[00:45:29 -> 00:45:33] Okay, so what you can do now is,
+[00:45:33 -> 00:45:35] here is a two-way set associated cache.
+[00:45:35 -> 00:45:40] I have now a most recently used field with each set.
+[00:45:44 -> 00:45:48] And what you do now is that, you know,
+[00:45:48 -> 00:45:51] whenever you reference, you know,
+[00:45:51 -> 00:45:56] whenever you read the cache, reference the cache,
+[00:45:56 -> 00:45:59] you go read both the block frames
+[00:45:59 -> 00:46:01] or all the block frames in the cache,
+[00:46:01 -> 00:46:04] figure out whichever data you're going to get,
+[00:46:04 -> 00:46:07] you know, select one, figure out which one is a hit.
+[00:46:07 -> 00:46:10] And then, and that is the control of the multiplexer
+[00:46:10 -> 00:46:11] to figure out which block you're going to use.
+[00:46:11 -> 00:46:16] But now, this hit pattern then also gets fed into
+[00:46:17 -> 00:46:20] which one of these is the zero or one,
+[00:46:20 -> 00:46:24] is the way, which was the way
+[00:46:24 -> 00:46:25] that was most recently referenced.
+[00:46:25 -> 00:46:30] You can set this most recently used field in here, okay?
+[00:46:30 -> 00:46:33] If there were a four-way set associated cache,
+[00:46:33 -> 00:46:34] then this would be two bits to indicate
+[00:46:34 -> 00:46:41] which one of those ways would be most recently.
+[00:46:41 -> 00:46:42] And this is fairly straightforward.
+[00:46:42 -> 00:46:44] Now, you just have to see this bit to figure out,
+[00:46:44 -> 00:46:47] this set of bits to figure out
+[00:46:47 -> 00:46:49] which one to replace or not.
+[00:46:49 -> 00:46:50] Which one not to replace,
+[00:46:50 -> 00:46:54] and then you can replace one here.
+[00:46:54 -> 00:47:01] Questions about these?
+[00:47:01 -> 00:47:08] Okay, now let's start getting a little more interesting.
+[00:47:08 -> 00:47:10] What we've been saying so far is
+[00:47:10 -> 00:47:12] when you go and reference a set associated cache,
+[00:47:12 -> 00:47:14] you read the tags and the data in parallel.
+[00:47:16 -> 00:47:18] You compare the tags,
+[00:47:18 -> 00:47:21] check to see which one of the tags match,
+[00:47:21 -> 00:47:26] and then select that data and send it as your output.
+[00:47:35 -> 00:47:39] Nothing is to say that the data and the tags
+[00:47:39 -> 00:47:43] need to be physically in the same place.
+[00:47:43 -> 00:47:44] Generally, they're not.
+[00:47:45 -> 00:47:46] You can have them anywhere.
+[00:47:46 -> 00:47:48] The tags are going to be determined
+[00:47:48 -> 00:47:51] to figure out whether you have a hit or not,
+[00:47:51 -> 00:47:54] and the data is basically after deciding
+[00:47:54 -> 00:47:59] which one of the blocks you want to activate.
+[00:47:59 -> 00:48:04] So the data and tags are physically separate.
+[00:48:04 -> 00:48:09] So you store all the tags in some SRAM,
+[00:48:09 -> 00:48:12] which you would typically call the tag array,
+[00:48:12 -> 00:48:16] because all the SRAM storage is arrays of storage.
+[00:48:16 -> 00:48:18] And this would be the data array.
+[00:48:20 -> 00:48:23] So here's a four-by-set associated cache,
+[00:48:23 -> 00:48:27] and it has four sets.
+[00:48:28 -> 00:48:32] So what you would do now is you would give the index
+[00:48:32 -> 00:48:35] to both the tag and the data arrays,
+[00:48:35 -> 00:48:39] select the appropriate set of tags and the set of data,
+[00:48:39 -> 00:48:42] compare all the tags, and then have that
+[00:48:42 -> 00:48:46] as a control of the multiplexer, and select this over here.
+[00:48:47 -> 00:48:54] And that's a parallel axis.
+[00:48:54 -> 00:48:59] Four blocks transferred from this data array over here,
+[00:48:59 -> 00:49:01] and one of those four blocks selected.
+[00:49:02 -> 00:49:05] So how is this different from what we were looking at?
+[00:49:07 -> 00:49:08] Other than the blue is now on the left,
+[00:49:08 -> 00:49:11] and the white is on the right side by side,
+[00:49:11 -> 00:49:14] but functionally, everything is coming out
+[00:49:14 -> 00:49:18] of the, you're still pulling four tags down,
+[00:49:18 -> 00:49:20] you're still pulling four block cache lines down.
+[00:49:22 -> 00:49:24] It's a different picture, functionally it's the same.
+[00:49:24 -> 00:49:25] Okay.
+[00:49:26 -> 00:49:27] Exactly the same.
+[00:49:29 -> 00:49:30] Okay.
+[00:49:31 -> 00:49:32] Up until here.
+[00:49:33 -> 00:49:34] Now it's not.
+[00:49:34 -> 00:49:35] Oh, now it's different.
+[00:49:35 -> 00:49:36] Okay.
+[00:49:36 -> 00:49:37] Even the picture looks different.
+[00:49:37 -> 00:49:42] Yes.
+[00:49:42 -> 00:49:44] So now what I'm gonna do is,
+[00:49:44 -> 00:49:49] this entire storage array is going to be, you know,
+[00:49:49 -> 00:49:56] pretty much like what we had in the direct map cache case.
+[00:49:56 -> 00:49:59] The tag array is going to be pretty much what we had
+[00:49:59 -> 00:50:02] in this parallel access case.
+[00:50:02 -> 00:50:04] For your associative cache.
+[00:50:04 -> 00:50:05] Okay.
+[00:50:05 -> 00:50:10] You are going to first match the tags,
+[00:50:10 -> 00:50:15] and now combine, matched tags will give you
+[00:50:15 -> 00:50:16] which way matched,
+[00:50:17 -> 00:50:21] combine which way matched with the set number
+[00:50:22 -> 00:50:25] to select only one block frame.
+[00:50:25 -> 00:50:32] Read only one block frame.
+[00:50:32 -> 00:50:35] So, you know, again, I repeat that.
+[00:50:35 -> 00:50:38] You have a serial tag and data access
+[00:50:38 -> 00:50:41] that you first access the tag,
+[00:50:41 -> 00:50:43] figure out the match,
+[00:50:43 -> 00:50:46] figure out where exactly in the data array
+[00:50:46 -> 00:50:47] the data resides,
+[00:50:48 -> 00:50:54] and then access that data array.
+[00:50:54 -> 00:50:56] And you're saying, why would you do that?
+[00:50:56 -> 00:50:57] It's slow.
+[00:50:57 -> 00:50:58] Yes, it is slow.
+[00:50:58 -> 00:51:01] You're first accessing the tags and then the data.
+[00:51:01 -> 00:51:04] Latency increases.
+[00:51:04 -> 00:51:11] However, there are many advantages.
+[00:51:11 -> 00:51:13] The first advantage now you can see obviously
+[00:51:13 -> 00:51:16] is I'm not reading four blocks.
+[00:51:16 -> 00:51:18] Not trying to spend four blocks.
+[00:51:18 -> 00:51:22] I'm reading only one block.
+[00:51:22 -> 00:51:24] Okay.
+[00:51:24 -> 00:51:30] That saves a fair amount in.
+[00:51:30 -> 00:51:31] Okay.
+[00:51:32 -> 00:51:37] Second is that now this data could be wherever.
+[00:51:42 -> 00:51:46] The tags could be close to the processor.
+[00:51:47 -> 00:51:48] Okay.
+[00:51:48 -> 00:51:52] So you can determine whether you have a hit or a miss
+[00:51:52 -> 00:52:00] and then access the data.
+[00:52:00 -> 00:52:01] In many situations,
+[00:52:01 -> 00:52:05] you would have the tags on the same chip,
+[00:52:05 -> 00:52:07] but the data in a different chip.
+[00:52:08 -> 00:52:10] This is now you're talking really big caches.
+[00:52:10 -> 00:52:12] Level three caches.
+[00:52:13 -> 00:52:13] Okay.
+[00:52:13 -> 00:52:16] And you know, if you go get a chip,
+[00:52:16 -> 00:52:19] it's like the caches in a 3D,
+[00:52:19 -> 00:52:21] you know, pin connected, whatever it is,
+[00:52:21 -> 00:52:24] because if you want to have a huge cache,
+[00:52:24 -> 00:52:25] just cannot put it on the chip,
+[00:52:25 -> 00:52:29] but you want to have the tags on the chip to see.
+[00:52:29 -> 00:52:31] You don't have that fast tag.
+[00:52:31 -> 00:52:36] Determination of whether you're gonna have a hit or a miss.
+[00:52:36 -> 00:52:38] If, you know,
+[00:52:39 -> 00:52:42] so if I wanted to keep the data off chip,
+[00:52:42 -> 00:52:45] but the tags on chip with the serial access,
+[00:52:45 -> 00:52:48] I could only do one block transfer.
+[00:52:48 -> 00:52:51] If I wanted to do the parallel access,
+[00:52:51 -> 00:52:55] I'd have to do the multiple reads of the data over there
+[00:52:55 -> 00:53:00] and a lot of pins over here.
+[00:53:00 -> 00:53:01] All right.
+[00:53:01 -> 00:53:03] So the serial tag access,
+[00:53:03 -> 00:53:05] it's also becomes common.
+[00:53:06 -> 00:53:07] Now you're saying,
+[00:53:07 -> 00:53:09] you're saying, hey, it's slow.
+[00:53:09 -> 00:53:11] Instead of doing all this in parallel,
+[00:53:11 -> 00:53:15] you know, it's slow.
+[00:53:15 -> 00:53:33] Well, say it took me two cycles to access the tags
+[00:53:33 -> 00:53:35] and it took me, you know,
+[00:53:35 -> 00:53:39] 10 cycles to access the data over here.
+[00:53:39 -> 00:53:42] Then the latency of a
+[00:53:45 -> 00:53:47] accessing this, if I did the parallel access,
+[00:53:47 -> 00:53:49] it would be 10.
+[00:53:49 -> 00:53:53] If it were serial, it will be two plus 10,
+[00:53:53 -> 00:53:55] if you will call for it, okay?
+[00:53:55 -> 00:54:01] So that's a huge difference.
+[00:54:01 -> 00:54:03] If the latency to access was 100,
+[00:54:05 -> 00:54:07] and say it took five to access the tags,
+[00:54:08 -> 00:54:11] now I'm doing, you know,
+[00:54:11 -> 00:54:13] parallel access would be 100,
+[00:54:13 -> 00:54:15] serial would be 105,
+[00:54:17 -> 00:54:20] much less of a performance, okay?
+[00:54:20 -> 00:54:23] So when you have situations
+[00:54:23 -> 00:54:25] where you're trying to have large caches
+[00:54:25 -> 00:54:26] and, you know,
+[00:54:26 -> 00:54:31] this could be now a level three cache on the chip.
+[00:54:32 -> 00:54:34] This could be maybe a level three cache on the chip,
+[00:54:34 -> 00:54:35] not 100 cycles,
+[00:54:35 -> 00:54:37] say if you have 40, 60 cycles on the work list,
+[00:54:37 -> 00:54:42] now making two cycles to access that.
+[00:54:42 -> 00:54:45] Or when I'm going out to having the cache in the memory,
+[00:54:45 -> 00:54:47] you know, it takes a couple of hundred cycles,
+[00:54:47 -> 00:54:50] then this is much less of an issue.
+[00:54:50 -> 00:54:53] So serial tag access is also routinely used
+[00:54:53 -> 00:54:56] for slower caches, if you will,
+[00:54:56 -> 00:54:57] that are slow enough already,
+[00:54:57 -> 00:55:01] that you don't want to have to read the entire data
+[00:55:01 -> 00:55:04] for the energy and also the,
+[00:55:04 -> 00:55:06] because you aren't going to compromise
+[00:55:06 -> 00:55:07] too much of the latency.
+[00:55:07 -> 00:55:09] Latency is big enough already.
+[00:55:09 -> 00:55:11] Are you with me on this?
+[00:55:11 -> 00:55:12] Yeah.
+[00:55:12 -> 00:55:15] With out-of-order processor and all the tips and tricks
+[00:55:15 -> 00:55:18] we learned for speculation and, you know,
+[00:55:18 -> 00:55:22] stuff that can still keep happening.
+[00:55:22 -> 00:55:24] We can make a case for, like,
+[00:55:26 -> 00:55:30] having the serializer even in the smaller,
+[00:55:31 -> 00:55:34] like, if we have the first case, right,
+[00:55:34 -> 00:55:37] where it's 10 cycles versus 12.
+[00:55:37 -> 00:55:39] If we have a large enough ROV,
+[00:55:40 -> 00:55:43] we have some good support from the software
+[00:55:43 -> 00:55:44] pipeline as well.
+[00:55:44 -> 00:55:47] We could, like, be like,
+[00:55:47 -> 00:55:49] this serial saves us power
+[00:55:49 -> 00:55:53] and we don't do much more for the sake of it.
+[00:55:53 -> 00:55:55] Yes.
+[00:55:55 -> 00:55:56] Everybody hear that point?
+[00:55:56 -> 00:55:58] He's saying is, hey, you know,
+[00:55:58 -> 00:56:03] if my latency increased from 10 to 12, okay,
+[00:56:03 -> 00:56:06] then when I have this out-of-order processor
+[00:56:06 -> 00:56:09] with, you know, 500 instruction window,
+[00:56:09 -> 00:56:10] whatever it is,
+[00:56:10 -> 00:56:13] it could probably tolerate the 12 cycle run
+[00:56:13 -> 00:56:16] and then increase,
+[00:56:16 -> 00:56:18] the two cycle increase over from 10 to 12
+[00:56:18 -> 00:56:20] and the answer is yes.
+[00:56:20 -> 00:56:22] What's the advantage of doing that?
+[00:56:22 -> 00:56:25] The advantage is power failings for doing that.
+[00:56:25 -> 00:56:27] So yes, this is absolutely,
+[00:56:27 -> 00:56:30] you use this when you are trying to get
+[00:56:30 -> 00:56:34] a lower power solution where the performance
+[00:56:34 -> 00:56:37] may or may not be compromised as much.
+[00:56:37 -> 00:56:40] You wouldn't necessarily do this for an L1 cache,
+[00:56:40 -> 00:56:43] okay, but for the L2 and L3 caches.
+[00:56:44 -> 00:56:49] Also, with the dynamic voltage frequency scaling stuff,
+[00:56:49 -> 00:56:52] are they fast enough, those PLLs,
+[00:56:52 -> 00:56:56] that, you know, while if it's in a single-threaded mode
+[00:56:56 -> 00:57:01] and we are stuck with behind a L3 cache access,
+[00:57:01 -> 00:57:04] like, for those 50 cycles when it's coming back,
+[00:57:04 -> 00:57:07] would we, like, reduce the frequency?
+[00:57:07 -> 00:57:08] No, no, no.
+[00:57:08 -> 00:57:11] No, the frequency voltage scaling
+[00:57:11 -> 00:57:15] is done at a much higher, much higher frequency,
+[00:57:15 -> 00:57:16] much more, yeah.
+[00:57:16 -> 00:57:19] No, you know, it's like, you know,
+[00:57:19 -> 00:57:22] trying to change it at that clock cycle level
+[00:57:22 -> 00:57:26] because it's, see, it's not that
+[00:57:26 -> 00:57:29] things are completely quid-assed and waiting.
+[00:57:30 -> 00:57:33] Stuff is going on.
+[00:57:33 -> 00:57:40] You don't wanna change frequency when stuff is going on.
+[00:57:40 -> 00:57:45] Okay, so, I can get the best of both worlds.
+[00:57:47 -> 00:57:51] Okay, and what you can do is you can actually get a,
+[00:57:51 -> 00:57:57] you know, serial, effectively,
+[00:57:57 -> 00:58:01] accessing the low-power advantage of serial access,
+[00:58:01 -> 00:58:03] but still the best,
+[00:58:03 -> 00:58:07] by basically doing what is called a wave prediction.
+[00:58:08 -> 00:58:11] Okay, so what you use is you use the index
+[00:58:11 -> 00:58:15] plus some tag bits and select a wave,
+[00:58:15 -> 00:58:18] select another table, a predictor,
+[00:58:18 -> 00:58:20] which is going to tell you,
+[00:58:20 -> 00:58:26] predict which wave am I accessing?
+[00:58:26 -> 00:58:29] And so, you know, what you would do is
+[00:58:29 -> 00:58:31] while you're accessing the tag,
+[00:58:31 -> 00:58:33] you would access the wave predictor,
+[00:58:33 -> 00:58:36] and this is very simple,
+[00:58:36 -> 00:58:38] pretty much access it instantly, if you will,
+[00:58:38 -> 00:58:42] and combine the output of the wave predictor
+[00:58:42 -> 00:58:51] with the set number and then select only one.
+[00:58:51 -> 00:58:54] So, you can get the fastness,
+[00:58:54 -> 00:58:56] in a sense, you're accessing the data
+[00:58:56 -> 00:58:58] while you're still accessing the tag,
+[00:58:58 -> 00:59:00] because this is very, very, you know,
+[00:59:00 -> 00:59:02] simple table over here.
+[00:59:03 -> 00:59:05] And you can get the low-power
+[00:59:05 -> 00:59:09] by accessing only one frame over here.
+[00:59:09 -> 00:59:13] But the advantage now is if this predictor was wrong,
+[00:59:14 -> 00:59:19] then I have to go and read the correct frame from there.
+[00:59:23 -> 00:59:28] And so, so everyone,
+[00:59:28 -> 00:59:30] pretty much everyone uses this gash
+[00:59:30 -> 00:59:37] as a wave predictor for a level of the gash.
+[00:59:37 -> 00:59:40] How does this jive with your replacement policy?
+[00:59:42 -> 00:59:45] Because, you know,
+[00:59:45 -> 00:59:48] to make the wave predictor fairly accurate,
+[00:59:48 -> 00:59:53] you want to do something so that that cash line is,
+[00:59:54 -> 00:59:57] when you decide where to place it,
+[00:59:57 -> 00:59:58] you kind of want the wave predictor
+[00:59:58 -> 01:00:01] to make you the guess when it happens.
+[01:00:02 -> 01:00:07] You, so, when you replace something,
+[01:00:07 -> 01:00:10] you know which way you're going to replace it.
+[01:00:10 -> 01:00:12] You know, you're going to predict
+[01:00:12 -> 01:00:14] you're going to be asking the same block
+[01:00:15 -> 01:00:19] and set the wave predictor to that way.
+[01:00:19 -> 01:00:22] So, in a sense, if you have it in the same block,
+[01:00:22 -> 01:00:24] spatial locality, you know,
+[01:00:24 -> 01:00:27] you're going to get that wave predictor.
+[01:00:27 -> 01:00:29] If you just said, hey, you predict the same way
+[01:00:29 -> 01:00:30] that I accessed last time,
+[01:00:31 -> 01:00:41] I'll give you the right thing.
+[01:00:41 -> 01:00:43] Let's try that again, okay?
+[01:00:43 -> 01:00:48] You know, say I had a mess, you know,
+[01:00:48 -> 01:00:52] I didn't replace the most recently used,
+[01:00:52 -> 01:00:54] I replaced something else, okay?
+[01:00:54 -> 01:00:58] And the wave predictor, say it's set to predict
+[01:00:58 -> 01:01:02] the most recently used way is the way, okay?
+[01:01:02 -> 01:01:04] So, as long as I'm accessing
+[01:01:04 -> 01:01:07] the most recently used way, I'm getting it right.
+[01:01:07 -> 01:01:10] And now, I have a mess.
+[01:01:11 -> 01:01:14] I select some block, wait.
+[01:01:15 -> 01:01:18] Now, this block that I've missed and brought in
+[01:01:18 -> 01:01:21] becomes the most recently used,
+[01:01:21 -> 01:01:24] the wave predictor and the set of the most recently used.
+[01:01:24 -> 01:01:26] And now, when I'm referencing the other bytes
+[01:01:26 -> 01:01:28] of the words in this block,
+[01:01:28 -> 01:01:31] the wave predictor's looking good.
+[01:01:31 -> 01:01:33] So, the wave predictor, in this case,
+[01:01:33 -> 01:01:37] has a bunch of state, essentially one for each set.
+[01:01:37 -> 01:01:38] One for each set, yes.
+[01:01:40 -> 01:01:49] It's predicting which wave you're going to access.
+[01:01:49 -> 01:01:55] Now, what is this more misses?
+[01:01:56 -> 01:02:00] This miss that I'm having in quotation marks over here
+[01:02:00 -> 01:02:04] is the data is in the cache,
+[01:02:04 -> 01:02:09] but it is in a different wave from the one I predicted,
+[01:02:09 -> 01:02:10] okay?
+[01:02:10 -> 01:02:13] So, say I was accessing this in one cycle,
+[01:02:15 -> 01:02:17] then this miss actually is something
+[01:02:17 -> 01:02:18] that will be serviced in the next cycle
+[01:02:18 -> 01:02:20] I go access the other.
+[01:02:25 -> 01:02:27] And you're saying, oh, you know,
+[01:02:27 -> 01:02:30] how the hell does this jive with what we previously learned
+[01:02:30 -> 01:02:33] with the speculative, the scheduling,
+[01:02:33 -> 01:02:36] and you're actually, you know,
+[01:02:36 -> 01:02:38] saying I need to know how long
+[01:02:38 -> 01:02:40] the latency of the operation is
+[01:02:40 -> 01:02:45] to send the tags to broadcast three cycles ahead,
+[01:02:45 -> 01:02:47] if you will, latency three cycles,
+[01:02:47 -> 01:02:50] for the instruction can be woken up,
+[01:02:50 -> 01:02:53] that is going to use the result of this load.
+[01:02:53 -> 01:02:56] And I assume the cache it was going to take three cycles
+[01:02:56 -> 01:02:58] and the wave predictor is correct
+[01:02:58 -> 01:03:00] and the wave prediction is wrong.
+[01:03:00 -> 01:03:03] Now, I have to do what?
+[01:03:05 -> 01:03:06] Okay.
+[01:03:06 -> 01:03:09] And I briefly mentioned that that time
+[01:03:09 -> 01:03:13] is you have to, in case of a cache miss,
+[01:03:13 -> 01:03:15] replay that load instruction
+[01:03:15 -> 01:03:18] and all the instructions that came
+[01:03:18 -> 01:03:20] that used the value of that load instruction.
+[01:03:21 -> 01:03:22] Okay.
+[01:03:22 -> 01:03:26] So this would be also covered under that replay.
+[01:03:26 -> 01:03:30] So this is not a replay that would be a 10 cycle,
+[01:03:30 -> 01:03:31] wait for 10 cycles and replay,
+[01:03:31 -> 01:03:39] this would happen as a replay of just an additional cycle.
+[01:03:39 -> 01:03:45] Are you with me on this?
+[01:03:45 -> 01:03:50] Regressively required to be,
+[01:03:50 -> 01:03:53] are they okay if that's the reason?
+[01:03:53 -> 01:03:55] You know, I don't know the answer to that
+[01:03:55 -> 01:03:58] because I don't, never seen,
+[01:03:58 -> 01:04:01] never seen the accuracies of the wave predictor
+[01:04:01 -> 01:04:04] that were disclosed by anyone.
+[01:04:04 -> 01:04:06] Maybe somewhere someone did it,
+[01:04:06 -> 01:04:08] I've never seen it first hand.
+[01:04:10 -> 01:04:13] You know, but you can do it in simulators
+[01:04:13 -> 01:04:15] and see how well you can,
+[01:04:17 -> 01:04:19] try different wave predictors and get them right.
+[01:04:19 -> 01:04:25] It's not as simple as it is talked about, necessarily.
+[01:04:25 -> 01:04:27] But yeah, people have these wave predictors.
+[01:04:27 -> 01:04:30] But, you know, this is now more,
+[01:04:30 -> 01:04:37] also for an example of into my instruction scheduling.
+[01:04:39 -> 01:04:41] I'm already building in the hardware support
+[01:04:42 -> 01:04:46] to schedule as if I had a cache hit.
+[01:04:46 -> 01:04:48] And then when a cache miss happens,
+[01:04:48 -> 01:04:50] the replay that set of instructions.
+[01:04:52 -> 01:04:53] Okay.
+[01:04:53 -> 01:05:02] And now this would be another type of cache miss.
+[01:05:02 -> 01:05:04] Of course, you know, you think, okay,
+[01:05:04 -> 01:05:05] what happens, like,
+[01:05:05 -> 01:05:07] they would have made another load,
+[01:05:07 -> 01:05:11] schedule already to access the cache at that cycle.
+[01:05:11 -> 01:05:12] And so you have to,
+[01:05:12 -> 01:05:16] and now I have to access the cache twice for one load,
+[01:05:16 -> 01:05:20] if you will, but in different ways.
+[01:05:20 -> 01:05:22] So yeah, you have to take some of those,
+[01:05:22 -> 01:05:24] you know, arbitration and scheduling stuff
+[01:05:24 -> 01:05:26] into consideration, right?
+[01:05:26 -> 01:05:30] You know, you have transistors,
+[01:05:31 -> 01:05:33] you have smart people,
+[01:05:34 -> 01:05:38] and a lot of money to be made if you do it right.
+[01:05:38 -> 01:05:40] Yes, what happens?
+[01:05:46 -> 01:05:47] Okay.
+[01:05:48 -> 01:05:52] So the, you know, how do I, you know,
+[01:05:52 -> 01:05:54] we talked about this three models.
+[01:05:54 -> 01:05:58] How would I typically identify different types of conflicts?
+[01:05:58 -> 01:05:59] And this is, you know,
+[01:05:59 -> 01:06:01] something I'm doing a simulation with.
+[01:06:02 -> 01:06:04] Compulsory is also called a code miss.
+[01:06:04 -> 01:06:06] You've never seen this address before,
+[01:06:06 -> 01:06:10] and that would even miss in a easy internet cache.
+[01:06:10 -> 01:06:12] When you're doing a simulation, that's easy to do.
+[01:06:12 -> 01:06:15] The first time you see an address, it's going to be,
+[01:06:15 -> 01:06:17] and it's a miss, it's a compulsory miss.
+[01:06:19 -> 01:06:22] A capacity miss is called because the cache is too small,
+[01:06:22 -> 01:06:24] and so you would have a miss
+[01:06:24 -> 01:06:26] even in a fully associated cache.
+[01:06:26 -> 01:06:29] And the way you would identify this is
+[01:06:29 -> 01:06:31] you basically keep track of,
+[01:06:31 -> 01:06:33] you know, if I have a cache of size N,
+[01:06:33 -> 01:06:38] I would keep track of N most recent block references.
+[01:06:39 -> 01:06:40] If I make a new reference,
+[01:06:41 -> 01:06:43] that is not in this N, that is a miss,
+[01:06:43 -> 01:06:49] and that would be a capacity miss.
+[01:06:49 -> 01:06:52] And whatever other misses are, you know,
+[01:06:52 -> 01:06:54] people say, hey, that's, you know,
+[01:06:54 -> 01:06:56] classify that as a conflict miss.
+[01:06:56 -> 01:06:57] That's because it was caused
+[01:06:57 -> 01:07:02] because the cache is so small.
+[01:07:02 -> 01:07:03] And, you know, you're saying,
+[01:07:03 -> 01:07:07] hey, this makes for good academia, good questions,
+[01:07:07 -> 01:07:10] maybe on a homework or exam, but who cares?
+[01:07:11 -> 01:07:12] Okay.
+[01:07:12 -> 01:07:14] And, you know, because you're going to have
+[01:07:14 -> 01:07:17] different techniques for attacking
+[01:07:17 -> 01:07:19] the different types of misses.
+[01:07:19 -> 01:07:26] So let us see some of those techniques.
+[01:07:26 -> 01:07:29] This is just a simulation to basically identify,
+[01:07:29 -> 01:07:30] you know, which one of the misses
+[01:07:30 -> 01:07:33] was a compulsory capacity or conflict miss.
+[01:07:33 -> 01:07:39] Again, I'm not going to go into that.
+[01:07:39 -> 01:07:43] Before I do that, before I go there,
+[01:07:43 -> 01:07:47] I did mention a little while ago
+[01:07:48 -> 01:07:50] when we first talked about conflict misses,
+[01:07:50 -> 01:07:56] is, hey, conflict, the number of conflict misses
+[01:07:56 -> 01:08:02] I can have could actually be negative.
+[01:08:02 -> 01:08:03] What does that mean?
+[01:08:03 -> 01:08:10] That means that a cache with a lower associativity
+[01:08:10 -> 01:08:12] has more hits and fewer misses
+[01:08:14 -> 01:08:20] than a cache with a higher associativity.
+[01:08:20 -> 01:08:21] Okay?
+[01:08:21 -> 01:08:25] So if I had a cache with a lower associativity
+[01:08:25 -> 01:08:28] have more misses than a cache with higher associativity,
+[01:08:29 -> 01:08:32] then the associativity is actually
+[01:08:32 -> 01:08:34] increasing the number of misses,
+[01:08:34 -> 01:08:37] not decreasing the number of misses.
+[01:08:37 -> 01:08:40] And the associativity is what conflict misses are about,
+[01:08:40 -> 01:08:42] so I'm actually getting a negative conflict miss.
+[01:08:42 -> 01:08:44] Are you with me on this?
+[01:08:44 -> 01:08:45] It's sort of like, you know,
+[01:08:45 -> 01:08:49] a paradoxical situation.
+[01:08:49 -> 01:08:52] Wouldn't that be very workload dependent?
+[01:08:52 -> 01:08:54] Wouldn't that be very workload dependent?
+[01:08:54 -> 01:08:56] Everything is workload dependent in life.
+[01:08:57 -> 01:08:59] Okay?
+[01:08:59 -> 01:09:04] But let me give you sort of a real life situation
+[01:09:06 -> 01:09:08] where this happens,
+[01:09:09 -> 01:09:16] and it actually seems to happen
+[01:09:16 -> 01:09:25] more than it should, but it does.
+[01:09:25 -> 01:09:27] I'll go through this, I'll just,
+[01:09:27 -> 01:09:29] I'll tell you the situation,
+[01:09:29 -> 01:09:31] and then you can go after class
+[01:09:31 -> 01:09:35] and figure out whether that's true or not, okay?
+[01:09:35 -> 01:09:41] So say I have a cache of four blocks,
+[01:09:41 -> 01:09:46] block B0, B1, B2, B3, okay?
+[01:09:48 -> 01:09:52] And I have a piece of code that has, you know,
+[01:09:53 -> 01:09:56] code, you know, code block,
+[01:09:56 -> 01:10:01] a code castling C0, C1, C2, C3, C4,
+[01:10:03 -> 01:10:16] so five blocks, and it is executing them.
+[01:10:16 -> 01:10:17] So what'll happen?
+[01:10:17 -> 01:10:19] Okay, C0.
+[01:10:19 -> 01:10:22] Okay, map to B0, fine.
+[01:10:22 -> 01:10:23] There was a miss, I brought it in.
+[01:10:23 -> 01:10:28] C1 hit, C2 hit, C3 hit, C4, okay?
+[01:10:32 -> 01:10:38] If it were a direct map cache, C4 would go away.
+[01:10:38 -> 01:10:43] All right, C1 hit, C2 hit, C3 hit,
+[01:10:45 -> 01:10:50] C, you know, C0 miss, replace C4, okay?
+[01:10:50 -> 01:10:55] C1 hit, C2 hit, C3 hit, C4, oops,
+[01:10:55 -> 01:10:59] map hit, here again, miss, replace C0, okay?
+[01:11:01 -> 01:11:06] So I would have three hits, two misses per iteration
+[01:11:09 -> 01:11:15] with a direct map cache.
+[01:11:15 -> 01:11:17] Say this is a fully associated cache,
+[01:11:17 -> 01:11:22] and I use LRU replace, all right?
+[01:11:23 -> 01:11:26] C0 would go here, C1 would go here,
+[01:11:26 -> 01:11:29] C2 would go here, C3 would go here, okay?
+[01:11:29 -> 01:11:35] C4 would kick out C0, okay?
+[01:11:35 -> 01:11:42] C1, C0 would kick out C1, miss, okay?
+[01:11:43 -> 01:11:47] C1 would kick out C2, and miss.
+[01:11:47 -> 01:11:50] C2 would kick out C3, and miss.
+[01:11:50 -> 01:12:02] So basically I have everything is a miss.
+[01:12:02 -> 01:12:03] It would be a miss.
+[01:12:04 -> 01:12:06] So here now, my fully associated cache
+[01:12:06 -> 01:12:11] with LRU replacement has many, many more misses
+[01:12:11 -> 01:12:15] than this direct map cache.
+[01:12:15 -> 01:12:19] And this looping bottom of code,
+[01:12:19 -> 01:12:22] whether it is a loop, per se,
+[01:12:22 -> 01:12:23] or whether you're calling something else
+[01:12:23 -> 01:12:26] and something else, and then come and come back here
+[01:12:26 -> 01:12:29] and go do this and go get the next token
+[01:12:29 -> 01:12:31] and do whatever it is, et cetera, et cetera,
+[01:12:31 -> 01:12:36] with it, it's actually quite frequent.
+[01:12:36 -> 01:12:41] So you actually see this behavior is not extremely rare.
+[01:12:41 -> 01:12:44] It happens a fair amount of time
+[01:12:44 -> 01:12:48] for a particular code, for a particular situation,
+[01:12:48 -> 01:12:49] code access in which you're having,
+[01:12:49 -> 01:12:53] you have this repeated loop pattern
+[01:12:53 -> 01:12:55] where the size of the loop
+[01:12:55 -> 01:12:58] is bigger than the size of the code.
+[01:12:58 -> 01:13:01] And the higher the associativity,
+[01:13:01 -> 01:13:07] the worse it becomes, okay?
+[01:13:08 -> 01:13:12] Are you with me on this?
+[01:13:12 -> 01:13:14] Random replacement can help you a little bit.
+[01:13:14 -> 01:13:16] Yes, random replacement will help.
+[01:13:18 -> 01:13:30] Quite a bit, yeah, a little bit, yes.
+[01:13:30 -> 01:13:33] And do what?
+[01:13:33 -> 01:13:35] Change the associativity of the cache?
+[01:13:35 -> 01:13:36] Probably.
+[01:13:37 -> 01:13:39] But the way we talk about
+[01:13:39 -> 01:13:40] how to change the associativity of the cache,
+[01:13:40 -> 01:13:43] and typically you have to do this by reducing the cache.
+[01:13:43 -> 01:13:48] When we have the compiler
+[01:13:48 -> 01:13:50] who should know all this
+[01:13:50 -> 01:13:57] and then try to mark it up to do it.
+[01:13:58 -> 01:14:01] No, you have to know what hardware you're running it on,
+[01:14:01 -> 01:14:02] the associativity of the hardware.
+[01:14:08 -> 01:14:10] Only when you're doing benchmarking
+[01:14:10 -> 01:14:13] do you actually compile your code for that machine.
+[01:14:13 -> 01:14:14] You realize you don't know
+[01:14:14 -> 01:14:21] what machine that code is running on.
+[01:14:21 -> 01:14:24] The code's not been looped C and E, right?
+[01:14:24 -> 01:14:26] It's not even your code.
+[01:14:26 -> 01:14:30] Well, and somewhere else, like I said,
+[01:14:30 -> 01:14:31] go somewhere else, who knows,
+[01:14:31 -> 01:14:33] wherever dynamically got linked,
+[01:14:33 -> 01:14:35] one day, who knows what happened,
+[01:14:35 -> 01:14:39] I give it water, just like, you know, so.
+[01:14:39 -> 01:14:45] Okay, I'd like to stop here then.
+[01:14:45 -> 01:14:48] Projects, please, what's going on?
+[01:14:48 -> 01:14:50] You said it's available.

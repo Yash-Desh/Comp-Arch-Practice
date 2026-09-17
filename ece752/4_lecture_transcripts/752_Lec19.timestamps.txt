@@ -1,0 +1,654 @@
+Title: 752_Lec19
+Source file: 752_Lec19.mp3
+Detected language: en
+------------------------------------------------------------
+
+[00:00:00 -> 00:00:12] Then you read the rows into the sense amps and the column decoder, and then you select
+[00:00:12 -> 00:00:15] the bit out of it here.
+[00:00:15 -> 00:00:23] Now what we'll briefly go through is several enhancements to this basic DRAM, and the
+[00:00:23 -> 00:00:31] main idea of all of those enhancements is to basically improve the bandwidth of providing
+[00:00:31 -> 00:00:32] bits.
+[00:00:32 -> 00:00:38] Latencies, there's a limit to what you can do about latencies, but you're trying to
+[00:00:38 -> 00:00:46] prove that, but still you can just do more and more in parallel to improve the bandwidth.
+[00:00:46 -> 00:00:53] So one of the first enhancements was an extended data out is where after you've read the
+[00:00:53 -> 00:01:00] entire row, then what you can do is repeatedly give column addresses, with each column address
+[00:01:00 -> 00:01:09] you toggle this column address row, and then for these second, third, fourth data items
+[00:01:09 -> 00:01:19] you're using, that you're reading, you're not repeatedly giving row addresses.
+[00:01:19 -> 00:01:22] Then came this synchronous DRAM.
+[00:01:22 -> 00:01:30] Synchronous DRAM now has a clock, and it's operating at the speed of a clock, and it
+[00:01:30 -> 00:01:36] has a wider data path, so you just need to give one row address and column address
+[00:01:36 -> 00:01:44] signals, after you give the row address you toggle the row address row, and then
+[00:01:44 -> 00:01:53] on each clock cycle, again you could be transferring different data elements from that row.
+[00:01:53 -> 00:01:58] You don't have to repeatedly provide column addresses.
+[00:01:58 -> 00:02:08] Then, after the basic synchronous DRAM came a variety of evolutionary enhancements,
+[00:02:08 -> 00:02:15] which basically try and improve the bandwidth somehow, and then they of course have some
+[00:02:15 -> 00:02:23] other typically electrical signal enhancements.
+[00:02:23 -> 00:02:31] So the ESD enhanced SDRAM overlapped the row buffer access with refresh, so you don't
+[00:02:31 -> 00:02:38] have to basically, you would continue carrying out the access of the DRAM while at the
+[00:02:38 -> 00:02:43] same time refreshing it.
+[00:02:43 -> 00:02:47] Then was the first major enhancement, which is the double data rate.
+[00:02:47 -> 00:02:52] The double data rate basically now, here you're transferring data one per clock cycle,
+[00:02:52 -> 00:03:01] and double data rate you were transferring on each engine of the clock.
+[00:03:01 -> 00:03:07] That was DDR, and then after that came a variety of other enhancements, DDR2,
+[00:03:07 -> 00:03:13] DDR3, DDR4, DDR5, and we have now sort of DDR6.
+[00:03:13 -> 00:03:26] So most of them were like the voltage, and some pre-fetching, and then further also,
+[00:03:26 -> 00:03:32] again lowering the voltage, getting twice the speed, increasing the data path, and
+[00:03:32 -> 00:03:36] internally to the DRAM have more banks, we have more parallelism when we talk a little
+[00:03:36 -> 00:03:46] bit about banking, and I think DDR3 had 32 bit wide channels, and then 4 I think
+[00:03:46 -> 00:03:57] added ECC on top of that, so it became 32 plus 8 bits of ECC, 40, and then the
+[00:03:57 -> 00:04:05] DDR5, they have 72 plus 8 bits of ECC, and then they have 2 channels, etc.
+[00:04:05 -> 00:04:11] Basically improving the bandwidth and then dealing with some electrical stuff over here.
+[00:04:11 -> 00:04:17] This flyby topology is basically a way of distributing the signals from one to the
+[00:04:17 -> 00:04:20] other, rather than all at the same time.
+[00:04:26 -> 00:04:31] This whole process of getting more enhancements, I started out by this company called
+[00:04:31 -> 00:04:38] RAMBUS that had the first high bandwidth DRAMs, they were trying to do them for
+[00:04:38 -> 00:04:44] gaming systems, but they had a proprietary interface, which basically nudged the rest of
+[00:04:44 -> 00:04:49] the industry to move along very sleepily to try and have these high bandwidth
+[00:04:49 -> 00:04:54] interfaces, and then they got those DDRs which are much more of a standard that
+[00:04:54 -> 00:04:58] everybody can design and use, design to use.
+[00:04:58 -> 00:05:05] Okay, I won't go into this either, but okay, so one of the things that happens
+[00:05:05 -> 00:05:12] with DRAM, just because there are so many transistors in there, there's so much
+[00:05:12 -> 00:05:24] of it, and you are operating so close to the margin, if you will, that you can
+[00:05:24 -> 00:05:31] easily have, you know, particle strikes that can, you know, strike a capacitance and
+[00:05:31 -> 00:05:37] flip the bit, all right, so DRAM bits can flip from 0 to 1 or 1 to 0, because
+[00:05:37 -> 00:05:42] there's a very small charge store per bit and the energy of the alpha particles
+[00:05:43 -> 00:05:46] strike it again, basically disrupt that store charge.
+[00:05:47 -> 00:05:56] So what you have to do is you have to have error correction built into those, and
+[00:05:56 -> 00:06:02] pretty much, you know, I mean, the big servers for decades have used error
+[00:06:02 -> 00:06:08] correction, okay, and you know, many years ago there was a company that
+[00:06:08 -> 00:06:14] called Tandem, which they, you know, built very highly, you know, the IBM
+[00:06:14 -> 00:06:19] server, you know, always had error correction in their memory. Tandem
+[00:06:20 -> 00:06:26] basically, you know, built systems that were, that could tolerate a lot of
+[00:06:26 -> 00:06:33] faults, and not only logic, memory, etc., and, you know, one time that
+[00:06:33 -> 00:06:37] system failed, and it failed because there was an earthquake in California
+[00:06:37 -> 00:06:41] that flipped over, and so, you know, lost power and everything, so it
+[00:06:41 -> 00:06:44] failed, but otherwise, you know, it would keep operating, all right.
+[00:06:45 -> 00:06:52] So what you have to do is in the key for DRAM reliability, you have to
+[00:06:52 -> 00:06:57] have some, you know, error correcting codes, you know, checks of some
+[00:06:57 -> 00:07:02] kind, and have more bits than you have data. I won't go into the
+[00:07:02 -> 00:07:06] different error correcting codes, and, you know, what that means is you
+[00:07:06 -> 00:07:11] actually end up having more memory than the data you might have stored,
+[00:07:11 -> 00:07:18] but you can make it more reliable, and, you know, you have these
+[00:07:18 -> 00:07:23] days, typically, codes that can correct single errors and detect
+[00:07:23 -> 00:07:27] double errors, single error correcting, double error detecting
+[00:07:27 -> 00:07:30] code. You can do a lot more than that if you're willing to spend
+[00:07:31 -> 00:07:38] more memory to do it. Okay, and so this error correction, typically,
+[00:07:38 -> 00:07:40] again, what you do is, you know, you have your normal data bits,
+[00:07:41 -> 00:07:46] storage, and then you have additional checks on bits, and you,
+[00:07:46 -> 00:07:51] the memory controller performs the error correction in checking to
+[00:07:51 -> 00:07:54] let you know, give you the correct sort of bits, and, you know,
+[00:07:54 -> 00:07:56] whether there's an error or not.
+[00:07:56 -> 00:08:04] Some of this error correcting is actually now even done inside the
+[00:08:04 -> 00:08:10] DRAM, just simply because the density is just too much over there.
+[00:08:11 -> 00:08:17] Just to actually correct defects rather than errors, because it's
+[00:08:17 -> 00:08:21] hard to get something with so many, so many bits manufactured
+[00:08:21 -> 00:08:24] free of defects. Okay, remember when we started talking,
+[00:08:24 -> 00:08:28] we just talked about process and reliability. You can get errors.
+[00:08:30 -> 00:08:35] Okay, so I just want to, you know, skim through that, talk a
+[00:08:35 -> 00:08:40] little bit about interleaving of memory. All right, so what you
+[00:08:40 -> 00:08:47] have is, you know, you have, you've built some module of
+[00:08:47 -> 00:08:50] memory, all right, you've built some module of memory,
+[00:08:51 -> 00:08:57] okay, and you've got whatever you can to have it be a certain
+[00:08:57 -> 00:09:07] latency and a certain bandwidth. Okay, now, if I want to improve
+[00:09:07 -> 00:09:12] the latency, well, I really can't improve the latency, but I
+[00:09:12 -> 00:09:19] can improve bandwidth, okay, so what I can do is, if I
+[00:09:19 -> 00:09:28] have four, you know, modules, if you would, okay, then I could
+[00:09:28 -> 00:09:36] read all four of them at the same time, okay, and then if I
+[00:09:36 -> 00:09:42] have a transfer path that is a certain number of bits wide,
+[00:09:43 -> 00:09:47] I can carry out the transfer to, you know, whatever it is,
+[00:09:47 -> 00:09:52] the CPU or wherever I need to send that information to by
+[00:09:52 -> 00:09:56] basically, you know, carrying out, you know, I read all of
+[00:09:56 -> 00:10:00] them, and then I then transfer based on how many of our bits
+[00:10:00 -> 00:10:04] wide this path is and how, you know, what the width over
+[00:10:04 -> 00:10:09] there is. Okay, so in a sense, what I can do is I can
+[00:10:09 -> 00:10:12] cut down just like we talked about, you know, cache fill
+[00:10:12 -> 00:10:15] and so on, critical word first, etc. We are reading the
+[00:10:15 -> 00:10:17] whole word, you know, it takes some number of cycles to
+[00:10:17 -> 00:10:22] transfer across the span. I can, in a sense, tolerate the
+[00:10:22 -> 00:10:25] latency a little bit by starting all those requests in
+[00:10:25 -> 00:10:31] parallel, and then transfer in the appropriate, you know,
+[00:10:31 -> 00:10:35] number of cycles based on the, you know, how wide the
+[00:10:35 -> 00:10:40] data is and how wide this bus is over here. Okay, now
+[00:10:40 -> 00:10:46] to do that, what I would typically need to do is I want
+[00:10:46 -> 00:10:53] to distribute the data across these different, and so these
+[00:10:53 -> 00:10:56] would be banks of memory, I want to distribute the data
+[00:10:56 -> 00:11:01] across the different banks of memory so that I can achieve
+[00:11:01 -> 00:11:06] some form of that parallel access. Okay, so I'm going to
+[00:11:06 -> 00:11:11] divide my memory into m banks and interleave the addresses
+[00:11:11 -> 00:11:19] so that an address is going to be in bank address mod m,
+[00:11:19 -> 00:11:23] and within each bank it's going to be at word address
+[00:11:23 -> 00:11:27] divided by m. Okay, so word zero would be in bank zero,
+[00:11:27 -> 00:11:30] one in bank one, two in bank two, should be bank n
+[00:11:30 -> 00:11:34] minus one, word n in bank n minus one, word n in bank
+[00:11:34 -> 00:11:40] zero, etc. Okay, so now if I'm reading, say, an entire cash
+[00:11:40 -> 00:11:45] line, then that cash line would be spread across those
+[00:11:45 -> 00:11:50] multiple banks, and then I can, you know, read all these
+[00:11:50 -> 00:11:53] simultaneously and then transfer those words of that
+[00:11:53 -> 00:11:57] cash line from these one after the other, as opposed
+[00:11:57 -> 00:12:03] to if the cash line was all in one bank, then I'd have
+[00:12:03 -> 00:12:07] to make, you know, if it was n words, I have to make n
+[00:12:07 -> 00:12:11] different accesses, each incurring the latency of access
+[00:12:11 -> 00:12:15] and then the latency of the actual transfer.
+[00:12:15 -> 00:12:18] Okay, so the interleave memory increases the memory
+[00:12:18 -> 00:12:22] bandwidth without necessarily increasing the
+[00:12:22 -> 00:12:27] path of this over here, because in a sense, what it does is,
+[00:12:27 -> 00:12:31] you know, rather than make a request, wait for latency and then
+[00:12:31 -> 00:12:35] transfer, I'm making those requests in parallel, and then
+[00:12:35 -> 00:12:40] basically keeping this bus fully occupied, in effect,
+[00:12:40 -> 00:12:43] achieving the overall bandwidth, which is limited by
+[00:12:43 -> 00:12:47] the bandwidth of this bus, as opposed to necessarily the
+[00:12:47 -> 00:12:53] bandwidth of each one of these banks over here. Are you
+[00:12:53 -> 00:13:00] with me on this? So, you know, here's another example of
+[00:13:00 -> 00:13:03] interleave memory where I have the DRAM chip CPU as a
+[00:13:03 -> 00:13:06] data bus with different memory controllers over here,
+[00:13:06 -> 00:13:11] perhaps. I can, you know, map cash blocks to separate memory
+[00:13:11 -> 00:13:16] controllers. I can have interleaving, you know, within
+[00:13:16 -> 00:13:20] each memory controller here across interleave across
+[00:13:20 -> 00:13:24] different memory controllers. And in fact, you know, this
+[00:13:24 -> 00:13:29] concept of interleaving, you're going to use banking
+[00:13:29 -> 00:13:48] even within a chip. So, when I talked about here, this
+[00:13:48 -> 00:13:53] chip, okay, you're actually having now interleaving within
+[00:13:53 -> 00:13:59] that memory chip to actually carry out that data transfer.
+[00:13:59 -> 00:14:11] Alright, any questions so far? Okay, so, you know, okay, step back
+[00:14:11 -> 00:14:14] a little bit. So, you know, we started talking about even
+[00:14:14 -> 00:14:16] right from day one is, you know, you have the
+[00:14:16 -> 00:14:20] semiconductor process. The logic process is different from
+[00:14:20 -> 00:14:24] the DRAM, the memory process. So, there are companies like,
+[00:14:24 -> 00:14:28] you know, Intel and DSMC and so on that do the logic
+[00:14:28 -> 00:14:32] process and build the processors. Okay, and then
+[00:14:32 -> 00:14:36] there are companies like Micron and SK Hylegs and I
+[00:14:36 -> 00:14:39] think Samsung's probably also building, you know,
+[00:14:39 -> 00:14:42] memory chips that you say that build chips on the
+[00:14:42 -> 00:14:51] memory process. Alright, so what ends up happening is the
+[00:14:51 -> 00:14:55] memory chips end up being more commodity that people aren't
+[00:14:55 -> 00:14:59] willing to pay too much for them and the processor chips,
+[00:14:59 -> 00:15:02] you know, basically they have the chips that do all the
+[00:15:02 -> 00:15:07] computation that people, you know, if it's 10% faster,
+[00:15:07 -> 00:15:10] you can charge, I don't know, 30, 40, 50% more, okay,
+[00:15:10 -> 00:15:16] a lot more. Okay, so the memory chip vendors are always
+[00:15:16 -> 00:15:20] looking for maybe, hey, can we do something that we can
+[00:15:20 -> 00:15:23] try and get a little more money? Okay,
+[00:15:23 -> 00:15:29] and so one of the concepts that has been around for a long time
+[00:15:29 -> 00:15:45] is the following, is the CPU which is running the program and somehow
+[00:15:45 -> 00:15:49] it's connected to the memory over here
+[00:15:49 -> 00:15:57] where the data resides and here is where the program
+[00:15:57 -> 00:16:04] executes. Okay, and you know, if you have applications
+[00:16:04 -> 00:16:07] where basically you're reading a lot of data from memory,
+[00:16:07 -> 00:16:11] doing something a little, small calculation, multiplication,
+[00:16:11 -> 00:16:14] addition, writing it back to memory,
+[00:16:14 -> 00:16:17] okay, and just repeatedly doing this,
+[00:16:17 -> 00:16:21] then perhaps what you can do is you can
+[00:16:21 -> 00:16:25] move some of the computation and actually carry out the computation
+[00:16:25 -> 00:16:31] in the DNAM chip over here. Okay, however, the DNAM chip that you can
+[00:16:31 -> 00:16:37] have over here, okay, because it is a memory process,
+[00:16:37 -> 00:16:40] not a logic process, you cannot build with something
+[00:16:40 -> 00:16:46] very fancy in computation. Okay, maybe you could do a
+[00:16:46 -> 00:16:50] simple, you know, add two bits or whatever it is, but you can do
+[00:16:50 -> 00:16:58] more complex stuff over there. Okay, so, you know,
+[00:16:58 -> 00:17:02] the question that comes is, you know, how do I, in a sense,
+[00:17:02 -> 00:17:07] take my program and, you know, carry it out over here?
+[00:17:07 -> 00:17:10] And people have tried a variety of techniques,
+[00:17:10 -> 00:17:15] okay, and, you know, it's, in a sense, it's hard to make
+[00:17:15 -> 00:17:18] your program up. We had some part of it scatted out over here,
+[00:17:18 -> 00:17:23] so some of the memory chip manufacturers actually had put a
+[00:17:23 -> 00:17:27] small little ARM CPU in addition on top of the
+[00:17:27 -> 00:17:32] memory controller, and then memory chips over there, okay,
+[00:17:32 -> 00:17:38] okay, however, something that keeps coming around again is the positive.
+[00:17:38 -> 00:17:41] So, you know, three, four decades ago, where,
+[00:17:41 -> 00:17:46] you know, you know, image processing, in a sense, you know,
+[00:17:46 -> 00:17:50] first came around, okay, what are you doing? You have an image of pixels and
+[00:17:50 -> 00:17:53] then you're repeatedly doing stuff on the pixels.
+[00:17:53 -> 00:17:57] Where are the pixels sitting around? They're sitting around in memory.
+[00:17:57 -> 00:18:01] Okay, what is the computation that you're doing? Well, maybe I'm adding,
+[00:18:01 -> 00:18:04] you know, two sets of pixels or whatever it is, etc,
+[00:18:04 -> 00:18:10] repeatedly doing the same computation in a very simple form of computation.
+[00:18:10 -> 00:18:15] Okay, and so maybe I can actually carry out that computation
+[00:18:15 -> 00:18:21] necessarily in the memory. Okay, so these ideas have been around for a while.
+[00:18:21 -> 00:18:25] They never quite materialized, but they also never sort of go away.
+[00:18:25 -> 00:18:29] Okay, and, you know, these days now,
+[00:18:29 -> 00:18:35] oh, hey, what am I doing in AI? Okay, I have these humongous matrices
+[00:18:35 -> 00:18:39] that are sitting over here. I'm bringing them up over here,
+[00:18:39 -> 00:18:43] either, you know, live streaming to a GPU over here,
+[00:18:44 -> 00:18:47] or maybe CPU for inference or whatever it is,
+[00:18:47 -> 00:18:53] and doing a little small, you know, numerical stuff on it and sending it back.
+[00:18:53 -> 00:19:00] Okay, so, you know, Samsung, I think, actually now, so, you know, the idea is,
+[00:19:00 -> 00:19:05] you know, rather than moving the data from VRAM to CPU,
+[00:19:05 -> 00:19:08] you know, computing to CPU, moving the data back,
+[00:19:08 -> 00:19:12] if I had some very regular, simple kind of computation
+[00:19:12 -> 00:19:17] actually carry out, here's my DRAM, I read stuff into those robuffers,
+[00:19:17 -> 00:19:24] have some simple ALUs to carry out that operation, and, in a sense, write it back.
+[00:19:24 -> 00:19:28] So one of our former faculty members, Namsung, you know, he is now at Illinois.
+[00:19:28 -> 00:19:31] He went and worked at Samsung where you could actually,
+[00:19:31 -> 00:19:35] and you can actually buy it as a product. I'm not sure how many people will buy it, but,
+[00:19:35 -> 00:19:40] you know, you can actually have a DRAM chip, which you just go into,
+[00:19:41 -> 00:19:46] the normal sockets and so on like that, that can actually carry out computation on it, too.
+[00:19:46 -> 00:19:48] Like this just came out a couple of years ago.
+[00:19:48 -> 00:19:52] So this is something that keeps coming up, and, you know,
+[00:19:54 -> 00:19:59] we'll talk about this regular computation again in this vector's unit, but this is one way of
+[00:19:59 -> 00:20:03] the, at least the DRAM manufacturer is trying to add a little value to the chip, but,
+[00:20:03 -> 00:20:10] you know, I think probably by now you've
+[00:20:12 -> 00:20:17] at least appreciated that, you know, all these hardware things that you do
+[00:20:18 -> 00:20:28] might as well be for not unless you have software that can use them, okay?
+[00:20:28 -> 00:20:32] And the thing that the out-of-order processors did is software,
+[00:20:32 -> 00:20:37] they're not bothering you to do anything, will just make software go faster, okay?
+[00:20:37 -> 00:20:43] For these kind of things, you know, software is needed, okay?
+[00:20:43 -> 00:20:47] You know, a lot of people are, you know, saying, hey, you know,
+[00:20:47 -> 00:20:54] we have all these excited critters that can do this much better than the NVIDIA GPUs can,
+[00:20:54 -> 00:21:02] and we can do this, whatever, you know? But software exists for, you know,
+[00:21:02 -> 00:21:10] CUDA and GPUs, and, you know, just having to create software from scratch is just a huge,
+[00:21:10 -> 00:21:13] huge, huge undertaking. You just don't have the time for it.
+[00:21:15 -> 00:21:20] Okay, so, you know, I mean, don't be surprised if you, like, see, I think a couple of,
+[00:21:20 -> 00:21:23] if you go back to the hardships conference a couple of years ago, they had the,
+[00:21:23 -> 00:21:33] you know, doing the processing in memory. All right, so, you know, again, this is a standard
+[00:21:33 -> 00:21:40] memory hierarchy, average access time, hit time, plus miss rate times, T miss, and, you know,
+[00:21:40 -> 00:21:47] this is our picture of our memory hierarchy we've seen before. Here are CPU first level caches,
+[00:21:47 -> 00:21:51] second level caches, maybe third level caches on a chip these days.
+[00:21:52 -> 00:21:57] Main memory, this, you know, first and second level cache is made of SRAM,
+[00:21:57 -> 00:22:01] this third level is made of DRAM. These are all going to be managed in hardware.
+[00:22:01 -> 00:22:06] This we will see is going to be managed in software, and how it's managed in software
+[00:22:06 -> 00:22:11] we will see it. And then there is this, you know, the next level is, you know, disk space,
+[00:22:11 -> 00:22:19] you know, disk either, you know, magnetic disks or, you know, flash disks or whatever it is,
+[00:22:19 -> 00:22:28] you know, some persistent storage of some kind. All right, so, the way we organized,
+[00:22:29 -> 00:22:33] you know, these caches and carried out data movement in these caches
+[00:22:33 -> 00:22:40] is we moved cache lines, cache blocks, and it's done all in hardware, and these are completely
+[00:22:40 -> 00:22:46] invisible. The software didn't know anything about it, for the most part,
+[00:22:46 -> 00:22:54] unless you have prefetch instructions, etc., etc., all right? Okay. For this level,
+[00:22:54 -> 00:23:02] we are going to basically have a, you know, page virtual memory, and we will see what that
+[00:23:02 -> 00:23:10] means, where basically this main memory is never, just like the caches weren't large enough
+[00:23:10 -> 00:23:15] to hold all your programs and data, the main memory is also not going to be large enough
+[00:23:15 -> 00:23:20] to hold all the programs and data that you want. So you're going to have to move from the
+[00:23:20 -> 00:23:30] disk to the main memory and vice versa, okay? So this main memory is going to be, effectively,
+[00:23:31 -> 00:23:40] act like a cache, okay? And it's going to act like a cache for the disk, which is large enough
+[00:23:40 -> 00:23:48] to have all your data and programs, all right? So the programs want a conceptual view of
+[00:23:48 -> 00:23:54] memory of unlimited size. The disk is going to be the backing store when our physical memory
+[00:23:54 -> 00:23:59] is exhausted, our main memory, and the memory acts like a cache, and it's going to be managed
+[00:23:59 -> 00:24:05] mostly by software. We'll see the main issues in doing that, and we will see how we can
+[00:24:05 -> 00:24:14] have hardware assist the software, okay? Now, when we talk about a cache, we talk about
+[00:24:14 -> 00:24:20] several parameters of the cache, block size, associativity, replacement policy,
+[00:24:20 -> 00:24:25] right through versus right back, right allocate versus no right allocate. You saw that, right?
+[00:24:28 -> 00:24:34] For our memory as a cache, the block size is going to be a page which is going to be much
+[00:24:34 -> 00:24:42] bigger than a cache line, okay? Four kilobytes is very common page size, and people have
+[00:24:42 -> 00:24:49] talked about having much larger page sizes and variety of number of page sizes. We'll briefly see
+[00:24:49 -> 00:24:57] some of the issues over there, probably not, but, you know, the block size is many tens,
+[00:24:57 -> 00:25:03] I mean, you know, many kilobytes rather than, you know, tens or hundreds, small 100 bytes, okay?
+[00:25:04 -> 00:25:10] The associativity is going to be fully associated. Why do we want fully associated?
+[00:25:10 -> 00:25:18] Because the whole purpose is going to be on increasing the hit rate and reducing the
+[00:25:18 -> 00:25:27] number of misses, right? You'll see that. The replacement policy, you know, we talked about in
+[00:25:27 -> 00:25:33] the caches, you know, LRU conceptually, but really LRU may be hard to implement, so we did
+[00:25:33 -> 00:25:45] that not MRU, for example, and, you know, for this virtual memory, and, you know, the replacement
+[00:25:45 -> 00:25:51] policy for those caches, the caches, they had only a few, you know, a few clock cycles
+[00:25:52 -> 00:25:59] to access data, figure out how to make decisions, etc., okay? For, in this case,
+[00:25:59 -> 00:26:05] we will have a lot of time to be able to make a decision, because a miss in a cache,
+[00:26:06 -> 00:26:10] when it went to the next level, if it went, a miss in an L1 cache went to L2, maybe it took
+[00:26:10 -> 00:26:18] 10 cycles, 20 cycles. If it went to L3, it took me 40, 80 cycles. If it went to memory,
+[00:26:18 -> 00:26:23] maybe 200 cycles. If you have a miss in memory, it goes to DES, it's going to be millions of
+[00:26:23 -> 00:26:31] cycles. So you have a lot of time to, you can run, you know, a software program that can take,
+[00:26:31 -> 00:26:37] you know, thousands of cycles and still be in the noise compared to millions of cycles, okay?
+[00:26:41 -> 00:26:46] There is no, you know, write-through is not practical, because write-through meant was you're
+[00:26:46 -> 00:26:51] writing into that level and the next level. Here, to write something, maybe take, you know,
+[00:26:52 -> 00:26:57] 200, 300 clock cycles, there's millions of clock cycles, you're just going to have a
+[00:26:57 -> 00:27:00] write-through, it's just not practical. So you're going to have write-back.
+[00:27:01 -> 00:27:07] And very similarly, you're going to have a write-allocate policy. We'll see this a little
+[00:27:07 -> 00:27:17] bit, okay? So we are going to lower miss at all costs and, you know, I don't need to
+[00:27:17 -> 00:27:20] reemphasize this again, you can just repeat what we've been saying.
+[00:27:22 -> 00:27:27] So just to compare parameters between your first level caches, second level caches,
+[00:27:27 -> 00:27:34] main memory, the time to hit over here is maybe, you know, one to two nanoseconds,
+[00:27:34 -> 00:27:41] you know, if I have a gigahertz clock, okay, here it is, you know, small number of
+[00:27:41 -> 00:27:47] nanoseconds, the miss cost is the latency here, the miss cost over here is going to be,
+[00:27:47 -> 00:27:51] you know, 100 nanoseconds maybe, which is the time taken to access memory.
+[00:27:52 -> 00:27:58] However, the time taken to access to deal with a miss is going to be, you know, maybe
+[00:28:00 -> 00:28:03] milliseconds, okay, you know, six orders of magnitude.
+[00:28:06 -> 00:28:12] These are typically the different capacities, the block sizes, and for our purpose, we're
+[00:28:12 -> 00:28:18] going to have fully associated over here, the replacement policy is going to be a little more,
+[00:28:18 -> 00:28:24] you can do a little more smart because you're implementing it in software and you can take,
+[00:28:24 -> 00:28:30] you know, many hundreds of, you know, cycles to actually implement that replacement policy.
+[00:28:33 -> 00:28:40] It's going to be, you know, not right through, right allocate, there's no right buffer,
+[00:28:40 -> 00:28:47] no victim buffer, and, you know, prefetching, there is prefetching ultimately be done in software,
+[00:28:47 -> 00:28:59] no hardware prefetching techniques. Okay, so, you know, let's take a step back and,
+[00:28:59 -> 00:29:04] you know, ask, you know, what is the concept of virtual memory and how it actually came about
+[00:29:05 -> 00:29:09] and how it evolved to, you know, become what it is in a sense.
+[00:29:09 -> 00:29:22] Now, so, the idea is to treat the main memory as a cache of something, okay, and the
+[00:29:24 -> 00:29:35] contents are going to be some dynamic subset of whatever the program is working with. You want
+[00:29:35 -> 00:29:45] this to be dynamic content to be transparent to the source. The original motivation for
+[00:29:45 -> 00:29:52] virtual memory, which came out, you know, in the early 60s, was you had, at that point,
+[00:29:52 -> 00:29:59] in 16k words of core memory, remember this was before electronic DRAMs, and you had,
+[00:29:59 -> 00:30:08] you know, 96k words of drum storage, and, you know, the idea was to manage
+[00:30:09 -> 00:30:17] this fast memory and this backup storage so you could move data from this storage over here
+[00:30:17 -> 00:30:27] as was needed. Okay, but what made it some more successful was that IBM said, look, you know,
+[00:30:28 -> 00:30:32] what we're going to do is they're going to sell you machines, depending on how much you
+[00:30:32 -> 00:30:42] want to pay for it, machines with different capabilities. You know, if you want a high
+[00:30:42 -> 00:30:46] performance machine, that's going to have more memory, you're going to have to pay, you know,
+[00:30:46 -> 00:30:53] three times more or four times more, and these machines cost, at that time, many hundreds of
+[00:30:53 -> 00:30:58] thousands of dollars, millions of dollars, okay, for real money, all right, that, you know,
+[00:30:58 -> 00:31:06] only maybe customers like banks could afford. But, you know, what you wanted is you wanted
+[00:31:06 -> 00:31:14] to just simply write one software suite, and the same program could run on different machines
+[00:31:14 -> 00:31:21] with different memory sizes. So the program, when you wrote the program, you thought you had two
+[00:31:21 -> 00:31:31] to the n bytes of memory, regardless of how much memory there actually was, and so in effect,
+[00:31:31 -> 00:31:35] you know, the memory that you have is virtual, it's not there, but it appears to be.
+[00:31:36 -> 00:31:46] Okay, it doesn't. So, you know, I think actually it was very interesting, I mean, the way they
+[00:31:46 -> 00:31:54] would sell you a high performance machine, how they would differentiate a high performance
+[00:31:54 -> 00:31:58] machine from a low performance machine is the same thing that would just come on and turn on
+[00:31:58 -> 00:32:07] a million dollars, turn this knob on, and thank you. Now you're faster. Okay, so, you know,
+[00:32:10 -> 00:32:18] let's say it's a good deal if you can have it, okay. So, okay, so the idea basically is, look,
+[00:32:18 -> 00:32:25] you know, and also, you know, what I want to do is, you know, you know, on top of this,
+[00:32:25 -> 00:32:30] I wanted to have time sharing and so on like that, multiple different processes, you know,
+[00:32:30 -> 00:32:33] you can run the same machine, multiple different programs in the same machine.
+[00:32:35 -> 00:32:41] So the idea is, again, you've seen it before, but we do it from a viewpoint for how we can
+[00:32:41 -> 00:32:47] hardware assist over here. So the program is going to be written assuming it has two to
+[00:32:47 -> 00:32:53] the n bytes of memory access, okay, and that the program is going to, an address that the
+[00:32:53 -> 00:33:01] program is going to generate is going to be a virtual address. And it's going to be the same
+[00:33:01 -> 00:33:11] address regardless of, you know, how much memory the machine you are running on has. And,
+[00:33:12 -> 00:33:17] you know, so you have a 32-bit machine or a 64-bit machine. If I have a 30-bit machine,
+[00:33:17 -> 00:33:23] I have two to the 32 bytes of memory I can access. 64, I have two to the 64 bytes of
+[00:33:23 -> 00:33:33] memory I can access. The memory in the actual machine physically is going to be accessed,
+[00:33:33 -> 00:33:38] this is, you know, your DRAM is going to be accessed using physical addresses.
+[00:33:39 -> 00:33:49] And it has two to the m bytes of physical memory over here. And so I'm going to
+[00:33:49 -> 00:33:54] access it today, two to the m bit physical address. And m is going to be much less than
+[00:33:54 -> 00:34:05] especially if I have 64, okay. So, you know, 32 is two to the 32, that's four gigabytes,
+[00:34:06 -> 00:34:16] okay. Two to the 64 is a lot of memory. You know, even, you know, a machine that has,
+[00:34:17 -> 00:34:23] you know, even a terabyte of memory, that's two to the 14, okay. That's a, you know,
+[00:34:23 -> 00:34:30] that's a long ways away from two to the 64, okay. Your program is generating a virtual
+[00:34:30 -> 00:34:37] address that's 64 bits. Your physical machine, even if it has a terabyte of memory, is only
+[00:34:37 -> 00:34:45] using 40-bit addresses, okay. So what you're going to do is you're going to map that virtual
+[00:34:45 -> 00:34:50] address to a physical address somehow. And what we will do is we will consider this virtual
+[00:34:50 -> 00:34:58] address to be a collection of pages, and the physical memory to be a collection of page frames.
+[00:34:58 -> 00:35:05] So we're going to map a virtual address to a physical address, okay, which the page is going
+[00:35:05 -> 00:35:11] to be the same. So it's going to be mapping a virtual page to a physical page. And this
+[00:35:11 -> 00:35:16] mapping is going to be done by the operating system that's going to manage this memory and
+[00:35:16 -> 00:35:25] the movement from this desk to this main memory. And in this movement that mapping
+[00:35:25 -> 00:35:30] need not preserve contiguity. And in fact, you know, a lot of tricks for
+[00:35:30 -> 00:35:36] not having contiguity so many times you can play games. And further, you know,
+[00:35:37 -> 00:35:44] a virtual page need not be mapped to any physical page. In fact, if you have, you know,
+[00:35:45 -> 00:35:51] if you have two to the 64 bytes of memory you can access, and only maybe two to the 36,
+[00:35:51 -> 00:35:56] say for example, that you can, you know, that are there in your physical memory,
+[00:35:56 -> 00:36:03] there are a lot of virtual addresses or virtual pages that are not going to be there, okay.
+[00:36:04 -> 00:36:08] And the pages that are not mapped, of course, are going to be living on the desk,
+[00:36:08 -> 00:36:17] they are going to be living on the desk. Okay. So virtual memory is actually very useful for
+[00:36:18 -> 00:36:23] several things. Because in a sense, what it's allowing you to do is it's going to be allowing
+[00:36:23 -> 00:36:28] you to deal with the functionality problem by simply adding a level of interaction.
+[00:36:28 -> 00:36:37] So the first thing that allows you to do is to implement multi-programming where you can run
+[00:36:37 -> 00:36:42] multiple programs on the same machine at essentially, you know, the same time as you will,
+[00:36:43 -> 00:36:50] okay, and isolate them so they aren't stepping, aren't accessing each other's memory.
+[00:36:52 -> 00:37:00] So each program or each process thinks it has two to the n bytes of the address space,
+[00:37:00 -> 00:37:05] each thinks it has a stack, and all those stacks start at the same address.
+[00:37:07 -> 00:37:16] Okay. And what you can do is you can take the addresses of these different processes,
+[00:37:16 -> 00:37:22] the virtual addresses, and map them onto completely different physical addresses.
+[00:37:23 -> 00:37:28] So then the CPU is going to be accessing the physical address,
+[00:37:28 -> 00:37:31] okay. The program and the CPU is going to be accessing the physical address.
+[00:37:32 -> 00:37:38] So, you know, your process program one is not going to be accessing data from program two
+[00:37:38 -> 00:37:52] because it is in a separate physical address. So what started out as initially, you know,
+[00:37:52 -> 00:37:58] motivation for virtual memory was compatibility. Okay. People quickly realize that, hey,
+[00:37:58 -> 00:38:06] you can actually use that same feature to also implement multi-programming and isolating those
+[00:38:06 -> 00:38:16] programs. Okay. And then further, you can also use the same feature to add some,
+[00:38:17 -> 00:38:27] you know, protection mechanism. Okay. So what do I mean by that? Okay. So what we will see is
+[00:38:27 -> 00:38:36] we will have a mechanism to translate a virtual address to a physical address,
+[00:38:37 -> 00:38:42] and that mechanism is going to be a software structure called a page table.
+[00:38:43 -> 00:38:51] Okay. What we will further do is along with that page table that translates mapping from
+[00:38:51 -> 00:38:57] virtual address to physical address, we will keep some additional information for that page.
+[00:38:58 -> 00:39:06] Okay. Some of the information that you could keep with that page is some capabilities that
+[00:39:07 -> 00:39:15] whatever is mapped from that page can have. Okay. So whether that page can be read
+[00:39:15 -> 00:39:22] or written or actually whether the bits in that page
+[00:39:24 -> 00:39:36] could be, you know, instructions that you could execute. Okay. And multi-user,
+[00:39:36 -> 00:39:43] and we will see a little bit of that later on. Okay. So one user won't be able to access
+[00:39:43 -> 00:39:48] another user's memory. It's only the operating system can see and access all the memory.
+[00:39:49 -> 00:40:05] And if a user tries to, you know, if this, you know, if the green program tries to access
+[00:40:05 -> 00:40:12] this yellow memory, which is the memory of the yellow program over here, then you can say,
+[00:40:12 -> 00:40:17] look, hey, it's trying to access, say, you know, read data that it doesn't have permission
+[00:40:17 -> 00:40:24] to, then you can create an exception and the OS can decide what to do. Okay. Maybe
+[00:40:24 -> 00:40:34] terminate the program. Another useful thing for virtual memory is to allow two processes to
+[00:40:34 -> 00:40:41] communicate. Okay. So if I want to have, you know, two different processes, the green
+[00:40:41 -> 00:40:48] process and the yellow process, communicate with each other. Okay. So say I want the green,
+[00:40:48 -> 00:40:58] you know, process to pass data to the yellow process. Okay. The way I can do that is the
+[00:40:58 -> 00:41:06] green process could be writing into an area of memory, its memory. Okay. Let's say area X.
+[00:41:06 -> 00:41:15] Okay. The yellow process would be reading from its area of memory, say area Y. Okay. And then
+[00:41:15 -> 00:41:25] the operating system could map X from the green process and Y from the yellow process
+[00:41:26 -> 00:41:32] to the same physical address, Z for example. Okay. So the green process where it wants to
+[00:41:32 -> 00:41:38] pass something to the yellow one, it will think it's writing into X, but it ends up being
+[00:41:38 -> 00:41:45] written into Z. And the yellow one will think it's reading from Y, but it ends up being
+[00:41:46 -> 00:41:54] reading from Z. Okay. So you can map virtual pages in different processes to the same
+[00:41:54 -> 00:42:01] physical page and allow inter-process of communication. Okay. So, you know, basically
+[00:42:02 -> 00:42:08] what you're doing is you are creating a level of interaction between the address
+[00:42:08 -> 00:42:14] that the program thinks it's working with and the address that it actually ends up using.
+[00:42:15 -> 00:42:22] Okay. And you can, you know, solve several issues, problems that you have by adding
+[00:42:22 -> 00:42:37] levels of interaction. Any questions so far? So the program is going to be generating a
+[00:42:37 -> 00:42:47] virtual address. Say it's a 30-bit virtual address. And say I have 64-byte pages.
+[00:42:50 -> 00:42:57] The address is going to be treated as it consists of two parts. The first part is a
+[00:42:57 -> 00:43:07] byte within a page. And if it's a 64-byte page and these are byte addresses, then I have 16
+[00:43:07 -> 00:43:19] bits that determine the byte within the page. Okay. And then the remaining 16 bits are going
+[00:43:19 -> 00:43:29] to be a virtual page number. Okay. BPM. Somehow now I'm going to translate this
+[00:43:29 -> 00:43:37] virtual address to this physical address. And the way I do the translation is I do not
+[00:43:38 -> 00:43:46] change the page, the byte within the page bits from the virtual address to the physical
+[00:43:46 -> 00:43:53] address. Leave those the same. But then map this virtual page number to a physical page
+[00:43:53 -> 00:44:02] frame number, a physical page number. Okay. So say I have a 2 to the 26-byte memory.
+[00:44:03 -> 00:44:13] What is that? 64 megabytes. Okay. And, you know, so I would have a 26-bit address.
+[00:44:14 -> 00:44:30] The 16 bits of the address would be the page offset from the page. Oh, this should be
+[00:44:30 -> 00:44:39] 25 over here. Okay. And the 10 bits would be the page frame number. The page offset
+[00:44:39 -> 00:44:47] is not translated. Okay. So in this case, I have 64-byte pages, 16-bit page offset,
+[00:44:48 -> 00:44:56] 16-bit VPN. Okay. You know what I mean. Okay. So here you make this 27.
+[00:44:57 -> 00:45:03] That's fine. Just change this to 27. Okay. 28-bit physical address, which has a 12-bit
+[00:45:03 -> 00:45:16] page number. All right. How is this translation carried out? The way this translation is
+[00:45:16 -> 00:45:23] carried out is via software, but we'll accelerate it hardware. So the operating
+[00:45:23 -> 00:45:31] system has a data structure that is called a page table. This page table, as I have
+[00:45:31 -> 00:45:38] it right now, is going to be simply a linear array. Okay. And the number of entries in
+[00:45:38 -> 00:45:46] this linear array is going to be how many virtual pages I have. Okay. And each entry
+[00:45:46 -> 00:45:53] in this page table is going to be the physical address plus some other information.
+[00:45:54 -> 00:46:05] Okay. Information like bits to say whether you can read or write or execute that page,
+[00:46:05 -> 00:46:21] for example. So let us see how big this page table is going to be. All right. So very
+[00:46:21 -> 00:46:27] simply, I would access this page table with the virtual page number and get the
+[00:46:27 -> 00:46:33] physical page number for that and whatever the reference, you know, the protection bits would be.
+[00:46:37 -> 00:46:45] So say I had a 32-bit machine and I had four kilobyte pages, and each page table entry
+[00:46:45 -> 00:46:51] was four bytes. Okay. So, you know, each page table entry over here was four bytes,
+[00:46:51 -> 00:46:59] and I had as many entries as virtual pages. So if I have a 32-bit machine, I have a 32-bit
+[00:46:59 -> 00:47:07] virtual address and access four gigabytes of virtual memory. If each page is four kilobytes,
+[00:47:08 -> 00:47:13] then the total amount of memory I can access divided by the page size is the number of
+[00:47:13 -> 00:47:21] virtual pages. Okay. So I have 1 million virtual pages over here. Okay. Two to the 20
+[00:47:21 -> 00:47:28] virtual pages. If I have, so I have 1 million entries in this page table over here.
+[00:47:29 -> 00:47:36] All right. So if I have 1 million page table entries and each entry is four bytes, I take in
+[00:47:36 -> 00:47:45] four megabytes for this page table over here. Four megabytes. Okay. That doesn't seem that big,
+[00:47:46 -> 00:47:51] you know, bigger deal these days especially. Okay. I have a fair amount of memory.
+[00:47:53 -> 00:47:59] But these days I also don't have 32-bit machines. Okay. How big would this page
+[00:47:59 -> 00:48:09] table be first if I had bigger pages? If I, instead of having four kilobyte pages, I had
+[00:48:09 -> 00:48:17] 64 kilobyte pages. Then with a 30-bit machine, the number of virtual pages would be one meg
+[00:48:17 -> 00:48:27] by 64 kilobytes. Sorry, you know, four gigabytes divided by 64 kilobytes. And that ends up
+[00:48:27 -> 00:48:38] being, what does it end up being? 64 kilobytes. Okay. And then if each takes four bytes,
+[00:48:38 -> 00:48:51] then my page table is going to take only 256 kilobytes. What if I had a 64-bit machine?
+[00:48:51 -> 00:49:01] If I have a 64-bit machine with four kilobyte pages, the, you know, so four kilobytes is
+[00:49:01 -> 00:49:11] two to the 12. So basically I have 64 minus 12, 52 bits in the virtual page number. So I have
+[00:49:11 -> 00:49:21] two to the 52 virtual pages, two to the 52 entries in this page table over here. Okay.
+[00:49:22 -> 00:49:28] That is a lot. Each entry being four bytes. That's not going to quite work.
+[00:49:29 -> 00:49:32] Each entry has to be bigger than four bytes, not two.
+[00:49:32 -> 00:49:39] That, it has to be bigger than, not necessarily if I don't have too much more memory.
+[00:49:40 -> 00:49:42] Well, then you better have four gigs.
+[00:49:48 -> 00:50:02] No, no, no, no, no. The, depends, just depends on how much physical memory I have, right?
+[00:50:02 -> 00:50:05] You know, if I have a gigabyte of physical memory.
+[00:50:08 -> 00:50:15] There you go. Okay. But the number of bits this way is not that much. It's this.
+[00:50:18 -> 00:50:27] Are you with me on this? See the problem? Okay. So, you know, what we're going to do is
+[00:50:27 -> 00:50:35] basically come up with different structures. And the different structures are going to be made,
+[00:50:36 -> 00:50:46] you know, on the realization is even though I have two to the 64 bytes I can access in a program,
+[00:50:46 -> 00:50:56] I'm not going to be accessing all those addresses. Before we do that, let us see,
+[00:50:56 -> 00:51:04] before we exploited our observation, let us see what is it we can do. So what we can do is
+[00:51:04 -> 00:51:11] we can have multi-level page tables where we can have a tree of page tables. The lowest
+[00:51:11 -> 00:51:17] level of the page tables hold these page table entries. These are these entries of the page table
+[00:51:17 -> 00:51:24] over here. Okay. And then the upper level page tables hold pointers to the lower level page
+[00:51:24 -> 00:51:30] tables. And different parts of the virtual page number are going to be used to access index
+[00:51:30 -> 00:51:40] into different levels. Let's see what I mean by that. Okay. So I am going to have here,
+[00:51:40 -> 00:51:48] this is a two-level tree where in the second level are going to be all my page table entries.
+[00:51:50 -> 00:52:01] Okay. And in the first level are going to be pointers to some set, you know, of these
+[00:52:02 -> 00:52:11] second level page table entries over here. All right. So let me say I had a 20-bit virtual
+[00:52:11 -> 00:52:21] page number. Say I am accessing, taking 10 bits to access an entry. Okay. The upper 10 bits
+[00:52:23 -> 00:52:34] is going to be used to access the page table root. So I will select one of these pointers
+[00:52:34 -> 00:52:41] to one of these second level page tables. And then the lower 10 bits are going to be
+[00:52:41 -> 00:52:49] used to select an entry in that selected second level page table. Okay. Again. So the
+[00:52:49 -> 00:52:59] yellow bits select one of the second level page tables. And the green bits select
+[00:53:02 -> 00:53:11] an entry in that selected second level page table. All right. Are you going to hear this?
+[00:53:16 -> 00:53:27] So let us figure out now. What we figure out over here is this page table here,
+[00:53:28 -> 00:53:35] very simple page table that we had, took four megabytes. All right. And the idea is to save
+[00:53:35 -> 00:53:44] space. Okay. It is too big. So let us figure out how many bytes this two level page table
+[00:53:44 -> 00:53:58] is taking. And I am trying to save space. All right. So first let me compute the number of,
+[00:53:58 -> 00:54:06] so each one of these page tables in some sense, second level page tables is also
+[00:54:06 -> 00:54:11] going to be stored in its own page. That is also going to be a page element.
+[00:54:11 -> 00:54:17] How many pages are needed for these lowest level PTEs? Each I have four kilobyte
+[00:54:19 -> 00:54:27] pages and I have four byte PTEs. Okay. So I can have one K PTEs per second level page over
+[00:54:27 -> 00:54:39] here. I can have one K PTEs in each one of these four K pages over here. If I need to have
+[00:54:40 -> 00:54:48] one million PTEs, I need one million PTEs because I have four kilobyte virtual memory
+[00:54:48 -> 00:54:55] and four K page size, I have one million PTEs. Okay. So if I have one million PTEs
+[00:54:55 -> 00:55:00] and I can store one K PTEs per page in the second level page tables, I have one K
+[00:55:01 -> 00:55:10] of these, one K of these second level page tables. All right. If I have one K of these
+[00:55:10 -> 00:55:22] second level page tables, I need one K pointers in the first level page table. Okay. And
+[00:55:22 -> 00:55:28] if each pointer is 32 bits, I have one K pointers, each is four bytes. That is going
+[00:55:28 -> 00:55:34] to take four kilobytes. So I need one upper level page table. So I need one upper level
+[00:55:34 -> 00:55:41] page table, four kilobytes. It's going to have one K pointers and each of those pointers is
+[00:55:41 -> 00:55:47] going to select one of these one K pages over here. Each one of those is going to
+[00:55:47 -> 00:56:01] have a one K page table entry. Okay. How much space does that take? Okay. How much
+[00:56:01 -> 00:56:08] space does that take? I have one K pages over here, each is four kilobytes. That's
+[00:56:08 -> 00:56:18] four megabytes plus four, one page over here, that's four kilobytes. So it's four
+[00:56:18 -> 00:56:27] megabytes plus four kilobytes. Here I was only taking four megabytes. So I'm actually
+[00:56:27 -> 00:56:40] taking more space, a little more space. Okay. So what gives? Okay. Well, what gives
+[00:56:41 -> 00:56:52] is the following. Very large virtual address regions are unused. You know, I'm not using
+[00:56:52 -> 00:57:03] all my two to the 64 bytes. If I do not use that memory, I'm never going to address
+[00:57:03 -> 00:57:11] it. Those second level page tables need not exist. Okay. And the corresponding
+[00:57:11 -> 00:57:19] first level page tables are effectively not. So say now I have a program that has
+[00:57:19 -> 00:57:28] two megabytes of code and it has 16 megabytes of data working on an EAP and of
+[00:57:28 -> 00:57:33] course it's also using a stack and say stacks are small typically. So say it's
+[00:57:33 -> 00:57:41] using 64 kilobytes of stack. Okay. So of all this virtual address space, you
+[00:57:41 -> 00:57:46] know, of all the different two to the 32 VPNs it's going to be using, you
+[00:57:46 -> 00:57:54] know, add it to 32 bytes of address should be accessing. It's accessing two megabytes
+[00:57:54 -> 00:58:04] of code, 64 kilobytes of stack and 16 megabytes of EAP. All right. Each one
+[00:58:04 -> 00:58:10] of these second level page tables, it has one key entries and one key entries
+[00:58:10 -> 00:58:17] and each entry is mapping four K bytes. So one K times four K. So each one of
+[00:58:17 -> 00:58:24] these second level page tables is mapping four megabytes of memory. Okay. So
+[00:58:24 -> 00:58:29] if I have two megabytes of code, that I can map with only one second level
+[00:58:29 -> 00:58:35] page table. If I have 64 kilobytes of stack, again I need to have only one
+[00:58:35 -> 00:58:40] of these second level page tables. 16 megabytes of EAP if it's all
+[00:58:40 -> 00:58:46] contiguous. Okay. I only need to have four of these second level page
+[00:58:46 -> 00:58:51] tables for the EAP plus one for this first level page table. That's going to
+[00:58:51 -> 00:58:58] have only one, two, plus four, only six of the one K entries are going to be
+[00:58:58 -> 00:59:04] non-null. Okay. That ends up being a total of seven pages, which is 64
+[00:59:04 -> 00:59:13] kilobytes only, much less than four kilobytes. Okay. Any questions about
+[00:59:13 -> 00:59:24] this? So these days, I think the base tables have three, four, five levels, five
+[00:59:24 -> 00:59:30] levels. Five levels simply because I have to do some virtual number, like a
+[00:59:30 -> 00:59:34] virtual machine thingy first or whatever it is, or no, just even for a
+[00:59:34 -> 00:59:42] normal- Like 56 bits of physical address they will support. Until very
+[00:59:42 -> 00:59:50] recently they were four level page tables, but now they're five. Five levels. You know, I
+[00:59:50 -> 00:59:54] got lost when there were two because I figured I don't care whether it's two, three,
+[00:59:54 -> 00:59:59] four, five. We care what we're going to do about it in hardware. Okay. So we'll
+[00:59:59 -> 01:00:05] figure out what to do about that. More levels in hardware means more pointers to
+[01:00:05 -> 01:00:12] change at a slower time before you can get to the actual translation depth.
+[01:00:12 -> 01:00:17] Yeah. Well, once you get to it, you can do smarter things. So you don't make sure
+[01:00:17 -> 01:00:26] you don't get to it. You don't have to do all that stuff. Okay. So they have
+[01:00:26 -> 01:00:30] actually been alternatives proposed in addition to these multi-level page
+[01:00:30 -> 01:00:33] tables. You know, one alternative that actually some machines did have is what
+[01:00:33 -> 01:00:39] was called an inverted page table. So, you know, the normal page table is
+[01:00:39 -> 01:00:44] an effective linear array. Okay. This inverted page table is a hash table.
+[01:00:45 -> 01:00:50] Okay. And, you know, hash table needs to be only of the size that is
+[01:00:50 -> 01:00:55] proportional to the size of the physical memory, not to the virtual memory. And
+[01:00:55 -> 01:00:58] you can actually take the virtual page number and the process ID, carry out
+[01:00:58 -> 01:01:04] the hash, figure out the table offset, and get to that index. And then, you know,
+[01:01:04 -> 01:01:09] you can have to change down and get the conflicts, et cetera. And, you know,
+[01:01:09 -> 01:01:15] this has been implemented a couple of times, but it's not that much these days
+[01:01:15 -> 01:01:19] because, you know, it's six of one and a half dozen on the other. You
+[01:01:19 -> 01:01:24] know, you're going to have to end up having a, you know, a lot of the
+[01:01:26 -> 01:01:32] something on top of this to manage all the other stuff anyway. Okay. All
+[01:01:32 -> 01:01:39] right. So, we are going to carry out a translation between a virtual address
+[01:01:39 -> 01:01:47] and a physical address. Now, let us see what are the other questions we
+[01:01:47 -> 01:01:52] have to ask. What is it we're going to try and do? We're going to
+[01:01:52 -> 01:01:56] translate between a virtual address and a physical address. Why do we want
+[01:01:56 -> 01:02:01] to do that? Because we want to maintain compatibility. We want to allow
+[01:02:01 -> 01:02:09] multi-programming. We want to allow protection, et cetera. How are we going
+[01:02:09 -> 01:02:17] to do it? We're going to have a page table that implements that. Then we
+[01:02:17 -> 01:02:21] start asking the other questions. Okay. Who's going to perform this
+[01:02:21 -> 01:02:25] translation? When are you going to carry out that translation? And where
+[01:02:25 -> 01:02:30] does this page table reside? And how you access it and what you do with
+[01:02:30 -> 01:02:40] it? Okay. The conceptual view is every time you generate a memory address
+[01:02:42 -> 01:02:49] before you access the memory hierarchy, okay, the memory hierarchy,
+[01:02:55 -> 01:03:01] CPU is generating a virtual address. It thinks it's accessing some
+[01:03:01 -> 01:03:07] address who knows where it is. Okay. That address somehow got from
+[01:03:07 -> 01:03:13] here to here, and then somehow got from here to here, and the CPU is
+[01:03:13 -> 01:03:21] hopefully going to get the data for that address from here. So the CPU
+[01:03:21 -> 01:03:26] is going to access this cache with a physical address. You see a
+[01:03:26 -> 01:03:31] little bit, you play games a little bit later on, okay? But the CPU is
+[01:03:31 -> 01:03:34] going to access data and memory, so it's going to be a physical
+[01:03:34 -> 01:03:50] address. So now to generate, to ask the gender to carry out the
+[01:03:50 -> 01:03:56] translation from virtual to physical address for every reference that the
+[01:03:56 -> 01:04:05] CPU is making, you have to go and access this page table. Okay? Where
+[01:04:05 -> 01:04:16] is this page table? It's also in memory. And so, again, Mike was
+[01:04:16 -> 01:04:21] good. Where you went to the page table in memory, you got it, and things
+[01:04:21 -> 01:04:26] are fine. Now, you have to go to a first level page table to get a
+[01:04:26 -> 01:04:33] pointer to a second level page table to get the page table entry. Okay?
+[01:04:35 -> 01:04:41] But now, you have to go from the first level page table to a second
+[01:04:41 -> 01:04:44] level page table, which is also in memory, another memory access,
+[01:04:45 -> 01:04:51] to a third level page table, which is also in memory, to a fourth level
+[01:04:51 -> 01:04:56] page table, another memory access, and now it's even to a fifth level page
+[01:04:56 -> 01:05:02] table. Okay? So for each memory access the processor is trying to
+[01:05:02 -> 01:05:10] make, there are five additional memory accesses. Some of them, I
+[01:05:10 -> 01:05:15] mean, many of them are not going to be there in the cache. Okay?
+[01:05:15 -> 01:05:25] So that itself is sort of not going to quite work out. Right? So,
+[01:05:25 -> 01:05:29] but, conceptually, you have to walk through the levels of the page
+[01:05:29 -> 01:05:38] table for every load, store, and every instruction. What we are
+[01:05:38 -> 01:05:41] instead going to do there is you're going to cache these
+[01:05:41 -> 01:05:46] translations. When we eventually get down to the last level page
+[01:05:46 -> 01:05:51] table and find the page table entry, physical page, and page table
+[01:05:51 -> 01:05:57] entry for that virtual page, you're going to cache it. Okay?
+[01:05:57 -> 01:06:00] You're going to cache these translations in a transmission cache
+[01:06:00 -> 01:06:07] to avoid repeated programs. Okay? Conceptually, you're also
+[01:06:07 -> 01:06:11] disarming the program from modifying its own page table entries,
+[01:06:11 -> 01:06:15] by the way. That's why you're going to need, that's why you
+[01:06:15 -> 01:06:19] make, you know, these pages of the page table will also then
+[01:06:19 -> 01:06:25] have special permissions. This transmission cache that we have
+[01:06:26 -> 01:06:30] is what's going to call a translation look-aside buffer,
+[01:06:31 -> 01:06:40] or a TLB. In many other cases, it's also being called,
+[01:06:41 -> 01:06:44] you know, just a translation buffer or, you know, there
+[01:06:44 -> 01:06:47] are a few, you know, people have given this different names
+[01:06:47 -> 01:06:51] over here. Okay? So it's basically, you know, when we
+[01:06:51 -> 01:06:55] have a performance problem, we add a cache, address translation
+[01:06:55 -> 01:06:59] is too slow, we're going to cache the translation. After
+[01:06:59 -> 01:07:01] you've got through those five levels of page table, got the
+[01:07:01 -> 01:07:07] entry, you're going to cache it in a small cache. And this
+[01:07:07 -> 01:07:10] cache, you will see, is now you're going to have to access
+[01:07:10 -> 01:07:13] for every memory reference that the processor makes.
+[01:07:14 -> 01:07:17] CPU is generating a virtual address. For every virtual
+[01:07:17 -> 01:07:20] address, you're going to access this TLB before you can
+[01:07:20 -> 01:07:24] generate a physical address that you can access the cache.
+[01:07:26 -> 01:07:31] Because it is accessed all the time, because you need it
+[01:07:31 -> 01:07:35] before you can even access the cache, this has to be
+[01:07:35 -> 01:07:41] very, very fast. For it to be very, very fast, it has to
+[01:07:41 -> 01:07:48] be small. Okay? But also, you want to be able to have
+[01:07:49 -> 01:07:56] a very high hit rate in this TLB. So you typically try and
+[01:07:56 -> 01:08:04] keep it highly associated. All right? And, you know, what the
+[01:08:05 -> 01:08:10] this TLB is exploiting temporal locality within the
+[01:08:10 -> 01:08:13] page. So I go and carry a translation for a full
+[01:08:13 -> 01:08:18] kilobyte page. Okay? You know, just like I stayed within
+[01:08:18 -> 01:08:23] the same 64 byte cache block, I'm staying much more often.
+[01:08:24 -> 01:08:27] I make more repeated references to a four kilobyte page.
+[01:08:28 -> 01:08:33] Okay? So I am hoping that all those repeated references
+[01:08:33 -> 01:08:36] to the same four kilobyte page, which are accessing
+[01:08:36 -> 01:08:39] the same page table entry, even though they all
+[01:08:39 -> 01:08:44] maintain five different levels of accesses to go through.
+[01:08:44 -> 01:08:48] Okay? They all end up basically, you know, it's the same page
+[01:08:48 -> 01:08:56] table entry that I can go and get from this TLB. Okay?
+[01:08:59 -> 01:09:04] If an entry is not found in this TLB, then I invoke a
+[01:09:04 -> 01:09:08] TLB mishandler. What does this TLB mishandler do?
+[01:09:09 -> 01:09:13] This TSP mishandler, TLB mishandler will go to this
+[01:09:13 -> 01:09:17] root page table with that virtual address, figure out the
+[01:09:17 -> 01:09:21] next level, figure out the next level, next level,
+[01:09:21 -> 01:09:26] et cetera. Basically carry out those repeated linked memory
+[01:09:26 -> 01:09:30] references, you know, portaging memory references, check to
+[01:09:30 -> 01:09:36] that page table entry and bring it into the TLB.
+[01:09:40 -> 01:09:42] So far so good? Yeah.
+[01:09:42 -> 01:09:46] So if we know that we have like five levels of
+[01:09:46 -> 01:09:51] interaction, basically, would we not have like five, five or
+[01:09:51 -> 01:09:54] six registers that the OS writes to whenever it performs
+[01:09:54 -> 01:09:59] a new, you know, context with where it already stores
+[01:09:59 -> 01:10:02] where, okay, this is the root page table, this is the
+[01:10:03 -> 01:10:07] base second level where, you know, it was the most
+[01:10:07 -> 01:10:10] recent access, so the TLB mishandler can kind of
+[01:10:11 -> 01:10:14] accelerate this and not have to walk every other entry.
+[01:10:14 -> 01:10:18] Well, the root page table is stored, the root page table
+[01:10:18 -> 01:10:25] address is stored, okay, and typically also the root
+[01:10:25 -> 01:10:28] page table would also be locked into the cache.
+[01:11:05 -> 01:11:15] So we have this multi-level base table, and this works
+[01:11:15 -> 01:11:18] because we are accessing certain parts of the
+[01:11:25 -> 01:11:31] space table startup on this, from there the access parts
+[01:11:32 -> 01:11:37] move on to the memory, from where the heavy access part
+[01:11:37 -> 01:11:44] will move on to the on chip L2, from where some of those
+[01:11:44 -> 01:11:51] accesses will move on to the memory, for example, each one of

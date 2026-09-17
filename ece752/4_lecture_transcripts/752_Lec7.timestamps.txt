@@ -1,0 +1,1683 @@
+Title: 752_Lec7
+Source file: 752_Lec7.m4a
+Detected language: en
+------------------------------------------------------------
+
+[00:00:00 -> 00:00:05] Okay, I think, and then we'll work out, all right.
+[00:00:05 -> 00:00:07] And of course, you're not gonna finish by
+[00:00:07 -> 00:00:08] having to read the schedule,
+[00:00:08 -> 00:00:10] it's like, we'll eventually make it up,
+[00:00:10 -> 00:00:14] but, you know, we'll take it in our own place.
+[00:00:14 -> 00:00:34] Anyone have any questions so far?
+[00:00:34 -> 00:00:50] I wanna go back a little bit to this clock
+[00:00:50 -> 00:00:53] and latch over head again, all right, you know?
+[00:00:53 -> 00:00:57] The clock skew and data skew.
+[00:00:57 -> 00:01:00] So, you know, what we said with the clock skew
+[00:01:00 -> 00:01:03] is that, hey, you know, you have to clock
+[00:01:03 -> 00:01:07] the latches later in the pipeline, okay?
+[00:01:08 -> 00:01:10] Than the ones earlier in the pipeline.
+[00:01:12 -> 00:01:14] The clock could end up getting skewed,
+[00:01:14 -> 00:01:17] because of the skewing, you have to make sure
+[00:01:17 -> 00:01:21] that as you do the clocking, the data doesn't enter,
+[00:01:22 -> 00:01:26] doesn't run into, from one instruction
+[00:01:26 -> 00:01:29] doesn't run into that from the other instruction.
+[00:01:29 -> 00:01:31] And then we talk about data skew,
+[00:01:31 -> 00:01:34] which is the time, difference in time
+[00:01:34 -> 00:01:36] between the maximum and minimum delay
+[00:01:36 -> 00:01:38] for any of those bits of instruction
+[00:01:38 -> 00:01:41] through a stage of the pipeline.
+[00:01:41 -> 00:01:43] And if you can make the maximum and minimum
+[00:01:43 -> 00:01:47] close to each other, okay?
+[00:01:47 -> 00:01:52] Then, you know, then you can start
+[00:01:53 -> 00:01:55] a new instruction in the stage
+[00:01:55 -> 00:01:58] before the previous instruction is left, okay?
+[00:01:58 -> 00:02:03] So, in a sense, you can clock this latch
+[00:02:03 -> 00:02:06] to start a new instruction before the previous one
+[00:02:06 -> 00:02:09] has left and entered here, and then clock this one
+[00:02:09 -> 00:02:14] before this instruction has left,
+[00:02:14 -> 00:02:16] this instruction has left the stage and a new one.
+[00:02:16 -> 00:02:20] So, in a sense, in an end stage pipeline,
+[00:02:20 -> 00:02:25] you have more than end instructions, okay?
+[00:02:25 -> 00:02:26] And then, you know, in sort of the limit,
+[00:02:26 -> 00:02:31] you don't even need these latches if you will.
+[00:02:31 -> 00:02:35] And that is why you can have more than an end speedup
+[00:02:35 -> 00:02:36] with an end stage pipeline,
+[00:02:38 -> 00:02:39] because you have more than end instructions with that.
+[00:02:39 -> 00:02:40] Yeah?
+[00:02:40 -> 00:02:43] Just a quick question about the equations given.
+[00:02:43 -> 00:02:44] Yeah.
+[00:02:44 -> 00:02:45] Should we memorize those for the future exams
+[00:02:45 -> 00:02:47] or just something we shouldn't know what they mean?
+[00:02:47 -> 00:02:48] Oh my god.
+[00:02:51 -> 00:02:52] You know what I mean?
+[00:02:52 -> 00:02:53] I have to ask.
+[00:02:53 -> 00:02:56] You know, yeah, it's like, okay, you know,
+[00:02:56 -> 00:02:58] probably a good response to that might be a professor.
+[00:02:58 -> 00:02:59] Have you memorized them?
+[00:03:01 -> 00:03:01] How can you?
+[00:03:01 -> 00:03:02] I don't know.
+[00:03:02 -> 00:03:03] So, no.
+[00:03:03 -> 00:03:07] No, no, I don't expect you to memorize any of that stuff.
+[00:03:07 -> 00:03:11] No.
+[00:03:11 -> 00:03:12] Okay.
+[00:03:13 -> 00:03:18] So, you know, you don't manage the pipeline
+[00:03:18 -> 00:03:21] installed in the plot document, okay?
+[00:03:21 -> 00:03:25] And you see that uses, nah, I'm going forward.
+[00:03:25 -> 00:03:26] All right.
+[00:03:26 -> 00:03:28] So, what are the different types of hazards?
+[00:03:28 -> 00:03:31] Well, first of all, structural hazards.
+[00:03:31 -> 00:03:34] A structural hazard occurs if there is a resource
+[00:03:34 -> 00:03:37] that's needed twice in one cycle.
+[00:03:38 -> 00:03:39] Okay?
+[00:03:40 -> 00:03:45] So, you know, I have this piece of code
+[00:03:45 -> 00:03:48] going to a pipeline, I have a load instruction.
+[00:03:48 -> 00:03:51] The load instruction in the MAM state accesses the cache.
+[00:03:52 -> 00:03:56] And then, you know, in a labor instruction,
+[00:03:56 -> 00:04:01] in the FAC stage, I'm also accessing the cache.
+[00:04:01 -> 00:04:04] So, if I have only one cache for both instructions
+[00:04:04 -> 00:04:07] and data, I have a structural hazard,
+[00:04:07 -> 00:04:10] and I can only have one instruction,
+[00:04:10 -> 00:04:14] being the resource serving only one instruction
+[00:04:14 -> 00:04:18] in that cycle, okay?
+[00:04:18 -> 00:04:20] So, how do we handle data?
+[00:04:20 -> 00:04:23] How do we fix structural hazards?
+[00:04:23 -> 00:04:27] We can fix structural hazards by stalling the instruction.
+[00:04:27 -> 00:04:32] So, here, what we are doing is, we are stalling this,
+[00:04:32 -> 00:04:36] while the load instruction is accessing the cache for data,
+[00:04:36 -> 00:04:40] we are stalling any instruction that would be,
+[00:04:40 -> 00:04:43] you know, accessing the cache to fetch the instruction.
+[00:04:45 -> 00:04:48] So, we're stalling simply because we're going to memory?
+[00:04:48 -> 00:04:51] Simply because we have two instructions
+[00:04:51 -> 00:04:53] accessing the same resource.
+[00:04:53 -> 00:04:55] I see, and in this case, it's the cache that we're...
+[00:04:55 -> 00:04:57] It is a single cache that is holding
+[00:04:57 -> 00:05:00] both the instructions and data.
+[00:05:00 -> 00:05:03] I see, okay.
+[00:05:03 -> 00:05:05] Typically, we have a instruction cache
+[00:05:05 -> 00:05:06] and a memory cache.
+[00:05:06 -> 00:05:07] Well...
+[00:05:07 -> 00:05:08] We'll get there.
+[00:05:08 -> 00:05:10] And why do we have that?
+[00:05:10 -> 00:05:11] So that you don't do this?
+[00:05:11 -> 00:05:13] So you don't have the structural hazard.
+[00:05:13 -> 00:05:15] Okay, all right.
+[00:05:15 -> 00:05:18] But, you know, so, a S star that I have
+[00:05:18 -> 00:05:20] is a structural hazard, okay?
+[00:05:20 -> 00:05:23] So you can stall, a structural stall,
+[00:05:23 -> 00:05:25] to resolve that structural hazard.
+[00:05:26 -> 00:05:27] Now, the question you have is, you know,
+[00:05:27 -> 00:05:29] which one to stall?
+[00:05:29 -> 00:05:32] In such a situation, it's always safe
+[00:05:32 -> 00:05:34] to stall the younger one,
+[00:05:34 -> 00:05:36] so that the older ones can proceed
+[00:05:36 -> 00:05:41] and clear that structural hazard, okay?
+[00:05:42 -> 00:05:46] And so, you know, the logic to figure out
+[00:05:46 -> 00:05:48] whether there's a structural hazard
+[00:05:48 -> 00:05:50] is going to be, in a sense,
+[00:05:50 -> 00:05:55] the instruction that is in the mem stage, okay?
+[00:05:56 -> 00:05:58] Is it going to be accessing memory?
+[00:05:59 -> 00:06:00] And which are the instructions that access
+[00:06:00 -> 00:06:02] the cache or memory?
+[00:06:02 -> 00:06:05] Either loads or stores, okay?
+[00:06:05 -> 00:06:08] And if that instruction is going to be
+[00:06:08 -> 00:06:11] accessing memory, then I need to stall
+[00:06:11 -> 00:06:16] the instruction in the fetch stage over here, okay?
+[00:06:17 -> 00:06:25] So, here's my pipeline, okay?
+[00:06:25 -> 00:06:27] Here's the mem stage.
+[00:06:27 -> 00:06:30] And so, in this latch over here,
+[00:06:30 -> 00:06:35] which is the latch, the XM latch, okay?
+[00:06:35 -> 00:06:37] If the outcord of that instruction
+[00:06:38 -> 00:06:43] in that stage is either a load or a store, okay?
+[00:06:43 -> 00:06:45] Then I know that I need to stall
+[00:06:45 -> 00:06:52] the instruction in the fetch stage, okay?
+[00:06:52 -> 00:06:54] So, what the logic is saying is,
+[00:06:54 -> 00:06:58] hey, if the outcord of the instruction
+[00:06:58 -> 00:07:03] in the, from the XM latch, if that's a load,
+[00:07:03 -> 00:07:08] or if it's a store, then I'm gonna have to stall, okay?
+[00:07:08 -> 00:07:09] If you're trying to do this,
+[00:07:09 -> 00:07:11] you're gonna see many more incarnations
+[00:07:11 -> 00:07:14] of something like this going on.
+[00:07:14 -> 00:07:17] Now, you know, I won't get into this
+[00:07:17 -> 00:07:19] because sometimes it's actually better
+[00:07:19 -> 00:07:21] to stall the earlier instruction
+[00:07:21 -> 00:07:24] and let the later instruction go
+[00:07:24 -> 00:07:27] because you may end up, that may end up taking more time
+[00:07:27 -> 00:07:29] and have a more impact on the agency,
+[00:07:29 -> 00:07:31] but we won't get into that over here, okay?
+[00:07:31 -> 00:07:35] But it's, stalling the older one is,
+[00:07:35 -> 00:07:37] stalling the younger one is safe over here.
+[00:07:37 -> 00:07:39] Make sure everything's, you know,
+[00:07:39 -> 00:07:41] doesn't get you into issues.
+[00:07:41 -> 00:07:44] May not be sort of the best performance-wise.
+[00:07:45 -> 00:07:49] Okay, it's low cost, but it's gonna decrease the IPC
+[00:07:49 -> 00:07:50] every time, in a sense,
+[00:07:50 -> 00:07:52] I have a load or a store instruction.
+[00:07:52 -> 00:07:55] I'm going to stall another instruction.
+[00:07:55 -> 00:07:58] 30% of the instructions are load and store,
+[00:07:58 -> 00:07:59] then 30% of the time,
+[00:07:59 -> 00:08:05] I'm going to have to stall the instruction fetch, okay?
+[00:08:05 -> 00:08:06] So we're gonna fix it,
+[00:08:06 -> 00:08:09] and there are three ways of trying to deal
+[00:08:09 -> 00:08:11] with structural hazards.
+[00:08:11 -> 00:08:14] PRS, pipeline, replicate, or schedule.
+[00:08:15 -> 00:08:19] Not all, these are all you can do, all of them, too.
+[00:08:19 -> 00:08:20] Where, what you do is, you know,
+[00:08:20 -> 00:08:23] you have the resource and you're going to pipeline it
+[00:08:23 -> 00:08:28] so you can actually have multiple different instructions
+[00:08:28 -> 00:08:29] in that resource.
+[00:08:29 -> 00:08:32] So if I have like a multiplier
+[00:08:32 -> 00:08:35] that's gonna take three, four, five cycles,
+[00:08:35 -> 00:08:37] then rather than stall another instruction
+[00:08:37 -> 00:08:39] from using that for four or five cycles,
+[00:08:39 -> 00:08:43] I can pipeline that resource, okay?
+[00:08:45 -> 00:08:48] So there's no IPC degradation,
+[00:08:48 -> 00:08:50] and you know, pipelining is,
+[00:08:50 -> 00:08:52] takes a little more than just the resource,
+[00:08:52 -> 00:08:57] but not 2X, for example, the hardware, okay?
+[00:08:58 -> 00:09:02] And you don't have the additional logic over there.
+[00:09:03 -> 00:09:05] But, you know, for things like RAMs,
+[00:09:05 -> 00:09:08] you just, you know, it's not easy to pipeline those.
+[00:09:10 -> 00:09:14] You can replicate the contended resource, okay?
+[00:09:14 -> 00:09:15] There is no IPC degradation,
+[00:09:15 -> 00:09:18] but there is increases in power, area,
+[00:09:18 -> 00:09:21] and latency, perhaps, because of it, right?
+[00:09:21 -> 00:09:22] And you're going to do that
+[00:09:22 -> 00:09:24] for very highly contended resources.
+[00:09:24 -> 00:09:28] Instruction, you know, and data accesses
+[00:09:28 -> 00:09:29] are highly contended,
+[00:09:29 -> 00:09:31] so you're going to duplicate that resource.
+[00:09:31 -> 00:09:33] So we're gonna have a separate instruction cache
+[00:09:33 -> 00:09:36] and a data cache, okay?
+[00:09:38 -> 00:09:41] You can also, you know, schedule the pipelines
+[00:09:41 -> 00:09:45] so that, and further design an instruction set,
+[00:09:45 -> 00:09:47] so it's going to use only one resource at most,
+[00:09:47 -> 00:09:51] one resource at a time, a resource at most once.
+[00:09:51 -> 00:09:53] Okay, that's why we were talking a little bit
+[00:09:53 -> 00:09:55] about the different types of branch instructions.
+[00:09:55 -> 00:09:57] We talked about, hey, I need two ALUs,
+[00:09:57 -> 00:10:00] and so on like that, those are resources, okay?
+[00:10:00 -> 00:10:05] So if an instruction uses a resource only once,
+[00:10:06 -> 00:10:07] at most once, you know,
+[00:10:07 -> 00:10:12] it doesn't have a resource conflict with it itself, okay?
+[00:10:13 -> 00:10:16] And further, I'm going to use the resource,
+[00:10:16 -> 00:10:18] make sure that all instructions use the resource
+[00:10:18 -> 00:10:20] in the same clock cycle,
+[00:10:20 -> 00:10:22] at the same stage of the pipeline,
+[00:10:23 -> 00:10:25] and always for one clock cycle.
+[00:10:25 -> 00:10:26] What is this'll be here?
+[00:10:27 -> 00:10:31] Okay, so here, you know, the load instruction
+[00:10:31 -> 00:10:34] goes and accesses memory, and then it writes
+[00:10:34 -> 00:10:38] the result in the register file in the writeback cycle.
+[00:10:38 -> 00:10:42] The add instruction, okay, is channel long,
+[00:10:42 -> 00:10:44] it's done at the end of the execute stage.
+[00:10:45 -> 00:10:48] It could write the result into the register file
+[00:10:49 -> 00:10:51] in clock cycle five, okay?
+[00:10:51 -> 00:10:53] But we are saying, no, you're going to also
+[00:10:53 -> 00:10:56] go through memory, do nothing,
+[00:10:56 -> 00:10:57] and not be able to write the register file
+[00:10:57 -> 00:10:59] into clock cycle six,
+[00:10:59 -> 00:11:02] because if we allow it to write over here,
+[00:11:02 -> 00:11:04] then we'd have to determine that there's
+[00:11:04 -> 00:11:06] a structural hazard over here
+[00:11:06 -> 00:11:11] for the write the register file that we have to deal with.
+[00:11:11 -> 00:11:16] Okay, so you can schedule the pipeline
+[00:11:16 -> 00:11:19] to reduce the structural hazards in an always active,
+[00:11:20 -> 00:11:25] access the resource in the same pipeline stage.
+[00:11:25 -> 00:11:26] Questions?
+[00:11:26 -> 00:11:27] Yeah.
+[00:11:27 -> 00:11:30] So, if you multiply, and you start breaking that
+[00:11:30 -> 00:11:33] into multiple pipeline stages,
+[00:11:33 -> 00:11:35] I can see where that helps you with the multiply,
+[00:11:35 -> 00:11:38] but doesn't, like, not every instruction's a multiply,
+[00:11:38 -> 00:11:43] so, you know, what, are you wasting pipeline stages
+[00:11:44 -> 00:11:46] because, you know, the load doesn't need
+[00:11:46 -> 00:11:48] to go through five stages?
+[00:11:48 -> 00:11:51] So, those five-stage pipeline is going to be...
+[00:11:51 -> 00:11:53] Yeah, but now it's 10, right?
+[00:11:53 -> 00:11:57] It was five, you added five stages for the multiply,
+[00:11:57 -> 00:11:58] right, in that...
+[00:11:58 -> 00:12:01] No, it's not, it's more than 10.
+[00:12:01 -> 00:12:03] It's not one linear pipeline.
+[00:12:04 -> 00:12:07] It is these parallel pipelines,
+[00:12:07 -> 00:12:09] multiple pipelines.
+[00:12:09 -> 00:12:12] Okay, so the loads, the integer,
+[00:12:12 -> 00:12:14] the load is just going to go through here.
+[00:12:14 -> 00:12:17] If it's a multiply, it'll go this way,
+[00:12:17 -> 00:12:20] and now then you're going to say,
+[00:12:20 -> 00:12:22] okay, now, what about all the other right backs
+[00:12:22 -> 00:12:23] and this and that?
+[00:12:23 -> 00:12:24] We'll get to that.
+[00:12:24 -> 00:12:26] We'll figure it out.
+[00:12:26 -> 00:12:27] I see.
+[00:12:27 -> 00:12:29] So, okay, so the multiply's not going down
+[00:12:29 -> 00:12:32] the picture that we have, it's going someplace else.
+[00:12:32 -> 00:12:34] It's going down more of this picture.
+[00:12:34 -> 00:12:35] Yeah.
+[00:12:35 -> 00:12:37] You said these were really for the floating points,
+[00:12:37 -> 00:12:38] but...
+[00:12:38 -> 00:12:39] I gotcha, yeah.
+[00:12:39 -> 00:12:40] Floating points, you're generally doing
+[00:12:40 -> 00:12:43] for some of the, you know, multiplies to more so.
+[00:12:44 -> 00:12:46] But yeah, even though with that,
+[00:12:46 -> 00:12:47] you'd go through a different pipeline.
+[00:12:47 -> 00:12:49] This is a very simple pipeline.
+[00:12:50 -> 00:12:51] Okay?
+[00:12:51 -> 00:12:52] All right.
+[00:12:53 -> 00:12:55] Now let's talk about the interesting stuff,
+[00:12:55 -> 00:12:58] which are data hazards.
+[00:12:58 -> 00:12:59] Okay?
+[00:12:59 -> 00:13:04] So an instruction can read values
+[00:13:04 -> 00:13:07] and create the right values, okay?
+[00:13:07 -> 00:13:09] And the way you do that is the instruction
+[00:13:09 -> 00:13:11] writes into a storage element,
+[00:13:11 -> 00:13:14] a register or a memory, okay?
+[00:13:14 -> 00:13:16] And an instruction reads operands
+[00:13:16 -> 00:13:21] from a storage element, a register or a memory, okay?
+[00:13:21 -> 00:13:22] So,
+[00:13:23 -> 00:13:26] so I can have,
+[00:13:26 -> 00:13:27] what are the different kinds
+[00:13:27 -> 00:13:30] of data dependence relationships, okay?
+[00:13:30 -> 00:13:32] The first one is an instruction
+[00:13:32 -> 00:13:36] could be writing into a register,
+[00:13:36 -> 00:13:38] let's say, a value,
+[00:13:38 -> 00:13:40] and then a later instruction
+[00:13:40 -> 00:13:43] reading from the same register, okay?
+[00:13:43 -> 00:13:46] And that is what is called a read-after-write dependence.
+[00:13:47 -> 00:13:49] And this kind of dependence really is
+[00:13:49 -> 00:13:51] also called a true dependence
+[00:13:51 -> 00:13:55] because for correct execution,
+[00:13:55 -> 00:13:57] a value must flow from this instruction
+[00:13:57 -> 00:13:59] to this instruction.
+[00:13:59 -> 00:14:01] And the way it flows from this instruction
+[00:14:01 -> 00:14:04] to this instruction is you write the value into R1,
+[00:14:04 -> 00:14:05] and this instruction reads R1.
+[00:14:05 -> 00:14:09] That's what you're trying to do over there.
+[00:14:09 -> 00:14:12] Okay?
+[00:14:12 -> 00:14:12] I could
+[00:14:14 -> 00:14:16] read a value,
+[00:14:16 -> 00:14:17] read a register,
+[00:14:17 -> 00:14:22] and a later instruction write into a register, okay?
+[00:14:22 -> 00:14:27] So, this is what is called a write-after-read
+[00:14:27 -> 00:14:29] or an anti-dependence.
+[00:14:29 -> 00:14:32] And here, there is no value
+[00:14:32 -> 00:14:35] flowing from this instruction to this instruction.
+[00:14:36 -> 00:14:37] Okay?
+[00:14:37 -> 00:14:40] The only reason why I have this anti-dependence over here
+[00:14:40 -> 00:14:42] is because for this instruction,
+[00:14:42 -> 00:14:44] for the result of this instruction,
+[00:14:44 -> 00:14:47] I chose to use register R2
+[00:14:48 -> 00:14:51] and this instruction for its input operand
+[00:14:51 -> 00:14:53] was going to read register R2,
+[00:14:53 -> 00:14:56] but the values over here are very different.
+[00:14:57 -> 00:15:00] Okay, they're not the same values.
+[00:15:00 -> 00:15:02] Okay?
+[00:15:02 -> 00:15:03] And these dependencies,
+[00:15:03 -> 00:15:05] what's going to, you know,
+[00:15:05 -> 00:15:06] they're going to become important
+[00:15:06 -> 00:15:09] because any time we want to change
+[00:15:09 -> 00:15:11] the ordering of the instructions,
+[00:15:11 -> 00:15:14] we must make sure that the dependencies are respected.
+[00:15:16 -> 00:15:17] Okay?
+[00:15:17 -> 00:15:19] The third kind of dependency
+[00:15:19 -> 00:15:21] is the first could be instruction,
+[00:15:21 -> 00:15:24] could be writing into a register,
+[00:15:24 -> 00:15:26] second instruction could be also writing
+[00:15:26 -> 00:15:28] into the same register,
+[00:15:28 -> 00:15:31] or the same storage location, memory, register.
+[00:15:31 -> 00:15:32] Okay?
+[00:15:32 -> 00:15:34] So, this is what is called
+[00:15:34 -> 00:15:37] a write-after-write or output dependence.
+[00:15:37 -> 00:15:39] So, first, the output register
+[00:15:39 -> 00:15:42] of the first and the second instruction is same.
+[00:15:42 -> 00:15:46] However, these are very different values.
+[00:15:47 -> 00:15:50] This, I'm writing, this was writing one,
+[00:15:50 -> 00:15:52] some value, this is writing a completely different value,
+[00:15:52 -> 00:15:55] a new value over there, okay?
+[00:15:55 -> 00:15:57] So, instead of, you know,
+[00:15:57 -> 00:15:59] so there is a write-after-write dependence
+[00:15:59 -> 00:16:00] between these two instructions
+[00:16:00 -> 00:16:02] because you're both writing R1.
+[00:16:02 -> 00:16:04] If instead of R1 over here,
+[00:16:04 -> 00:16:06] this was R7,
+[00:16:07 -> 00:16:12] then I won't have a write-after-write dependence.
+[00:16:12 -> 00:16:13] Okay?
+[00:16:13 -> 00:16:16] So, the fourth possibility
+[00:16:16 -> 00:16:19] is the first instruction could be reading a register
+[00:16:19 -> 00:16:21] and then, you know, second instruction
+[00:16:21 -> 00:16:23] could be also reading the register.
+[00:16:24 -> 00:16:25] Okay?
+[00:16:25 -> 00:16:27] Those are the four possibilities of read-after-write.
+[00:16:27 -> 00:16:28] Okay?
+[00:16:28 -> 00:16:31] That is not a problem
+[00:16:31 -> 00:16:35] because changing the order of two instructions,
+[00:16:35 -> 00:16:38] if they read the same right input,
+[00:16:38 -> 00:16:40] it's not gonna be a problem
+[00:16:40 -> 00:16:41] because you're still going to get this,
+[00:16:41 -> 00:16:46] both of them are still gonna get the correct input.
+[00:16:46 -> 00:16:49] Okay?
+[00:16:49 -> 00:16:50] All right.
+[00:16:50 -> 00:16:53] So, these are data dependencies,
+[00:16:53 -> 00:16:56] true read-after-write, write-after-write,
+[00:16:56 -> 00:16:58] write-after-write, and actually the fourth one
+[00:16:58 -> 00:17:00] is read-after-read, okay?
+[00:17:00 -> 00:17:04] And these dependencies can,
+[00:17:04 -> 00:17:05] they are a property of the program
+[00:17:05 -> 00:17:07] in the instruction set.
+[00:17:07 -> 00:17:08] Okay?
+[00:17:08 -> 00:17:09] And this true dependence,
+[00:17:09 -> 00:17:11] that is the one that has the highest priority
+[00:17:11 -> 00:17:16] because this one must be respected, period.
+[00:17:16 -> 00:17:20] A data hazard occurs
+[00:17:20 -> 00:17:25] when you are doing something incorrect
+[00:17:25 -> 00:17:27] because of a data dependence,
+[00:17:28 -> 00:17:30] potential for doing something incorrect
+[00:17:30 -> 00:17:32] because of a data dependence.
+[00:17:32 -> 00:17:34] And we are gonna see the data hazards,
+[00:17:34 -> 00:17:38] and of course, we have to avoid the data hazards.
+[00:17:38 -> 00:17:39] Okay, people, many, you know,
+[00:17:39 -> 00:17:42] routinely get confused between dependence and hazard.
+[00:17:42 -> 00:17:44] They call these data hazards.
+[00:17:44 -> 00:17:45] No, these are data dependencies
+[00:17:45 -> 00:17:48] and a data hazard is a result of a dependence
+[00:17:48 -> 00:17:51] and a pipeline and, you know,
+[00:17:51 -> 00:17:54] and the pipeline organization,
+[00:17:54 -> 00:17:57] which, you know, give fear to potentials
+[00:17:57 -> 00:18:04] for executing these dependence on the wrong one.
+[00:18:04 -> 00:18:09] It's also true that for a hazard to potentially occur,
+[00:18:09 -> 00:18:12] both the instructions must be in the pipeline
+[00:18:12 -> 00:18:14] at the same time.
+[00:18:14 -> 00:18:16] And the instructions that are being processed,
+[00:18:16 -> 00:18:17] we're gonna call it in-flight,
+[00:18:17 -> 00:18:21] so both those instructions must be in-flight
+[00:18:21 -> 00:18:23] at the same time.
+[00:18:23 -> 00:18:28] Okay, so far so good.
+[00:18:28 -> 00:18:30] Now, let me take a piece of code,
+[00:18:30 -> 00:18:32] which is executing in a loop,
+[00:18:32 -> 00:18:35] and this is doing what is called a double precision,
+[00:18:35 -> 00:18:40] AX plus Y, so A times XI plus YI gets ZI,
+[00:18:40 -> 00:18:42] and I'm doing it in a loop.
+[00:18:42 -> 00:18:45] And here's the piece of code for the loop.
+[00:18:45 -> 00:18:47] And what I'm gonna try and do
+[00:18:47 -> 00:18:48] is I'm gonna try and find
+[00:18:48 -> 00:18:50] the read-after-write dependencies,
+[00:18:50 -> 00:18:52] write-after-read dependencies,
+[00:18:52 -> 00:18:54] and the write-after-write dependencies.
+[00:18:55 -> 00:18:58] Both within the instructions
+[00:18:58 -> 00:19:00] are in an iteration of the loop,
+[00:19:02 -> 00:19:05] and across the iterations of the loop.
+[00:19:05 -> 00:19:06] Okay?
+[00:19:06 -> 00:19:09] So I'm gonna separate the read-after-write dependencies
+[00:19:09 -> 00:19:11] that are intra-loop iterations
+[00:19:11 -> 00:19:15] and inter-loop iterations.
+[00:19:15 -> 00:19:17] Okay?
+[00:19:17 -> 00:19:18] All right.
+[00:19:18 -> 00:19:23] So, this instruction zero is loading into F2.
+[00:19:24 -> 00:19:27] Instruction one has F2 as an input,
+[00:19:27 -> 00:19:29] so there is a read-after-write dependence
+[00:19:29 -> 00:19:32] between zero and one through register F2 over here.
+[00:19:32 -> 00:19:34] Read-after-write between zero and one
+[00:19:34 -> 00:19:37] through register F2.
+[00:19:37 -> 00:19:38] Okay?
+[00:19:38 -> 00:19:42] Instruction one is writing into F4.
+[00:19:42 -> 00:19:44] Instruction three is reading F4.
+[00:19:44 -> 00:19:46] So there is a read-after-write dependence
+[00:19:46 -> 00:19:51] between one and three through F4.
+[00:19:51 -> 00:19:52] Okay?
+[00:19:53 -> 00:19:56] Instruction two is writing into F6.
+[00:19:56 -> 00:19:58] Instruction three is reading F6.
+[00:19:58 -> 00:20:01] So there's a read-after-write inter-dependence
+[00:20:01 -> 00:20:05] between two and three through F6.
+[00:20:05 -> 00:20:06] Three is writing F4.
+[00:20:08 -> 00:20:10] Sorry, three is writing F8.
+[00:20:11 -> 00:20:13] Four is reading F8.
+[00:20:13 -> 00:20:16] So, the dependence would be three and four through F8.
+[00:20:17 -> 00:20:20] Five is reading R1 and writing R1.
+[00:20:21 -> 00:20:22] Okay?
+[00:20:22 -> 00:20:25] And six is reading R1,
+[00:20:25 -> 00:20:26] so there's a dependence
+[00:20:26 -> 00:20:28] between five and six through R1.
+[00:20:28 -> 00:20:30] And six is writing into R2.
+[00:20:30 -> 00:20:32] Seven is reading R2,
+[00:20:32 -> 00:20:36] six through six and seven through R2.
+[00:20:36 -> 00:20:39] Okay?
+[00:20:39 -> 00:20:44] Now, if I go now between the loops,
+[00:20:44 -> 00:20:49] okay, if I take a look at this instruction,
+[00:20:49 -> 00:20:51] it's reading R1.
+[00:20:51 -> 00:20:54] So, this instruction in the second iteration
+[00:20:54 -> 00:20:57] is reading R1 from the first iteration.
+[00:20:58 -> 00:20:59] Okay?
+[00:20:59 -> 00:21:02] So, instruction five wrote into R1
+[00:21:02 -> 00:21:04] in one iteration, iteration I.
+[00:21:04 -> 00:21:07] Instruction zero of iteration I plus one
+[00:21:07 -> 00:21:09] is reading R1.
+[00:21:09 -> 00:21:12] So, there's a read-after-write dependence
+[00:21:12 -> 00:21:15] inter-iteration between five and zero through R1.
+[00:21:16 -> 00:21:19] Similarly, there is one between five and two
+[00:21:19 -> 00:21:23] through R1, five and four through R1.
+[00:21:23 -> 00:21:26] And instruction five is reading as input
+[00:21:26 -> 00:21:29] the R1 of the previous iteration
+[00:21:29 -> 00:21:31] and writing R1 in this iteration.
+[00:21:31 -> 00:21:37] So, there's between five and itself through R1.
+[00:21:37 -> 00:21:40] Okay?
+[00:21:40 -> 00:21:43] What about the write-after-read?
+[00:21:43 -> 00:21:44] Okay?
+[00:21:44 -> 00:21:47] Write-after-read, you know,
+[00:21:47 -> 00:21:50] zero is reading R1, five is writing R1,
+[00:21:50 -> 00:21:53] so that is between zero and five
+[00:21:53 -> 00:21:55] between through R1.
+[00:21:55 -> 00:21:57] Very similarly, two is reading R1
+[00:21:57 -> 00:21:59] and five is writing R1.
+[00:21:59 -> 00:22:01] Zero and five through R1,
+[00:22:01 -> 00:22:04] and also four is reading R1
+[00:22:04 -> 00:22:05] and five is writing R1
+[00:22:05 -> 00:22:10] between four and five through R1.
+[00:22:10 -> 00:22:15] Inter-iteration dependencies, okay?
+[00:22:15 -> 00:22:17] So, you know,
+[00:22:18 -> 00:22:22] register one, sorry, instruction zero
+[00:22:22 -> 00:22:25] of the second iteration is writing into F2.
+[00:22:26 -> 00:22:30] And, you know, instruction one
+[00:22:30 -> 00:22:32] of the first iteration is reading F2.
+[00:22:32 -> 00:22:34] So, there is a write-after-read
+[00:22:34 -> 00:22:40] between one and zero through F2, okay?
+[00:22:40 -> 00:22:49] And you can do the rest of these.
+[00:22:49 -> 00:22:51] What about write-after-write?
+[00:22:51 -> 00:22:52] A write-after-write happens
+[00:22:52 -> 00:22:54] when two instructions are writing
+[00:22:54 -> 00:22:57] into the same register.
+[00:22:57 -> 00:22:58] This is writing into F2,
+[00:22:58 -> 00:22:59] this is writing into F4,
+[00:22:59 -> 00:23:01] this is writing into F6,
+[00:23:01 -> 00:23:02] this is writing into F8,
+[00:23:02 -> 00:23:04] this is not writing into any register,
+[00:23:04 -> 00:23:06] this is writing into R1,
+[00:23:06 -> 00:23:08] this is writing into R2.
+[00:23:08 -> 00:23:11] So, no two instructions in the same iteration
+[00:23:11 -> 00:23:13] are writing into the same register.
+[00:23:13 -> 00:23:15] So, there is no write-after-write
+[00:23:15 -> 00:23:19] interrupts iteration, okay?
+[00:23:20 -> 00:23:24] But, between iterations,
+[00:23:24 -> 00:23:26] you know, the same instruction
+[00:23:26 -> 00:23:27] of the different iterations
+[00:23:27 -> 00:23:28] are writing into the same register.
+[00:23:28 -> 00:23:30] So, there's a write-after-write dependence
+[00:23:30 -> 00:23:32] between any instruction that writes
+[00:23:32 -> 00:23:35] into a register and itself
+[00:23:35 -> 00:23:40] from the previous iteration.
+[00:23:40 -> 00:23:46] Questions?
+[00:23:46 -> 00:23:47] Yeah.
+[00:23:47 -> 00:23:49] So, this assumes that this pipeline
+[00:23:49 -> 00:23:51] is way more than seven instructions.
+[00:23:52 -> 00:23:53] Right.
+[00:23:53 -> 00:23:55] That's not assuming anything of a pipeline.
+[00:23:55 -> 00:23:59] This is just talking about dependencies.
+[00:23:59 -> 00:24:01] Oh, okay, so we're not through the hazards.
+[00:24:01 -> 00:24:02] Okay.
+[00:24:02 -> 00:24:04] We are not through the hazards yet.
+[00:24:06 -> 00:24:09] Okay.
+[00:24:09 -> 00:24:16] Other questions?
+[00:24:16 -> 00:24:18] Now, let's take a look at
+[00:24:18 -> 00:24:20] the read-after-write dependence
+[00:24:20 -> 00:24:22] and see the potential for hazard creation
+[00:24:22 -> 00:24:25] and what we have to do.
+[00:24:25 -> 00:24:28] So, I have this piece of code,
+[00:24:28 -> 00:24:29] add writing into R1,
+[00:24:29 -> 00:24:31] subtract reading R1,
+[00:24:31 -> 00:24:34] and if I somehow change the order
+[00:24:34 -> 00:24:36] of the add and subtract,
+[00:24:36 -> 00:24:38] then, you know, the subtract
+[00:24:38 -> 00:24:42] is going to use the wrong value of R1.
+[00:24:42 -> 00:24:43] There's a true value,
+[00:24:43 -> 00:24:46] and if I used a different output register
+[00:24:46 -> 00:24:48] for add, it's not going to make any difference.
+[00:24:48 -> 00:24:50] Because if it's a true dependence
+[00:24:50 -> 00:24:52] or a value flow or a flow dependence,
+[00:24:53 -> 00:24:55] or a read-after-write dependence,
+[00:24:55 -> 00:25:01] all mean the same thing.
+[00:25:01 -> 00:25:04] Let's take a look at this pipeline
+[00:25:04 -> 00:25:07] and see,
+[00:25:07 -> 00:25:07] a simple pipeline,
+[00:25:07 -> 00:25:09] and see what we're going to have to do.
+[00:25:10 -> 00:25:11] All right.
+[00:25:13 -> 00:25:15] So, here's a piece of code.
+[00:25:15 -> 00:25:18] This add instruction is going to go through fetch,
+[00:25:18 -> 00:25:19] decode, execute,
+[00:25:19 -> 00:25:20] memory, write back,
+[00:25:20 -> 00:25:23] and R1 is going to be written into the exit file.
+[00:25:24 -> 00:25:25] Let's assume for the time being
+[00:25:25 -> 00:25:27] at the end of the long cycle file.
+[00:25:28 -> 00:25:29] Okay.
+[00:25:29 -> 00:25:31] So now, you know,
+[00:25:31 -> 00:25:34] I must make sure that the subtract
+[00:25:34 -> 00:25:36] does not get the wrong value of R1.
+[00:25:36 -> 00:25:40] So, I need to have some stall logic
+[00:25:40 -> 00:25:42] to check to see if there is a potential
+[00:25:42 -> 00:25:44] of getting the wrong value,
+[00:25:44 -> 00:25:46] and if so, I must stall.
+[00:25:47 -> 00:25:48] Okay.
+[00:25:48 -> 00:25:53] So, the subtract instruction that needs R1,
+[00:25:54 -> 00:25:55] okay,
+[00:25:55 -> 00:25:57] I must make sure that no instruction
+[00:25:58 -> 00:26:00] ahead of it in the pipeline
+[00:26:01 -> 00:26:05] is going to write into register R1.
+[00:26:05 -> 00:26:06] Okay.
+[00:26:06 -> 00:26:08] And how do I know
+[00:26:08 -> 00:26:10] what are the instructions ahead of me
+[00:26:10 -> 00:26:13] and if they write into the same register as me?
+[00:26:13 -> 00:26:14] Okay.
+[00:26:14 -> 00:26:17] These latches of the pipeline
+[00:26:17 -> 00:26:19] have the information about the instruction
+[00:26:19 -> 00:26:21] and what their source registers are
+[00:26:21 -> 00:26:25] and what their destination registers are.
+[00:26:25 -> 00:26:26] Okay.
+[00:26:26 -> 00:26:28] So, what I must do is,
+[00:26:28 -> 00:26:30] I must check to see,
+[00:26:30 -> 00:26:31] hey,
+[00:26:32 -> 00:26:33] I am,
+[00:26:33 -> 00:26:35] this is the instruction,
+[00:26:35 -> 00:26:37] the subtract instruction, in this case,
+[00:26:38 -> 00:26:41] is reading from this first register,
+[00:26:41 -> 00:26:42] our source register.
+[00:26:42 -> 00:26:45] This first source register is R1.
+[00:26:45 -> 00:26:47] Happens to be R1 in this case.
+[00:26:47 -> 00:26:48] Okay.
+[00:26:48 -> 00:26:49] Happens to be R1.
+[00:26:49 -> 00:26:50] Second source register is R4.
+[00:26:50 -> 00:26:51] Okay.
+[00:26:51 -> 00:26:54] So, if I am reading from,
+[00:26:54 -> 00:26:55] this instruction is reading from a register.
+[00:26:55 -> 00:26:57] If this instruction is not reading from a register,
+[00:26:57 -> 00:26:59] then there's no problem.
+[00:27:00 -> 00:27:01] Okay.
+[00:27:01 -> 00:27:02] And,
+[00:27:03 -> 00:27:07] the instruction that is just one ahead of me,
+[00:27:07 -> 00:27:09] which is the instruction in this stage,
+[00:27:10 -> 00:27:13] it is going to write into a register
+[00:27:13 -> 00:27:16] and my source register is the same
+[00:27:16 -> 00:27:19] as its destination register.
+[00:27:19 -> 00:27:20] Then I must stop.
+[00:27:22 -> 00:27:23] Okay.
+[00:27:23 -> 00:27:25] Or the instruction,
+[00:27:25 -> 00:27:28] or the instruction in this stage,
+[00:27:28 -> 00:27:30] which is two ahead of me.
+[00:27:30 -> 00:27:31] Okay.
+[00:27:31 -> 00:27:34] And that is the instruction in the XM latch.
+[00:27:34 -> 00:27:35] Okay.
+[00:27:35 -> 00:27:38] So, if I am reading a register
+[00:27:38 -> 00:27:41] and the instruction in this stage is writing a register
+[00:27:41 -> 00:27:44] and Rd is destination register,
+[00:27:44 -> 00:27:46] then I must stop.
+[00:27:48 -> 00:27:48] Okay.
+[00:27:48 -> 00:27:53] Or the instruction in the write back stage.
+[00:27:54 -> 00:27:55] Okay.
+[00:27:55 -> 00:27:57] If it's going to write into a register,
+[00:27:57 -> 00:28:00] so the information that's there in this MW latch,
+[00:28:01 -> 00:28:02] it's writing into R1
+[00:28:02 -> 00:28:04] and I'm reading R1
+[00:28:06 -> 00:28:07] and I must stop.
+[00:28:08 -> 00:28:09] Okay.
+[00:28:09 -> 00:28:11] So, that's the logic.
+[00:28:11 -> 00:28:13] That's going to be the stall logic
+[00:28:13 -> 00:28:16] for an instruction to stall
+[00:28:16 -> 00:28:19] to make sure I don't have a data hazard.
+[00:28:19 -> 00:28:20] Okay.
+[00:28:20 -> 00:28:25] For the first source register of an instruction.
+[00:28:25 -> 00:28:29] Same thing for the second source register
+[00:28:30 -> 00:28:34] of the instruction.
+[00:28:34 -> 00:28:36] How do I stall?
+[00:28:36 -> 00:28:39] You just don't activate these, you know,
+[00:28:39 -> 00:28:44] this latch to let a new instruction come in.
+[00:28:44 -> 00:28:45] Okay.
+[00:28:45 -> 00:28:49] But I must keep activating these latches
+[00:28:49 -> 00:28:54] to allow these instructions to keep flowing through.
+[00:28:54 -> 00:28:55] Okay.
+[00:28:55 -> 00:28:57] And in every cycle,
+[00:28:57 -> 00:29:00] I'm going to re-evaluate this logic
+[00:29:00 -> 00:29:03] until it's no longer true
+[00:29:03 -> 00:29:08] and then this instruction can proceed.
+[00:29:08 -> 00:29:09] Okay.
+[00:29:09 -> 00:29:10] Are you with me on this?
+[00:29:10 -> 00:29:13] So far, so good.
+[00:29:13 -> 00:29:16] Fairly low cost, you know,
+[00:29:16 -> 00:29:17] but there's a degradation
+[00:29:17 -> 00:29:21] because dependencies are the very common case.
+[00:29:22 -> 00:29:23] And if you don't have dependency in a program,
+[00:29:23 -> 00:29:25] it's not a very interesting program.
+[00:29:25 -> 00:29:31] It's an AI program with matrix multiple.
+[00:29:31 -> 00:29:32] Okay.
+[00:29:32 -> 00:29:33] Not very interesting.
+[00:29:34 -> 00:29:37] Okay.
+[00:29:37 -> 00:29:39] So now,
+[00:29:40 -> 00:29:42] let's start trying to, you know,
+[00:29:42 -> 00:29:43] build on that
+[00:29:43 -> 00:29:47] and start seeing if you can do something clever.
+[00:29:47 -> 00:29:51] So assume that in my pipeline that I have,
+[00:29:51 -> 00:29:54] that the, you know, the register, you know,
+[00:29:54 -> 00:29:54] the reason, if I,
+[00:29:54 -> 00:29:56] the reason I want to keep them small,
+[00:29:56 -> 00:29:57] I actually want to be able to access
+[00:29:57 -> 00:29:58] more than one clock cycle
+[00:29:58 -> 00:30:01] even in half a clock cycle.
+[00:30:01 -> 00:30:02] Okay.
+[00:30:02 -> 00:30:05] And say my pipeline is designed
+[00:30:05 -> 00:30:08] so that you write into the register file
+[00:30:08 -> 00:30:11] in the second half of the clock cycle
+[00:30:11 -> 00:30:13] and read in the first half of the clock cycle.
+[00:30:14 -> 00:30:16] Okay.
+[00:30:16 -> 00:30:16] All right.
+[00:30:16 -> 00:30:17] So,
+[00:30:18 -> 00:30:21] this add instruction is going to write
+[00:30:21 -> 00:30:23] its result into R1
+[00:30:23 -> 00:30:25] at the end of clock cycle five.
+[00:30:26 -> 00:30:30] And so in the beginning of clock cycle five,
+[00:30:30 -> 00:30:31] if I read the R1,
+[00:30:31 -> 00:30:32] I would get the wrong value.
+[00:30:33 -> 00:30:34] Okay.
+[00:30:34 -> 00:30:36] So the subtract instruction
+[00:30:36 -> 00:30:38] can only get into the decode stage
+[00:30:38 -> 00:30:42] and read the register file
+[00:30:42 -> 00:30:43] in the first half of the clock cycle
+[00:30:44 -> 00:30:45] six.
+[00:30:46 -> 00:30:47] Okay.
+[00:30:47 -> 00:30:49] So for this pipeline,
+[00:30:49 -> 00:30:52] I must have three cycles stall
+[00:30:52 -> 00:30:55] due to the data dependence that I have,
+[00:30:55 -> 00:30:58] data stall.
+[00:30:58 -> 00:31:02] And any instruction behind this now
+[00:31:02 -> 00:31:04] must also stall
+[00:31:04 -> 00:31:10] and that is what's called a propagated stall piece.
+[00:31:10 -> 00:31:11] Okay.
+[00:31:11 -> 00:31:15] So far so good.
+[00:31:15 -> 00:31:18] Now let me change the pipeline.
+[00:31:18 -> 00:31:19] How I, you know,
+[00:31:19 -> 00:31:21] when I write into the register file,
+[00:31:21 -> 00:31:23] say I write into the register file
+[00:31:23 -> 00:31:26] in the first half of the clock cycle
+[00:31:26 -> 00:31:29] and I read in the second half of the clock cycle.
+[00:31:30 -> 00:31:31] Okay.
+[00:31:32 -> 00:31:35] Now, what I can do is that
+[00:31:36 -> 00:31:39] in the first half of clock cycle five,
+[00:31:41 -> 00:31:42] okay,
+[00:31:42 -> 00:31:44] the add instruction will write into R1
+[00:31:46 -> 00:31:47] and the subtract instruction
+[00:31:47 -> 00:31:50] can read from R1
+[00:31:50 -> 00:31:52] the correct value by reading it
+[00:31:52 -> 00:31:54] in the second half of the clock cycle.
+[00:31:54 -> 00:31:55] Okay.
+[00:31:55 -> 00:31:58] So it can be in the decode stage
+[00:31:58 -> 00:32:00] in clock cycle five
+[00:32:00 -> 00:32:02] unlike previously this clock cycle six.
+[00:32:02 -> 00:32:04] So now it's only going to stall
+[00:32:04 -> 00:32:10] for two cycles.
+[00:32:10 -> 00:32:13] Okay.
+[00:32:13 -> 00:32:20] How does the stall logic here change?
+[00:32:20 -> 00:32:28] This term would not be there.
+[00:32:28 -> 00:32:29] So far so good.
+[00:32:30 -> 00:32:34] So we've done good here.
+[00:32:34 -> 00:32:36] The problem is these dependencies
+[00:32:36 -> 00:32:37] are so common.
+[00:32:38 -> 00:32:40] Anytime I have a stall,
+[00:32:41 -> 00:32:45] I'm losing big time.
+[00:32:45 -> 00:32:46] Okay.
+[00:32:46 -> 00:32:48] So what else can I do?
+[00:32:49 -> 00:32:51] So what I can do is
+[00:32:51 -> 00:32:56] I can basically reduce these stalls
+[00:32:56 -> 00:32:59] and mostly eliminate them
+[00:32:59 -> 00:33:01] with bypassing or bypass logic.
+[00:33:03 -> 00:33:04] Okay.
+[00:33:05 -> 00:33:08] So what is the rationale
+[00:33:08 -> 00:33:12] behind this bypass logic?
+[00:33:12 -> 00:33:15] So if I go back
+[00:33:15 -> 00:33:18] to this diagram over here,
+[00:33:18 -> 00:33:21] let's use this one over here.
+[00:33:21 -> 00:33:22] Okay.
+[00:33:22 -> 00:33:24] The add instruction,
+[00:33:24 -> 00:33:28] the value of R1 that produced
+[00:33:28 -> 00:33:32] was ready at the end of clock cycle three.
+[00:33:32 -> 00:33:34] Okay.
+[00:33:34 -> 00:33:35] So,
+[00:33:35 -> 00:33:37] but it took me two more clock cycles
+[00:33:37 -> 00:33:38] to write it.
+[00:33:38 -> 00:33:39] Why so?
+[00:33:39 -> 00:33:40] Because I had to respect the structure
+[00:33:40 -> 00:33:41] or otherwise might be a structure of hazards
+[00:33:41 -> 00:33:42] and so on like that.
+[00:33:42 -> 00:33:44] Okay.
+[00:33:44 -> 00:33:46] So that value is ready in clock cycle three.
+[00:33:46 -> 00:33:48] So this subtract instruction
+[00:33:48 -> 00:33:51] could actually get that value
+[00:33:51 -> 00:33:53] at the end of clock cycle three
+[00:33:53 -> 00:33:58] and start working with it in clock cycle four.
+[00:33:58 -> 00:34:02] Okay.
+[00:34:02 -> 00:34:05] Then the subtract instruction
+[00:34:05 -> 00:34:07] reads the value from the rescue file
+[00:34:07 -> 00:34:11] in the decode phase.
+[00:34:11 -> 00:34:14] But it's not doing anything with the value
+[00:34:14 -> 00:34:18] until it gets to the execute stage.
+[00:34:18 -> 00:34:19] Okay.
+[00:34:19 -> 00:34:22] So can I have it read the old value
+[00:34:23 -> 00:34:24] and just drop it?
+[00:34:24 -> 00:34:26] And when I get the new value,
+[00:34:26 -> 00:34:28] use that new value instead
+[00:34:28 -> 00:34:32] to carry out the operation.
+[00:34:32 -> 00:34:33] Okay.
+[00:34:33 -> 00:34:36] So that is what bypassing is going to be.
+[00:34:36 -> 00:34:39] So what I'm gonna do is that
+[00:34:39 -> 00:34:40] now
+[00:34:41 -> 00:34:44] do the input of the execute stage,
+[00:34:44 -> 00:34:46] which is the input to the ALP.
+[00:34:46 -> 00:34:47] What I'm gonna do is
+[00:34:47 -> 00:34:48] the operation of the execute stage
+[00:34:48 -> 00:34:51] is gonna be carried out in this ALU.
+[00:34:51 -> 00:34:53] The input to the ALU previously
+[00:34:53 -> 00:34:54] was the register that I read.
+[00:34:56 -> 00:34:57] Okay.
+[00:34:57 -> 00:34:59] So I'm showing the diagram
+[00:34:59 -> 00:35:02] for the second source register that I read.
+[00:35:02 -> 00:35:04] Now, the input of this ALU,
+[00:35:04 -> 00:35:06] I'm gonna have a multiplexer
+[00:35:06 -> 00:35:08] and the inputs to the multiplexer
+[00:35:08 -> 00:35:11] would be some bits,
+[00:35:11 -> 00:35:14] which are the output of this latch over here,
+[00:35:14 -> 00:35:16] which is the bits corresponding
+[00:35:16 -> 00:35:18] to the instruction in this stage.
+[00:35:19 -> 00:35:24] And other, some bits from this latch over here,
+[00:35:24 -> 00:35:26] which is the bits corresponding
+[00:35:26 -> 00:35:28] to the instruction in this stage.
+[00:35:30 -> 00:35:30] Okay.
+[00:35:30 -> 00:35:32] So now what I'm gonna do is
+[00:35:32 -> 00:35:35] rather than use this input value,
+[00:35:35 -> 00:35:38] which corresponds to what the instruction read
+[00:35:38 -> 00:35:42] in the decode stage from source register two,
+[00:35:42 -> 00:35:43] I'm gonna use either that value
+[00:35:43 -> 00:35:47] or this value or this value.
+[00:35:47 -> 00:35:48] Okay.
+[00:35:49 -> 00:35:54] So I'm going to bypass or forward the data directly
+[00:35:55 -> 00:36:00] from somewhere to the input of this ALU here.
+[00:36:01 -> 00:36:03] I can also do the same
+[00:36:03 -> 00:36:06] to forward it to the input of this mem stage
+[00:36:06 -> 00:36:09] to write a value into the data cache.
+[00:36:11 -> 00:36:12] Previously, you know,
+[00:36:12 -> 00:36:14] which instruction writes into the value
+[00:36:14 -> 00:36:16] in the data cache or store instruction.
+[00:36:16 -> 00:36:17] What a store instruction is doing,
+[00:36:17 -> 00:36:20] it reads something from the register file.
+[00:36:20 -> 00:36:23] When does it do that in the decode stage?
+[00:36:23 -> 00:36:23] Okay.
+[00:36:23 -> 00:36:25] So I can read some value
+[00:36:25 -> 00:36:27] and then by time store gets the mem stage,
+[00:36:27 -> 00:36:29] it says, no, no, no, use this newer value,
+[00:36:29 -> 00:36:32] which is the correct value.
+[00:36:32 -> 00:36:33] Okay.
+[00:36:35 -> 00:36:38] So these are all these wires
+[00:36:38 -> 00:36:42] and this reduces the stalls in a big way.
+[00:36:43 -> 00:36:43] Okay.
+[00:36:43 -> 00:36:46] So, you know, we have this,
+[00:36:46 -> 00:36:50] we have a MX bypass from the beginning of mem
+[00:36:50 -> 00:36:53] to the input of X, the execute stage.
+[00:36:53 -> 00:36:57] We have a WX bypass from the beginning of the write back
+[00:36:57 -> 00:37:00] into the input of the execute stage.
+[00:37:00 -> 00:37:05] We also have a WM bypass from the write back stage
+[00:37:05 -> 00:37:11] to the input of the mem stage over here.
+[00:37:11 -> 00:37:12] Okay.
+[00:37:12 -> 00:37:15] This is the logic for one input.
+[00:37:15 -> 00:37:18] We also would have a similar set of logic
+[00:37:24 -> 00:37:26] for the, so now what we're gonna have
+[00:37:26 -> 00:37:29] is you're gonna have bypass logic
+[00:37:29 -> 00:37:33] to control the multiplexers over here
+[00:37:33 -> 00:37:36] to determine which of these inputs should be selected.
+[00:37:37 -> 00:37:38] Okay.
+[00:37:39 -> 00:37:43] That is going to be the bypass control logic,
+[00:37:43 -> 00:37:45] bypass logic.
+[00:37:45 -> 00:37:46] It's very similar,
+[00:37:46 -> 00:37:48] but it's separate from the stall logic.
+[00:37:48 -> 00:37:49] Why is it similar?
+[00:37:49 -> 00:37:51] Because it's also taking a look at
+[00:37:51 -> 00:37:53] whether an instruction is reading
+[00:37:53 -> 00:37:55] a register and whether another instruction
+[00:37:55 -> 00:37:56] is writing a register.
+[00:37:57 -> 00:37:58] Okay.
+[00:37:58 -> 00:38:01] So what is that logic gonna look like?
+[00:38:01 -> 00:38:07] So for the multiplexer at this input of the ALU,
+[00:38:07 -> 00:38:11] okay, what are you gonna do is, okay,
+[00:38:11 -> 00:38:16] so you're going to select this input of the ALU
+[00:38:17 -> 00:38:21] if the instruction at this stage is reading a register.
+[00:38:22 -> 00:38:23] Okay.
+[00:38:23 -> 00:38:26] And if the instruction at this stage
+[00:38:26 -> 00:38:30] is writing a register and the destination register
+[00:38:30 -> 00:38:33] is the same as the source register of this instruction.
+[00:38:33 -> 00:38:34] Okay.
+[00:38:34 -> 00:38:36] Then the bits that are going to get written
+[00:38:36 -> 00:38:39] into that register are one, are here,
+[00:38:39 -> 00:38:41] I'm gonna pull them from here,
+[00:38:41 -> 00:38:43] put them to the inputs of the multiplexer,
+[00:38:43 -> 00:38:47] from here they'll go to the input of the ALU.
+[00:38:47 -> 00:38:50] Okay.
+[00:38:50 -> 00:38:52] This is the instruction at this stage
+[00:38:52 -> 00:38:54] is the instruction that is immediately
+[00:38:54 -> 00:38:55] preceding this instruction.
+[00:38:56 -> 00:38:57] Okay.
+[00:38:57 -> 00:38:59] So this is the one that's going to have
+[00:38:59 -> 00:39:01] the most importance.
+[00:39:01 -> 00:39:02] Okay.
+[00:39:02 -> 00:39:05] So say this instruction is reading R1 at this stage,
+[00:39:05 -> 00:39:08] this instruction is writing into R1.
+[00:39:08 -> 00:39:08] Okay.
+[00:39:08 -> 00:39:11] See also this instruction is writing into R1
+[00:39:11 -> 00:39:12] in the write back stage.
+[00:39:12 -> 00:39:13] Okay.
+[00:39:13 -> 00:39:15] The R1 that this instruction must get
+[00:39:15 -> 00:39:19] should be the R1 from this instruction over here,
+[00:39:19 -> 00:39:22] not the R1 from this one.
+[00:39:22 -> 00:39:23] All right.
+[00:39:23 -> 00:39:27] So if this instruction doesn't write into R1,
+[00:39:27 -> 00:39:29] this does, then that's,
+[00:39:29 -> 00:39:31] then you select this input of the multiplexer,
+[00:39:31 -> 00:39:33] which are these bits over here,
+[00:39:33 -> 00:39:35] and that is, hey, the instruction
+[00:39:35 -> 00:39:37] in this decode stage, in the execute stage,
+[00:39:37 -> 00:39:39] which is this latch,
+[00:39:39 -> 00:39:44] is writing into its register is the same as the AND.
+[00:39:44 -> 00:39:47] This instruction is writing into a register
+[00:39:47 -> 00:39:50] and these two registers are the same.
+[00:39:50 -> 00:39:52] Then you use this input,
+[00:39:52 -> 00:39:56] otherwise you use this input.
+[00:39:56 -> 00:39:57] Okay.
+[00:39:58 -> 00:40:04] So far so good.
+[00:40:04 -> 00:40:06] Now let's take a look at the pipeline diagram
+[00:40:06 -> 00:40:11] when I had bypasses.
+[00:40:11 -> 00:40:13] The piece of code that I had over here,
+[00:40:13 -> 00:40:16] this AND instruction R1 is ready
+[00:40:16 -> 00:40:18] at the end of clock cycle three.
+[00:40:18 -> 00:40:21] Decode is in clock cycle three.
+[00:40:22 -> 00:40:24] You know, in clock cycle four,
+[00:40:24 -> 00:40:29] I can let the subtract go from decode to execute
+[00:40:29 -> 00:40:31] with the old value that is written
+[00:40:31 -> 00:40:33] about R1 from the register file.
+[00:40:33 -> 00:40:37] But bypass the value from this AND instruction,
+[00:40:37 -> 00:40:39] which is in the mem stage,
+[00:40:39 -> 00:40:42] to the subtract instruction
+[00:40:42 -> 00:40:45] and the subtract instruction can execute correctly
+[00:40:45 -> 00:40:54] in clock cycle four.
+[00:40:54 -> 00:40:55] This is now a piece of code
+[00:40:55 -> 00:40:59] that's using the bypass from the W to X.
+[00:40:59 -> 00:41:00] All right.
+[00:41:00 -> 00:41:05] Where this AND instruction is writing to R1,
+[00:41:05 -> 00:41:07] there happens to be some more instruction
+[00:41:07 -> 00:41:09] between the AND and the subtract instruction
+[00:41:09 -> 00:41:10] that uses the R1.
+[00:41:11 -> 00:41:12] Okay.
+[00:41:12 -> 00:41:15] And so this instruction is in the write back stage
+[00:41:15 -> 00:41:17] when this instruction would like
+[00:41:17 -> 00:41:19] to enter into the execute stage.
+[00:41:19 -> 00:41:21] So you have bypassing from, you know,
+[00:41:21 -> 00:41:26] this WX, you know, MW latch to the input over here.
+[00:41:34 -> 00:41:38] There.
+[00:41:38 -> 00:41:40] How about, can you give me an example
+[00:41:40 -> 00:41:42] of an instruction, a code sequence
+[00:41:42 -> 00:41:45] that using this bypass over here?
+[00:41:45 -> 00:41:45] Okay.
+[00:41:45 -> 00:41:50] So I bypass from the W stage to the M stage.
+[00:41:52 -> 00:41:54] W and bypass.
+[00:41:54 -> 00:41:59] So basically I'm bypassing the value from the, you know,
+[00:41:59 -> 00:42:03] this stage to the M stage.
+[00:42:03 -> 00:42:04] What do we have?
+[00:42:05 -> 00:42:10] A store whose input is very strong.
+[00:42:10 -> 00:42:14] Okay.
+[00:42:14 -> 00:42:17] All right.
+[00:42:17 -> 00:42:22] So things are good when I have arithmetic instructions
+[00:42:22 -> 00:42:24] only, okay.
+[00:42:24 -> 00:42:29] But if life were that good, you know,
+[00:42:31 -> 00:42:33] hardware engineers won't get paid much.
+[00:42:33 -> 00:42:35] So you have to have more complications.
+[00:42:36 -> 00:42:38] Okay.
+[00:42:38 -> 00:42:43] So what happens when you have a load instruction
+[00:42:44 -> 00:42:46] that loads into an register
+[00:42:46 -> 00:42:49] and another instruction that reads that register
+[00:42:49 -> 00:42:51] also called a load use.
+[00:42:56 -> 00:43:01] So a load instruction is going to the pipeline like a,
+[00:43:01 -> 00:43:02] not bothering anyone,
+[00:43:02 -> 00:43:04] not being bothered by anyone over here.
+[00:43:05 -> 00:43:10] But unlike arithmetic instruction where the value,
+[00:43:10 -> 00:43:12] register value was ready at the end of clock cycle three
+[00:43:12 -> 00:43:13] for the load,
+[00:43:13 -> 00:43:17] the register value is not ready until clock cycle four.
+[00:43:17 -> 00:43:21] So this subtract cannot get the correct value
+[00:43:21 -> 00:43:23] until clock cycle five.
+[00:43:24 -> 00:43:27] Therefore the subtract cannot be in the execute stage
+[00:43:27 -> 00:43:29] until clock cycle five.
+[00:43:29 -> 00:43:32] So if it was decoded in clock cycle three,
+[00:43:32 -> 00:43:42] you must have a different data store.
+[00:43:42 -> 00:43:47] The store, you could either store the subtract
+[00:43:47 -> 00:43:51] either in execute or in, you know, decode.
+[00:43:51 -> 00:43:52] It sort of doesn't matter,
+[00:43:52 -> 00:43:58] but you need to create a store.
+[00:43:58 -> 00:44:00] Okay.
+[00:44:00 -> 00:44:03] If now, here I'm saying this takes one cycle.
+[00:44:04 -> 00:44:06] Data cache access.
+[00:44:07 -> 00:44:11] What if I have a data cache miss
+[00:44:11 -> 00:44:15] where now it may take many more cycles?
+[00:44:15 -> 00:44:28] That's all that you have.
+[00:44:28 -> 00:44:30] What you're gonna do is you're gonna say,
+[00:44:30 -> 00:44:33] in a sense, forget about arithmetic instructions
+[00:44:33 -> 00:44:38] and data hazards and data dependency do them.
+[00:44:39 -> 00:44:42] We can, we know how to handle them with bypass.
+[00:44:42 -> 00:44:47] Bypass is just a very straightforward.
+[00:44:47 -> 00:44:51] But appreciate that, hey, now what I have
+[00:44:51 -> 00:44:54] is for each bypass path, you know,
+[00:44:54 -> 00:44:55] I've drawn a line over here.
+[00:44:56 -> 00:45:01] Exactly 64 bits wide.
+[00:45:01 -> 00:45:02] Okay.
+[00:45:02 -> 00:45:07] If I have 64 bit data.
+[00:45:07 -> 00:45:10] And what we will see when we talk about multiple issue,
+[00:45:10 -> 00:45:12] I'm trying to do N.
+[00:45:12 -> 00:45:15] So here now I have, you know,
+[00:45:15 -> 00:45:17] two different bypass paths if you will.
+[00:45:17 -> 00:45:20] Two sets of bypass paths.
+[00:45:20 -> 00:45:22] What you'll see when we do multiple issue
+[00:45:22 -> 00:45:24] is if I'm trying to do N wide,
+[00:45:24 -> 00:45:30] we'll have off the order of N squared bypass path.
+[00:45:30 -> 00:45:32] Just to make life more interesting.
+[00:45:32 -> 00:45:33] Just to use.
+[00:45:33 -> 00:45:35] You know, we got all this logic there.
+[00:45:35 -> 00:45:36] World's our giver.
+[00:45:38 -> 00:45:39] Okay.
+[00:45:39 -> 00:45:40] All these transistors.
+[00:45:40 -> 00:45:44] They're gonna be good use.
+[00:45:44 -> 00:45:45] All right.
+[00:45:45 -> 00:45:49] But let us talk about, you know,
+[00:45:49 -> 00:45:54] basic concept of trying to deal with the stall
+[00:45:55 -> 00:45:56] due to load use.
+[00:45:56 -> 00:46:01] How to reduce those load use stall, okay?
+[00:46:01 -> 00:46:06] Now, what I can do to reduce load use stalls basically
+[00:46:06 -> 00:46:11] is, you know, make sure that the instruction
+[00:46:11 -> 00:46:14] that reads the value that the load is loading into
+[00:46:14 -> 00:46:16] in this case, okay?
+[00:46:18 -> 00:46:23] Does not enter the execute stage until clock cycle five.
+[00:46:25 -> 00:46:26] Okay.
+[00:46:26 -> 00:46:31] If then, in that case, I can make the bypass work, okay?
+[00:46:31 -> 00:46:36] And how do I get rid of that stall in between?
+[00:46:36 -> 00:46:39] If now there was another instruction over here,
+[00:46:39 -> 00:46:42] that is the instruct, and it didn't need R1.
+[00:46:42 -> 00:46:47] That is the instruction which would enter the decode,
+[00:46:47 -> 00:46:50] execute stage in clock cycle four.
+[00:46:50 -> 00:46:52] And the subtract that came after that
+[00:46:52 -> 00:46:54] would naturally enter the execute stage
+[00:46:54 -> 00:46:57] in clock cycle five in a way of the bypass
+[00:46:57 -> 00:46:59] that I already had.
+[00:46:59 -> 00:47:03] No stalls.
+[00:47:03 -> 00:47:05] All right.
+[00:47:05 -> 00:47:10] So, let me take a piece of code over here
+[00:47:10 -> 00:47:14] where there are two expressions I'm trying to solve.
+[00:47:14 -> 00:47:17] A gets B plus C, D gets F minus E,
+[00:47:17 -> 00:47:20] and this is the code that A gets B plus C,
+[00:47:20 -> 00:47:23] and this is the code for D gets F minus E.
+[00:47:24 -> 00:47:25] Okay.
+[00:47:26 -> 00:47:28] I take a look at this piece of code here.
+[00:47:28 -> 00:47:32] Load into R2, load into R3,
+[00:47:32 -> 00:47:36] read after write dependence between R2 and R3,
+[00:47:36 -> 00:47:38] and then write into R1, store R1,
+[00:47:38 -> 00:47:40] read after write dependence between R1
+[00:47:40 -> 00:47:43] and between this add and store.
+[00:47:43 -> 00:47:44] Okay.
+[00:47:44 -> 00:47:48] Now, if I execute this piece of code like here,
+[00:47:48 -> 00:47:51] I'm going to have a load use stall
+[00:47:51 -> 00:47:55] because this add instruction that reads R3
+[00:47:55 -> 00:48:00] is immediately following this load instruction over here.
+[00:48:00 -> 00:48:01] Okay.
+[00:48:02 -> 00:48:04] To avoid this load use stall,
+[00:48:04 -> 00:48:06] what I can do is if I were able to put
+[00:48:06 -> 00:48:09] some other instruction in between over here,
+[00:48:09 -> 00:48:12] I would have that load install.
+[00:48:12 -> 00:48:13] Okay.
+[00:48:13 -> 00:48:15] So, what I want to do is
+[00:48:15 -> 00:48:21] I am going to pull out this instruction,
+[00:48:22 -> 00:48:25] which is writing into register R5,
+[00:48:25 -> 00:48:29] and its input is not being bothered by anyone else,
+[00:48:29 -> 00:48:33] and move it between this load and this add.
+[00:48:35 -> 00:48:38] Then I'm going to pull out this store instruction
+[00:48:38 -> 00:48:44] and move it between this load and this subtract over here.
+[00:48:44 -> 00:48:45] All right.
+[00:48:45 -> 00:48:47] That's what I do over here.
+[00:48:47 -> 00:48:49] Now, when I execute this piece of code,
+[00:48:49 -> 00:48:51] I've left my simple five page pipeline.
+[00:48:51 -> 00:48:55] This use is separated by another instruction
+[00:48:55 -> 00:48:56] from this load.
+[00:48:56 -> 00:48:59] This use is separated from this load
+[00:48:59 -> 00:49:01] by another instruction.
+[00:49:01 -> 00:49:02] I don't have that.
+[00:49:02 -> 00:49:09] So, I'm going to do it.
+[00:49:09 -> 00:49:10] Okay.
+[00:49:10 -> 00:49:14] So, this is what I like to be able to do.
+[00:49:14 -> 00:49:15] And this is sort of, you know,
+[00:49:15 -> 00:49:18] like we only had a few tricks.
+[00:49:18 -> 00:49:25] We're going to play the trick in different manners.
+[00:49:25 -> 00:49:26] All right.
+[00:49:26 -> 00:49:31] So, this compiler scheduling is to rearrange this code
+[00:49:33 -> 00:49:35] to avoid those solves.
+[00:49:35 -> 00:49:36] We're going to talk about
+[00:49:36 -> 00:49:39] as if it were done in solve.
+[00:49:39 -> 00:49:40] Okay.
+[00:49:40 -> 00:49:42] So, in the next few lectures, we figured out,
+[00:49:42 -> 00:49:45] we talked about doing it in software and in the compiler.
+[00:49:45 -> 00:49:48] When we get to out of order execution process
+[00:49:48 -> 00:49:56] or the dynamic IOP, we will do a lot of this in hardware.
+[00:49:56 -> 00:49:57] All right.
+[00:49:57 -> 00:50:00] So, what does compiler scheduling require?
+[00:50:00 -> 00:50:03] First thing it requires is a larger scheduling scope.
+[00:50:04 -> 00:50:08] The second thing it requires is enough registers.
+[00:50:09 -> 00:50:13] And the third thing it requires maybe is, you know,
+[00:50:13 -> 00:50:16] a little bit of what's called alias analysis.
+[00:50:17 -> 00:50:19] And we'll see what all of this stuff is.
+[00:50:19 -> 00:50:21] Each one of these things,
+[00:50:21 -> 00:50:24] we are sort of going to have to do in hardware.
+[00:50:24 -> 00:50:27] We're going to play the same tricks.
+[00:50:27 -> 00:50:30] Okay.
+[00:50:30 -> 00:50:34] So, what is larger scheduling scope?
+[00:50:34 -> 00:50:38] Say, my code was only doing A gets B plus C.
+[00:50:39 -> 00:50:40] Okay.
+[00:50:40 -> 00:50:43] So, this is the code that I have for A gets B plus C.
+[00:50:43 -> 00:50:47] So, I just cannot move any instruction around
+[00:50:47 -> 00:50:51] because, you know, I could change this load
+[00:50:51 -> 00:50:54] and this B2 load, change the order of the load.
+[00:50:54 -> 00:50:58] But now instead of, then instead of having a load
+[00:50:58 -> 00:51:01] you store because of R2, I'll have a R3,
+[00:51:01 -> 00:51:03] I'll have a load you store for R2.
+[00:51:04 -> 00:51:05] Okay.
+[00:51:05 -> 00:51:08] I can't move the store before this add.
+[00:51:10 -> 00:51:11] Okay.
+[00:51:11 -> 00:51:12] That's wrong execution.
+[00:51:12 -> 00:51:13] There's a true dependence.
+[00:51:13 -> 00:51:18] So, there isn't much I can do over here.
+[00:51:18 -> 00:51:22] So, what I had over here
+[00:51:22 -> 00:51:25] is I had two different computations.
+[00:51:25 -> 00:51:27] Much larger piece of code.
+[00:51:28 -> 00:51:30] Where I had some independent instructions
+[00:51:30 -> 00:51:34] I could move around.
+[00:51:34 -> 00:51:37] All right.
+[00:51:37 -> 00:51:38] Okay.
+[00:51:39 -> 00:51:42] The second thing I need to do is
+[00:51:42 -> 00:51:45] I need to have enough registers
+[00:51:45 -> 00:51:48] to hold onto values that are alive
+[00:51:48 -> 00:51:52] that I'm going to need for the computation.
+[00:51:52 -> 00:51:55] All right.
+[00:51:55 -> 00:51:59] So, let's go to this computation over here.
+[00:51:59 -> 00:52:00] Okay.
+[00:52:00 -> 00:52:02] This load is bringing a value
+[00:52:02 -> 00:52:04] that I'm going to need for the computation.
+[00:52:04 -> 00:52:05] I'm going to put it in R2.
+[00:52:05 -> 00:52:06] That's one live value.
+[00:52:07 -> 00:52:09] This other load is bringing another value
+[00:52:09 -> 00:52:11] putting in an R3.
+[00:52:11 -> 00:52:12] That's another live value.
+[00:52:14 -> 00:52:15] Okay.
+[00:52:15 -> 00:52:20] Then this add is writing and creating a new live value
+[00:52:20 -> 00:52:24] that I'm putting into R1.
+[00:52:24 -> 00:52:25] Okay.
+[00:52:26 -> 00:52:29] The stack pointer is another live value
+[00:52:29 -> 00:52:37] that all these different instructions are using.
+[00:52:37 -> 00:52:39] The number of live values
+[00:52:40 -> 00:52:41] in that piece of code,
+[00:52:41 -> 00:52:43] this piece of code that I have
+[00:52:43 -> 00:52:45] is only three.
+[00:52:45 -> 00:52:47] Maximum three at any given time.
+[00:52:48 -> 00:52:49] Okay.
+[00:52:49 -> 00:52:51] Why is it so?
+[00:52:51 -> 00:52:54] It's so because
+[00:52:54 -> 00:52:57] I had SP was one live value,
+[00:52:57 -> 00:52:58] R2 second live value,
+[00:52:58 -> 00:53:00] R3 third live value.
+[00:53:00 -> 00:53:03] Now I'm creating another live value,
+[00:53:03 -> 00:53:05] but I no longer need
+[00:53:05 -> 00:53:08] the values in R2 and R3.
+[00:53:08 -> 00:53:09] So at this point,
+[00:53:09 -> 00:53:10] I only have two live values,
+[00:53:10 -> 00:53:11] R1 and SP.
+[00:53:12 -> 00:53:13] Okay.
+[00:53:13 -> 00:53:16] So you're going to be a maximum of three live values
+[00:53:16 -> 00:53:17] in the execution of this code.
+[00:53:17 -> 00:53:19] If I have maximum three live values,
+[00:53:19 -> 00:53:28] I can keep them with only three register.
+[00:53:28 -> 00:53:31] Say I rearrange this code over here.
+[00:53:32 -> 00:53:33] Okay.
+[00:53:33 -> 00:53:34] I rearrange the code
+[00:53:34 -> 00:53:36] and I said, hey, you know what?
+[00:53:36 -> 00:53:38] I'm going to take this load
+[00:53:38 -> 00:53:42] and move it between this load and this end.
+[00:53:42 -> 00:53:46] And now I'm going to get rid of this load you saw.
+[00:53:46 -> 00:53:47] Okay.
+[00:53:47 -> 00:53:49] And I'm going to move this store
+[00:53:49 -> 00:53:52] between this load and store that I was doing
+[00:53:52 -> 00:53:53] and I'll get rid of that.
+[00:53:53 -> 00:53:54] Okay.
+[00:53:55 -> 00:53:57] And that's what I do,
+[00:53:57 -> 00:54:01] but I am going to have incorrect code over here.
+[00:54:01 -> 00:54:03] Why do I have incorrect code over here
+[00:54:03 -> 00:54:06] and why was the previous code correct?
+[00:54:06 -> 00:54:08] In this code,
+[00:54:08 -> 00:54:10] I'm using only three registers,
+[00:54:10 -> 00:54:13] R1, R2, and SP.
+[00:54:13 -> 00:54:14] You know,
+[00:54:15 -> 00:54:16] okay, R1, R2, and SP.
+[00:54:17 -> 00:54:19] Okay.
+[00:54:19 -> 00:54:21] But here now I have one live value,
+[00:54:21 -> 00:54:23] SP is one live value,
+[00:54:23 -> 00:54:25] this load, second live value,
+[00:54:25 -> 00:54:26] this load, third live value,
+[00:54:26 -> 00:54:29] this load, fourth live value.
+[00:54:29 -> 00:54:33] And this ad uses two of those live values,
+[00:54:33 -> 00:54:36] but I have four live values
+[00:54:36 -> 00:54:39] and I only have three registers.
+[00:54:39 -> 00:54:41] Okay, R1, R2, and SP.
+[00:54:41 -> 00:54:43] So then I cannot write code correctly
+[00:54:43 -> 00:54:44] with only three registers
+[00:54:44 -> 00:54:47] because I have more than three live values.
+[00:54:47 -> 00:54:50] So I need more registers.
+[00:54:50 -> 00:54:51] Okay.
+[00:54:51 -> 00:54:53] And if this code was correct
+[00:54:53 -> 00:54:58] because I use SP1, R2, R3, R5, R6, R4,
+[00:55:01 -> 00:55:06] many more than four like that are registers.
+[00:55:06 -> 00:55:07] Okay.
+[00:55:07 -> 00:55:08] So we're going to need more registers
+[00:55:09 -> 00:55:15] to avoid these right after read violations.
+[00:55:15 -> 00:55:22] Are you with me on this?
+[00:55:22 -> 00:55:25] The next thing I need in general
+[00:55:25 -> 00:55:30] is what is called alias analysis.
+[00:55:30 -> 00:55:33] So again, what I did was,
+[00:55:33 -> 00:55:36] okay, what I did was I moved this load
+[00:55:36 -> 00:55:38] between this load and ad.
+[00:55:40 -> 00:55:41] Or in other words,
+[00:55:41 -> 00:55:45] I moved it before this store instruction.
+[00:55:45 -> 00:55:46] Okay.
+[00:55:46 -> 00:55:49] And then I further moved that store
+[00:55:49 -> 00:55:56] over here to execute even after this load instruction.
+[00:55:56 -> 00:55:58] Okay.
+[00:55:58 -> 00:55:59] That is funny.
+[00:56:01 -> 00:56:06] If this load does not read the value of this store.
+[00:56:09 -> 00:56:10] Okay.
+[00:56:10 -> 00:56:11] And very similarly,
+[00:56:11 -> 00:56:14] this store does not write a value
+[00:56:14 -> 00:56:19] that this load uses.
+[00:56:19 -> 00:56:21] Okay.
+[00:56:21 -> 00:56:26] So this store is writing into an offset of zero
+[00:56:26 -> 00:56:27] from SP.
+[00:56:27 -> 00:56:29] This load is reading from offset,
+[00:56:29 -> 00:56:32] address offset zero from R8.
+[00:56:32 -> 00:56:38] So basically what I have to try and determine
+[00:56:38 -> 00:56:41] whether SP and R8 contain the same value.
+[00:56:42 -> 00:56:43] If they do,
+[00:56:43 -> 00:56:46] then these loads and stores are the same address
+[00:56:46 -> 00:56:51] and I cannot carry on that movement.
+[00:56:51 -> 00:56:54] Okay.
+[00:56:54 -> 00:56:56] Any questions about this?
+[00:56:56 -> 00:56:57] So, you know, this is the kind of stuff
+[00:56:57 -> 00:57:03] that compilers have to do to be able to move.
+[00:57:03 -> 00:57:06] And when we get to talk about the IA64,
+[00:57:06 -> 00:57:09] the kind of tricks that they play,
+[00:57:09 -> 00:57:12] you know, they can't always guarantee it
+[00:57:12 -> 00:57:14] and then there's speculation.
+[00:57:14 -> 00:57:15] We talk about speculation is
+[00:57:15 -> 00:57:24] and we'll play those tricks in hardware we talk.
+[00:57:24 -> 00:57:25] Okay.
+[00:57:25 -> 00:57:32] The next dependence is the write after write dependence.
+[00:57:32 -> 00:57:34] So where two instructions are writing
+[00:57:34 -> 00:57:35] into the same register.
+[00:57:36 -> 00:57:41] The compiler cannot reorder this all
+[00:57:41 -> 00:57:44] to execute before this add.
+[00:57:44 -> 00:57:44] Sorry.
+[00:57:44 -> 00:57:49] Cannot reorder this all to execute before this subtract
+[00:57:51 -> 00:57:52] because in that case,
+[00:57:52 -> 00:57:54] the subtract would get the wrong way.
+[00:57:54 -> 00:57:56] There is a, okay,
+[00:57:56 -> 00:57:59] the subtract would get the wrong way.
+[00:57:59 -> 00:58:02] I also can't order, you know,
+[00:58:02 -> 00:58:08] this add to execute after this or
+[00:58:08 -> 00:58:11] because any instruction occurring after the or
+[00:58:11 -> 00:58:15] needs the result of the or in register R1,
+[00:58:15 -> 00:58:21] not the result of this add in register R1.
+[00:58:21 -> 00:58:22] Okay.
+[00:58:23 -> 00:58:26] So reordering would leave the wrong value in R1
+[00:58:26 -> 00:58:31] and later instruction would get the wrong value.
+[00:58:31 -> 00:58:32] However, notice,
+[00:58:32 -> 00:58:35] this is a totally artificial dependence.
+[00:58:35 -> 00:58:37] If instead of R1, I had used R10.
+[00:58:39 -> 00:58:44] There is no problem to reorder these instructions.
+[00:58:45 -> 00:58:46] Or in other words,
+[00:58:46 -> 00:58:49] if I used a different register name for this or,
+[00:58:50 -> 00:58:54] we'll get rid of this.
+[00:58:54 -> 00:58:57] And in fact, you know,
+[00:58:57 -> 00:59:00] the way given that if you have a certain number
+[00:59:00 -> 00:59:00] of registers,
+[00:59:02 -> 00:59:04] if I have a certain number of registers,
+[00:59:04 -> 00:59:09] I will use this artificial register renaming
+[00:59:09 -> 00:59:16] to map that name to a different register.
+[00:59:16 -> 00:59:23] So if I have this in order pipeline that I talked about,
+[00:59:23 -> 00:59:24] five stage,
+[00:59:24 -> 00:59:26] everything is going through every stage,
+[00:59:26 -> 00:59:28] then I'm pretty much guaranteeing
+[00:59:28 -> 00:59:30] that all the registers are being,
+[00:59:30 -> 00:59:32] all the instructions are writing the registers
+[00:59:32 -> 00:59:33] in the order.
+[00:59:33 -> 00:59:36] So there is going to be no problem.
+[00:59:36 -> 00:59:38] There's no right after right hazard,
+[00:59:38 -> 00:59:43] even if I have right after right.
+[00:59:43 -> 00:59:48] However, it can happen with multi-cycle operations,
+[00:59:48 -> 00:59:49] even with, you know,
+[00:59:49 -> 00:59:53] reasonable simple pipelines over here.
+[00:59:53 -> 00:59:54] And, or, you know,
+[00:59:54 -> 00:59:56] which happens when you have a floating point operation
+[00:59:56 -> 00:59:58] or a cache list.
+[00:59:58 -> 01:00:02] And let us see an example of that.
+[01:00:02 -> 01:00:04] Okay.
+[01:00:04 -> 01:00:07] So say I have a divide instruction,
+[01:00:07 -> 01:00:09] which is now going through a pipeline,
+[01:00:09 -> 01:00:11] start it out, fetch, decode,
+[01:00:11 -> 01:00:14] and then they went off into different pipelines over here.
+[01:00:14 -> 01:00:18] The divide was taking five block cycles.
+[01:00:18 -> 01:00:19] Okay.
+[01:00:19 -> 01:00:21] Then the store was, you know,
+[01:00:22 -> 01:00:24] doing whatever,
+[01:00:24 -> 01:00:25] and then the ad,
+[01:00:25 -> 01:00:28] a floating point ad photographed that,
+[01:00:28 -> 01:00:31] a floating point ad was taking two block cycles.
+[01:00:31 -> 01:00:32] Okay.
+[01:00:32 -> 01:00:35] And the divide in this ad are writing into F2,
+[01:00:35 -> 01:00:37] and the store is reading F2.
+[01:00:38 -> 01:00:39] Okay.
+[01:00:39 -> 01:00:41] So what happens is,
+[01:00:41 -> 01:00:44] the divide is goes through mainly on its way
+[01:00:44 -> 01:00:46] without being bothered by anyone,
+[01:00:46 -> 01:00:51] and ends up writing into F2 in block cycle way.
+[01:00:51 -> 01:00:53] The store, you know,
+[01:00:53 -> 01:00:57] the store starts to fetch in block cycle two,
+[01:00:57 -> 01:00:59] and it's now going to stall.
+[01:01:00 -> 01:01:02] Okay.
+[01:01:02 -> 01:01:05] Because it cannot go into the mem stage
+[01:01:05 -> 01:01:08] until block cycle three.
+[01:01:08 -> 01:01:09] Okay.
+[01:01:09 -> 01:01:10] Until the value is ready.
+[01:01:10 -> 01:01:11] Okay.
+[01:01:11 -> 01:01:12] And then there's an ad,
+[01:01:12 -> 01:01:15] which is not using the value of either one of these.
+[01:01:15 -> 01:01:18] It's fetching block cycles three,
+[01:01:18 -> 01:01:28] goes off into this different pipeline over here,
+[01:01:28 -> 01:01:31] goes off into this different pipeline over here.
+[01:01:31 -> 01:01:32] Okay.
+[01:01:32 -> 01:01:33] And where the, you know,
+[01:01:33 -> 01:01:36] the divide is off somewhere here,
+[01:01:36 -> 01:01:39] and then the store is in this pipeline over here.
+[01:01:39 -> 01:01:40] Okay.
+[01:01:40 -> 01:01:45] And,
+[01:01:45 -> 01:01:47] and now,
+[01:01:47 -> 01:01:51] it's ready to write its result in block cycle seven.
+[01:01:51 -> 01:01:54] Okay.
+[01:01:54 -> 01:01:56] Do I do that or not?
+[01:01:56 -> 01:01:58] Okay.
+[01:01:58 -> 01:01:59] So,
+[01:01:59 -> 01:01:59] what to do?
+[01:02:01 -> 01:02:02] First thing I could do is,
+[01:02:02 -> 01:02:05] I could stall this younger instruction,
+[01:02:05 -> 01:02:09] so that it writes back.
+[01:02:09 -> 01:02:10] It's simple,
+[01:02:10 -> 01:02:11] but,
+[01:02:11 -> 01:02:12] you know,
+[01:02:12 -> 01:02:13] you can actually,
+[01:02:14 -> 01:02:15] you know, you're stalling,
+[01:02:15 -> 01:02:17] and you can have these cascaded stalls
+[01:02:17 -> 01:02:21] that are happening.
+[01:02:21 -> 01:02:23] So, you be clever.
+[01:02:23 -> 01:02:24] You say, hey, look,
+[01:02:24 -> 01:02:26] you know what?
+[01:02:26 -> 01:02:28] Any instruction after this ad instruction
+[01:02:28 -> 01:02:32] is going to use the value of this F2.
+[01:02:32 -> 01:02:35] Why should I even bother writing this F2?
+[01:02:35 -> 01:02:38] As long as I bypass this store instruction,
+[01:02:38 -> 01:02:39] I'm done.
+[01:02:40 -> 01:02:41] You know,
+[01:02:41 -> 01:02:43] don't even bother writing F2 register file.
+[01:02:43 -> 01:02:46] Hey, I'm saving the energy of writing something
+[01:02:46 -> 01:02:47] into the register file too.
+[01:02:47 -> 01:02:50] Win, win, win.
+[01:02:50 -> 01:02:54] Okay.
+[01:02:54 -> 01:02:55] So,
+[01:02:55 -> 01:02:57] what happens now
+[01:02:57 -> 01:02:58] if
+[01:02:58 -> 01:03:01] the divide instruction calls an exception?
+[01:03:02 -> 01:03:05] Divide what?
+[01:03:05 -> 01:03:06] Okay.
+[01:03:07 -> 01:03:09] Well, if that happens,
+[01:03:09 -> 01:03:10] you say,
+[01:03:10 -> 01:03:11] that code,
+[01:03:12 -> 01:03:14] why didn't you do the check to see where the zero
+[01:03:14 -> 01:03:16] before you tried to do the divide?
+[01:03:16 -> 01:03:17] Okay.
+[01:03:17 -> 01:03:18] I can't help you.
+[01:03:19 -> 01:03:22] Then I'm not recovering from that code.
+[01:03:22 -> 01:03:23] It's okay.
+[01:03:23 -> 01:03:24] You don't have to recover from that code necessarily.
+[01:03:24 -> 01:03:25] Okay.
+[01:03:25 -> 01:03:26] You know,
+[01:03:26 -> 01:03:27] why are you bothering the hardware guys?
+[01:03:27 -> 01:03:30] The software guys can't get your act together.
+[01:03:30 -> 01:03:31] Okay.
+[01:03:31 -> 01:03:32] But,
+[01:03:33 -> 01:03:38] a store instruction could cause a page fault.
+[01:03:38 -> 01:03:39] Okay.
+[01:03:39 -> 01:03:40] And why do you have a page fault?
+[01:03:40 -> 01:03:42] Because the hardware guys can get that act together
+[01:03:42 -> 01:03:43] and give you lots of fast memory
+[01:03:43 -> 01:03:45] that you put everything in memory.
+[01:03:46 -> 01:03:47] Okay.
+[01:03:47 -> 01:03:50] So,
+[01:03:50 -> 01:03:52] you know,
+[01:03:52 -> 01:03:54] that brings up the other important issue.
+[01:03:56 -> 01:03:58] Handling interrupts and exceptions.
+[01:03:58 -> 01:04:06] How do we handle interrupts and exceptions in a pipeline?
+[01:04:06 -> 01:04:07] So,
+[01:04:07 -> 01:04:08] an interrupt,
+[01:04:08 -> 01:04:10] you all know the difference between an interrupt
+[01:04:10 -> 01:04:12] and an exception.
+[01:04:12 -> 01:04:12] Okay.
+[01:04:12 -> 01:04:14] Interrupt is an external event
+[01:04:14 -> 01:04:15] that's coming
+[01:04:16 -> 01:04:17] You see an interrupt,
+[01:04:17 -> 01:04:19] you can say,
+[01:04:19 -> 01:04:19] okay,
+[01:04:19 -> 01:04:21] I see you.
+[01:04:21 -> 01:04:24] I'm going to just wait a while till I'm fine.
+[01:04:24 -> 01:04:27] And then I'll recognize the interrupt.
+[01:04:28 -> 01:04:31] No big deal.
+[01:04:31 -> 01:04:34] But an exception is an internal event
+[01:04:34 -> 01:04:36] caused by during the execution of the program
+[01:04:36 -> 01:04:38] or divide by zero,
+[01:04:38 -> 01:04:39] a page fault.
+[01:04:39 -> 01:04:41] Okay.
+[01:04:41 -> 01:04:42] Illegal.
+[01:04:42 -> 01:04:43] That you have to,
+[01:04:44 -> 01:04:45] you know,
+[01:04:45 -> 01:04:48] and you want to restart from it.
+[01:04:48 -> 01:04:49] Okay.
+[01:04:49 -> 01:04:50] You don't have to restart necessarily
+[01:04:50 -> 01:04:51] from a divide by zero page fault.
+[01:04:51 -> 01:04:53] You have to give the impression
+[01:04:53 -> 01:04:56] that never even happened.
+[01:04:56 -> 01:04:58] Okay.
+[01:04:58 -> 01:04:59] So,
+[01:04:59 -> 01:05:01] okay.
+[01:05:01 -> 01:05:02] What do you do?
+[01:05:02 -> 01:05:03] What do you do?
+[01:05:03 -> 01:05:04] You know,
+[01:05:04 -> 01:05:06] the one moment architecture
+[01:05:06 -> 01:05:07] and again,
+[01:05:07 -> 01:05:09] the software is assuming
+[01:05:09 -> 01:05:13] all the instructions are executed one at a time.
+[01:05:13 -> 01:05:13] Okay.
+[01:05:13 -> 01:05:14] So,
+[01:05:14 -> 01:05:17] if the store instruction created an exception
+[01:05:17 -> 01:05:21] and I want to go handle the exception for the store,
+[01:05:21 -> 01:05:21] you know,
+[01:05:21 -> 01:05:25] get the page in the memory,
+[01:05:25 -> 01:05:28] I can assume that all the instruction
+[01:05:28 -> 01:05:29] before the store completed
+[01:05:30 -> 01:05:33] and none of the instructions after the store
+[01:05:33 -> 01:05:34] even started.
+[01:05:35 -> 01:05:38] They weren't even fetched.
+[01:05:38 -> 01:05:39] Okay.
+[01:05:39 -> 01:05:40] So,
+[01:05:40 -> 01:05:41] you know,
+[01:05:41 -> 01:05:43] that is what is called a precise state
+[01:05:43 -> 01:05:46] and we want to be able to have a precise state
+[01:05:46 -> 01:05:47] or precise interrupt
+[01:05:47 -> 01:05:49] to figure out how to do that.
+[01:05:49 -> 01:05:51] That was a big innovation,
+[01:05:51 -> 01:05:52] you know,
+[01:05:52 -> 01:05:54] many years ago dealing with that
+[01:05:54 -> 01:05:56] and out of order execution.
+[01:05:56 -> 01:05:57] Okay.
+[01:05:57 -> 01:05:59] Pipeline doesn't have to execute the instructions
+[01:05:59 -> 01:06:00] here one at a time,
+[01:06:00 -> 01:06:02] but we have to give the external impression
+[01:06:02 -> 01:06:07] that's how it happened.
+[01:06:07 -> 01:06:09] So,
+[01:06:09 -> 01:06:10] you know,
+[01:06:10 -> 01:06:12] when we have an exception,
+[01:06:12 -> 01:06:16] we want to make it appear that the divide finished.
+[01:06:16 -> 01:06:17] Okay.
+[01:06:17 -> 01:06:18] If we have an exception for the page fault
+[01:06:18 -> 01:06:20] for the memory instruction
+[01:06:20 -> 01:06:21] and the store
+[01:06:21 -> 01:06:28] and the ad haven't even started.
+[01:06:28 -> 01:06:29] So,
+[01:06:29 -> 01:06:30] you know,
+[01:06:30 -> 01:06:30] what you're going to do is,
+[01:06:30 -> 01:06:32] you're going to flush
+[01:06:32 -> 01:06:33] to,
+[01:06:33 -> 01:06:34] you know,
+[01:06:35 -> 01:06:38] allow the divide to write back.
+[01:06:38 -> 01:06:39] Then you're going to flush the store
+[01:06:39 -> 01:06:41] and add as if they never happened.
+[01:06:42 -> 01:06:44] Handle the page fault
+[01:06:44 -> 01:06:46] and then come back and restart
+[01:06:46 -> 01:06:50] the program from the store.
+[01:06:50 -> 01:06:51] Okay.
+[01:06:51 -> 01:06:55] How do we flush the instruction?
+[01:06:55 -> 01:06:56] Clear out the latches.
+[01:06:56 -> 01:06:59] The instruction vanishes.
+[01:06:59 -> 01:07:00] That's what we're going to use
+[01:07:00 -> 01:07:03] to flush the instructions.
+[01:07:03 -> 01:07:04] Okay.
+[01:07:04 -> 01:07:05] But,
+[01:07:05 -> 01:07:08] what we also have to do is make sure
+[01:07:08 -> 01:07:10] that the later instructions,
+[01:07:10 -> 01:07:11] you know,
+[01:07:11 -> 01:07:14] you have a precise state of all the registers.
+[01:07:15 -> 01:07:16] Okay.
+[01:07:16 -> 01:07:19] So if this add instruction has already written back
+[01:07:19 -> 01:07:21] into a register file,
+[01:07:21 -> 01:07:23] you somehow have to undo that.
+[01:07:24 -> 01:07:26] It's complicated,
+[01:07:26 -> 01:07:28] but you'll see potentially,
+[01:07:28 -> 01:07:29] not in this case,
+[01:07:29 -> 01:07:31] but for more common cases.
+[01:07:31 -> 01:07:31] Okay.
+[01:07:31 -> 01:07:32] How do we do that?
+[01:07:32 -> 01:07:33] Okay.
+[01:07:33 -> 01:07:34] And,
+[01:07:34 -> 01:07:35] you know,
+[01:07:35 -> 01:07:37] you could force in order write backs
+[01:07:37 -> 01:07:44] and we'll see other solutions.
+[01:07:44 -> 01:07:46] Things get even more complicated
+[01:07:46 -> 01:07:52] if now two instructions are causing an exception.
+[01:07:52 -> 01:07:53] Okay.
+[01:07:53 -> 01:07:54] So there's,
+[01:07:54 -> 01:07:55] you know,
+[01:07:55 -> 01:07:56] I have a divide store,
+[01:07:56 -> 01:07:57] divide,
+[01:07:57 -> 01:07:58] I could have a divide by zero
+[01:07:58 -> 01:07:59] by this divide
+[01:07:59 -> 01:08:01] and a page four from this store.
+[01:08:01 -> 01:08:02] Okay.
+[01:08:02 -> 01:08:04] This one is recognized,
+[01:08:04 -> 01:08:05] is seen before,
+[01:08:05 -> 01:08:07] happens before this instruction,
+[01:08:07 -> 01:08:09] this exception over here,
+[01:08:09 -> 01:08:10] but this instruction is later.
+[01:08:12 -> 01:08:13] Okay.
+[01:08:13 -> 01:08:14] Again,
+[01:08:14 -> 01:08:15] what I want to be able to do
+[01:08:15 -> 01:08:18] is if I want to give the impression
+[01:08:18 -> 01:08:19] that,
+[01:08:19 -> 01:08:19] you know,
+[01:08:19 -> 01:08:20] things,
+[01:08:20 -> 01:08:22] the instructions are happening one at a time,
+[01:08:22 -> 01:08:26] I must also recognize the exceptions
+[01:08:27 -> 01:08:31] in order.
+[01:08:31 -> 01:08:34] Okay.
+[01:08:34 -> 01:08:36] So interrupts can get very,
+[01:08:36 -> 01:08:37] very nasty.
+[01:08:38 -> 01:08:39] Okay.
+[01:08:39 -> 01:08:40] And so,
+[01:08:40 -> 01:08:40] you know,
+[01:08:40 -> 01:08:41] like,
+[01:08:41 -> 01:08:42] you know,
+[01:08:42 -> 01:08:43] the early alpha processor,
+[01:08:43 -> 01:08:44] in fact,
+[01:08:44 -> 01:08:45] in fact,
+[01:08:45 -> 01:08:45] even the,
+[01:08:45 -> 01:08:46] you know,
+[01:08:46 -> 01:08:47] the early IBM auto-model implementation
+[01:08:47 -> 01:08:49] and so on.
+[01:08:49 -> 01:08:49] Okay.
+[01:08:49 -> 01:08:53] They did not bother implementing,
+[01:08:53 -> 01:08:54] the IBM guys did not even bother implementing
+[01:08:54 -> 01:08:56] precise interrupts.
+[01:08:56 -> 01:08:58] They didn't know how to do techniques for that.
+[01:08:58 -> 01:08:59] And it's like,
+[01:08:59 -> 01:09:00] hey,
+[01:09:00 -> 01:09:01] you know,
+[01:09:01 -> 01:09:02] write your code properly.
+[01:09:02 -> 01:09:04] You guys don't get in that situation.
+[01:09:04 -> 01:09:05] And which is fine.
+[01:09:05 -> 01:09:08] There were like 15 people who ever wrote code
+[01:09:08 -> 01:09:10] for that machine or whatever.
+[01:09:10 -> 01:09:11] Okay.
+[01:09:11 -> 01:09:14] And to tell those people do a good job
+[01:09:14 -> 01:09:15] or,
+[01:09:15 -> 01:09:18] you know,
+[01:09:18 -> 01:09:19] whatever.
+[01:09:19 -> 01:09:20] Some of the alpha processors,
+[01:09:20 -> 01:09:21] okay,
+[01:09:21 -> 01:09:23] initially they considered it so difficult that
+[01:09:23 -> 01:09:24] they said,
+[01:09:24 -> 01:09:25] you know,
+[01:09:25 -> 01:09:26] we aren't even going to support
+[01:09:27 -> 01:09:30] precise interrupts for floating point code.
+[01:09:30 -> 01:09:31] You know,
+[01:09:31 -> 01:09:34] why are you getting an arithmetic overflow
+[01:09:34 -> 01:09:35] for the code?
+[01:09:35 -> 01:09:36] Because your code,
+[01:09:36 -> 01:09:38] you don't do the right checks with the code.
+[01:09:38 -> 01:09:40] Why are you getting a divide by zero?
+[01:09:42 -> 01:09:43] Blame it on the software guy.
+[01:09:43 -> 01:09:45] The software guy said,
+[01:09:45 -> 01:09:46] no.
+[01:09:47 -> 01:09:48] I know,
+[01:09:48 -> 01:09:49] you know,
+[01:09:49 -> 01:09:50] you deal with it,
+[01:09:50 -> 01:09:51] if you want.
+[01:09:51 -> 01:09:51] Okay.
+[01:09:51 -> 01:09:52] And so,
+[01:09:54 -> 01:09:55] you know,
+[01:09:55 -> 01:09:56] later on we will see
+[01:09:56 -> 01:09:59] that
+[01:09:59 -> 01:10:00] exceptions
+[01:10:01 -> 01:10:03] are not going to be rare.
+[01:10:03 -> 01:10:05] They are going to be the norm.
+[01:10:06 -> 01:10:07] In fact,
+[01:10:07 -> 01:10:09] we do an execution model where we say,
+[01:10:09 -> 01:10:10] hey,
+[01:10:10 -> 01:10:12] I'm going to predict the branch is going to this way.
+[01:10:12 -> 01:10:13] If I was wrong,
+[01:10:13 -> 01:10:14] it's an exception.
+[01:10:14 -> 01:10:14] Deal with it.
+[01:10:15 -> 01:10:16] Okay.
+[01:10:16 -> 01:10:18] Give me a precise state.
+[01:10:18 -> 01:10:19] So,
+[01:10:19 -> 01:10:19] you know,
+[01:10:19 -> 01:10:20] precise state
+[01:10:20 -> 01:10:22] is going to be,
+[01:10:22 -> 01:10:23] you know,
+[01:10:23 -> 01:10:24] one of the bread and butter things
+[01:10:24 -> 01:10:28] that we're going to have to deal with.
+[01:10:28 -> 01:10:29] Okay.
+[01:10:29 -> 01:10:30] Very quick.
+[01:10:30 -> 01:10:32] I'm just going to go through these two more slides.
+[01:10:32 -> 01:10:34] I think I have a few more minutes.
+[01:10:37 -> 01:10:38] Okay.
+[01:10:38 -> 01:10:39] So,
+[01:10:39 -> 01:10:41] right after read hazards,
+[01:10:41 -> 01:10:43] where an instruction is reading a value
+[01:10:43 -> 01:10:46] that a later instruction is writing,
+[01:10:46 -> 01:10:47] again,
+[01:10:47 -> 01:10:48] you know,
+[01:10:48 -> 01:10:49] what you can,
+[01:10:49 -> 01:10:51] solve a right after read hazard simply,
+[01:10:51 -> 01:10:53] it's an artificial.
+[01:10:53 -> 01:10:55] If I used a different register as an output
+[01:10:55 -> 01:10:57] for the later instruction,
+[01:10:57 -> 01:10:58] I would not have that.
+[01:10:58 -> 01:11:02] Or I rename this register to something.
+[01:11:02 -> 01:11:05] You figure out how to do that.
+[01:11:05 -> 01:11:06] Again,
+[01:11:06 -> 01:11:08] it can't happen in a simple in-order pipeline
+[01:11:08 -> 01:11:13] because you read the instruction in the decode stage.
+[01:11:13 -> 01:11:14] Okay.
+[01:11:14 -> 01:11:15] And in fact,
+[01:11:15 -> 01:11:18] by the time this instruction writes into R2,
+[01:11:18 -> 01:11:20] the previous instruction that reads R2
+[01:11:20 -> 01:11:21] has already left the pipeline.
+[01:11:21 -> 01:11:22] It's gone.
+[01:11:22 -> 01:11:23] It's not in the,
+[01:11:23 -> 01:11:23] you know,
+[01:11:23 -> 01:11:24] the hazard can only happen
+[01:11:24 -> 01:11:31] if both the instructions are in flight at the same time.
+[01:11:31 -> 01:11:32] Okay.
+[01:11:32 -> 01:11:33] So,
+[01:11:33 -> 01:11:38] just like we have with registers,
+[01:11:38 -> 01:11:41] we can also have read after write,
+[01:11:41 -> 01:11:42] write after read,
+[01:11:42 -> 01:11:45] and write after write hazards
+[01:11:45 -> 01:11:54] when you are reading memory locations.
+[01:11:54 -> 01:11:54] Sorry.
+[01:11:54 -> 01:11:58] We can have dependencies that exist through memory.
+[01:11:58 -> 01:12:02] These dependencies that exist through memory
+[01:12:02 -> 01:12:06] do not become hazards in our simple pipeline
+[01:12:06 -> 01:12:08] that we've talked about in-order pipeline.
+[01:12:08 -> 01:12:09] Why so?
+[01:12:10 -> 01:12:13] Because all the instructions are going to the pipeline
+[01:12:13 -> 01:12:14] in-order,
+[01:12:14 -> 01:12:18] and they're only accessing the memory at the same stage.
+[01:12:20 -> 01:12:20] Okay.
+[01:12:20 -> 01:12:21] And,
+[01:12:21 -> 01:12:22] you know,
+[01:12:22 -> 01:12:23] and,
+[01:12:23 -> 01:12:24] you know,
+[01:12:24 -> 01:12:26] at the same time.
+[01:12:26 -> 01:12:28] Hazards happen for registers
+[01:12:28 -> 01:12:36] because the reads happen much earlier in the pipeline.
+[01:12:36 -> 01:12:39] Okay.
+[01:12:39 -> 01:12:41] Okay.
+[01:12:41 -> 01:12:41] So,
+[01:12:41 -> 01:12:42] that's the easy stuff.
+[01:12:44 -> 01:12:46] Now we have these pesky things called
+[01:12:46 -> 01:12:51] control instructions, branches.
+[01:12:51 -> 01:12:53] And,
+[01:12:53 -> 01:12:54] you know,
+[01:12:54 -> 01:12:55] what you must,
+[01:12:55 -> 01:12:56] for branches,
+[01:12:56 -> 01:12:59] you come to a branch that's conditional,
+[01:12:59 -> 01:13:00] you either fetch this set of instructions
+[01:13:00 -> 01:13:02] or this set of instructions,
+[01:13:02 -> 01:13:03] you don't know which.
+[01:13:04 -> 01:13:04] Okay.
+[01:13:04 -> 01:13:06] So,
+[01:13:06 -> 01:13:10] you have to know the outcome of the branch instruction
+[01:13:10 -> 01:13:17] to figure out what is the correct instruction to fetch.
+[01:13:17 -> 01:13:18] So,
+[01:13:18 -> 01:13:19] you know,
+[01:13:19 -> 01:13:20] in a normal pipeline,
+[01:13:20 -> 01:13:22] if you're just doing fetch detail and so on like that,
+[01:13:22 -> 01:13:24] the branch outcome of the branch
+[01:13:24 -> 01:13:27] is not known to later in the pipeline,
+[01:13:27 -> 01:13:29] somewhere in the middle of the pipeline.
+[01:13:29 -> 01:13:30] Okay.
+[01:13:30 -> 01:13:31] So,
+[01:13:31 -> 01:13:32] you know,
+[01:13:32 -> 01:13:33] how do I fetch instructions
+[01:13:33 -> 01:13:36] if I don't know where I'm fetching instructions from?
+[01:13:36 -> 01:13:40] So I have these control hazards.
+[01:13:40 -> 01:13:41] Okay.
+[01:13:41 -> 01:13:43] Let me take a very simple,
+[01:13:43 -> 01:13:45] I'll stop here because you'll come back in a second.
+[01:13:45 -> 01:13:49] Any questions?
+[01:13:49 -> 01:13:50] Okay.
+[01:13:50 -> 01:13:51] See you Friday then.

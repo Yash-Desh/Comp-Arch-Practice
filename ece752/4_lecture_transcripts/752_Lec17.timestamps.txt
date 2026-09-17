@@ -1,0 +1,1280 @@
+Title: 752_Lec17
+Source file: 752_Lec17.mp3
+Detected language: en
+------------------------------------------------------------
+
+[00:00:00 -> 00:00:07] a small number of sets, not for all sets, then perhaps we can do something else. And that
+[00:00:08 -> 00:00:14] something else, the first something else we can do is what is called a victim cache or
+[00:00:14 -> 00:00:21] a victim buffer. So because of the lack of associativity, something gets replaced from
+[00:00:21 -> 00:00:26] a set and what you'd like to do is you'd like to not send it all the way back to
+[00:00:26 -> 00:00:33] the next level, you'd like to retain it close by. So if you have a two-way set associative
+[00:00:34 -> 00:00:39] cache and you need to have basically three blocks mapping on the same set, what you
+[00:00:39 -> 00:00:46] can do is you can keep a small buffer, fully associative buffer between on the back
+[00:00:47 -> 00:00:54] side of the cache. So it sits on the fill path between the next level cache and the
+[00:00:56 -> 00:01:03] first level cache. And it can be small so it's fast. Whenever you replace a block from here
+[00:01:04 -> 00:01:11] because of a conflict, you put it in this victim buffer or victim cache. And now when
+[00:01:11 -> 00:01:16] you have a miss, you also check to see whether it's there rather than simply go to the
+[00:01:16 -> 00:01:23] next level and then if it is there you put it back in that cache. Now what this
+[00:01:23 -> 00:01:30] victim buffer does is now this is shared amongst all the different sets in the cache. So
+[00:01:30 -> 00:01:36] the sets that are having conflicts, this victim buffer in a sense increases their
+[00:01:36 -> 00:01:45] associativity. The sets that aren't having conflicts, you don't need additional associativity.
+[00:01:46 -> 00:01:51] And this ends up being very, very effective for small caches and this is also very
+[00:01:51 -> 00:02:00] widely used. You know a argument people have is hey, is this victim buffer reducing the
+[00:02:04 -> 00:02:11] miss rate or is it reducing the miss latency? It doesn't matter. It is in a sense overall
+[00:02:11 -> 00:02:20] reducing the effective memory access latency people. Questions about this victim buffer?
+[00:02:21 -> 00:02:28] Yeah. So is it accessed essentially at the same speed as the L1? It is accessed, yeah,
+[00:02:29 -> 00:02:34] it would be accessed. Again it all depends on how you make it work out. Yeah, it
+[00:02:34 -> 00:02:39] would be accessed at the same speed as the L1. And you know sometimes it could
+[00:02:39 -> 00:02:46] even be accessed even in parallel with this one. You show it that it's capturing
+[00:02:47 -> 00:02:52] victims. But you know just like a store buffer even accessing in parallel with the
+[00:02:52 -> 00:02:57] cache, okay, this could also be accessed in parallel with the cache. None of this
+[00:02:57 -> 00:03:05] stuff is visible to a programmer. Why bother programmers? They already got enough to
+[00:03:05 -> 00:03:12] deal with. So yeah, no, no, it's absolutely. Caches aren't invisible to programmers.
+[00:03:13 -> 00:03:20] Anything, any micro-architectural feature is by definition invisible to them. I might
+[00:03:20 -> 00:03:28] say that victim buffers are like even in marketing they will show that they have
+[00:03:28 -> 00:03:38] a victim. This is too complicated for a marketing thing in a sense. I mean it's
+[00:03:38 -> 00:03:45] understandable by people who have taken class like 752, but by no one else. You
+[00:03:45 -> 00:03:50] could probably write code to detect that it's happening in precise timing. So
+[00:03:50 -> 00:03:54] that's the other interesting point is all these micro-architectural features we
+[00:03:54 -> 00:04:01] talk about probably should actually have a class project sometime is to detect a
+[00:04:01 -> 00:04:06] particular micro-architectural feature in a processor. Yeah, you can write
+[00:04:06 -> 00:04:38] micro-bench marks to do that. Okay, that's our two-way set of associated
+[00:04:38 -> 00:04:48] cache. Set 0 are blocks, 0 and 512. Set 1 are blocks 1 and 517. Remember I
+[00:04:48 -> 00:04:55] sort of asked you to remember this block numbering of blocks in the set.
+[00:04:55 -> 00:05:05] So if you are having conflicts in a certain set then perhaps you can change
+[00:05:05 -> 00:05:13] the mapping so that you know if I have three blocks that map onto the same set
+[00:05:13 -> 00:05:21] and are causing the conflict I can have a map onto different sets. Okay,
+[00:05:21 -> 00:05:26] because remember the set I'm choosing over here is simply some set of bits of
+[00:05:26 -> 00:05:36] the address. Alright, so the next thing we can do is have what is called a
+[00:05:36 -> 00:05:44] skewed set of associated cache. Okay, so what you do is you have two ways.
+[00:05:44 -> 00:05:49] Here's a two-way skewed set of associated cache. You have two ways. One of the
+[00:05:49 -> 00:05:57] ways you access the set by the index bits as you were before. Okay, and the
+[00:05:57 -> 00:06:09] second way you now XOR some bits of the deck and access the other. Alright,
+[00:06:09 -> 00:06:17] so now the blocks that map onto the same set, if the same set of index bits
+[00:06:17 -> 00:06:28] are being used they would map onto a different set. Okay, and this also tends
+[00:06:28 -> 00:06:34] to reduce the number of. Not saying it doesn't always, every time you can
+[00:06:34 -> 00:06:38] always write a piece of code where this creates more conflicts in the other
+[00:06:38 -> 00:06:44] way. Okay, but typically you know this would end up actually reducing the
+[00:06:44 -> 00:06:54] number of conflicts. This is also fairly widely used. Any questions about
+[00:06:54 -> 00:07:01] this? So when you put a cache line in here, how do you decide bank one or bank
+[00:07:01 -> 00:07:09] zero? Depends on your replacement policy. So you kind of have a replacement
+[00:07:09 -> 00:07:17] policy that goes over bank one and bank zero at the same time? Yeah, so
+[00:07:17 -> 00:07:25] yes, the replacement policy becomes a little more interesting shall we say.
+[00:07:26 -> 00:07:44] Okay, and that is one of the reasons that sometimes it impairs the user base.
+[00:07:44 -> 00:07:55] You can never get that. You can only get one.
+[00:07:56 -> 00:08:04] That's always the case. The index is always the same for the different
+[00:08:04 -> 00:08:10] sets. This is what selects the set. Okay, now what selects the set for
+[00:08:10 -> 00:08:18] this address in this way is the hash of that, but a particular address will
+[00:08:18 -> 00:08:21] only go into one place over here.
+[00:08:36 -> 00:08:45] So there are also a whole bunch of techniques to restructure how the
+[00:08:45 -> 00:08:51] program is actually making the data accesses. Because you can get
+[00:08:51 -> 00:08:56] capacity misses because of poor spatial and temporal locality and you know,
+[00:08:56 -> 00:09:02] you actually have to, you can restructure it sometimes manually and sometimes
+[00:09:02 -> 00:09:06] more automatically and automatically the compiler needs to figure out that
+[00:09:06 -> 00:09:12] this restructuring preserves the semantics. So here's a silly example
+[00:09:12 -> 00:09:16] that, no this is not a silly example, the next one is a somewhat
+[00:09:16 -> 00:09:23] silly example. So here I have a piece of code where I have a two dimensional
+[00:09:23 -> 00:09:29] matrix that's stored in row major order. Okay, so Xij plus one is going
+[00:09:29 -> 00:09:37] to be in the next memory location after Xij. Alright, and I'm trying to
+[00:09:37 -> 00:09:40] write a piece of code that's going to sum all the elements on this
+[00:09:40 -> 00:09:46] two dimensional matrix. Okay, what I can do is I can either, you know,
+[00:09:46 -> 00:10:02] so here's my two dimensional matrix. Okay, I'm trying to sum all the
+[00:10:02 -> 00:10:06] elements and these are the consecutive memory locations because it's
+[00:10:06 -> 00:10:10] stored in row major order. If I write the code to carry out the
+[00:10:10 -> 00:10:17] summation this way, alright, then basically I'm going to have, you know,
+[00:10:17 -> 00:10:24] misses all the time and I'm not exploiting any of the spatial locality.
+[00:10:24 -> 00:10:31] Okay, instead if I write the piece of code to carry out the summations
+[00:10:31 -> 00:10:37] this way, alright, then these are all in, the elements of the row are
+[00:10:37 -> 00:10:41] all in consecutive memory addresses so when I fetch, you know, this one
+[00:10:41 -> 00:10:45] I will also be fetching, you know, if it's a, you know, eight element
+[00:10:45 -> 00:10:51] block, 64 byte block, eight bytes each element, then I'm, you know,
+[00:10:51 -> 00:10:57] fetching, I'm getting one miss followed by seven hex, if you will.
+[00:10:57 -> 00:11:08] Okay, so I can interchange the loop to now have more contiguous
+[00:11:08 -> 00:11:16] accesses. Another commonly used technique is called loop blocking.
+[00:11:16 -> 00:11:20] Okay, so and, you know, here is sort of like maybe a, you know,
+[00:11:20 -> 00:11:25] sort of a nonsense piece of code where what I'm doing is I have a,
+[00:11:25 -> 00:11:30] you know, array and I'm making repeated passes through this array
+[00:11:30 -> 00:11:34] carrying out, you know, some summations over there.
+[00:11:34 -> 00:11:38] Alright, so what I would do is I would start fetching from here
+[00:11:38 -> 00:11:41] and then go down all this and then come back and I have miss,
+[00:11:41 -> 00:11:48] miss, etc. Okay, instead what I can do is I can chop that work into
+[00:11:48 -> 00:11:53] blocks, if you will, and now these elements are all going to fit in
+[00:11:53 -> 00:11:57] the cache maybe if I chop it up correctly, then carry out my end
+[00:11:57 -> 00:12:02] iterations over here, then carry out end iterations on the next block,
+[00:12:02 -> 00:12:07] etc. Okay, so after the first miss in each block of code,
+[00:12:07 -> 00:12:12] I would be getting those multiple hits over there.
+[00:12:12 -> 00:12:17] So instead of, you know, carrying out, you know,
+[00:12:17 -> 00:12:22] this code over here, I'd actually chop it up into cache-sized chunks
+[00:12:22 -> 00:12:26] and now for each cache-sized chunk I would do the summation
+[00:12:26 -> 00:12:30] then move on to the next cache-sized chunk.
+[00:12:30 -> 00:12:34] Okay, and, you know, the assumption here is, hey, you know,
+[00:12:34 -> 00:12:37] get the cache size and, I mean, do you sometimes?
+[00:12:37 -> 00:12:40] Well, you know, what you can actually write this as,
+[00:12:40 -> 00:12:44] you can write this as basically a variable and then, you know,
+[00:12:44 -> 00:12:47] detect perhaps, you know, when you're running the code,
+[00:12:47 -> 00:12:49] make sure it's going to go dynamically or whatever,
+[00:12:49 -> 00:12:54] what the, you know, from one of the hardware concepts or
+[00:12:54 -> 00:13:01] configuration or whatever, get the cache size.
+[00:13:01 -> 00:13:04] So there are many multiple ways of doing that.
+[00:13:04 -> 00:13:07] So you can write, you know, this is just written as a variable
+[00:13:07 -> 00:13:10] and then whenever you run it on a different machine,
+[00:13:10 -> 00:13:13] you can figure it out what that variable is.
+[00:13:13 -> 00:13:18] Questions about loop locking?
+[00:13:18 -> 00:13:24] All right.
+[00:13:24 -> 00:13:27] Another technique people widely use is if I have two
+[00:13:27 -> 00:13:32] different loops that are basically now, you know,
+[00:13:32 -> 00:13:35] kept doing different computations necessarily
+[00:13:35 -> 00:13:37] but on the same data elements.
+[00:13:37 -> 00:13:42] So here I have this, you know, loop where I'm working on
+[00:13:42 -> 00:13:47] B-I-J and C-I-J and, you know, computing A-I-J
+[00:13:47 -> 00:13:52] and then another loop, I use the A-I-J and I add C-I-J to it
+[00:13:52 -> 00:13:55] and write the D-I-J.
+[00:13:55 -> 00:13:56] Okay.
+[00:13:56 -> 00:14:00] I could fuse those loops now and now when I run this
+[00:14:00 -> 00:14:04] piece of code, okay, so I have a miss here maybe,
+[00:14:04 -> 00:14:07] miss here, miss here, miss here, but then hit here
+[00:14:07 -> 00:14:12] and hit here, all right, because those are likely
+[00:14:12 -> 00:14:17] to be in the cache for, because this computation
+[00:14:17 -> 00:14:19] is happening very close to this computation,
+[00:14:19 -> 00:14:22] so A-I-J is likely to be in the cache right after this
+[00:14:22 -> 00:14:24] and C-I-J is likely to be in the cache
+[00:14:24 -> 00:14:26] after I run it over here.
+[00:14:26 -> 00:14:31] Whereas over here, you know, those elements could have,
+[00:14:31 -> 00:14:36] you know, if these data structures exceed the cache
+[00:14:36 -> 00:14:38] size, could be well out of the cache
+[00:14:38 -> 00:14:43] and have to be encountered misses over here.
+[00:14:43 -> 00:14:44] Okay.
+[00:14:44 -> 00:14:46] Are you with me on this?
+[00:14:46 -> 00:14:49] Very similarly now, if you actually, you know,
+[00:14:49 -> 00:14:51] again, have a loop very similar to blocking,
+[00:14:51 -> 00:14:56] what we did is you can split a loop into multiple
+[00:14:56 -> 00:15:00] loops to reduce contention for cache resources.
+[00:15:00 -> 00:15:04] So they're a variety, and you know, these very similar
+[00:15:04 -> 00:15:08] tricks, you know, things like this, for example,
+[00:15:08 -> 00:15:11] you know, can make a factor of 10 difference
+[00:15:11 -> 00:15:15] in the speed of your code, okay.
+[00:15:15 -> 00:15:17] All the other tricks that we learned, you know,
+[00:15:17 -> 00:15:21] et cetera, all great, but if you are constantly
+[00:15:21 -> 00:15:24] missing in the cache, you know, you have speed
+[00:15:24 -> 00:15:26] tanks very, very quickly.
+[00:15:26 -> 00:15:30] All right, now here's something else that is
+[00:15:30 -> 00:15:34] very commonly done and this is more for cache
+[00:15:34 -> 00:15:37] misses, instruction cache locality.
+[00:15:37 -> 00:15:41] All right, so typically, you know, if you have
+[00:15:41 -> 00:15:43] a piece of code, if condition, code one,
+[00:15:43 -> 00:15:47] else code two, then reconversion, go to code three,
+[00:15:47 -> 00:15:50] and this condition is such that this code to this
+[00:15:50 -> 00:15:54] condition is rarely false, so this code two
+[00:15:54 -> 00:15:57] is rarely executed, okay.
+[00:15:57 -> 00:16:00] So what you would normally do is a code would be
+[00:16:00 -> 00:16:02] laid out as, you know, code one here,
+[00:16:02 -> 00:16:05] code two here, and code three over here.
+[00:16:05 -> 00:16:07] This is how your typically your assembler would
+[00:16:07 -> 00:16:11] assemble that piece of code, okay.
+[00:16:11 -> 00:16:15] What you can first do is, first you actually
+[00:16:15 -> 00:16:18] put the green code and the red code, which are
+[00:16:18 -> 00:16:23] going to be more likely to be executed together,
+[00:16:23 -> 00:16:26] so they reside in the cache at the same time,
+[00:16:26 -> 00:16:29] okay, and then you can further say, hey,
+[00:16:29 -> 00:16:32] this piece of code is so rarely executed that
+[00:16:32 -> 00:16:36] I'm going to put it away in some, you know,
+[00:16:36 -> 00:16:39] some memory location that's far away, if you will,
+[00:16:39 -> 00:16:42] that would not reside in the cache at the same
+[00:16:42 -> 00:16:46] time as this piece of code over there, okay,
+[00:16:46 -> 00:16:50] and so I'm not wasting cache space for this
+[00:16:50 -> 00:16:54] blue code, which is almost never going to get
+[00:16:54 -> 00:16:58] executed, or, you know, the same thing, too,
+[00:16:58 -> 00:17:00] this could be on a different page somewhere,
+[00:17:00 -> 00:17:04] if you will, okay, so I'm actually increasing
+[00:17:04 -> 00:17:06] even, you know, how much of a page,
+[00:17:06 -> 00:17:09] construction page I'm using, for example.
+[00:17:09 -> 00:17:16] Questions about this? How do we do this?
+[00:17:16 -> 00:17:23] How are these procedures automated?
+[00:17:23 -> 00:17:27] Remember this thing from way back when?
+[00:17:27 -> 00:17:32] Okay, profile, piece of code, figuring out
+[00:17:32 -> 00:17:35] which branch is going to be taken or not taken,
+[00:17:35 -> 00:17:37] a branch that is so rarely taken because
+[00:17:37 -> 00:17:39] this is like an error code or something like that,
+[00:17:39 -> 00:17:43] error condition, you can then, as you basically
+[00:17:43 -> 00:17:47] lay out the code and create the executable,
+[00:17:47 -> 00:17:49] you can lay out the code in different places.
+[00:17:49 -> 00:17:59] Compiler, typically, yeah.
+[00:17:59 -> 00:18:01] So we have to provide the compiler with the
+[00:18:01 -> 00:18:03] trace information.
+[00:18:03 -> 00:18:08] Yes, you have to provide that profiling
+[00:18:08 -> 00:18:14] information.
+[00:18:14 -> 00:18:20] Okay, now let's make life a little interesting.
+[00:18:20 -> 00:18:25] So you remember this critical word first, all right?
+[00:18:25 -> 00:18:27] Where, you know, the latency of access
+[00:18:27 -> 00:18:29] of the time to get the first word
+[00:18:29 -> 00:18:31] and the latency of the transfer
+[00:18:31 -> 00:18:34] is to get the rest of the block,
+[00:18:34 -> 00:18:37] and so critical word first was you
+[00:18:37 -> 00:18:40] return the requested word first,
+[00:18:40 -> 00:18:44] and then you restart, let the processor,
+[00:18:44 -> 00:18:47] you know, CPU restart the code,
+[00:18:47 -> 00:18:49] finish the load and continue
+[00:18:49 -> 00:18:51] executing other instructions.
+[00:18:51 -> 00:18:53] You send that requested word to the CPU
+[00:18:53 -> 00:18:56] immediately while you are loading
+[00:18:56 -> 00:19:25] the rest of the block.
+[00:19:25 -> 00:19:29] The CPU, here is the cache,
+[00:19:29 -> 00:19:34] and here is the next level, if you will.
+[00:19:34 -> 00:19:38] Okay, so what we said in this critical word first
+[00:19:38 -> 00:19:42] is, hey, you know, what you have is
+[00:19:42 -> 00:19:48] you start bringing in words into some buffer
+[00:19:48 -> 00:19:51] for the entire block, and then you return
+[00:19:51 -> 00:19:55] the critical word back to the CPU
+[00:19:55 -> 00:19:58] and you perhaps even put it in the cache.
+[00:19:58 -> 00:20:01] And then as the rest of the words come in,
+[00:20:01 -> 00:20:05] you fill it in with the cache and almost there.
+[00:20:05 -> 00:20:17] Okay, now model that you probably have had all along,
+[00:20:17 -> 00:20:19] or at least we've talked about all along,
+[00:20:19 -> 00:20:21] is say in a five-stage pipeline,
+[00:20:21 -> 00:20:23] or whatever the pipeline was,
+[00:20:23 -> 00:20:26] that hey, you know, when I have a cache miss,
+[00:20:26 -> 00:20:29] I have a stall, okay,
+[00:20:29 -> 00:20:31] waiting for the cache miss to come back,
+[00:20:31 -> 00:20:34] and nothing else, all the other instructions
+[00:20:34 -> 00:20:38] behind the load are waiting for the stall.
+[00:20:38 -> 00:20:41] Okay, that was our in-order pipeline, as you will.
+[00:20:41 -> 00:20:43] Once you get to the out of order,
+[00:20:43 -> 00:20:46] other instructions are executed,
+[00:20:46 -> 00:20:51] and if you let the load go, all right,
+[00:20:51 -> 00:20:54] other instructions that depend on the value for the load
+[00:20:54 -> 00:20:58] will start executing,
+[00:20:58 -> 00:21:05] and that may include another load instruction.
+[00:21:05 -> 00:21:14] Okay, and so what do you do when that happens?
+[00:21:14 -> 00:21:18] So again, first thing is go back to your
+[00:21:18 -> 00:21:20] traditional cache that you've learned all along.
+[00:21:20 -> 00:21:21] It blocks.
+[00:21:21 -> 00:21:25] When there is a load miss, it blocks everything.
+[00:21:25 -> 00:21:32] That is what now we would call a blocking cache, all right?
+[00:21:32 -> 00:21:38] If the cache operates so that it does not block
+[00:21:38 -> 00:21:41] when there is a miss,
+[00:21:41 -> 00:21:44] then that is what would be called a lockup-free
+[00:21:44 -> 00:21:47] or a non-blocking cache,
+[00:21:47 -> 00:21:51] and a lockup-free or non-blocking cache
+[00:21:51 -> 00:21:57] allows other accesses to while the miss is pending.
+[00:21:57 -> 00:22:07] Okay, so I have a miss, that's happening,
+[00:22:07 -> 00:22:13] and the CPU could be making other requests
+[00:22:13 -> 00:22:18] so it's not locked up, so it's lockup-free.
+[00:22:18 -> 00:22:22] Those other requests could include loads,
+[00:22:22 -> 00:22:27] and now we have a couple of choices.
+[00:22:27 -> 00:22:32] The load could hit in the cache.
+[00:22:32 -> 00:22:34] If the load hits in the cache,
+[00:22:34 -> 00:22:39] we would have what we call a non-blocking cache
+[00:22:39 -> 00:22:47] that allows a hit to occur while there is a miss pending.
+[00:22:47 -> 00:22:52] Okay, a more complicated scenario would be
+[00:22:52 -> 00:22:57] is hey, this load could actually miss in the cache.
+[00:22:57 -> 00:23:06] All right, so I am actually going to allow loads to miss
+[00:23:06 -> 00:23:09] while there is another miss pending.
+[00:23:09 -> 00:23:13] Or in other words, I'm allowing multiple misses to be pending
+[00:23:13 -> 00:23:18] at the same time, okay?
+[00:23:18 -> 00:23:20] It actually turns out, if you just simply go back
+[00:23:20 -> 00:23:23] to your little law, you know, analysis,
+[00:23:23 -> 00:23:26] is you have to do this, you know,
+[00:23:26 -> 00:23:29] when you have lots of instructions in flight
+[00:23:30 -> 00:23:34] and we'll come back a little bit to that analysis
+[00:23:34 -> 00:23:36] if I forget to remind you, okay?
+[00:23:36 -> 00:23:41] So this only makes sense where you have processors
+[00:23:41 -> 00:23:44] that can go ahead despite a cache miss,
+[00:23:44 -> 00:23:49] and these are all the out of order processors, okay?
+[00:23:49 -> 00:23:53] So how do we handle that?
+[00:23:53 -> 00:24:04] Even with this critical word first,
+[00:24:04 -> 00:24:09] is you must make the cache, this bus, and the memory
+[00:24:09 -> 00:24:12] cooperate, or the next level, shall we say,
+[00:24:12 -> 00:24:15] cooperate somehow, okay?
+[00:24:15 -> 00:24:18] And how do they do that?
+[00:24:18 -> 00:24:27] Okay, so the first thing first is this bus,
+[00:24:27 -> 00:24:30] the set of wires over here that's transferring data,
+[00:24:30 -> 00:24:36] you have to have what is called a split transaction.
+[00:24:36 -> 00:24:39] What that means is, you know, you send the miss
+[00:24:39 -> 00:24:44] to the next level, and then you let go of this bus.
+[00:24:44 -> 00:24:49] And now, so your request and response transaction
+[00:24:49 -> 00:24:51] is split, okay?
+[00:24:51 -> 00:24:54] So you let the request go to the bus,
+[00:24:54 -> 00:24:57] you know, to the next level, release the bus,
+[00:24:57 -> 00:25:00] when the response comes back, you get the bus back,
+[00:25:00 -> 00:25:03] and you carry on the transfer.
+[00:25:03 -> 00:25:11] As opposed to, you know, in the more networked
+[00:25:11 -> 00:25:14] technologies, also what's called a package-switched bus,
+[00:25:14 -> 00:25:19] as opposed to a circuit-switched,
+[00:25:19 -> 00:25:21] where what you do is you board onto this bus
+[00:25:21 -> 00:25:23] until the entire transaction is complete,
+[00:25:23 -> 00:25:26] which means only one transaction would be using
+[00:25:26 -> 00:25:29] that bus at any time.
+[00:25:29 -> 00:25:32] Okay, so far so good?
+[00:25:32 -> 00:25:42] All right, so now what we're going to do is
+[00:25:42 -> 00:25:46] you send the first load, it misses, okay?
+[00:25:46 -> 00:25:50] And you keep track of the load
+[00:25:50 -> 00:25:55] with a whole bunch of registers over here,
+[00:25:55 -> 00:26:08] which are called miss, status, handling,
+[00:26:08 -> 00:26:15] or MSHS, okay?
+[00:26:15 -> 00:26:21] So what this MSHR is going to have is,
+[00:26:21 -> 00:26:24] what this MSHR is going to have is,
+[00:26:24 -> 00:26:28] hey, for what load is this miss?
+[00:26:28 -> 00:26:33] Okay, so for what load means you have
+[00:26:33 -> 00:26:38] some kind of a load identifier of some kind, okay?
+[00:26:38 -> 00:26:43] You also need to keep track of the destination register
+[00:26:43 -> 00:26:45] for that load.
+[00:26:45 -> 00:26:48] So when that value comes,
+[00:26:48 -> 00:26:52] you can take the appropriate word from that block
+[00:26:52 -> 00:26:55] and give it to register R3, for example,
+[00:26:55 -> 00:27:03] the destination of that load was register R3, okay?
+[00:27:03 -> 00:27:05] Then, of course, you need to keep track of,
+[00:27:05 -> 00:27:09] just like we had in that critical word first,
+[00:27:09 -> 00:27:17] which sub-blocks are present
+[00:27:17 -> 00:27:22] in this miss, status, handling register, okay?
+[00:27:22 -> 00:27:24] Then you also need to keep track of
+[00:27:24 -> 00:27:28] when all the blocks come back,
+[00:27:28 -> 00:27:35] where in the cache should I place that, okay?
+[00:27:35 -> 00:27:43] So the destination block frame.
+[00:27:43 -> 00:27:54] So far so good?
+[00:27:54 -> 00:28:04] If I further want to do this miss under miss,
+[00:28:04 -> 00:28:13] I also have to keep basically the block data address
+[00:28:13 -> 00:28:15] of some kind.
+[00:28:15 -> 00:28:18] So what data block is this?
+[00:28:18 -> 00:28:23] This is the data block address corresponding to address 39.
+[00:28:23 -> 00:28:27] Data address 39.
+[00:28:27 -> 00:28:29] Why you need this is,
+[00:28:29 -> 00:28:33] if I have a load that is missing
+[00:28:33 -> 00:28:37] and now another load comes in and misses,
+[00:28:37 -> 00:28:42] if that second load is through the same block
+[00:28:42 -> 00:28:44] that already has a miss,
+[00:28:44 -> 00:28:48] then I need not send that second load to the memory
+[00:28:48 -> 00:28:50] to our next level.
+[00:28:50 -> 00:28:53] I will wait till the corresponding sub-block
+[00:28:53 -> 00:28:57] of that load has come back and then provide it.
+[00:28:57 -> 00:29:05] Are you with me on this?
+[00:29:05 -> 00:29:07] Okay.
+[00:29:07 -> 00:29:13] So, and, you know, I need to have,
+[00:29:13 -> 00:29:16] so let's do sort of a, you know,
+[00:29:16 -> 00:29:25] back of the onboard cache.
+[00:29:25 -> 00:29:28] 10% miss rate.
+[00:29:28 -> 00:29:33] Say I have a 10% miss rate.
+[00:29:33 -> 00:29:39] And say I'm trying to do eight instructions per cycle.
+[00:29:39 -> 00:29:41] And maybe I end up trying to do one load per cycle,
+[00:29:41 -> 00:29:43] if you will.
+[00:29:43 -> 00:29:49] Or two loads per cycle.
+[00:29:49 -> 00:29:51] And say now it's going to take me
+[00:29:51 -> 00:29:56] a miss latency of 40 cycles.
+[00:29:56 -> 00:30:05] So in 40 cycles, I'm getting two loads per cycle.
+[00:30:05 -> 00:30:07] If things are chugging along well,
+[00:30:07 -> 00:30:12] in 40 cycles I'm going to get 80 loads.
+[00:30:12 -> 00:30:18] If I have a miss rate of 10%,
+[00:30:18 -> 00:30:24] then I have eight misses in flight at the same time.
+[00:30:24 -> 00:30:28] If I don't, then I'm not going to be able to get
+[00:30:28 -> 00:30:30] that two loads per cycle period.
+[00:30:30 -> 00:30:33] Okay.
+[00:30:33 -> 00:30:37] And if these loads are to, you know,
+[00:30:37 -> 00:30:40] different blocks, then I need to have at least
+[00:30:40 -> 00:30:43] eight missed at-the-standard registers
+[00:30:43 -> 00:30:47] to allow those eight loads to happen.
+[00:30:47 -> 00:30:50] Eight misses to be overlapped at the same time.
+[00:30:50 -> 00:30:55] Are you with me on this?
+[00:30:55 -> 00:30:56] Okay.
+[00:30:56 -> 00:31:00] So these days processors typically have
+[00:31:00 -> 00:31:04] eight to 16 missed at-the-standard registers
+[00:31:04 -> 00:31:08] because you try and actually get streams of misses
+[00:31:08 -> 00:31:12] because also when I say I'm getting an average
+[00:31:12 -> 00:31:18] of 10% miss rate, okay,
+[00:31:18 -> 00:31:21] we did this calculation with 10% miss rate average,
+[00:31:21 -> 00:31:22] I need eight loads.
+[00:31:22 -> 00:31:29] But misses are never uniform over time.
+[00:31:29 -> 00:31:34] They come in bursts.
+[00:31:34 -> 00:31:37] So maybe I'll get 20 misses one after the other
+[00:31:37 -> 00:31:41] and then I won't get, you know,
+[00:31:41 -> 00:31:44] I'll get 180 hits.
+[00:31:44 -> 00:31:46] Okay, so you actually end up having to have
+[00:31:46 -> 00:31:49] more than this average that I just calculated.
+[00:31:49 -> 00:31:58] Are you with me on this?
+[00:31:58 -> 00:32:02] So yes, these non-blocking or lockup-free caches
+[00:32:02 -> 00:32:05] without these, yeah, processor,
+[00:32:05 -> 00:32:08] you build a big out-of-order processor,
+[00:32:08 -> 00:32:10] reorder buffer this, that fancy,
+[00:32:10 -> 00:32:12] very fancy branch predictor,
+[00:32:12 -> 00:32:14] that's going to be sitting around waiting
+[00:32:14 -> 00:32:17] for the result to come from the memory.
+[00:32:17 -> 00:32:19] Yeah.
+[00:32:19 -> 00:32:23] If you have a cache line in flight
+[00:32:23 -> 00:32:26] that you're there, you're requesting from the lower level
+[00:32:26 -> 00:32:29] and, you know, so you've asked for the critical block
+[00:32:29 -> 00:32:32] on that one, right, which is going to be,
+[00:32:32 -> 00:32:36] like, if you have another access to that same cache line,
+[00:32:36 -> 00:32:38] do you just have to now wait
+[00:32:38 -> 00:32:40] for the whole cache line or are there protocols
+[00:32:40 -> 00:32:44] to allow that to get a different critical block
+[00:32:44 -> 00:32:46] from that same cache line?
+[00:32:46 -> 00:32:48] Did everyone hear the question?
+[00:32:48 -> 00:32:54] What would you do?
+[00:32:54 -> 00:32:56] Well, the simple thing is wait.
+[00:32:56 -> 00:32:59] The complicated thing is send another transaction down
+[00:32:59 -> 00:33:02] and say, please put this at the head of the line.
+[00:33:02 -> 00:33:08] Or, or, or you just wait at this missed
+[00:33:08 -> 00:33:10] address handling register,
+[00:33:10 -> 00:33:13] but now this missed address handling register.
+[00:33:13 -> 00:33:14] Okay.
+[00:33:14 -> 00:33:17] So this missed address handling register is saying
+[00:33:17 -> 00:33:22] this load is going to register R3.
+[00:33:22 -> 00:33:24] Okay?
+[00:33:24 -> 00:33:26] Now the second load comes in.
+[00:33:26 -> 00:33:29] Do the same block and misses.
+[00:33:29 -> 00:33:31] So this missed address handling register,
+[00:33:31 -> 00:33:34] load one is going to R3.
+[00:33:34 -> 00:33:37] Load two is going to go to R7.
+[00:33:37 -> 00:33:39] It has to remember miss two.
+[00:33:39 -> 00:33:44] You are never going to let that go here.
+[00:33:44 -> 00:33:47] No.
+[00:33:47 -> 00:33:50] So either you block that load, you know,
+[00:33:50 -> 00:33:54] right over here or you block the second load
+[00:33:54 -> 00:33:57] and block everything after that.
+[00:33:57 -> 00:34:00] Or you let the second load, you know,
+[00:34:00 -> 00:34:05] wait at that MSHR and let others go behind that.
+[00:34:05 -> 00:34:10] What would you do now?
+[00:34:10 -> 00:34:16] Well, I guess it depends on how fast you can
+[00:34:16 -> 00:34:19] get this transaction down to the memory down below
+[00:34:19 -> 00:34:23] because the memory down below has fetched the cash line.
+[00:34:23 -> 00:34:25] Now it's just a matter of which ones it puts
+[00:34:25 -> 00:34:29] onto the bus next.
+[00:34:29 -> 00:34:30] That's right.
+[00:34:30 -> 00:34:35] So either you figure out that you have to do the,
+[00:34:35 -> 00:34:37] it's a request to the same cash line over here,
+[00:34:37 -> 00:34:40] you figure it out over here.
+[00:34:40 -> 00:34:42] And what I was asking what you would do is,
+[00:34:42 -> 00:34:45] you know, do you expect misses to the same
+[00:34:45 -> 00:34:50] cash line to happen close to each other?
+[00:34:50 -> 00:34:51] Yeah.
+[00:34:51 -> 00:34:52] Yes, you do.
+[00:34:52 -> 00:34:55] Because, you know, you get a data structure,
+[00:34:55 -> 00:34:57] you have different views on the data structure,
+[00:34:57 -> 00:35:00] on the same cash line, the loads to,
+[00:35:00 -> 00:35:02] fields and records that you have,
+[00:35:02 -> 00:35:04] situations like this going to happen all the time.
+[00:35:04 -> 00:35:08] So you do, you make an MSHR design more complicated
+[00:35:08 -> 00:35:11] to be able to handle more than one outstanding
+[00:35:11 -> 00:35:14] miss to the same cash line and figure out
+[00:35:14 -> 00:35:18] what destination registers should be for those
+[00:35:18 -> 00:35:22] multiple loads to return the correct sub-block,
+[00:35:22 -> 00:35:26] correct word that comes back to that particular answer.
+[00:35:26 -> 00:35:30] Does the memory subsystem return these critical blocks?
+[00:35:30 -> 00:35:32] Like if I get the middle block,
+[00:35:32 -> 00:35:34] or the fourth block, it saves, you know,
+[00:35:34 -> 00:35:35] 648 byte.
+[00:35:35 -> 00:35:36] If I get the fourth one,
+[00:35:36 -> 00:35:38] will it send me the fifth one next
+[00:35:38 -> 00:35:41] or does it start at zero and send them?
+[00:35:41 -> 00:35:44] It depends on how you design the controller, right?
+[00:35:44 -> 00:35:46] You know, if you're just saying,
+[00:35:46 -> 00:35:50] hey, send them everything from zero to N minus one,
+[00:35:50 -> 00:35:52] simple down control.
+[00:35:52 -> 00:35:54] If you are saying, now no controller,
+[00:35:54 -> 00:35:56] send me three first.
+[00:35:56 -> 00:35:58] Then you just, whatever the design is
+[00:35:58 -> 00:36:00] to how to send the others, you do it.
+[00:36:00 -> 00:36:02] Because it could be advantageous to send,
+[00:36:02 -> 00:36:04] like if I wanted three first,
+[00:36:04 -> 00:36:05] then send me four and five,
+[00:36:05 -> 00:36:07] then the compiler could go do something
+[00:36:07 -> 00:36:09] where it's like, I will access these
+[00:36:09 -> 00:36:11] and kind of address the order
+[00:36:11 -> 00:36:13] because I know that the next critical block
+[00:36:13 -> 00:36:17] should be arriving quickly.
+[00:36:17 -> 00:36:20] Yeah, the first one is the problem.
+[00:36:20 -> 00:36:21] Sure.
+[00:36:21 -> 00:36:24] Okay, so go back to 10 plus whatever it is.
+[00:36:24 -> 00:36:25] Plus 1111.
+[00:36:25 -> 00:36:30] Yeah, so it's the 20 or 40 to get the first one.
+[00:36:30 -> 00:36:33] And then the other is you don't want to,
+[00:36:33 -> 00:36:38] then just have more of a multiplicative stuff over there.
+[00:36:39 -> 00:36:41] Yeah, so I have one question
+[00:36:41 -> 00:36:43] that was kind of a follow-up to this.
+[00:36:43 -> 00:36:46] Let's say the first load came to a cache line
+[00:36:46 -> 00:36:50] requested critical block number three.
+[00:36:50 -> 00:36:54] And while the memory subsystem gave us that block,
+[00:36:54 -> 00:36:56] another load came to the same cache line
+[00:36:56 -> 00:36:59] requested block number seven, let's say.
+[00:36:59 -> 00:37:03] So do these, like, when it comes to that...
+[00:37:03 -> 00:37:05] Sorry, sorry.
+[00:37:07 -> 00:37:10] You mean word number seven, not block, word.
+[00:37:10 -> 00:37:11] Yeah.
+[00:37:11 -> 00:37:13] Yeah, sorry, sub-block.
+[00:37:13 -> 00:37:19] So cache line first miss, sub-block number three is requested.
+[00:37:19 -> 00:37:21] You return that critical block first,
+[00:37:21 -> 00:37:22] you get an early restart.
+[00:37:22 -> 00:37:24] Next miss you get for same cache line,
+[00:37:24 -> 00:37:26] but block number seven.
+[00:37:26 -> 00:37:30] But now build the controller now,
+[00:37:30 -> 00:37:33] stop its regular pattern filling,
+[00:37:33 -> 00:37:35] and be like, hey, I need seven.
+[00:37:35 -> 00:37:37] I need the seven first.
+[00:37:37 -> 00:37:40] Okay, okay.
+[00:37:40 -> 00:37:43] So load three came to three,
+[00:37:43 -> 00:37:44] whatever you did with it.
+[00:37:44 -> 00:37:47] When did seven come?
+[00:37:47 -> 00:37:49] Okay, okay.
+[00:37:49 -> 00:37:51] When seven showed up,
+[00:37:51 -> 00:37:55] by then that block would be here?
+[00:37:55 -> 00:37:58] In the cache already?
+[00:37:58 -> 00:38:02] Or if you said it showed up right over there,
+[00:38:02 -> 00:38:04] after that, okay.
+[00:38:04 -> 00:38:08] Okay, it could be here,
+[00:38:08 -> 00:38:09] but if it showed up right after that,
+[00:38:09 -> 00:38:11] it's not here, and it's here.
+[00:38:11 -> 00:38:13] I'm still waiting to be transferred over here.
+[00:38:13 -> 00:38:15] So you have to keep track of,
+[00:38:15 -> 00:38:19] hey, I have a load for one going to R3,
+[00:38:19 -> 00:38:22] and then a load two going to R7 over here.
+[00:38:22 -> 00:38:23] Then I have to have these,
+[00:38:23 -> 00:38:25] just like this, early restart over here.
+[00:38:25 -> 00:38:28] Remember, I had the bits with each sub-block
+[00:38:28 -> 00:38:30] around where the block was actually present.
+[00:38:30 -> 00:38:33] I actually had to have bits over here
+[00:38:33 -> 00:38:36] to track off whether the data has come back
+[00:38:36 -> 00:38:40] from the block into the MSHR or not.
+[00:38:40 -> 00:38:42] And the second question was,
+[00:38:42 -> 00:38:44] let's say we have two cache lines
+[00:38:44 -> 00:38:45] which are requested,
+[00:38:45 -> 00:38:46] like two independent addresses,
+[00:38:46 -> 00:38:48] but they map to the same cache line.
+[00:38:48 -> 00:38:53] Like three and seven?
+[00:38:53 -> 00:38:56] No, like a conflict, that's right.
+[00:38:56 -> 00:38:58] Oh, oh, oh, oh, oh, oh, oh, oh.
+[00:38:58 -> 00:39:00] So to the same frame.
+[00:39:00 -> 00:39:01] Same cache frame.
+[00:39:01 -> 00:39:07] Then how does the MSHR...
+[00:39:07 -> 00:39:13] Because then you cannot exactly do a critical work.
+[00:39:13 -> 00:39:18] So again, again, again, all right.
+[00:39:18 -> 00:39:23] From here, they will go into the cache in some order.
+[00:39:23 -> 00:39:27] So the second one could either take this one out here.
+[00:39:27 -> 00:39:28] Okay.
+[00:39:28 -> 00:39:32] Remember, the MSHRs are also released in a certain order
+[00:39:32 -> 00:39:35] when the entire blocks have been transferred over here.
+[00:39:35 -> 00:39:36] Okay.
+[00:39:36 -> 00:39:40] Or you could decide to dump one of them in a victim cache.
+[00:39:40 -> 00:39:42] Or you could not have another.
+[00:39:42 -> 00:39:46] Or you could even stall when you have a list of the same.
+[00:39:46 -> 00:39:54] So many things to do.
+[00:39:54 -> 00:39:56] What is the...
+[00:39:56 -> 00:39:59] I do not know what the individual design is.
+[00:39:59 -> 00:40:00] Or anything that...
+[00:40:00 -> 00:40:03] These, I mean, these you will never ever see
+[00:40:03 -> 00:40:06] anything published, anything written,
+[00:40:06 -> 00:40:08] certainly no marketing.
+[00:40:08 -> 00:40:12] Hey, I can handle a list to the conflict
+[00:40:12 -> 00:40:15] in the three main set associated cache.
+[00:40:15 -> 00:40:23] That is a criteria I always use
+[00:40:23 -> 00:40:25] when I am shopping for a processor.
+[00:40:25 -> 00:40:26] You do, do not you?
+[00:40:26 -> 00:40:27] Oh, yeah, yeah.
+[00:40:27 -> 00:40:28] Okay.
+[00:40:28 -> 00:40:30] I think that is good.
+[00:40:30 -> 00:40:32] I do not care about clock speed.
+[00:40:32 -> 00:40:37] All right.
+[00:40:37 -> 00:40:42] About...
+[00:40:42 -> 00:40:44] Actually, that is sort of the frame conflict
+[00:40:44 -> 00:40:46] we talked about earlier.
+[00:40:46 -> 00:40:48] You also have to search the multiple MFHs
+[00:40:48 -> 00:40:51] to see if there is an outstanding miss
+[00:40:51 -> 00:40:53] to that same frame.
+[00:40:53 -> 00:40:57] All right.
+[00:40:57 -> 00:40:59] Think about this stuff for a while
+[00:40:59 -> 00:41:02] and read the original paper
+[00:41:02 -> 00:41:04] or actually a paper we wrote on this.
+[00:41:04 -> 00:41:05] They are fairly straightforward,
+[00:41:05 -> 00:41:06] easy to understand.
+[00:41:06 -> 00:41:08] The one we wrote actually has these
+[00:41:08 -> 00:41:10] littles law arguments to...
+[00:41:10 -> 00:41:13] You know, when we first started presenting
+[00:41:13 -> 00:41:15] the need for this people yesterday,
+[00:41:15 -> 00:41:17] everyone knows caches do not miss.
+[00:41:17 -> 00:41:19] So why are you worried about misses?
+[00:41:19 -> 00:41:21] Well, in real life, they do miss,
+[00:41:21 -> 00:41:22] and you want to have...
+[00:41:22 -> 00:41:23] When you are doing last-minute searching,
+[00:41:23 -> 00:41:24] you want to have all...
+[00:41:24 -> 00:41:26] So you have to make a little more
+[00:41:26 -> 00:41:28] kind of argument like I did.
+[00:41:28 -> 00:41:31] You have to have more thoughts than I did.
+[00:41:31 -> 00:41:32] Okay.
+[00:41:32 -> 00:41:35] Something else that is very common
+[00:41:35 -> 00:41:39] these days is pre-searching techniques.
+[00:41:39 -> 00:41:41] Where, you know, right now,
+[00:41:41 -> 00:41:43] we have only been talking about demand misses.
+[00:41:43 -> 00:41:46] When you actually make the load reference
+[00:41:46 -> 00:41:49] or the store reference, you actually have to miss.
+[00:41:49 -> 00:41:51] So in a pre-searching technique,
+[00:41:51 -> 00:41:55] you can anticipate upcoming miss addresses
+[00:41:55 -> 00:41:59] and bring those blocks into the cache proactively.
+[00:41:59 -> 00:42:02] You can do it in any other hardware or software,
+[00:42:02 -> 00:42:05] and the three things you need to worry about
+[00:42:05 -> 00:42:08] is you need to be able to initiate the pre-fetch
+[00:42:08 -> 00:42:10] sufficiently in advance.
+[00:42:10 -> 00:42:13] So if the latency is going to be 10 cycles,
+[00:42:14 -> 00:42:19] and if I initiate the pre-fetch only three cycles ahead,
+[00:42:19 -> 00:42:20] then I'm only, in a sense,
+[00:42:20 -> 00:42:22] tolerating three cycles of the latency.
+[00:42:22 -> 00:42:25] I still see seven cycles per okay.
+[00:42:25 -> 00:42:31] But if I do it 15 cycles ahead,
+[00:42:31 -> 00:42:33] timeliness is good.
+[00:42:33 -> 00:42:35] If I do it 100 cycles ahead,
+[00:42:35 -> 00:42:39] I may be replacing something in the cache
+[00:42:39 -> 00:42:42] that is going to be used in those 100 cycles.
+[00:42:42 -> 00:42:45] Okay?
+[00:42:45 -> 00:42:49] So there is the timeliness and the accuracy,
+[00:42:49 -> 00:42:52] which you don't only want to bring in data
+[00:42:52 -> 00:42:53] that you're likely to be used,
+[00:42:53 -> 00:42:55] because anything you bring in
+[00:42:55 -> 00:42:57] potentially evicts useful data,
+[00:42:57 -> 00:43:00] so you don't want to pollute unnecessary data.
+[00:43:00 -> 00:43:03] And then you want to, the coverage is you want to
+[00:43:03 -> 00:43:05] pre-fetch for as many misses as possible.
+[00:43:05 -> 00:43:10] So a very simple technique that people do
+[00:43:10 -> 00:43:12] is next block pre-fetching,
+[00:43:12 -> 00:43:14] where if you have a miss on address x,
+[00:43:14 -> 00:43:19] you also anticipate the miss on address x plus block size.
+[00:43:19 -> 00:43:23] So you pre-fetch the next block, if you will.
+[00:43:23 -> 00:43:26] And it works very well for instructions,
+[00:43:26 -> 00:43:27] because instructions,
+[00:43:27 -> 00:43:30] as long as you're in the same function, if you will,
+[00:43:30 -> 00:43:34] you are accessing consecutive blocks of instructions.
+[00:43:34 -> 00:43:36] Okay, so you come to the beginning of a function.
+[00:43:36 -> 00:43:37] If you have a miss,
+[00:43:37 -> 00:43:40] you might as well fetch all the consecutive blocks,
+[00:43:40 -> 00:43:41] next blocks,
+[00:43:41 -> 00:43:46] so you get all the instructions of the function in the cache.
+[00:43:46 -> 00:43:50] It also works well for data for arrays,
+[00:43:50 -> 00:43:54] and also, even for non-array structures,
+[00:43:54 -> 00:43:57] if you have lists of records or whatever it is,
+[00:43:57 -> 00:44:02] and the records you're accessing sequentially, if you will,
+[00:44:02 -> 00:44:06] which you typically would do when you're searching, et cetera.
+[00:44:06 -> 00:44:12] And this works well.
+[00:44:12 -> 00:44:17] This pre-fetching can either be done in software or in hardware, okay?
+[00:44:17 -> 00:44:20] And, you know, the software people always say,
+[00:44:20 -> 00:44:22] hey, you know, we can do things better.
+[00:44:22 -> 00:44:24] We can analyze addresses a little better,
+[00:44:24 -> 00:44:26] just like we did in trace scheduling.
+[00:44:26 -> 00:44:29] And yes, perhaps this is true, okay?
+[00:44:29 -> 00:44:32] But then, how do you act,
+[00:44:32 -> 00:44:38] how does the software actually convey what to access?
+[00:44:38 -> 00:44:42] So there is what is referred to as a binding pre-fetch.
+[00:44:42 -> 00:44:45] Binding pre-fetch means the pre-fetch actually happens.
+[00:44:45 -> 00:44:47] You can't ignore it, in a sense.
+[00:44:47 -> 00:44:51] And that is what actually would be a load, a typical load.
+[00:44:51 -> 00:44:55] You're just issuing the load way ahead in advance,
+[00:44:55 -> 00:44:58] just as we tried to schedule it, okay?
+[00:44:58 -> 00:45:01] You don't need ISS support.
+[00:45:01 -> 00:45:03] You need to use normal loads.
+[00:45:03 -> 00:45:06] But, of course, now, as you know,
+[00:45:06 -> 00:45:10] the whole point of pre-fetching is to bring in things that you're likely to miss.
+[00:45:10 -> 00:45:12] So, in a sense, the pre-fetch is like a mess.
+[00:45:12 -> 00:45:15] The pre-fetch is not something that's going to enter the cache.
+[00:45:15 -> 00:45:18] And so each one of those pre-fetches is a mess.
+[00:45:18 -> 00:45:20] And so you have to have multiple messes
+[00:45:20 -> 00:45:22] if you're doing multiple pre-fetches.
+[00:45:22 -> 00:45:27] So you have to have a non-binding cache, okay?
+[00:45:27 -> 00:45:30] And you also need more registers.
+[00:45:30 -> 00:45:33] And then, of course, you go back to what the same issues
+[00:45:33 -> 00:45:35] that we saw in trace scheduling.
+[00:45:35 -> 00:45:40] What happens if there's an exception?
+[00:45:40 -> 00:45:43] For a non-binding pre-fetch,
+[00:45:43 -> 00:45:45] you are pre-fetching it into the cache only.
+[00:45:45 -> 00:45:49] You are not changing any state, if you will.
+[00:45:49 -> 00:45:51] A register of a state.
+[00:45:51 -> 00:45:53] Loading something to memory is steady.
+[00:45:53 -> 00:45:55] If you're just saying, hey,
+[00:45:55 -> 00:45:58] have the side effect of bringing something into the cache,
+[00:45:58 -> 00:46:04] the cache is an architectural, visible state.
+[00:46:04 -> 00:46:07] It makes the program go faster.
+[00:46:07 -> 00:46:13] It has been used for speculative execution attacks
+[00:46:13 -> 00:46:15] because you're having the side effect
+[00:46:15 -> 00:46:17] of bringing data into the cache.
+[00:46:17 -> 00:46:21] But other than that, it's not binding.
+[00:46:21 -> 00:46:26] So you can basically work into the piece of code.
+[00:46:26 -> 00:46:33] You can actually have pre-fetch instructions like here.
+[00:46:33 -> 00:46:37] The issue with these pre-fetch instructions over here
+[00:46:37 -> 00:46:44] is, again, now, they're an instruction of some kind,
+[00:46:44 -> 00:46:46] which means they're in the iCache,
+[00:46:46 -> 00:46:51] which means they take up space in the iCache.
+[00:46:51 -> 00:46:55] So there is a complex trade-off about the benefit
+[00:46:55 -> 00:46:58] of having a pre-fetch instruction
+[00:46:58 -> 00:47:04] and doing it in software.
+[00:47:04 -> 00:47:08] Plus, that array address is not free to compute either.
+[00:47:08 -> 00:47:11] That array address is not free to compute either.
+[00:47:11 -> 00:47:14] Actually, interestingly, I did not...
+[00:47:14 -> 00:47:18] I just came across this the other day.
+[00:47:18 -> 00:47:21] I hadn't been looking at it too much.
+[00:47:21 -> 00:47:24] These are the CPUs that I told you about,
+[00:47:24 -> 00:47:59] and there's four CPUs I have.
+[00:47:59 -> 00:48:01] The data is the MD75.
+[00:48:01 -> 00:48:03] Actually, it has software pre-fetch
+[00:48:03 -> 00:48:06] of even instruction lines into the cache.
+[00:48:06 -> 00:48:10] How do I use it? I don't know.
+[00:48:10 -> 00:48:13] But, you know, how I was using it.
+[00:48:13 -> 00:48:15] But these days, with the code footprint being so,
+[00:48:15 -> 00:48:17] the code footprint being so big,
+[00:48:17 -> 00:48:19] and iCache is being such a huge issue,
+[00:48:19 -> 00:48:21] a lot of people are interested
+[00:48:21 -> 00:48:24] in pre-fetching techniques for instructions.
+[00:48:24 -> 00:48:27] So they have actually a pre-fetch instruction
+[00:48:27 -> 00:48:32] for bringing instruction.
+[00:48:32 -> 00:48:34] You may actually have that a little late.
+[00:48:34 -> 00:48:36] I think Intel has had that since 2014.
+[00:48:36 -> 00:48:38] I've used that instruction before.
+[00:48:38 -> 00:48:40] You have? Yeah.
+[00:48:40 -> 00:48:42] How do you use it?
+[00:48:42 -> 00:48:44] It's like you just pass it the address.
+[00:48:44 -> 00:48:46] I know you pass it the address,
+[00:48:46 -> 00:48:48] and it'll fetch the admin.
+[00:48:48 -> 00:48:50] How did you meaningfully use it?
+[00:48:50 -> 00:48:53] Oh, it was in this software renderer
+[00:48:53 -> 00:48:55] where I would fetch the next line
+[00:48:55 -> 00:48:57] of this big frame buffer,
+[00:48:57 -> 00:48:59] where I started drawing triangles there.
+[00:48:59 -> 00:49:01] That's data cache.
+[00:49:01 -> 00:49:03] That's data cache.
+[00:49:03 -> 00:49:05] That's not instruction cache.
+[00:49:05 -> 00:49:07] Oh, now it's fetch instruction cache?
+[00:49:07 -> 00:49:09] Oh, that's the new one.
+[00:49:09 -> 00:49:11] Fetch data cache has been around for a long time.
+[00:49:11 -> 00:49:13] I'm curious to know how you use this
+[00:49:13 -> 00:49:15] fetch instruction cache,
+[00:49:15 -> 00:49:18] because it's not that simple.
+[00:49:18 -> 00:49:20] You have to have a fair amount of analysis
+[00:49:20 -> 00:49:22] and someone to do that.
+[00:49:22 -> 00:49:26] What happens if we have an unlikely branch
+[00:49:26 -> 00:49:28] called an iCache miss
+[00:49:28 -> 00:49:32] while the pre-fetch is already holding
+[00:49:32 -> 00:49:38] the resources for the iCache transfer?
+[00:49:38 -> 00:49:40] Can you repeat the question
+[00:49:40 -> 00:49:42] so others can hear that?
+[00:49:42 -> 00:49:46] What happens when we have an unlikely branch
+[00:49:46 -> 00:49:51] while causing the iCache to miss
+[00:49:51 -> 00:49:54] while the pre-fetch instruction
+[00:49:54 -> 00:49:58] is kind of hogging the resource,
+[00:49:58 -> 00:50:03] the memory to cache lines resource?
+[00:50:03 -> 00:50:07] Do we load it and then remove it back
+[00:50:07 -> 00:50:10] or do we prematurely stop it,
+[00:50:10 -> 00:50:12] and cause more alignment problems?
+[00:50:12 -> 00:50:16] What would you do?
+[00:50:16 -> 00:50:19] The faster solution is to flush
+[00:50:19 -> 00:50:22] that cache line from my end,
+[00:50:22 -> 00:50:25] whatever the memory is saying does not matter,
+[00:50:25 -> 00:50:29] and then tell the FSM to go back
+[00:50:29 -> 00:50:32] and do what I want it to do.
+[00:50:32 -> 00:50:34] But that's a priority.
+[00:50:34 -> 00:50:42] Alternatively, you could be, in a sense,
+[00:50:42 -> 00:50:45] tracking which of the pre-fetches
+[00:50:45 -> 00:50:47] for what you have misses in.
+[00:50:47 -> 00:50:49] And if it's the same,
+[00:50:49 -> 00:50:52] you stop over there and wait for it to come back.
+[00:50:52 -> 00:50:55] That's slow.
+[00:50:55 -> 00:50:56] It's not slow.
+[00:50:56 -> 00:50:59] You only have all these structures
+[00:50:59 -> 00:51:01] that handle outstanding misses.
+[00:51:01 -> 00:51:04] So that would just simply be a miss
+[00:51:04 -> 00:51:06] on a line for which there's a bending miss.
+[00:51:06 -> 00:51:11] But an iCache miss causes more basic work,
+[00:51:11 -> 00:51:13] in a sense.
+[00:51:13 -> 00:51:16] A dCache miss is fine because we only,
+[00:51:16 -> 00:51:19] let's say we have data accesses every 20%,
+[00:51:19 -> 00:51:24] so we still have 60% of the out-of-order processors
+[00:51:24 -> 00:51:26] still chugging along.
+[00:51:26 -> 00:51:30] An iCache miss would mean everything stops.
+[00:51:30 -> 00:51:32] The misses have happened anyway.
+[00:51:32 -> 00:51:34] Your question was, if this happened
+[00:51:34 -> 00:51:37] and there was already a pre-fetch that is bending to it,
+[00:51:37 -> 00:51:39] what do we do?
+[00:51:39 -> 00:51:42] This part is not bothering the processor anyway.
+[00:51:42 -> 00:51:44] This is operating on its own.
+[00:51:44 -> 00:51:46] This is just saying, hey, these are the number,
+[00:51:46 -> 00:51:48] these are the lines for which I have misses
+[00:51:48 -> 00:51:50] and are standing.
+[00:51:50 -> 00:51:53] I don't care if it's data or instructions.
+[00:51:53 -> 00:51:55] A miss comes with the same line.
+[00:51:55 -> 00:51:59] Not overnight.
+[00:51:59 -> 00:52:01] Just wait until it comes back.
+[00:52:01 -> 00:52:02] Send it back.
+[00:52:02 -> 00:52:08] Yeah?
+[00:52:08 -> 00:52:11] What that pre-fetch I would probably be really good for
+[00:52:11 -> 00:52:13] is usually you have, like,
+[00:52:13 -> 00:52:15] before you make a system call,
+[00:52:15 -> 00:52:17] you usually do a lot of processing.
+[00:52:17 -> 00:52:19] You might do a system call to do a log
+[00:52:19 -> 00:52:22] or a system call to dump a bunch of data to disk.
+[00:52:22 -> 00:52:25] And that system is probably not cached at all.
+[00:52:25 -> 00:52:28] So if you know you've done a bunch of loop processing,
+[00:52:28 -> 00:52:31] a couple of iterations before you do the system,
+[00:52:31 -> 00:52:33] probably just pre-fetch it now.
+[00:52:33 -> 00:52:36] There are a lot of scenarios
+[00:52:36 -> 00:52:40] where you can see how this would benefit.
+[00:52:40 -> 00:52:42] Okay.
+[00:52:42 -> 00:52:45] But, you know, I mean, those are, in a sense,
+[00:52:45 -> 00:52:48] a little more obvious ones.
+[00:52:48 -> 00:52:50] Because, hey, I'm going to call,
+[00:52:50 -> 00:52:53] forget the system call, just any ordinary call.
+[00:52:53 -> 00:52:55] Hey, I'm going to make this call,
+[00:52:55 -> 00:52:58] start pre-fetching from this part over here.
+[00:52:58 -> 00:52:59] Okay.
+[00:52:59 -> 00:53:03] But in general, you know,
+[00:53:03 -> 00:53:05] going beyond that,
+[00:53:05 -> 00:53:08] and what is the framework for doing some of this
+[00:53:08 -> 00:53:10] and actually using it
+[00:53:10 -> 00:53:13] and actually not having these instructions.
+[00:53:13 -> 00:53:17] Remember, not only do they take instruction cache slots,
+[00:53:17 -> 00:53:19] issue slots,
+[00:53:19 -> 00:53:22] they take all the other slots in the pipeline.
+[00:53:22 -> 00:53:25] And how, you know, what is the balance
+[00:53:25 -> 00:53:28] between having too many instructions
+[00:53:28 -> 00:53:30] that are not doing anything productive
+[00:53:30 -> 00:53:32] other than pre-fetching,
+[00:53:32 -> 00:53:34] which can actually be very beneficial,
+[00:53:34 -> 00:53:37] you know, taking issue slots to build it.
+[00:53:37 -> 00:53:42] So I don't know.
+[00:53:42 -> 00:53:44] I haven't seen too much work on this,
+[00:53:44 -> 00:53:47] but there likely will be probably someone trying to
+[00:53:47 -> 00:53:49] figure out how to make use of these
+[00:53:49 -> 00:53:51] instruction pre-fetch instructions.
+[00:53:51 -> 00:53:53] This is a very small side question.
+[00:53:53 -> 00:53:57] Since these pre-fetchers are like fully just side effects,
+[00:53:57 -> 00:53:59] they don't actually adjust the state at all.
+[00:53:59 -> 00:54:02] Could it just exist outside of the general, like,
+[00:54:02 -> 00:54:03] distraction?
+[00:54:03 -> 00:54:05] Like, these are intercepted early?
+[00:54:05 -> 00:54:08] Did everybody hear that question?
+[00:54:08 -> 00:54:16] What would you do?
+[00:54:16 -> 00:54:23] Exist outside?
+[00:54:23 -> 00:54:26] So how would it work outside the main?
+[00:54:26 -> 00:54:29] What would this be?
+[00:54:29 -> 00:54:31] Where are its registers?
+[00:54:31 -> 00:54:32] What is it?
+[00:54:32 -> 00:54:36] How does this code execute?
+[00:54:36 -> 00:54:38] Does it even need to actually have the correct value?
+[00:54:38 -> 00:54:40] Could it just grab the value
+[00:54:40 -> 00:54:42] as it exists in the canonical file
+[00:54:42 -> 00:54:44] and just say close enough?
+[00:54:44 -> 00:54:46] Yeah.
+[00:54:46 -> 00:54:50] Well, later on we will see,
+[00:54:50 -> 00:54:52] when we get to multi-test a little bit,
+[00:54:52 -> 00:54:54] is we'll see how we can run
+[00:54:54 -> 00:54:56] multiple threads on the same processor
+[00:54:56 -> 00:54:58] and how we will share
+[00:54:58 -> 00:55:00] many of the backend resources.
+[00:55:00 -> 00:55:02] We have separate frontend,
+[00:55:02 -> 00:55:05] but many of the share backend resources.
+[00:55:05 -> 00:55:08] And what several people have done work during us
+[00:55:08 -> 00:55:11] is how to actually have a separate thread
+[00:55:11 -> 00:55:14] derived from the main program thread.
+[00:55:14 -> 00:55:16] This does things like
+[00:55:16 -> 00:55:18] figuring out outcomes of branches.
+[00:55:18 -> 00:55:20] So, you know, if you take a look at,
+[00:55:20 -> 00:55:22] hey, you know, if you take a look at
+[00:55:22 -> 00:55:24] have a piece of code and the piece of code
+[00:55:24 -> 00:55:27] that goes into determining what the branches go,
+[00:55:27 -> 00:55:29] that slice of code
+[00:55:29 -> 00:55:31] determining branches is much smaller.
+[00:55:31 -> 00:55:33] It's not the entire program.
+[00:55:33 -> 00:55:35] So pulling that out, maybe 20% of the code,
+[00:55:35 -> 00:55:38] and have it run independent, separately,
+[00:55:38 -> 00:55:41] you know, it actually has a few more to benefit.
+[00:55:41 -> 00:55:43] Same for data, and in a sense,
+[00:55:43 -> 00:55:48] same you can do for construction pre-fetches.
+[00:55:48 -> 00:55:51] But there is still the overhead now.
+[00:55:51 -> 00:55:54] You have to have your own state, if you will, et cetera.
+[00:55:55 -> 00:56:00] And as I said, as I said repeatedly,
+[00:56:00 -> 00:56:04] it's never this or this, okay?
+[00:56:04 -> 00:56:07] This is your bag of tricks, and in some situations,
+[00:56:07 -> 00:56:10] some of the bag of tricks work better than others.
+[00:56:10 -> 00:56:14] Other questions or comments?
+[00:56:14 -> 00:56:17] Yeah?
+[00:56:17 -> 00:56:20] When these instruction pre-fetches
+[00:56:20 -> 00:56:22] start showing up in the kernel,
+[00:56:22 -> 00:56:24] then we'll know it's valuable.
+[00:56:24 -> 00:56:26] When these instruction pre-fetches
+[00:56:26 -> 00:56:28] start showing up in the kernel,
+[00:56:28 -> 00:56:31] then you'll know it's valuable.
+[00:56:31 -> 00:56:36] I, you know, I mean,
+[00:56:36 -> 00:56:40] I don't know what goes into move kernels.
+[00:56:40 -> 00:56:43] Some of you probably know better than that.
+[00:56:43 -> 00:56:45] I thought you would never try to
+[00:56:45 -> 00:56:49] craft a kernel for a particular machine
+[00:56:49 -> 00:56:52] had specific instructions
+[00:56:52 -> 00:56:55] at only a particular architectural machine or support.
+[00:56:55 -> 00:56:56] You try not to do that.
+[00:56:56 -> 00:56:57] Well, but they have a bunch of,
+[00:56:57 -> 00:56:58] I mean, there's a whole bunch of
+[00:56:58 -> 00:57:00] assembly code in Linux, right?
+[00:57:00 -> 00:57:02] Platform-specific assembly code.
+[00:57:02 -> 00:57:03] Whatever.
+[00:57:03 -> 00:57:04] Okay.
+[00:57:04 -> 00:57:05] All right.
+[00:57:05 -> 00:57:06] There's Linus Trevellos,
+[00:57:06 -> 00:57:08] I think that's the same name, Trevellos?
+[00:57:08 -> 00:57:09] Trevellos, yeah.
+[00:57:09 -> 00:57:11] He has this famous rant on C move,
+[00:57:11 -> 00:57:13] and how he hated it so much,
+[00:57:13 -> 00:57:14] and I thought it was the right one,
+[00:57:14 -> 00:57:15] like the early 90s.
+[00:57:15 -> 00:57:18] Oh, okay, and so they actually used it,
+[00:57:18 -> 00:57:19] and then they...
+[00:57:19 -> 00:57:20] Oh, no, he got really angry
+[00:57:20 -> 00:57:21] and said he would, like,
+[00:57:21 -> 00:57:23] stop anyone who tried to use it for a while.
+[00:57:23 -> 00:57:28] So here's something else that is really true.
+[00:57:28 -> 00:57:33] People find out there's this feature,
+[00:57:33 -> 00:57:38] and a lot of smart folks,
+[00:57:38 -> 00:57:39] they want to say,
+[00:57:39 -> 00:57:41] how I can try and do the best,
+[00:57:41 -> 00:57:42] and let me show my friends
+[00:57:42 -> 00:57:44] how I did better than them.
+[00:57:44 -> 00:57:45] That's good.
+[00:57:45 -> 00:57:48] And figure out ways to use this.
+[00:57:48 -> 00:57:53] Yes, there's a lot of that.
+[00:57:53 -> 00:57:54] Which makes everything go wrong.
+[00:57:54 -> 00:57:55] Good.
+[00:57:55 -> 00:57:56] All right.
+[00:57:56 -> 00:57:57] Okay.
+[00:57:57 -> 00:57:59] So in hardware, you know,
+[00:57:59 -> 00:58:01] you can do, you know,
+[00:58:01 -> 00:58:03] what to prefetch, one block ahead,
+[00:58:03 -> 00:58:05] or you actually, these days,
+[00:58:05 -> 00:58:08] you can keep track of correlation between addresses.
+[00:58:08 -> 00:58:09] You have to have, you know,
+[00:58:09 -> 00:58:13] very complex tricks to get your prefetching in.
+[00:58:13 -> 00:58:15] You know, the processors typically have
+[00:58:15 -> 00:58:17] a variety of different...
+[00:58:17 -> 00:58:20] They have typically n-block look ahead
+[00:58:20 -> 00:58:23] and many other tricks that they use.
+[00:58:23 -> 00:58:24] The other question comes is,
+[00:58:24 -> 00:58:25] when to prefetch?
+[00:58:25 -> 00:58:26] Do you want to prefetch
+[00:58:26 -> 00:58:28] on every reference you make,
+[00:58:28 -> 00:58:30] on every miss you make,
+[00:58:30 -> 00:58:33] or actually, what the object,
+[00:58:33 -> 00:58:35] you know, what you would like to do is,
+[00:58:35 -> 00:58:37] hey, as long as I have data in the cache
+[00:58:37 -> 00:58:39] that is useful,
+[00:58:39 -> 00:58:40] and what does it mean to be useful
+[00:58:40 -> 00:58:43] that I'm going to reference in the near future,
+[00:58:43 -> 00:58:46] then I'd like to not replace that data.
+[00:58:46 -> 00:58:47] Okay?
+[00:58:47 -> 00:58:50] But once I get to a point where that block
+[00:58:50 -> 00:58:53] I'm not going to reference in the near future,
+[00:58:53 -> 00:58:55] and the block is dead,
+[00:58:55 -> 00:58:57] then I'd like to be able to replace that.
+[00:58:57 -> 00:58:59] And then because if I prefetch something
+[00:58:59 -> 00:59:03] into that block frame,
+[00:59:03 -> 00:59:05] it's not costing me anything,
+[00:59:05 -> 00:59:08] because it's not replacing something that's useful.
+[00:59:08 -> 00:59:10] So there is a whole bunch of work
+[00:59:10 -> 00:59:14] to actually trying to predict dead blocks.
+[00:59:14 -> 00:59:16] And many of these predictors
+[00:59:16 -> 00:59:18] and trackors actually end up being
+[00:59:18 -> 00:59:20] much bigger than the cache size.
+[00:59:20 -> 00:59:22] But, you know, at some point, sometimes,
+[00:59:22 -> 00:59:25] you do things and you use some, some set of them.
+[00:59:25 -> 00:59:31] You know, there's also correlation predictors
+[00:59:31 -> 00:59:33] where if you miss on an address,
+[00:59:33 -> 00:59:35] then they remember the next bit as well.
+[00:59:35 -> 00:59:38] And, you know, techniques that go down
+[00:59:38 -> 00:59:40] link, left, and jump pointers,
+[00:59:40 -> 00:59:42] and we did a film on that.
+[00:59:42 -> 00:59:45] But, you know, what exactly tricks people use,
+[00:59:45 -> 00:59:48] sometimes they tell you.
+[00:59:48 -> 00:59:51] Samsung actually had a very nice paper
+[00:59:51 -> 00:59:53] where they talked about all the tricks
+[00:59:53 -> 00:59:56] that they did in their high-end processors.
+[00:59:56 -> 00:59:59] That team, Samsung doesn't build,
+[00:59:59 -> 01:00:01] disbanded that team,
+[01:00:01 -> 01:00:04] but they went on to do many of the other designs,
+[01:00:04 -> 01:00:07] including some of the ones that I keep showing you.
+[01:00:07 -> 01:00:12] Okay, so, so far we've only looked at loads,
+[01:00:12 -> 01:00:14] reading data from the cache.
+[01:00:14 -> 01:00:17] What about writing data from the cache?
+[01:00:17 -> 01:00:22] You actually start having many new issues.
+[01:00:22 -> 01:00:25] You have, how do you carry out the tag and data access?
+[01:00:25 -> 01:00:27] Then we have write throughs and write back,
+[01:00:27 -> 01:00:30] write allocate versus no write allocate.
+[01:00:30 -> 01:00:34] And then we have things like store buffers,
+[01:00:34 -> 01:00:38] write buffers and write back buffers.
+[01:00:38 -> 01:00:41] Okay, so here was our cache.
+[01:00:41 -> 01:00:43] What happened for the read?
+[01:00:43 -> 01:00:45] We read the tag and the data in parallel.
+[01:00:45 -> 01:00:48] If there was a mismatch, the tag didn't match.
+[01:00:48 -> 01:00:51] We read some data that was the wrong data.
+[01:00:51 -> 01:00:54] Ignore it, no big deal.
+[01:00:55 -> 01:00:58] Okay, for a write,
+[01:00:58 -> 01:01:02] I cannot do the tag, read the tag
+[01:01:02 -> 01:01:05] and write into the phrase in parallel,
+[01:01:05 -> 01:01:08] because if the tag doesn't match,
+[01:01:08 -> 01:01:10] I have clobbered the old data
+[01:01:10 -> 01:01:12] that was there in the data array.
+[01:01:12 -> 01:01:15] And if I have an associative cache,
+[01:01:15 -> 01:01:18] how do you know which way I'm going to write it?
+[01:01:18 -> 01:01:20] So you first have to know
+[01:01:20 -> 01:01:23] that you're going to have to have a hit in the cache
+[01:01:23 -> 01:01:25] before you write the data
+[01:01:25 -> 01:01:28] into that corresponding frame of the tag.
+[01:01:28 -> 01:01:30] Alright?
+[01:01:30 -> 01:01:33] So writes end up being a two-cycle process.
+[01:01:33 -> 01:01:36] In the first cycle, you match the tag.
+[01:01:36 -> 01:01:38] In the second cycle,
+[01:01:38 -> 01:01:42] you write to the matching way of the tag.
+[01:01:42 -> 01:01:46] Are you familiar with this?
+[01:01:46 -> 01:01:48] So in the first cycle,
+[01:01:48 -> 01:01:50] you're going to check the tags
+[01:01:50 -> 01:01:52] to see if you have a hit.
+[01:01:52 -> 01:01:54] If you have a hit, you advance the store pipeline.
+[01:01:54 -> 01:01:57] If you have a miss, you stall the store pipeline.
+[01:01:57 -> 01:02:00] In cycle two, you write the data
+[01:02:00 -> 01:02:04] into that matching data array.
+[01:02:04 -> 01:02:06] In a more advanced technique,
+[01:02:06 -> 01:02:09] you would actually decouple the write pipeline.
+[01:02:09 -> 01:02:11] In the same cycle, what you would do
+[01:02:11 -> 01:02:15] is you check the tag of store i
+[01:02:15 -> 01:02:20] while you're writing the data of store i-1,
+[01:02:20 -> 01:02:23] and you're also bypassing the data
+[01:02:23 -> 01:02:25] of store i-1 to other nodes.
+[01:02:25 -> 01:02:28] Because what you have to have now,
+[01:02:28 -> 01:02:54] what you have to have in the cache,
+[01:02:54 -> 01:02:56] here's the CPU,
+[01:02:56 -> 01:02:58] and I'm doing the store.
+[01:02:58 -> 01:03:00] Okay?
+[01:03:00 -> 01:03:04] So I have to match the tag in the cache,
+[01:03:04 -> 01:03:08] and while I'm matching the tag in the cache,
+[01:03:08 -> 01:03:10] the data for the store
+[01:03:10 -> 01:03:13] has to be stored in some buffer.
+[01:03:13 -> 01:03:15] If there is a match,
+[01:03:15 -> 01:03:17] it goes from here
+[01:03:17 -> 01:03:19] to be written into the cache.
+[01:03:19 -> 01:03:23] Okay?
+[01:03:23 -> 01:03:25] It could happen that
+[01:03:25 -> 01:03:27] while I'm doing this right,
+[01:03:27 -> 01:03:29] I get a load
+[01:03:29 -> 01:03:31] which happens to be the same data.
+[01:03:31 -> 01:03:33] That's the load.
+[01:03:33 -> 01:03:35] That's going to...
+[01:03:35 -> 01:03:38] Then I have to bypass this data to that load.
+[01:03:38 -> 01:03:40] Because the load went to the cache,
+[01:03:40 -> 01:03:44] then it would get the wrong data.
+[01:03:44 -> 01:03:51] Are you with me on this?
+[01:03:51 -> 01:03:54] Like the first cycle is this tag access.
+[01:03:54 -> 01:04:00] We could increase the associativity of the...
+[01:04:00 -> 01:04:03] You could increase the associativity of the cache
+[01:04:03 -> 01:04:05] to do a store.
+[01:04:05 -> 01:04:09] No, I'm saying that since...
+[01:04:09 -> 01:04:11] How and for what purpose?
+[01:04:11 -> 01:04:14] I just saw that if we are using two cycles,
+[01:04:14 -> 01:04:18] then the problem of having a larger associativity
+[01:04:18 -> 01:04:21] that you would have to do so many things.
+[01:04:21 -> 01:04:23] Yeah, so many things.
+[01:04:23 -> 01:04:25] But you know, it would be nice
+[01:04:25 -> 01:04:28] if we only did store for cache.
+[01:04:28 -> 01:04:30] It would be nonsensical.
+[01:04:30 -> 01:04:35] You actually have to read stuff.
+[01:04:35 -> 01:04:37] I just did one cycle here.
+[01:04:37 -> 01:04:39] If it reads, you can do the tag access
+[01:04:39 -> 01:04:41] and data access in parallel.
+[01:04:41 -> 01:04:43] That's the whole point.
+[01:04:43 -> 01:04:47] So this entry that you just drew,
+[01:04:47 -> 01:04:50] isn't this essentially what our load store queue is doing?
+[01:04:50 -> 01:04:53] Hold on.
+[01:04:53 -> 01:04:58] Okay, please.
+[01:04:58 -> 01:05:06] Okay, all right.
+[01:05:06 -> 01:05:09] So you've all known about write-through
+[01:05:09 -> 01:05:11] and write-back caches.
+[01:05:11 -> 01:05:13] Write-through, you write the data immediately.
+[01:05:13 -> 01:05:16] It's conceptually simpler.
+[01:05:16 -> 01:05:20] And on a miss, there's a uniform latency
+[01:05:20 -> 01:05:24] because you simply have to go
+[01:05:24 -> 01:05:27] and access the next level of cache.
+[01:05:27 -> 01:05:30] But it requires the additional bandwidth.
+[01:05:30 -> 01:05:32] Write-back, you have to keep track
+[01:05:32 -> 01:05:35] of whether the block is dirty or not.
+[01:05:35 -> 01:05:36] You all know this, right?
+[01:05:36 -> 01:05:39] If you don't, then stop me, all right?
+[01:05:39 -> 01:05:43] And you use the lower bus bandwidth
+[01:05:43 -> 01:05:45] so that typically lowers the bandwidth
+[01:05:45 -> 01:05:47] for large caches because you're only
+[01:05:47 -> 01:05:49] writing back dirty blocks.
+[01:05:49 -> 01:05:51] But now what you have is
+[01:05:51 -> 01:05:53] you have a uniform miss latency.
+[01:05:53 -> 01:05:55] If you have a clean miss,
+[01:05:55 -> 01:05:58] which means you don't have to write anything back,
+[01:05:58 -> 01:06:00] you only have one transaction
+[01:06:00 -> 01:06:02] from the lower level,
+[01:06:02 -> 01:06:04] if it's a dirty miss,
+[01:06:04 -> 01:06:07] you have to write back the block
+[01:06:07 -> 01:06:10] that you're replacing and then fill it.
+[01:06:10 -> 01:06:13] Okay?
+[01:06:13 -> 01:06:15] To avoid this latency,
+[01:06:15 -> 01:06:17] what we will do is
+[01:06:17 -> 01:06:20] we will carry out this write-back
+[01:06:20 -> 01:06:22] not to the next level,
+[01:06:22 -> 01:06:25] but put it in a buffer like this,
+[01:06:25 -> 01:06:29] and that we will call a write-back buffer.
+[01:06:29 -> 01:06:31] Carry out the fill of the cache line,
+[01:06:31 -> 01:06:35] and then, independently in the background,
+[01:06:35 -> 01:06:37] write that back later on.
+[01:06:37 -> 01:06:39] And we'll see that in a bit in detail
+[01:06:39 -> 01:06:41] in the next slide.
+[01:06:41 -> 01:06:42] Okay?
+[01:06:42 -> 01:06:44] Two slides from now.
+[01:06:44 -> 01:06:46] A very common design is write through L1,
+[01:06:46 -> 01:06:48] write back into L3.
+[01:06:48 -> 01:06:49] Why so?
+[01:06:49 -> 01:06:51] When we talk a little bit about
+[01:06:51 -> 01:06:53] multi-level inclusion that we will see,
+[01:06:53 -> 01:06:55] this saves a little bit on
+[01:06:55 -> 01:07:00] dealing with coherence.
+[01:07:00 -> 01:07:02] Then, the other thing to do is,
+[01:07:02 -> 01:07:04] what if I have a write miss?
+[01:07:04 -> 01:07:05] Okay?
+[01:07:05 -> 01:07:07] Write miss, I'm missing to a block
+[01:07:07 -> 01:07:08] that's not in the cache.
+[01:07:08 -> 01:07:11] Should I bring the block in the cache
+[01:07:11 -> 01:07:13] so I read the entire...
+[01:07:13 -> 01:07:15] Remember, if I'm having a write miss,
+[01:07:15 -> 01:07:17] I'm only having a write miss to a word.
+[01:07:17 -> 01:07:18] Okay?
+[01:07:18 -> 01:07:20] Do I read the entire block
+[01:07:20 -> 01:07:22] and bring it into the cache?
+[01:07:22 -> 01:07:25] If so, I have what is called a write allocate.
+[01:07:25 -> 01:07:27] A write allocate policy
+[01:07:27 -> 01:07:29] actually decreases read misses
+[01:07:29 -> 01:07:32] because it's likely that I'll be reading
+[01:07:32 -> 01:07:34] other words in the block.
+[01:07:34 -> 01:07:35] Okay?
+[01:07:35 -> 01:07:39] But now, you're also bringing in data
+[01:07:39 -> 01:07:41] that you may or may not use.
+[01:07:41 -> 01:07:46] And you typically use a write allocate policy
+[01:07:46 -> 01:07:48] if you have a write back cache
+[01:07:48 -> 01:07:50] because, you know, you bring in the whole block,
+[01:07:50 -> 01:07:52] you keep in the whole block,
+[01:07:52 -> 01:07:54] and you may read it right away.
+[01:07:54 -> 01:07:56] Or, you could actually choose
+[01:07:56 -> 01:07:58] not to bring in the block into the cache
+[01:07:58 -> 01:08:00] or write no allocate policy
+[01:08:00 -> 01:08:02] just right at the next level.
+[01:08:02 -> 01:08:04] Here, I'm not doing anything
+[01:08:04 -> 01:08:06] about reducing read misses.
+[01:08:06 -> 01:08:08] It's using less bandwidth
+[01:08:08 -> 01:08:10] because it's only...
+[01:08:10 -> 01:08:13] I'm not carrying out any run reads.
+[01:08:13 -> 01:08:15] And typically, if I have a write through cache,
+[01:08:15 -> 01:08:17] since I won't have to write it through anyway,
+[01:08:17 -> 01:08:23] I end up using a write no allocate policy.
+[01:08:23 -> 01:08:25] Okay.
+[01:08:25 -> 01:08:29] Now, let's talk about a variety of properties.
+[01:08:29 -> 01:08:37] We saw in detail these store keys.
+[01:08:37 -> 01:08:40] Store keys are part of the speculative processor.
+[01:08:40 -> 01:08:42] Everything, all of this,
+[01:08:42 -> 01:08:45] is transparent to the architecture.
+[01:08:45 -> 01:08:46] Okay?
+[01:08:46 -> 01:08:50] And it's holding speculatively executed stores.
+[01:08:50 -> 01:08:53] And if an exception occurs,
+[01:08:53 -> 01:08:55] you can roll back the store.
+[01:08:55 -> 01:09:01] And it's used to track load store dependencies.
+[01:09:01 -> 01:09:03] The next type of buffer is this buffer
+[01:09:03 -> 01:09:05] that I just talked about,
+[01:09:05 -> 01:09:09] is this write buffer.
+[01:09:09 -> 01:09:13] This write buffer is now actually holding the state
+[01:09:13 -> 01:09:15] for a store that I'm committing
+[01:09:15 -> 01:09:18] that I'm just trying to write into the cache.
+[01:09:18 -> 01:09:22] So it force committed architectural state.
+[01:09:22 -> 01:09:26] And I need it to be transparent to a single thread.
+[01:09:26 -> 01:09:28] It may affect this memory consistency model.
+[01:09:28 -> 01:09:31] I'm not going to go into that in this class.
+[01:09:31 -> 01:09:33] What that is.
+[01:09:33 -> 01:09:36] And what it does is it allows you to
+[01:09:36 -> 01:09:38] hide the latency of the memory access
+[01:09:38 -> 01:09:41] of, you know, some of the cache.
+[01:09:41 -> 01:09:44] And what you have to do is
+[01:09:44 -> 01:09:46] if you have a match,
+[01:09:46 -> 01:09:49] you may want to bypass the value to later loads
+[01:09:49 -> 01:09:53] or store.
+[01:09:53 -> 01:09:54] Okay.
+[01:09:54 -> 01:10:06] Now it comes in coming to your question.
+[01:10:06 -> 01:10:10] Remember our store queue.
+[01:10:10 -> 01:10:14] Our store queue was some array of some kind.
+[01:10:14 -> 01:10:17] Here was the store queue head.
+[01:10:17 -> 01:10:22] And here was the store queue tail, if you would.
+[01:10:22 -> 01:10:23] All right.
+[01:10:23 -> 01:10:25] And now what I'm saying is,
+[01:10:25 -> 01:10:28] now what I'm saying is that, hey,
+[01:10:28 -> 01:10:31] the store at the store queue head I'm committing,
+[01:10:31 -> 01:10:37] so I'm updating this store queue head to the next entry.
+[01:10:37 -> 01:10:41] And I'm sending this to the write buffer.
+[01:10:41 -> 01:10:42] Okay.
+[01:10:42 -> 01:10:44] And when I send something to the write buffer,
+[01:10:44 -> 01:10:46] I send the address of the tag.
+[01:10:46 -> 01:10:49] And I may have to bypass this to any load
+[01:10:49 -> 01:10:52] that needs that in the buffer.
+[01:10:52 -> 01:10:55] So part of the store queue
+[01:10:55 -> 01:10:58] actually would serve as a write buffer.
+[01:10:58 -> 01:11:01] Okay.
+[01:11:01 -> 01:11:06] In fact, you could have a multiple entry write buffer
+[01:11:06 -> 01:11:10] with a write buffer and write buffer tail,
+[01:11:10 -> 01:11:11] if you would,
+[01:11:11 -> 01:11:15] that could all simply be part of the same physical structure.
+[01:11:15 -> 01:11:19] And these days, in these practice processes,
+[01:11:19 -> 01:11:24] that's pretty much exactly what it ends up being over here.
+[01:11:27 -> 01:11:28] Did I answer your question?
+[01:11:28 -> 01:11:29] Yeah.
+[01:11:29 -> 01:11:31] And in fact, the nice thing about doing this is,
+[01:11:31 -> 01:11:32] hey, you know,
+[01:11:32 -> 01:11:37] you're already having bypasses that you need to make
+[01:11:37 -> 01:11:40] from the store queue to the loads.
+[01:11:40 -> 01:11:42] And so, very similarly,
+[01:11:42 -> 01:11:45] if you want to bypass from this write buffer to the load,
+[01:11:45 -> 01:11:50] which is what you wanted to do over here.
+[01:11:50 -> 01:11:51] Okay.
+[01:11:51 -> 01:11:54] We'll be doing that very naturally.
+[01:11:54 -> 01:11:57] Okay.
+[01:11:57 -> 01:12:02] The next buffer set of buffers
+[01:12:02 -> 01:12:04] is a buffer between the cache
+[01:12:04 -> 01:12:06] and the next cache of the memory.
+[01:12:06 -> 01:12:09] And that is a write back buffer,
+[01:12:09 -> 01:12:11] which ends up being a special case of a victim buffer,
+[01:12:11 -> 01:12:12] if you would.
+[01:12:12 -> 01:12:15] Again, it's transparent to the architecture.
+[01:12:15 -> 01:12:20] And this is used to hold the dirty block
+[01:12:20 -> 01:12:22] that I'm evicting from the cache.
+[01:12:22 -> 01:12:25] So what I would do is I would evict a dirty block,
+[01:12:25 -> 01:12:28] put it in the write buffer over here,
+[01:12:28 -> 01:12:32] put in a new block that I was referencing into that block frame,
+[01:12:32 -> 01:12:35] and then, over time,
+[01:12:35 -> 01:12:38] values would go from this write buffer
+[01:12:38 -> 01:12:41] and would be written into the next level
+[01:12:41 -> 01:12:46] in a sort of decoupled manner from anything that's happening.
+[01:12:46 -> 01:12:49] Again, this is transparent to the architecture,
+[01:12:49 -> 01:12:52] logically, you know, do that.
+[01:12:52 -> 01:12:54] This and this actually ends up being
+[01:12:54 -> 01:12:57] part of this multi-process of coherence.
+[01:12:57 -> 01:13:00] I'll briefly introduce you to the last two lectures,
+[01:13:00 -> 01:13:02] but not talk about it much in this class.
+[01:13:02 -> 01:13:03] Yes, sir.
+[01:13:03 -> 01:13:05] I assume there's some level of prediction
+[01:13:05 -> 01:13:09] for when's the best time to sort of do that massive write back.
+[01:13:09 -> 01:13:10] There's some level of what?
+[01:13:10 -> 01:13:11] Prediction.
+[01:13:11 -> 01:13:14] No, there's no need to do any prediction here.
+[01:13:14 -> 01:13:15] It's very simple.
+[01:13:15 -> 01:13:17] Okay, so what's happening is that,
+[01:13:17 -> 01:13:22] look, you know, so there is this bus over here,
+[01:13:22 -> 01:13:23] this wire.
+[01:13:23 -> 01:13:25] When those wires are available,
+[01:13:25 -> 01:13:27] I'm sending stuff over.
+[01:13:27 -> 01:13:31] If I have a read request come in,
+[01:13:31 -> 01:13:32] a cache miss come in,
+[01:13:32 -> 01:13:34] I decide that that would be higher priority.
+[01:13:34 -> 01:13:36] Typically, it is.
+[01:13:36 -> 01:13:38] So I let that go.
+[01:13:38 -> 01:13:43] But not before I compare the write buffer
+[01:13:43 -> 01:13:46] to see if that cache line is there.
+[01:13:46 -> 01:13:49] In which case, in which case,
+[01:13:49 -> 01:13:52] I'm not sure I want to do bypassing over here,
+[01:13:52 -> 01:13:55] so I just let that write happen,
+[01:13:55 -> 01:13:58] write back happen, then do the load.
+[01:13:58 -> 01:14:04] Okay?
+[01:14:04 -> 01:14:07] So we're taking, I'm going to spend more time.
