@@ -1,0 +1,668 @@
+1
+00:00:00,000 --> 00:00:07,000
+Welcome to ECE CS552, the Introduction to Computer Architecture.
+
+2
+00:00:07,000 --> 00:00:13,000
+Let's start with a simple analogy. What is education?
+
+3
+00:00:13,000 --> 00:00:19,000
+Education is a set of fundamental axioms for the way we produce and interpret knowledge.
+
+4
+00:00:19,000 --> 00:00:24,000
+It serves as this bridge between the infinite complexities of the physical world
+
+5
+00:00:24,000 --> 00:00:27,000
+and makes it accessible to the learner.
+
+6
+00:00:27,000 --> 00:00:37,000
+In other words, it reduces everything that we could know down to just what we need to know for our daily lives.
+
+7
+00:00:37,000 --> 00:00:39,000
+Architecture serves the same purpose.
+
+8
+00:00:39,000 --> 00:00:46,000
+It's the logical interface between the software people run and the complexities of electrical circuits in the physical world.
+
+9
+00:00:46,000 --> 00:00:52,000
+It provides a standard and simplified interface for programmers to use analog circuits.
+
+10
+00:00:52,000 --> 00:00:59,000
+For another analogy, a violinist does not need an instrument with hundreds of strings of different lengths
+
+11
+00:00:59,000 --> 00:01:03,000
+to play every note that appears in a concerto.
+
+12
+00:01:03,000 --> 00:01:12,000
+Instead, they're capable of performing on stage with a bow and a small wooden instrument that consists of only four strings.
+
+13
+00:01:12,000 --> 00:01:21,000
+The bow vibrates the strings and their left hand artificially shortens the string to replicate every note.
+
+14
+00:01:21,000 --> 00:01:26,000
+More formally, computer architecture is generally defined by three components.
+
+15
+00:01:26,000 --> 00:01:36,000
+The first is the Instruction Set Architecture, or ISA, which describes the functional behavior of the hardware system as observed by software programmers.
+
+16
+00:01:36,000 --> 00:01:42,000
+This concept was introduced with the IBM 360 line of processors back in the 1960s.
+
+17
+00:01:43,000 --> 00:01:51,000
+The goal was to provide an interface that was clear, well-defined, and independent of the physical organization of the machine.
+
+18
+00:01:51,000 --> 00:01:59,000
+Today, we just take for granted that software written for an older processor still executes on newer generations.
+
+19
+00:01:59,000 --> 00:02:02,000
+The second component is the Microarchitecture.
+
+20
+00:02:02,000 --> 00:02:06,000
+It describes the functional blocks or circuits that make up the processor.
+
+21
+00:02:06,000 --> 00:02:14,000
+This is where we describe the functions supported by the arithmetic logic units, or ALUs, the buses that move data around,
+
+22
+00:02:14,000 --> 00:02:19,000
+and caches and memories that describe where data is stored.
+
+23
+00:02:19,000 --> 00:02:27,000
+The third component consists of the implementation of transistors and wires into memory cells and logical gates.
+
+24
+00:02:27,000 --> 00:02:35,000
+With that, let's discuss how 552 fits into the classes you've taken before and the ones you will be open to in the future.
+
+25
+00:02:35,000 --> 00:02:41,000
+In 252 and 352, you learned about gates, logic, memory, and computer organization.
+
+26
+00:02:41,000 --> 00:02:45,000
+In 354, you learned c down to the ISA.
+
+27
+00:02:45,000 --> 00:02:49,000
+This course, 552, puts it all together.
+
+28
+00:02:49,000 --> 00:02:57,000
+This course will eliminate the last of the magic that hasn't yet been taken care of by those previous classes.
+
+29
+00:02:57,000 --> 00:03:00,000
+We're going to microarchitect the logic that provides the ISA.
+
+30
+00:03:00,000 --> 00:03:05,000
+To do that, we must also specify data paths and control logic.
+
+31
+00:03:05,000 --> 00:03:11,000
+We will leverage abstraction to prevent us from having to manage tremendous complexity.
+
+32
+00:03:11,000 --> 00:03:18,000
+Follow-on courses will explore the state-of-the-art in computer architecture and research in the community.
+
+33
+00:03:18,000 --> 00:03:25,000
+Other classes at the University of Wisconsin-Madison cover the low-level circuits and semiconductors will abstract away with logic gates,
+
+34
+00:03:25,000 --> 00:03:33,000
+and the application, compiler, and operating system classes that will rely on the ISAs that will be created here.
+
+35
+00:03:33,000 --> 00:03:35,000
+So why take 552?
+
+36
+00:03:35,000 --> 00:03:37,000
+Hopefully you want to become a computer designer.
+
+37
+00:03:37,000 --> 00:03:45,000
+You can join the ranks of Badger alumni who have taken this course and gone on to join major semiconductor companies as well as startups
+
+38
+00:03:45,000 --> 00:03:49,000
+who have built the system and devices we use today.
+
+39
+00:03:49,000 --> 00:03:56,000
+552 also gives us an in-depth exploration of what's actually inside a computer.
+
+40
+00:03:56,000 --> 00:04:01,000
+Maybe you're curious, maybe you just want to better understand when things break.
+
+41
+00:04:01,000 --> 00:04:07,000
+Maybe you know that Moore's Law is all but dead and you want to write performant applications and system software.
+
+42
+00:04:07,000 --> 00:04:12,000
+At the very least, 552 covers an intellectually fascinating topic.
+
+43
+00:04:12,000 --> 00:04:24,000
+CPUs are arguably the most complex, highly integrated devices manufactured on the most complex manufacturing process on the planet.
+
+44
+00:04:24,000 --> 00:04:28,000
+Fundamentally, architecture is an exercise in engineering trade-offs.
+
+45
+00:04:28,000 --> 00:04:35,000
+It is impossible to create a device that is the fastest, the cheapest, and the most power-efficient.
+
+46
+00:04:35,000 --> 00:04:42,000
+You need to look at the intended application of the chip and figure out how you're going to use the silicon real estate most effectively.
+
+47
+00:04:42,000 --> 00:04:49,000
+Worse, the variables are changing and at non-uniform rates and with inflection points.
+
+48
+00:04:49,000 --> 00:04:51,000
+There's but one guarantee.
+
+49
+00:04:51,000 --> 00:04:57,000
+Today's right answer will be wrong tomorrow and you'll have to be ready for anything.
+
+50
+00:04:57,000 --> 00:05:04,000
+Architecture needs to deal with two high-level effects, technology push and application pull.
+
+51
+00:05:04,000 --> 00:05:07,000
+So what do we mean by technology push?
+
+52
+00:05:07,000 --> 00:05:09,000
+Let's look at two time periods.
+
+53
+00:05:09,000 --> 00:05:22,000
+The first ranges from the Declaration of Independence by the original 13 colonies to 224 liters in 1999 when the Y2K bug was supposed to end civilization as we knew it.
+
+54
+00:05:22,000 --> 00:05:28,000
+The second is the next two years from 2000 to 2001.
+
+55
+00:05:28,000 --> 00:05:32,000
+Turns out they both had equal progress and processor speed.
+
+56
+00:05:32,000 --> 00:05:42,000
+This is the power of exponential growth driven by Moore's law, a recognition that devices per chip doubles every 18 to 24 months.
+
+57
+00:05:42,000 --> 00:05:51,000
+Gordon Moore, an early semiconductor pioneer, looked at the early progress and famously predicted that it would carry far into the future.
+
+58
+00:05:51,000 --> 00:06:01,000
+As computer architects, you'll be tasked with turning the additional resources and new constraints into speed, power savings, and functionality.
+
+59
+00:06:01,000 --> 00:06:07,000
+Let's take a look at what this technological exponential growth would have done in other industries.
+
+60
+00:06:07,000 --> 00:06:14,000
+An Intel fellow, John Crawford, gave a talk that highlighted just how crazy this 800x increase was through 1996.
+
+61
+00:06:14,000 --> 00:06:22,000
+Had the automotive industry had a Moore's law, we could drive 44,000 miles per hour and get 16,000 miles per gallon.
+
+62
+00:06:22,000 --> 00:06:29,000
+Commercial airplanes would take you from Los Angeles to New York in 22 seconds at a brisk Mach 800.
+
+63
+00:06:29,000 --> 00:06:33,000
+And wheat yield would be 80,000 bushels per acre.
+
+64
+00:06:33,000 --> 00:06:41,000
+If you're not up to speed on farming, 80,000 bushels per acre is as impressive as a 22 second flight.
+
+65
+00:06:41,000 --> 00:06:46,000
+Application pull is just a flip side of technology push.
+
+66
+00:06:46,000 --> 00:06:49,000
+For many years, the cost halved every two years.
+
+67
+00:06:49,000 --> 00:06:55,000
+So while the first computers in the 40s and 50s were only cost effective for national security purposes,
+
+68
+00:06:55,000 --> 00:07:02,000
+eventually the technology became cheap enough for banking and computer aided design to justify it.
+
+69
+00:07:02,000 --> 00:07:11,000
+These days, students have a laptop in their bag, a smartphone in their pocket, and maybe even one on their wrist or on their glasses.
+
+70
+00:07:11,000 --> 00:07:17,000
+Today, technologists are dreaming up applications that are not cost effective today, but will be in the future.
+
+71
+00:07:17,000 --> 00:07:24,000
+Today, we can buy one of several virtual reality headsets, participate in a 3D teleconference across continents,
+
+72
+00:07:24,000 --> 00:07:29,000
+play AAA 3D games at our smartphones while we wait for the bus.
+
+73
+00:07:29,000 --> 00:07:37,000
+Medical sensing is making its way from the clinic room to watches and rings to track our health without us having to think about it.
+
+74
+00:07:37,000 --> 00:07:42,000
+Today's machine learning and AI is quite popular, but the field is very old.
+
+75
+00:07:42,000 --> 00:07:49,000
+It wasn't until recently that Silicon became both performant enough and inexpensive enough to perform the trillions of calculations
+
+76
+00:07:49,000 --> 00:07:56,000
+required to perform image classification or make chatbots that sound like smart high school students.
+
+77
+00:07:56,000 --> 00:08:00,000
+I hope this course inspires you to learn and shape the future.
+
+78
+00:08:00,000 --> 00:08:05,000
+There's so many technologies and ideas that have not been invented yet.
+
+79
+00:08:05,000 --> 00:08:13,000
+Next, let's quickly flash through what we're going to be doing this semester as we learn the fundamentals of computer architecture.
+
+80
+00:08:13,000 --> 00:08:20,000
+First, we need data and we're going to represent it by bits in a base two number system.
+
+81
+00:08:20,000 --> 00:08:29,000
+Now that we have data, we want to transform the data, so we're going to create an arithmetic logic unit to perform mathematical and logical operations.
+
+82
+00:08:29,000 --> 00:08:39,000
+But now we want to specify a program of several transfer, several data transformations, so we design an ISA and a single cycle processor.
+
+83
+00:08:39,000 --> 00:08:49,000
+But we found that a single cycle processor is slow, so we borrow a concept from factories and pipeline the instructions to execute them faster.
+
+84
+00:08:49,000 --> 00:08:56,000
+We're still not satisfied with the performance and we recently found out that we can put more transistors in our processor for less money
+
+85
+00:08:56,000 --> 00:09:06,000
+and we developed super scalar out of order operation to eliminate bubbles in our pipeline because we're waiting for results from ALUs and main memory.
+
+86
+00:09:06,000 --> 00:09:15,000
+Our processor keeps getting faster but our main memory is on a slower growth path, so we create a cache hierarchy to prefetch and keep frequently used data handy
+
+87
+00:09:15,000 --> 00:09:21,000
+so it looks like many of our memory fetches just got faster.
+
+88
+00:09:21,000 --> 00:09:29,000
+We're still not satisfied unfortunately because we've got all this speed but need to ensure multiple programs don't accidentally see each other's private data.
+
+89
+00:09:29,000 --> 00:09:34,000
+Let's create virtual memory and translation look-aside buffers and page tables.
+
+90
+00:09:34,000 --> 00:09:42,000
+Now every program can start at what they think is address zero but in reality is wherever the operating system put it.
+
+91
+00:09:42,000 --> 00:09:48,000
+We're still greedy and even though process technology enhancements are slowing down, Moore's law is still going strong
+
+92
+00:09:48,000 --> 00:09:57,000
+and we're going to re-instantiate several processors on the same chip instead of as multiple sockets on the same board.
+
+93
+00:09:57,000 --> 00:10:03,000
+Oh, but now we want the processors to work together and share the load of one program instead of running different programs.
+
+94
+00:10:03,000 --> 00:10:09,000
+We need coherent caches and consistency so every processor has the same view of data.
+
+95
+00:10:09,000 --> 00:10:15,000
+Well, now we've got an opportunity to accelerate an algorithm like video conversion or machine learning.
+
+96
+00:10:15,000 --> 00:10:23,000
+These paradigms don't really fit into our notion of a processor so we add a different type of processor to our system bus.
+
+97
+00:10:23,000 --> 00:10:34,000
+Unlike an ALU's discrete instructions, the accelerator will have functions like perform a SHA-256 hash on this blob of binary data.
+
+98
+00:10:34,000 --> 00:10:41,000
+Now our processor needs to interact with storage and with every other computer on the internet we give it IO subsystems.
+
+99
+00:10:41,000 --> 00:10:49,000
+And just like that, congratulations, you've architected a modern computer like the ones you're watching this video on.
+
+100
+00:10:49,000 --> 00:11:00,000
+So what's the future of computer architecture? Well, it's moving in multiple directions at once.
+
+101
+00:11:00,000 --> 00:11:02,000
+Let's talk about abstraction some more.
+
+102
+00:11:02,000 --> 00:11:09,000
+Keep in mind the difference between interface which is what something does and the implementation which is how it does it.
+
+103
+00:11:09,000 --> 00:11:15,000
+Let's take this 2 to 1 multiplexer or MUX as an example.
+
+104
+00:11:15,000 --> 00:11:22,000
+It behaves according to the truth table on the right with an interface of x, y and s inputs and an f output.
+
+105
+00:11:22,000 --> 00:11:25,000
+When s is set to zero, the value of x drives the output.
+
+106
+00:11:25,000 --> 00:11:30,000
+When s is a 1, the output becomes the value of y.
+
+107
+00:11:30,000 --> 00:11:33,000
+The implementation is hidden or abstracted away.
+
+108
+00:11:33,000 --> 00:11:44,000
+It may use fast and power hungry transistors that can toggle at 5 gigahertz or it may be implemented for a solar powered calculator.
+
+109
+00:11:44,000 --> 00:11:49,000
+It still behaves as defined by the interface.
+
+110
+00:11:49,000 --> 00:11:56,000
+What is important about this? Computing is a tower of abstraction and abstraction hides the complexities below.
+
+111
+00:11:56,000 --> 00:12:01,000
+If programming a text editor required the engineer to understand quantum physics,
+
+112
+00:12:01,000 --> 00:12:05,000
+we simply wouldn't have text editors.
+
+113
+00:12:05,000 --> 00:12:12,000
+Hundreds of engineers build one project, but these engineers only work on a subset of this stack.
+
+114
+00:12:12,000 --> 00:12:16,000
+The complexity would be unmanageable otherwise.
+
+115
+00:12:16,000 --> 00:12:26,000
+You're probably watching this on a video in a web browser and most people wouldn't watch videos if they had to toggle specific transistors to make it happen.
+
+116
+00:12:26,000 --> 00:12:33,000
+If you look at a computer in space, input commands grab some data from memory, transform it and write it back out.
+
+117
+00:12:33,000 --> 00:12:48,000
+However, if we look at a computer in time, we can see instructions fetched and decoded, operands are read, an instruction performed, results written back, and the processor jumps to the next instruction.
+
+118
+00:12:48,000 --> 00:12:50,000
+Let's do an exercise.
+
+119
+00:12:50,000 --> 00:12:56,000
+Three international bank accounts, USD, Euro, Japanese yen.
+
+120
+00:12:56,000 --> 00:13:04,000
+You hire a foreign financial advisor to manage your accounts, but with your limited knowledge of the foreign language, you only know how to say one sentence.
+
+121
+00:13:04,000 --> 00:13:16,000
+Please deduct from X account, the current balance of Y account, and if the resulting balance is less than or equal to zero, ignore my next Z sentences.
+
+122
+00:13:16,000 --> 00:13:26,000
+You also have a bunch of empty line of credit accounts, LOC 1, 2, 3, etc., to facilitate transfers.
+
+123
+00:13:26,000 --> 00:13:39,000
+Now, ask your financial advisor to perform a simple task, transfer all funds in your Euro account to your USD account.
+
+124
+00:13:39,000 --> 00:13:47,000
+So if please deduct from X account, the current balance of Y account, and if the resulting balance is less than or equal to zero, ignore my next Z sentences.
+
+125
+00:13:47,000 --> 00:13:52,000
+If we were to transform that into more of a math equation, it would look like this.
+
+126
+00:13:52,000 --> 00:14:05,000
+X gets the value of X minus Y, then if the new value of X is less than or equal to zero, skip the next Z sentences.
+
+127
+00:14:05,000 --> 00:14:10,000
+For shorthand, please X, Y, Z.
+
+128
+00:14:10,000 --> 00:14:26,000
+Please pause the video right now and consider your options. Unpause when you're ready to continue with a possible solution.
+
+129
+00:14:26,000 --> 00:14:31,000
+One possible solution here is to call these two functions.
+
+130
+00:14:31,000 --> 00:14:42,000
+First, we're going to subtract the value of Euro from line of credit 1, making the line of credit 1 equal to a negative Euro value.
+
+131
+00:14:42,000 --> 00:14:52,000
+And then we're going to subtract a negative line of credit value from USD, which has the effect of adding USD to EUR.
+
+132
+00:14:52,000 --> 00:15:03,000
+Next, now that we've done that transfer, we have to zero out our European balance and then zero out the line of credit balance.
+
+133
+00:15:03,000 --> 00:15:13,000
+At this step, we will have transferred all of our funds from the Euro account into the USD account.
+
+134
+00:15:13,000 --> 00:15:26,000
+Let's make a tweak. We're going to still transfer all funds from Euro account to USD account, but now we're only going to do it if the USD funds are greater than the Euro funds.
+
+135
+00:15:26,000 --> 00:15:30,000
+Please pause the video and work through a solution.
+
+136
+00:15:30,000 --> 00:15:33,000
+Unpause when you're ready.
+
+137
+00:15:33,000 --> 00:15:36,000
+Two statements into our solution.
+
+138
+00:15:36,000 --> 00:15:44,000
+The first one is going to subtract EUR from USD. This will allow us to compare if USD is greater than EUR.
+
+139
+00:15:44,000 --> 00:15:51,000
+So in this statement, if USD ends up being negative, then we're going to skip the next statement.
+
+140
+00:15:51,000 --> 00:15:57,000
+If USD is negative, that means EUR was bigger.
+
+141
+00:15:57,000 --> 00:16:07,000
+So we just want to put things back to the way they were. So we're going to continue with the sentences in black.
+
+142
+00:16:07,000 --> 00:16:21,000
+However, there's a bug. We are zeroing out our EUR balance, even though we did not want this transaction to occur.
+
+143
+00:16:21,000 --> 00:16:28,000
+So here you can see that this statement is going to be skipped if USD is less than or equal to EUR.
+
+144
+00:16:28,000 --> 00:16:33,000
+But we also need to skip the zeroing out. That's no good.
+
+145
+00:16:33,000 --> 00:16:37,000
+So let's move this statement around.
+
+146
+00:16:37,000 --> 00:16:52,000
+If we pull the zeroing out up and then have the conditional skip the next two sentences, now we can state that if USD is less than EUR,
+
+147
+00:16:52,000 --> 00:16:56,000
+we're just going to put things back to where they were. Nothing will happen.
+
+148
+00:16:56,000 --> 00:17:13,000
+Otherwise, we are going to add the value of EUR to USD and then we're going to zero it out.
+
+149
+00:17:13,000 --> 00:17:20,000
+Let's make it a bit more challenging. We want to transfer the smaller amount of the EUR and JPY to USD.
+
+150
+00:17:20,000 --> 00:17:33,000
+Please pause and work out this solution.
+
+151
+00:17:33,000 --> 00:17:39,000
+Well, this was a mess. It took 10 sentences to actually do this.
+
+152
+00:17:39,000 --> 00:17:55,000
+First, we add EUR to USD. Then we're going to skip the next three sentences if JPY is greater than or equal to EUR.
+
+153
+00:17:55,000 --> 00:18:06,000
+If it's not, we're going to execute adding USD to the difference, adding to USD the difference of JPY and EUR.
+
+154
+00:18:06,000 --> 00:18:15,000
+We've already added EUR. We just need to add the remaining and then we'll zero out JPY.
+
+155
+00:18:15,000 --> 00:18:24,000
+This last statement of this block of three, please, LOC3, LOC31, that's always going to be zero.
+
+156
+00:18:24,000 --> 00:18:33,000
+So it's going to jump. This is unconditional.
+
+157
+00:18:33,000 --> 00:18:43,000
+And the last steps are zeroing out EUR, LOC1 and LOC2.
+
+158
+00:18:43,000 --> 00:18:49,000
+So what are the takeaways from this challenging assignment?
+
+159
+00:18:49,000 --> 00:18:53,000
+Well, it was pretty painful, so we need some more abstraction.
+
+160
+00:18:53,000 --> 00:19:04,000
+Having an instruction that does both a subtraction and a conditional jump is incredibly challenging to work with.
+
+161
+00:19:04,000 --> 00:19:13,000
+What we really need is a small finite instruction set, which will allow us to build infinitely many possible programs.
+
+162
+00:19:13,000 --> 00:19:16,000
+Let's look at this program.
+
+163
+00:19:16,000 --> 00:19:23,000
+First, we have some ISA building blocks, like we can store values in registers.
+
+164
+00:19:23,000 --> 00:19:28,000
+We can perform arithmetic, USD minus LOC1.
+
+165
+00:19:28,000 --> 00:19:36,000
+We can do conditional branches where we look at two different variables, LOC2 and LOC1.
+
+166
+00:19:36,000 --> 00:19:47,000
+And then this unconditional jump, like I mentioned, is just a feature where if you compare the same thing, it's going to always jump.
+
+167
+00:19:47,000 --> 00:19:52,000
+We'll discuss all of these concepts next time.
+

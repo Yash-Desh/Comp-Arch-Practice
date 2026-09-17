@@ -1,0 +1,840 @@
+1
+00:00:00,000 --> 00:00:10,000
+In this lecture, we will discuss data hazards which exist after a processor is split up into multiple stages.
+
+2
+00:00:10,000 --> 00:00:24,000
+The hazards we will cover today include program data dependencies and pipeline data hazards and the methods to resolve them including stalling and forwarding.
+
+3
+00:00:24,000 --> 00:00:28,000
+We will cover control hazards next time.
+
+4
+00:00:29,000 --> 00:00:32,000
+A dependence is an ordering constraint.
+
+5
+00:00:32,000 --> 00:00:36,000
+Imagine you stop at Union South for a latte and a pastry before class.
+
+6
+00:00:36,000 --> 00:00:42,000
+You order the latte, then order the pastry, then move to the next register to check out.
+
+7
+00:00:42,000 --> 00:00:48,000
+What happens if the latte is at the register but the pastry is not there yet and you tap your whiskart?
+
+8
+00:00:48,000 --> 00:00:52,000
+You've only been charged for the latte and therefore receive an incomplete order.
+
+9
+00:00:52,000 --> 00:01:00,000
+This is the case of the checkout instruction having a dependence upon the execution of the two order instructions before it.
+
+10
+00:01:02,000 --> 00:01:12,000
+Now that we have multi-cycle and pipeline processors, each instruction can no longer assume it has instant and exclusive access to everything it needs when it executes.
+
+11
+00:01:12,000 --> 00:01:16,000
+Let's look at three kinds of data dependencies in a program.
+
+12
+00:01:16,000 --> 00:01:18,000
+A true dependence is a read after write.
+
+13
+00:01:18,000 --> 00:01:27,000
+If instruction Y follows X and Y needs to read a result from X, then Y cannot read its registers until X produces its result.
+
+14
+00:01:27,000 --> 00:01:34,000
+If X reads a register before Y updates it, the program will not execute as the programmer intended it to.
+
+15
+00:01:37,000 --> 00:01:40,000
+The reverse of this is an anti-dependence.
+
+16
+00:01:40,000 --> 00:01:44,000
+This write after read is a false data dependence.
+
+17
+00:01:44,000 --> 00:01:53,000
+It might look like instructions X and Y are both using the same register, but as long as X reads the register before Y writes to it, we're okay.
+
+18
+00:01:53,000 --> 00:02:05,000
+In our five-stage pipeline, register reads happen in stage two, decode, and register writes happen in stage five, writeback, so X will always read before Y writes.
+
+19
+00:02:05,000 --> 00:02:12,000
+As long as our five-stage pipeline doesn't change, there's no real dependency here even though they use the same register.
+
+20
+00:02:13,000 --> 00:02:17,000
+The third type is an output dependence, or write after write.
+
+21
+00:02:17,000 --> 00:02:20,000
+This is also a type of a false dependence.
+
+22
+00:02:20,000 --> 00:02:31,000
+If instruction Y follows instruction X and they both write their results with the same register, then at the end of the sequence, the value in the register should be from instruction Y, not X.
+
+23
+00:02:31,000 --> 00:02:38,000
+No data flows between Y and X, but as long as the Y writeback doesn't happen before X writeback, we're okay.
+
+24
+00:02:39,000 --> 00:02:45,000
+Let's look at an example to see these three dependencies in practice.
+
+25
+00:02:45,000 --> 00:02:48,000
+Here we have a MIPS program with five instructions.
+
+26
+00:02:48,000 --> 00:02:55,000
+Let's walk through and identify all the read after write registered dependencies.
+
+27
+00:02:55,000 --> 00:02:59,000
+Here's one between instructions one and two.
+
+28
+00:02:59,000 --> 00:03:09,000
+The add is going to write the sum to register S3, and the read instruction is going to use S3 to calculate the address to load a word from data memory.
+
+29
+00:03:09,000 --> 00:03:16,000
+If instruction two were to read S3 before instruction one wrote it, the program would not execute correctly.
+
+30
+00:03:16,000 --> 00:03:18,000
+Here's another.
+
+31
+00:03:18,000 --> 00:03:28,000
+Instruction two is going to load a word from memory and store it in S2, and then instruction three is going to use S2 as the address to load yet another word.
+
+32
+00:03:28,000 --> 00:03:33,000
+Once again, instruction two must write before instruction three can read.
+
+33
+00:03:33,000 --> 00:03:35,000
+And we have one more.
+
+34
+00:03:35,000 --> 00:03:42,000
+Instruction four is also going to read S2, so there's another read after write dependence on instruction two.
+
+35
+00:03:42,000 --> 00:03:48,000
+Finally, we have a RAW dependence between instructions three and four.
+
+36
+00:03:48,000 --> 00:03:58,000
+Instruction instructions don't write any registers, so S3 is actually a read, and that's dependent upon instruction three writing it first.
+
+37
+00:03:58,000 --> 00:04:03,000
+Now let's look for the WAR or write after read dependencies.
+
+38
+00:04:03,000 --> 00:04:07,000
+It's like RAW, but it's the reverse process.
+
+39
+00:04:07,000 --> 00:04:12,000
+Here's a WAR dependence between instruction zero and one.
+
+40
+00:04:12,000 --> 00:04:16,000
+Instruction zero is reading S3, and one is writing it.
+
+41
+00:04:16,000 --> 00:04:23,000
+It's not a true dependence, but we can't do anything in our processor that would possibly get these out of order.
+
+42
+00:04:23,000 --> 00:04:35,000
+Following this, we can see the other WAR dependencies going from instructions zero to three and from instruction two to three.
+
+43
+00:04:35,000 --> 00:04:38,000
+Our last dependency category are the write after writes.
+
+44
+00:04:38,000 --> 00:04:44,000
+Remember, these are false dependencies as long as our instructions don't execute out of order in our processor.
+
+45
+00:04:44,000 --> 00:04:50,000
+Turns out we've only got one in this case, and that's on S3 between instructions one and three.
+
+46
+00:04:50,000 --> 00:04:58,000
+Remember, these are a false dependence as long as we don't reorder these instructions.
+
+47
+00:04:58,000 --> 00:05:02,000
+Pipeline hazards are potential violations of program dependence.
+
+48
+00:05:02,000 --> 00:05:13,000
+MIPS assembly offers a guarantee that your program will run correctly as if each statement were executed atomically or as if it would on a single cycle processor.
+
+49
+00:05:13,000 --> 00:05:22,000
+We've added stages and pipelining, which now puts it at risk of violating the execution guarantee if we're not careful.
+
+50
+00:05:22,000 --> 00:05:25,000
+There are two standard approaches to resolve hazards.
+
+51
+00:05:25,000 --> 00:05:30,000
+The first is statically, the compiler or programmer guarantees correctness.
+
+52
+00:05:30,000 --> 00:05:38,000
+Imagine an assembly programmer inserting multiple no ops or idle instructions to delay a subsequent instruction and avoid a hazard.
+
+53
+00:05:38,000 --> 00:05:45,000
+But what if the architecture changes a bit in the next generation or in a different realization?
+
+54
+00:05:45,000 --> 00:05:52,000
+Now a program that ran before may not run correctly now and the code is no longer portable.
+
+55
+00:05:52,000 --> 00:06:00,000
+The second approach, which is what we'll focus on because we're computer architects is dynamic hazard detection,
+
+56
+00:06:00,000 --> 00:06:07,000
+which is to say the hardware has mechanisms to see hazards develop as instructions are decoded and to resolve them on the fly.
+
+57
+00:06:08,000 --> 00:06:16,000
+In general, processors have historically employed dynamic checks, though it's not unusual today to see accelerators do board the compiler space
+
+58
+00:06:16,000 --> 00:06:20,000
+so as to fit as many ALUs in the device as possible.
+
+59
+00:06:24,000 --> 00:06:28,000
+Let's look at our five stage pipeline and figure out where the possible hazards are.
+
+60
+00:06:28,000 --> 00:06:34,000
+Remember, we have multiple instructions executing at the same time, so we've opened ourselves up to these hazards.
+
+61
+00:06:34,000 --> 00:06:38,000
+Let's start with read after write register dependencies.
+
+62
+00:06:38,000 --> 00:06:43,000
+Would our pipeline ever execute incorrectly by ignoring these?
+
+63
+00:06:46,000 --> 00:06:52,000
+Let's look at the pipeline diagram for a snippet of instructions with the known RAW dependence.
+
+64
+00:06:52,000 --> 00:07:00,000
+The result of the ad is written to register one and that value is read by the subsequent sub instruction.
+
+65
+00:07:00,000 --> 00:07:09,000
+We know that register reads happen in stage two and writes happen in stage five and this is how our pipeline would look cycle by cycle.
+
+66
+00:07:12,000 --> 00:07:18,000
+It looks like subtract will read register one and cycle three, but ad won't write it until cycle five,
+
+67
+00:07:18,000 --> 00:07:25,000
+which means we'll violate the execution guarantees of the ISA since we can't go back in time as the arrow shows.
+
+68
+00:07:25,000 --> 00:07:30,000
+It's clear that read after write dependencies can lead to hazards in our pipeline.
+
+69
+00:07:33,000 --> 00:07:36,000
+How about write after read dependencies?
+
+70
+00:07:44,000 --> 00:07:53,000
+Let's take a look. In this sequence, the first instruction is reading register three and the second instruction is writing register three.
+
+71
+00:07:53,000 --> 00:07:57,000
+Here's the cycle by cycle timeline of these two instructions.
+
+72
+00:07:57,000 --> 00:08:03,000
+Add reads register three and cycle two, while sub writes register three and address six.
+
+73
+00:08:03,000 --> 00:08:05,000
+Do we have a problem?
+
+74
+00:08:05,000 --> 00:08:10,000
+The arrow goes forward in time for this dependence, so no hazard is present.
+
+75
+00:08:10,000 --> 00:08:14,000
+This will always be true in our pipeline since reads happen before writebacks,
+
+76
+00:08:14,000 --> 00:08:19,000
+so later instructions write won't ever happen before an earlier instructions read.
+
+77
+00:08:20,000 --> 00:08:25,000
+And finally, what about write after write dependencies?
+
+78
+00:08:27,000 --> 00:08:34,000
+Here, both the add and subtract write to register one and register writes happen in the writeback stage.
+
+79
+00:08:34,000 --> 00:08:39,000
+Since our pipeline pushes instructions through the writeback stage in order,
+
+80
+00:08:39,000 --> 00:08:44,000
+that means that their write after write dependence is preserved. No hazards are possible.
+
+81
+00:08:49,000 --> 00:08:56,000
+At this point, we've determined that only RAW register dependencies can yield hazards in our five-stage pipeline.
+
+82
+00:08:56,000 --> 00:09:00,000
+How about potential hazards when accessing memory?
+
+83
+00:09:00,000 --> 00:09:07,000
+In our pipeline, all instructions either read from or write to memory during the memory stage,
+
+84
+00:09:07,000 --> 00:09:13,000
+and since all instructions go through the memory stage in order, then hazards are impossible.
+
+85
+00:09:13,000 --> 00:09:20,000
+There's a small caveat. This could potentially be a problem if the program is able to write to a memory location that it plans to execute,
+
+86
+00:09:20,000 --> 00:09:24,000
+as that would mean fetch and memory are potential sources of hazards.
+
+87
+00:09:24,000 --> 00:09:27,000
+This is uncommon, and we will ignore it for this course.
+
+88
+00:09:30,000 --> 00:09:35,000
+At this point, we've discovered that only RAW hazards will pose a problem for us.
+
+89
+00:09:35,000 --> 00:09:38,000
+How can we maintain correctness in our pipeline?
+
+90
+00:09:39,000 --> 00:09:44,000
+We should first identify any hazards dynamically as early as possible.
+
+91
+00:09:44,000 --> 00:09:47,000
+Fetch is too early because we don't know what's happening yet,
+
+92
+00:09:47,000 --> 00:09:54,000
+but decode is where we set all of our control logic and therefore is the right spot to also detect hazards.
+
+93
+00:09:54,000 --> 00:10:02,000
+Decode needs to look at the registers to be read and determine if any of the older instructions downstream are planning on writing them.
+
+94
+00:10:02,000 --> 00:10:08,000
+Since the control signals are propagated downstream, we can always find this information in those registers.
+
+95
+00:10:11,000 --> 00:10:14,000
+In step one, we'll first detect a hazard.
+
+96
+00:10:14,000 --> 00:10:20,000
+This sub will read register one that has a hazard from a previous write from the add.
+
+97
+00:10:22,000 --> 00:10:28,000
+But in our pipeline, we've decoded that sub is in our format and will read registers RS and RT,
+
+98
+00:10:28,000 --> 00:10:34,000
+so we just need to compare both of them with the write register in the EX-MEM pipeline registers,
+
+99
+00:10:34,000 --> 00:10:37,000
+which is where the add is currently active.
+
+100
+00:10:39,000 --> 00:10:41,000
+However, we can't stop there.
+
+101
+00:10:41,000 --> 00:10:49,000
+We also have to look one stage further to the EX-MEM to see if that instruction has designs in writing to one of sub's read registers.
+
+102
+00:10:50,000 --> 00:11:00,000
+Since add's writes won't happen until stage five, the sub sitting in decode also has to look for a hazard three stages ahead.
+
+103
+00:11:00,000 --> 00:11:09,000
+So to dynamically detect a read after write hazard, the decode logic needs to look at the registers in the next three stages.
+
+104
+00:11:12,000 --> 00:11:15,000
+Unfortunately, that was just one case and there's some additional nuance here.
+
+105
+00:11:16,000 --> 00:11:20,000
+Remember that not all control signals are used all the time.
+
+106
+00:11:20,000 --> 00:11:24,000
+Not every instruction will write a register, like this store word.
+
+107
+00:11:24,000 --> 00:11:30,000
+In addition, RS and RT are not necessarily read, like with add immediate and jump.
+
+108
+00:11:30,000 --> 00:11:34,000
+The assigned textbook readings will discuss these in depth.
+
+109
+00:11:37,000 --> 00:11:42,000
+Now that we've learned how to find the information we need to detect read after write hazards,
+
+110
+00:11:42,000 --> 00:11:45,000
+we now need to resolve them on a live system.
+
+111
+00:11:45,000 --> 00:11:52,000
+The most straightforward solution is to simply stall the reader of the hazard register in the decode stage.
+
+112
+00:11:52,000 --> 00:12:00,000
+In this snippet, our logic detects a hazard for register one and it needs to stop IF and ID from moving forward.
+
+113
+00:12:00,000 --> 00:12:05,000
+No decoding and no fetching means no new instructions are being inserted.
+
+114
+00:12:06,000 --> 00:12:18,000
+We need to use a NOP, aka NOOP, aka no operation, aka bubble ahead of the reader when the hazard is resolved.
+
+115
+00:12:18,000 --> 00:12:29,000
+When the sub detects a hazard in the execute stage, it performs a propagated stall with NOOPs until the new data is written back to the register and the hazard has been resolved.
+
+116
+00:12:36,000 --> 00:12:39,000
+Let's map this out in our pipeline processor diagram.
+
+117
+00:12:39,000 --> 00:12:43,000
+Without hazards, instructions proceed through the pipeline stage by stage.
+
+118
+00:12:46,000 --> 00:12:54,000
+When we detect a hazard with sub and decode, fetch and decode both freeze and a NOOP is propagated to the execute stage.
+
+119
+00:12:57,000 --> 00:13:03,000
+On the next clock, the same hazard check is performed. The hazard is still there, so another NOOP is inserted.
+
+120
+00:13:05,000 --> 00:13:10,000
+Again, the hazard is detected on the next clock, so a third straight NOOP is inserted.
+
+121
+00:13:12,000 --> 00:13:20,000
+At this point, the add right back to register one is completed, so the instruction can read and the sub can be propagated to the execute stage.
+
+122
+00:13:22,000 --> 00:13:26,000
+A note on formatting, the asterisk in the table indicates stall cycles.
+
+123
+00:13:26,000 --> 00:13:35,000
+Sub is sitting in decode during cycles three, four, and five, but the hazard logic is the only thing performing operations that will be kept.
+
+124
+00:13:35,000 --> 00:13:39,000
+It isn't until cycle six that the sub's control signals take effect.
+
+125
+00:13:43,000 --> 00:13:47,000
+How can we implement the stall in our processor? It requires two steps.
+
+126
+00:13:48,000 --> 00:13:58,000
+Step one, the right enable signals of the PC register and the fetch decode pipeline register need to be disabled, so the fetch and decode stages do not move forward.
+
+127
+00:13:58,000 --> 00:14:06,000
+Our processor fetches an instruction from memory every clock, so if the PC never updates, then it just refetches the same instruction.
+
+128
+00:14:06,000 --> 00:14:14,000
+Same with the IFID pipeline registers. If they don't trigger a strobe, they'll never set their Q output to the D input.
+
+129
+00:14:15,000 --> 00:14:18,000
+The clock keeps cycling, but the processor doesn't move ahead.
+
+130
+00:14:20,000 --> 00:14:31,000
+Step two, to insert the NOOP into the execute stage, we have to zero out the control signals to insert the NOOP, which is merely an instruction where no control happens.
+
+131
+00:14:31,000 --> 00:14:42,000
+In MIPS, the NOOP instruction is actually a shift left of register zero, a.k.a. the always read zero register, with a shift amount of zero.
+
+132
+00:14:42,000 --> 00:14:49,000
+That instruction would do nothing anyway, but since you can't write to zero, the instruction truly is idempotent.
+
+133
+00:14:50,000 --> 00:14:57,000
+As a brief aside, in the IFID write case, we've prevented the right strobe from propagating the signals.
+
+134
+00:14:57,000 --> 00:15:05,000
+In the propagating NOOP case, we must dynamically MUX in a new instruction NOOP that wasn't found in the program.
+
+135
+00:15:05,000 --> 00:15:11,000
+These two actions work in unison to split our stream and allow the add to eventually write back the result.
+
+136
+00:15:13,000 --> 00:15:22,000
+Now that we've introduced stalling into our pipeline, we risk losing the perfect IPC of one that we got with pipelining our multi-cycle processor.
+
+137
+00:15:22,000 --> 00:15:32,000
+As usual, computer architects are never happy with the performance and we're going to deploy all the optimizations we can to get back to our ideal IPC.
+
+138
+00:15:35,000 --> 00:15:41,000
+The last example saw three NOOPs inserted to ensure the writeback was committed before the next instruction was read.
+
+139
+00:15:41,000 --> 00:15:47,000
+We have a five-stage pipeline and we just multi-cycled over half of them to maintain correctness.
+
+140
+00:15:47,000 --> 00:15:50,000
+So this was a serious performance penalty indeed.
+
+141
+00:15:51,000 --> 00:15:54,000
+Let's introduce register file bypassing.
+
+142
+00:15:54,000 --> 00:16:00,000
+In this case, we modify our register file to write on the first half of the clock and read on the second half of the clock cycle.
+
+143
+00:16:00,000 --> 00:16:06,000
+This means that it can look like our registers are being written to and read from simultaneously,
+
+144
+00:16:06,000 --> 00:16:11,000
+but the write, read, phasing keeps them correctly ordered.
+
+145
+00:16:11,000 --> 00:16:17,000
+In this picture, the ID and WB show which phase of the clock it's active on with the shaded portion.
+
+146
+00:16:17,000 --> 00:16:23,000
+ID reads the registers in the second half of the clock while WB writes them in the first half.
+
+147
+00:16:23,000 --> 00:16:31,000
+RF bypassing can be done with bypass paths inside the register file or by using both edges of the clock.
+
+148
+00:16:31,000 --> 00:16:40,000
+With this new capability, we have eliminated the third stall now that ads write and subs decode can happen simultaneously.
+
+149
+00:16:44,000 --> 00:16:46,000
+Now let's introduce data forwarding.
+
+150
+00:16:46,000 --> 00:16:48,000
+The key insights are twofold.
+
+151
+00:16:48,000 --> 00:16:54,000
+One, without forwarding, the data to be written exists before the writeback stage five.
+
+152
+00:16:54,000 --> 00:17:00,000
+An arithmetic instruction like ADD has a known result after the execute stage three,
+
+153
+00:17:00,000 --> 00:17:06,000
+so there's technically no reason why you have to wait for writeback for a subsequent instruction to use it.
+
+154
+00:17:06,000 --> 00:17:16,000
+Two, although all instructions read their operands in the decode stage, they don't actually need them until the beginning of the execute stage.
+
+155
+00:17:16,000 --> 00:17:22,000
+Data forwarding is a shortcut for data to be routed back before the instruction has officially been completed,
+
+156
+00:17:22,000 --> 00:17:27,000
+and this can cut down on stalling due to read after write hazards.
+
+157
+00:17:29,000 --> 00:17:36,000
+We now need two new mitmuxes in our execute stage to add optionality to grab the most recent ALU results.
+
+158
+00:17:36,000 --> 00:17:41,000
+We know that the ADD result is computed by the end of cycle three.
+
+159
+00:17:41,000 --> 00:17:50,000
+In the beginning of cycle four, the result is sitting in the EX-MEM pipeline registers and can be forwarded back to the beginning of execute.
+
+160
+00:17:50,000 --> 00:17:57,000
+This is known as execute-to-execute forwarding because the result is being used by the execute stage again.
+
+161
+00:17:57,000 --> 00:18:07,000
+In this implementation, the decode hazard detector knows about the execute-to-execute forwarding that will happen in the future, so it did not insert no ops.
+
+162
+00:18:07,000 --> 00:18:17,000
+The sub-read register one, which had the old data, but it was never used as the new mux grabbed the add result and replaced it.
+
+163
+00:18:17,000 --> 00:18:21,000
+This eliminates all stall cycles for this particular hazard.
+
+164
+00:18:24,000 --> 00:18:28,000
+What happens if there's an unrelated instruction between the dependents?
+
+165
+00:18:28,000 --> 00:18:33,000
+In this example, in cycle five, the add is doing a writeback that the sub needs for execute.
+
+166
+00:18:33,000 --> 00:18:45,000
+Instead of stalling one, let's tap off the writeback bus and send a copy to those ALU input muxes we added in the last slide to create a memory-to-execute forwarding path.
+
+167
+00:18:46,000 --> 00:18:54,000
+In the beginning, this RAW dependents caused us to insert three stalls to maintain correctness. We've now eliminated all three.
+
+168
+00:18:57,000 --> 00:19:05,000
+Our last raw stall case is when the register writer is a load instruction. This is known as a load-to-use stall.
+
+169
+00:19:05,000 --> 00:19:13,000
+In previous forwarding optimizations, ALU results were needed for ALU inputs for a subsequent instruction.
+
+170
+00:19:16,000 --> 00:19:23,000
+In the load case, we don't have the data until it's read from data memory, so we can't reuse that execute-to-execute path.
+
+171
+00:19:24,000 --> 00:19:31,000
+We cannot avoid a single load-to-use stall, but a memory-to-execute forwarding path will prevent additional stalls.
+
+172
+00:19:33,000 --> 00:19:44,000
+With memory-to-execute, the sub will stall once in cycle three, but this path will enable load-word writeback and sub-execute to both happen in cycle five.
+
+173
+00:19:44,000 --> 00:19:48,000
+This covers the main scenarios for data forwarding.
+
+174
+00:19:52,000 --> 00:19:56,000
+There's one special case we're going to explore that is not in the textbook.
+
+175
+00:19:56,000 --> 00:20:03,000
+Earlier, we said that all operands are needed at the beginning of the execute stage. It turns out that's only mostly true.
+
+176
+00:20:04,000 --> 00:20:08,000
+Look at the consumers of register values and see if you can spot it.
+
+177
+00:20:15,000 --> 00:20:19,000
+If you said store instructions, you're right.
+
+178
+00:20:19,000 --> 00:20:29,000
+As shown in the figure, the data to be stored is in the RT register, but it just passes through the execute stage before being used in memory.
+
+179
+00:20:29,000 --> 00:20:35,000
+In your homework, you will implement memory-to-memory forwarding in order to support this special case.
+
+180
+00:20:39,000 --> 00:20:41,000
+Let's put this all together.
+
+181
+00:20:41,000 --> 00:20:53,000
+In the decode stage, we added a hazard detection unit that is able to stall the instructions in fetch and decode and is aware of the various forwarding paths that eliminate certain types of stalls.
+
+182
+00:20:54,000 --> 00:21:07,000
+In the decode stage, we add a forwarding unit to control the forward muxes at the inputs of the ALU to add execute-to-execute forwarding and memory-to-execute forwarding when needed.
+
+183
+00:21:11,000 --> 00:21:22,000
+Once again, let's look at some exercises. When we say full forwarding and bypass, we mean execute-to-execute, memory-to-execute, and register file bypass.
+
+184
+00:21:22,000 --> 00:21:32,000
+In this short snippet, look at the RAW hazards and figure out where stalls, if any, are necessary. Please pause the video and work this out.
+
+185
+00:21:32,000 --> 00:21:50,000
+With full forwarding and bypassing, it takes nine cycles to execute this code, because this code has two load-to-use stalls, as each load is required by the instruction that follows it.
+
+186
+00:21:50,000 --> 00:21:53,000
+Let's look at this a different way.
+
+187
+00:21:55,000 --> 00:22:01,000
+We know that stalling and instruction is the same as inserting a no-op ahead of it into the execute stage.
+
+188
+00:22:01,000 --> 00:22:08,000
+We also discussed how this no-op is like an instruction from the program, but the processor muxed it in out of thin air.
+
+189
+00:22:09,000 --> 00:22:16,000
+Once a no-op is inserted, it propagates down the pipeline until it completes doing nothing in the right backstage.
+
+190
+00:22:19,000 --> 00:22:22,000
+This happens again for the add in cycle 5.
+
+191
+00:22:23,000 --> 00:22:28,000
+Visualizing the pipeline in this stage is helpful to confirm your thinking.
+
+192
+00:22:28,000 --> 00:22:38,000
+Our pipeline can only hold one instruction in every stage, so adding a no-op confirms that in each column there is exactly one instruction in each of the stages.
+
+193
+00:22:42,000 --> 00:22:48,000
+Let's apply our pipeline cycle table to the processor diagram and walk through cycle by cycle.
+
+194
+00:22:48,000 --> 00:22:56,000
+We'll start at cycle 3, where the second load instruction detects the raw hazard and has to issue a load-to-use stall.
+
+195
+00:23:00,000 --> 00:23:09,000
+Stalls insert a no-op into the execute stage at cycle 4, and the second load and add instructions are frozen in place.
+
+196
+00:23:10,000 --> 00:23:24,000
+Now in cycle 5, the second load can propagate to the execute stage, knowing that the result of the first load will be forwarded directly to the ALU following the memory-to-execute forwarding path.
+
+197
+00:23:25,000 --> 00:23:32,000
+Also, at cycle 5, the add detects its own raw hazard and inserts a load-to-use stall.
+
+198
+00:23:33,000 --> 00:23:43,000
+This inserts a no-op into the execute stage while the second load instruction is able to proceed.
+
+199
+00:23:46,000 --> 00:23:57,000
+As with the second load, the add is able to move to the execute stage in cycle 7, knowing that the memory-to-execute forwarding path will deliver the data it needs just in time.
+
+200
+00:23:58,000 --> 00:24:10,000
+This exercise illustrates how no-ops are virtual instructions that get executed as if they were in the original program, but did not appear until the execute stage.
+
+201
+00:24:13,000 --> 00:24:15,000
+One last question before we end this lecture.
+
+202
+00:24:16,000 --> 00:24:19,000
+Here's the memory-to-execute forwarding path highlighted.
+
+203
+00:24:20,000 --> 00:24:23,000
+But why not do this instead?
+
+204
+00:24:24,000 --> 00:24:28,000
+This would get rid of the one-cycle load-to-use stall.
+
+205
+00:24:29,000 --> 00:24:30,000
+Why is this a bad idea?
+
+206
+00:24:38,000 --> 00:24:41,000
+Remember, a clock period is based on the slowest stage of the pipeline.
+
+207
+00:24:42,000 --> 00:24:50,000
+So when the Q outputs change on every pipeline stage, the new values race through the logic and stabilize the D inputs on the next stage's inputs.
+
+208
+00:24:52,000 --> 00:25:02,000
+The memory stage has already consumed most, if not all, of its clock period just reading the data from memory, and it needs to be registered before the next positive edge of the clock arrives.
+
+209
+00:25:03,000 --> 00:25:14,000
+Forwarding the result of a long combinational circuit back to the beginning of another long combinational circuit essentially tries to do two clocks worth of work in one clock.
+
+210
+00:25:15,000 --> 00:25:25,000
+This would never close timing in physical design, and our processor's clock rate would likely be cut roughly in half as there's a chance that it has to do two stages worth of work.
+

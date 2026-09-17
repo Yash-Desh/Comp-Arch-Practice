@@ -1,0 +1,616 @@
+1
+00:00:00,000 --> 00:00:05,000
+In this lecture, we're going to get a bit more advanced into ISA topics.
+
+2
+00:00:05,000 --> 00:00:10,000
+Let's discuss how the MIPS assembly instructions are represented in the machine.
+
+3
+00:00:10,000 --> 00:00:13,000
+All instructions are represented in a single word.
+
+4
+00:00:13,000 --> 00:00:17,000
+This shows how an add instruction is encoded into bit fields
+
+5
+00:00:17,000 --> 00:00:22,000
+as shown in the MIPS green card under the basic instruction format header.
+
+6
+00:00:22,000 --> 00:00:25,000
+As you can see, some fields specify the operand registers
+
+7
+00:00:25,000 --> 00:00:29,000
+and others specify the app code.
+
+8
+00:00:29,000 --> 00:00:33,000
+The app code found in the most significant six bits
+
+9
+00:00:33,000 --> 00:00:38,000
+specify which operation and instruction format.
+
+10
+00:00:38,000 --> 00:00:41,000
+Register operations are called R-format,
+
+11
+00:00:41,000 --> 00:00:43,000
+intermediate are called I-format,
+
+12
+00:00:43,000 --> 00:00:47,000
+and jump are called J-format.
+
+13
+00:00:47,000 --> 00:00:53,000
+Depending on the format, the operand bits are interpreted differently.
+
+14
+00:00:53,000 --> 00:00:57,000
+R-format is used for most ALU operations.
+
+15
+00:00:57,000 --> 00:01:01,000
+RS and RT specify the source operand registers,
+
+16
+00:01:01,000 --> 00:01:04,000
+and RD specifies the destination.
+
+17
+00:01:04,000 --> 00:01:07,000
+The shift amount is only used for shift instructions,
+
+18
+00:01:07,000 --> 00:01:12,000
+and function can provide another encoding for more differentiation.
+
+19
+00:01:12,000 --> 00:01:18,000
+For example, an add instruction is opcode 0 with a function hex20,
+
+20
+00:01:18,000 --> 00:01:26,000
+while an add unsigned is opcode 1 with a function hex21.
+
+21
+00:01:26,000 --> 00:01:29,000
+The next I-format, which is used for instructions
+
+22
+00:01:29,000 --> 00:01:34,000
+that take a 16-bit intermediate value in the least significant bits.
+
+23
+00:01:34,000 --> 00:01:37,000
+An intermediate value is used as a constant
+
+24
+00:01:37,000 --> 00:01:42,000
+because it's baked into the program as opposed to a variable in a register.
+
+25
+00:01:42,000 --> 00:01:45,000
+This shows how a load word instruction is encoded.
+
+26
+00:01:45,000 --> 00:01:51,000
+In this specific case, load word is going to use register2 as a base address,
+
+27
+00:01:51,000 --> 00:01:55,000
+add an offset of 72 to it to make the pointer,
+
+28
+00:01:55,000 --> 00:01:59,000
+and load the data stored at that address.
+
+29
+00:01:59,000 --> 00:02:01,000
+This intermediate value is signed,
+
+30
+00:02:01,000 --> 00:02:07,000
+meaning the pointer can be greater than or less than the base address.
+
+31
+00:02:07,000 --> 00:02:15,000
+Another variant of I-format is used for any ALU operations with intermediates also.
+
+32
+00:02:15,000 --> 00:02:21,000
+In this case, addI will add 100 to the contents of register2
+
+33
+00:02:21,000 --> 00:02:24,000
+and store it in register1.
+
+34
+00:02:24,000 --> 00:02:28,000
+What if we need an intermediate that's larger than 16 bits?
+
+35
+00:02:28,000 --> 00:02:33,000
+Here's a 20-bit constant that we'll need to load into registers.
+
+36
+00:02:33,000 --> 00:02:40,000
+We can use the loadUpperImmediate instruction to take the 12 from bit 16 and above
+
+37
+00:02:40,000 --> 00:02:46,000
+of my desired constant and store it in the upper 16 bits of the target register.
+
+38
+00:02:46,000 --> 00:02:53,000
+Now we can use logical or immediate to set the lower bits and we're done.
+
+39
+00:02:53,000 --> 00:02:56,000
+Branches also use I-format.
+
+40
+00:02:56,000 --> 00:03:01,000
+Branches immediate are word-sized offsets based on the next instruction address
+
+41
+00:03:01,000 --> 00:03:04,000
+since there's never a need to branch to the next address
+
+42
+00:03:04,000 --> 00:03:07,000
+because that's what happens by default.
+
+43
+00:03:07,000 --> 00:03:14,000
+Internally, the word offset is shifted left2 or multiplied by 4 to get the byte address,
+
+44
+00:03:14,000 --> 00:03:21,000
+so in a way, we've hidden the lowest two bits and gotten more branch range in return.
+
+45
+00:03:21,000 --> 00:03:24,000
+Last up is J-format for jump instructions.
+
+46
+00:03:24,000 --> 00:03:29,000
+There are only two fields, the opcode and a 26-bit offset.
+
+47
+00:03:29,000 --> 00:03:33,000
+Like branch, we get the two hidden bits at the bottom for free,
+
+48
+00:03:33,000 --> 00:03:37,000
+so we get a much larger 28 bits of word-aligned byte addressing available
+
+49
+00:03:37,000 --> 00:03:42,000
+than the 18 bits we get in branch.
+
+50
+00:03:42,000 --> 00:03:51,000
+This is the summary of instruction formats, which is also found in the MIPS green card.
+
+51
+00:03:51,000 --> 00:03:58,000
+The stack is used to hold anything you need including parameters, return values, and return address.
+
+52
+00:03:58,000 --> 00:04:01,000
+The stack grows from higher to lower addresses.
+
+53
+00:04:01,000 --> 00:04:09,000
+SP is a label for register 29 and it always points to the top or most recent word.
+
+54
+00:04:09,000 --> 00:04:14,000
+Pushing a value to the stack involves first decrementing the stack pointer by four bytes,
+
+55
+00:04:14,000 --> 00:04:19,000
+or one word, and then storing a value to that address.
+
+56
+00:04:19,000 --> 00:04:22,000
+Popping a word happens in reverse.
+
+57
+00:04:22,000 --> 00:04:29,000
+Load from the stack pointer and then add four.
+
+58
+00:04:29,000 --> 00:04:34,000
+When calling functions, the application binary interface, or ABI,
+
+59
+00:04:34,000 --> 00:04:38,000
+is the convention used to define how functions must operate.
+
+60
+00:04:38,000 --> 00:04:43,000
+Unlike C, which is a scope that defines which variables exist,
+
+61
+00:04:43,000 --> 00:04:49,000
+functions executing on a MIPS processor share the same 32 registers.
+
+62
+00:04:49,000 --> 00:04:56,000
+As you'd expect, the call conventions are documented in the MIPS green card.
+
+63
+00:04:56,000 --> 00:05:02,000
+If a caller needs to save the values in any registers that are not guaranteed to be preserved across a function call,
+
+64
+00:05:02,000 --> 00:05:06,000
+it's their responsibility to save them to the stack.
+
+65
+00:05:06,000 --> 00:05:14,000
+Temporary registers, T0 through T7, are one kind of register that is not guaranteed to be saved.
+
+66
+00:05:14,000 --> 00:05:21,000
+Now, the callee may not use them, but the ABI says they're free to overwrite them.
+
+67
+00:05:21,000 --> 00:05:26,000
+Please take a look at the list in the MIPS green card to see which registers are callee saved
+
+68
+00:05:26,000 --> 00:05:34,000
+and which are caller saved and which are callee saved.
+
+69
+00:05:34,000 --> 00:05:42,000
+Before calling a function, the caller must push any caller saved registers to the stack before they call the function,
+
+70
+00:05:42,000 --> 00:05:46,000
+and then they must pop them when the function returns.
+
+71
+00:05:46,000 --> 00:05:54,000
+Likewise, the callee must save any registers it is going to use that are supposed to be preserved across a function call.
+
+72
+00:05:54,000 --> 00:06:01,000
+The saved temporary registers, S0 through S7, are eight such registers.
+
+73
+00:06:01,000 --> 00:06:06,000
+The others are the pointers and return address.
+
+74
+00:06:06,000 --> 00:06:11,000
+Let's consider the snippet of code that implements the swap function in the upper right.
+
+75
+00:06:11,000 --> 00:06:17,000
+To start, the function arguments are put into A0 and A1.
+
+76
+00:06:17,000 --> 00:06:25,000
+Since K is a word index, it must be multiplied by 4, which is the same as shifted left 2.
+
+77
+00:06:25,000 --> 00:06:32,000
+Adding the word index to the base address enables us to load V at offset K.
+
+78
+00:06:32,000 --> 00:06:43,000
+T0 is a callee saved register, so the function is free to overwrite it with the value loaded from memory.
+
+79
+00:06:43,000 --> 00:06:50,000
+Now we load the next word, V, at offset K plus 1.
+
+80
+00:06:50,000 --> 00:07:00,000
+Now that we have V sub K and V sub K plus 1 in registers, we just have to store them out swapped relative to how we loaded them.
+
+81
+00:07:00,000 --> 00:07:05,000
+And finally, jump to the return address.
+
+82
+00:07:05,000 --> 00:07:10,000
+What can go wrong if we use S1 instead of T1?
+
+83
+00:07:10,000 --> 00:07:16,000
+Well, let's say the caller had a crucial value in S1 already.
+
+84
+00:07:16,000 --> 00:07:24,000
+If it called swap and swap overwrote it, now the next add instruction won't do what the programmer thought it should.
+
+85
+00:07:24,000 --> 00:07:28,000
+Remember that S1 is a callee saved register.
+
+86
+00:07:28,000 --> 00:07:42,000
+If we needed to use S1 inside of our swap function, we first need to push it to the stack in the beginning of our function and pop it before we jump to the return address.
+
+87
+00:07:42,000 --> 00:07:45,000
+Now let's cover addressing modes and MIPS.
+
+88
+00:07:45,000 --> 00:07:48,000
+The first is register addressing.
+
+89
+00:07:48,000 --> 00:07:53,000
+The value in the register field decodes to the register that's read.
+
+90
+00:07:53,000 --> 00:07:58,000
+Base addressing, also known as offset or displacement addressing.
+
+91
+00:07:58,000 --> 00:08:03,000
+The register contains the base address and an immediate value contains an offset.
+
+92
+00:08:03,000 --> 00:08:08,000
+These two values are summed to get the effective address.
+
+93
+00:08:08,000 --> 00:08:16,000
+Immediate addressing is used in I-format instructions.
+
+94
+00:08:16,000 --> 00:08:20,000
+PC relative addressing is used for branch instructions.
+
+95
+00:08:20,000 --> 00:08:31,000
+This is similar to branch or displacement, but now the base comes from PC plus four and is used to load the next instruction.
+
+96
+00:08:31,000 --> 00:08:35,000
+Some ISAs have addressing modes that are not found in MIPS.
+
+97
+00:08:35,000 --> 00:08:38,000
+Let's take a look at a few of them.
+
+98
+00:08:38,000 --> 00:08:46,000
+Indexed, where two registers are added to form an address as opposed to one register and an immediate offset like MIPS.
+
+99
+00:08:46,000 --> 00:08:55,000
+Then there's indirect addressing, where a register contains a pointer and a location in memory that contains another pointer to the value.
+
+100
+00:08:55,000 --> 00:09:07,000
+Finally, auto increment and auto update, which implicitly adds plus one or plus four to the register after using it to compute a memory offset.
+
+101
+00:09:07,000 --> 00:09:10,000
+Auto update is useful with arrays.
+
+102
+00:09:10,000 --> 00:09:16,000
+In this case, the immediate offset 24 is automatically added to register two.
+
+103
+00:09:16,000 --> 00:09:24,000
+Now, if every block of data is 24 bytes, this function skips to the beginning of the next block.
+
+104
+00:09:24,000 --> 00:09:29,000
+This example demonstrates how you would convert a loop to an auto update.
+
+105
+00:09:29,000 --> 00:09:33,000
+The add immediate becomes implicit in the instruction.
+
+106
+00:09:33,000 --> 00:09:41,000
+You do need to be careful as the first address that is loaded is s one plus four instead of s one plus zero in the original code.
+
+107
+00:09:41,000 --> 00:09:49,000
+To avoid this issue, you must subtract four from the base address before entering the loop.
+
+108
+00:09:49,000 --> 00:09:53,000
+Another major topic in ISAs is endian-ness.
+
+109
+00:09:53,000 --> 00:09:57,000
+It specifies how bytes within a word are addressed.
+
+110
+00:09:57,000 --> 00:10:03,000
+With big endian, the least significant byte is put at the highest address.
+
+111
+00:10:03,000 --> 00:10:09,000
+For 32-bit architectures, the last two bits will always be one one.
+
+112
+00:10:09,000 --> 00:10:12,000
+IBM and Spark both use big endian.
+
+113
+00:10:12,000 --> 00:10:18,000
+Little endian places the least significant byte at the lowest address and it will end in zero zero.
+
+114
+00:10:18,000 --> 00:10:22,000
+x86 and our favorite MIPS ISA use little endian.
+
+115
+00:10:22,000 --> 00:10:29,000
+To improve performance, some architectures have added a configuration to support both.
+
+116
+00:10:29,000 --> 00:10:40,000
+Endian-ness causes headaches for architects with pointer arithmetic and transferring data types between machines.
+
+117
+00:10:40,000 --> 00:10:43,000
+Let's revisit our add example from before.
+
+118
+00:10:43,000 --> 00:10:53,000
+If this were packed to little endian, the least significant byte would be put at address offset zero zero and the most significant byte would be put at address offset one one.
+
+119
+00:10:53,000 --> 00:10:57,000
+Big endian is simply the reverse.
+
+120
+00:10:57,000 --> 00:11:02,000
+The little in little endian refers to the least significant byte at address zero,
+
+121
+00:11:02,000 --> 00:11:09,000
+while big endian is motivated for byte serial transfers where the upper bits are sent first.
+
+122
+00:11:09,000 --> 00:11:14,000
+Regardless of endian-ness, when displaying four bytes like this instruction,
+
+123
+00:11:14,000 --> 00:11:24,000
+bit 31 will always be most significant on the left and zero will always be least significant and on the right.
+
+124
+00:11:24,000 --> 00:11:30,000
+Let's end this lecture by looking at an exercise to check your understanding of more advanced topics.
+
+125
+00:11:30,000 --> 00:11:42,000
+Grab your MIPS green card again and pause the video so you can work this out.
+
+126
+00:11:42,000 --> 00:11:44,000
+Let's start with a simple one.
+
+127
+00:11:44,000 --> 00:11:49,000
+We know that I needs to be converted to word offset for an integer array,
+
+128
+00:11:49,000 --> 00:11:54,000
+so shifting left two is the same as multiplying by four.
+
+129
+00:11:54,000 --> 00:11:58,000
+Next we see that I times four is added to register S zero,
+
+130
+00:11:58,000 --> 00:12:11,000
+so S zero must be used as the base address of the integer array A and hex 100 is 256 in decimal.
+
+131
+00:12:11,000 --> 00:12:17,000
+Next we see the value we load from memory is stored in T three, which is then added to something.
+
+132
+00:12:17,000 --> 00:12:27,000
+This must be the sum variable, so T three must be added to the current value of the sum variable T zero.
+
+133
+00:12:27,000 --> 00:12:30,000
+Finally, all that's left is the loop condition.
+
+134
+00:12:30,000 --> 00:12:36,000
+Since N is 64, S one must hold the offset to the first address past the end of the array.
+
+135
+00:12:36,000 --> 00:12:44,000
+We need to check that I is less than N using the set less than instruction.
+
+136
+00:12:44,000 --> 00:12:48,000
+Now let's change the do while loop to a for loop.
+
+137
+00:12:48,000 --> 00:12:50,000
+Is our assembly code still valid?
+
+138
+00:12:50,000 --> 00:12:59,000
+Please pause the video and ponder.
+
+139
+00:12:59,000 --> 00:13:02,000
+Consider when the conditionals are observed.
+
+140
+00:13:02,000 --> 00:13:05,000
+In a do while, the condition is checked at the end of the loop.
+
+141
+00:13:05,000 --> 00:13:11,000
+While in a for loop, it's checked in the beginning of each iteration.
+
+142
+00:13:11,000 --> 00:13:13,000
+Here's a new listing with some blanks.
+
+143
+00:13:13,000 --> 00:13:25,000
+Please pause and consider and work it out.
+
+144
+00:13:25,000 --> 00:13:34,000
+At the top of the loop, we set T four to a one if T one is still less than S one, the end variable.
+
+145
+00:13:34,000 --> 00:13:38,000
+Then we must branch to the end of the loop if T four is not set.
+
+146
+00:13:38,000 --> 00:13:48,000
+At the bottom, we have an unconditional loop back to the top.
+
+147
+00:13:48,000 --> 00:13:51,000
+Let's return to instruction optimization.
+
+148
+00:13:51,000 --> 00:13:54,000
+This is the common one that compilers will use.
+
+149
+00:13:54,000 --> 00:14:06,000
+The observation is that T one is an integer index offset, which serves no other purpose than to go from zero to 63.
+
+150
+00:14:06,000 --> 00:14:14,000
+We can instead replace all occurrences of T one with S zero, the register that initially holds the base address of the array.
+
+151
+00:14:14,000 --> 00:14:17,000
+It can be used as the iterator itself.
+
+152
+00:14:17,000 --> 00:14:23,000
+As the integer iterator, it must be updated by four at the bottom of the loop.
+
+153
+00:14:23,000 --> 00:14:36,000
+And now S one can hold the end byte address of the entire array instead of the last integer offset number.
+
+154
+00:14:36,000 --> 00:14:42,000
+With that, we've removed three instructions from the program.
+

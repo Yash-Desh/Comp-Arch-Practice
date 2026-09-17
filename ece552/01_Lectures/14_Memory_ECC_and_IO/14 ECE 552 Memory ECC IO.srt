@@ -1,0 +1,1520 @@
+1
+00:00:00,000 --> 00:00:11,280
+In this lecture, we'll discuss memory, ECC, and interfacing with IO devices.
+
+2
+00:00:11,280 --> 00:00:16,400
+Main memory and modern systems are built out of commodity DRAM chips, which are inexpensive
+
+3
+00:00:16,400 --> 00:00:20,200
+and provide very high capacity and reasonable latency.
+
+4
+00:00:20,200 --> 00:00:25,640
+There's a wide design space for building these chips and optimizing their design objectives
+
+5
+00:00:25,640 --> 00:00:32,040
+of achieving minimum cost and latency with maximum bandwidth and capacity.
+
+6
+00:00:32,040 --> 00:00:36,760
+One of the key challenges for main memory that we'll be discussing is soft error detection
+
+7
+00:00:36,760 --> 00:00:38,680
+and correction.
+
+8
+00:00:38,680 --> 00:00:44,400
+As we'll discuss later, it is possible for bits to unexpectedly flip or change state,
+
+9
+00:00:44,400 --> 00:00:50,120
+and we need to be able to protect against these using error correcting codes, or ECC.
+
+10
+00:00:50,120 --> 00:00:52,920
+ECC is not just used for DRAM.
+
+11
+00:00:52,920 --> 00:00:57,920
+They're also commonly used in SRAM, data buses, and on-chip and off-chip interconnection
+
+12
+00:00:57,920 --> 00:01:02,840
+networks.
+
+13
+00:01:02,840 --> 00:01:07,080
+Here we're showing the typical organization of DRAM main memory.
+
+14
+00:01:07,080 --> 00:01:10,520
+Recall that each bit is stored as charge in a capacitor.
+
+15
+00:01:10,520 --> 00:01:14,480
+Thus whenever we read a bit, we actually discharge the capacitor.
+
+16
+00:01:14,480 --> 00:01:19,160
+This is known as a destructive read, because after we read a bit, we need to write it back
+
+17
+00:01:19,160 --> 00:01:22,120
+in each time.
+
+18
+00:01:22,360 --> 00:01:27,720
+Because bits are stored in capacitors, charge also leaks over time, so we need to refresh
+
+19
+00:01:27,720 --> 00:01:31,000
+our data periodically.
+
+20
+00:01:31,000 --> 00:01:36,760
+Refreshing simply involves reading out the bits and writing them back in.
+
+21
+00:01:36,760 --> 00:01:39,640
+Retrieving data from main memory is a long process.
+
+22
+00:01:39,640 --> 00:01:42,840
+DRAM is optimized for density, not speed.
+
+23
+00:01:42,840 --> 00:01:47,640
+Given a memory address, we break up its bits into row address and column address, reminiscent
+
+24
+00:01:47,640 --> 00:01:52,720
+to a page number and page offset respectively.
+
+25
+00:01:52,720 --> 00:01:57,400
+The first step of a DRAM access is known as a row address strobe, where we pass in the
+
+26
+00:01:57,400 --> 00:02:02,400
+row address and then read the entire row into the DRAM row buffer, which is known as a page
+
+27
+00:02:02,400 --> 00:02:04,560
+open command.
+
+28
+00:02:04,560 --> 00:02:09,400
+The second step is the column address strobe, where we pass in the column address and read
+
+29
+00:02:09,400 --> 00:02:11,800
+out the specific word from the row buffer.
+
+30
+00:02:11,800 --> 00:02:16,280
+Then, since each read is destructive, the last step is to write the row back, which
+
+31
+00:02:16,280 --> 00:02:20,760
+is known as a pre-charge or page closed command.
+
+32
+00:02:20,760 --> 00:02:26,920
+Let's consider a toy example of accessing a four-word cache block from memory.
+
+33
+00:02:26,920 --> 00:02:31,360
+Note that we're referring to DRAM bus cycles, not processor cycles.
+
+34
+00:02:31,360 --> 00:02:35,320
+DRAM bus cycles these days are much slower than CPU cycles.
+
+35
+00:02:35,320 --> 00:02:38,360
+Each of the commands will be color coded in this example.
+
+36
+00:02:38,360 --> 00:02:44,160
+First, assume that reading the row to the row buffer takes five DRAM cycles.
+
+37
+00:02:44,160 --> 00:02:49,080
+Then reading out each word involves one cycle to send the column address on the bus, three
+
+38
+00:02:49,080 --> 00:02:54,280
+cycles of internal delay in accessing the row buffer in DRAM, and one cycle for receiving
+
+39
+00:02:54,280 --> 00:02:55,840
+the data word on the bus.
+
+40
+00:02:55,840 --> 00:03:02,880
+Lastly, we'll assume that pre-charging takes five cycles.
+
+41
+00:03:02,880 --> 00:03:07,120
+We'll start by assuming a memory bus shown here in this diagram between the L2 cache
+
+42
+00:03:07,120 --> 00:03:13,400
+and main memory that's only one word wide.
+
+43
+00:03:13,400 --> 00:03:18,080
+For a simple DRAM implementation, fetching a four-word cache block would be serialized
+
+44
+00:03:18,080 --> 00:03:19,240
+on the bus.
+
+45
+00:03:19,240 --> 00:03:24,600
+All of the words of a single block generally reside in the same DRAM row, so the first thing
+
+46
+00:03:24,600 --> 00:03:28,280
+we do is spend five cycles on the row axis.
+
+47
+00:03:28,280 --> 00:03:32,960
+Then for each of the four words, we spend one cycle to request its column address, wait
+
+48
+00:03:32,960 --> 00:03:38,560
+three cycles to request the row buffer, and spend one cycle to send the word to the cache.
+
+49
+00:03:39,280 --> 00:03:44,120
+Thus the action of fetching the data takes 25 cycles.
+
+50
+00:03:44,120 --> 00:03:48,120
+Now off the critical path of the processor and cache, we need to pre-charge DRAM in the
+
+51
+00:03:48,120 --> 00:03:50,840
+background, which takes five cycles.
+
+52
+00:03:50,840 --> 00:03:56,920
+This means we can't issue the next request until that is completed.
+
+53
+00:03:56,920 --> 00:04:02,080
+DRAM will typically be able to serve requests in burst mode as in a pipeline banner.
+
+54
+00:04:02,080 --> 00:04:07,000
+This is because the words being requested are always one after another, so unlike before,
+
+55
+00:04:07,000 --> 00:04:13,320
+we only need to provide the column address once and specify we want a burst of four words.
+
+56
+00:04:13,320 --> 00:04:17,760
+Then we'll incur a three-cycle internal delay plus one-cycle read, but this would happen
+
+57
+00:04:17,760 --> 00:04:20,080
+for all four words in a pipeline.
+
+58
+00:04:20,080 --> 00:04:25,400
+So then in the end, the effective number of cycles for the request is only 13, followed
+
+59
+00:04:25,400 --> 00:04:30,000
+by the mandatory five-cycle pre-charge as before.
+
+60
+00:04:30,000 --> 00:04:36,600
+Often, main memory will be optimized to support wider buses.
+
+61
+00:04:36,600 --> 00:04:44,680
+Now we have a four-word wide bus between the L2 cache and memory.
+
+62
+00:04:44,680 --> 00:04:49,720
+Similar to burst mode, we only need to provide the row and column address once, but now,
+
+63
+00:04:49,720 --> 00:04:54,800
+the DRAM delay and bus read happen in parallel for all four words, leading to only nine cycles
+
+64
+00:04:54,800 --> 00:04:57,680
+to fetch the entire cache block.
+
+65
+00:04:57,680 --> 00:05:02,480
+Of course, like cache design, this is only beneficial with spatial locality.
+
+66
+00:05:02,480 --> 00:05:07,600
+But the rate of improvement in DRAM speeds has been a lot slower than processor speeds,
+
+67
+00:05:07,600 --> 00:05:11,440
+so programmers are forced to reorganize their memory in order to realize gains provided
+
+68
+00:05:11,440 --> 00:05:17,240
+by memory width and burst mode.
+
+69
+00:05:17,240 --> 00:05:22,880
+One of the big challenges with such high-capacity memory is that the probability of a bit flip
+
+70
+00:05:22,880 --> 00:05:25,960
+or bit failure becomes significant.
+
+71
+00:05:25,960 --> 00:05:30,040
+Bit flips are considered soft errors in that they do not introduce permanent failures to
+
+72
+00:05:30,040 --> 00:05:31,040
+the device.
+
+73
+00:05:31,040 --> 00:05:36,080
+Instead, they are transient and simply need to be reverted back to the correct state.
+
+74
+00:05:36,080 --> 00:05:41,480
+These bit flips can occur due to gamma rays and alpha particle strikes or electrical interference,
+
+75
+00:05:41,480 --> 00:05:45,360
+and the likelihood of errors is increasing with smaller feature sizes.
+
+76
+00:05:45,360 --> 00:05:51,640
+So the standard solution is to employ ECC.
+
+77
+00:05:51,640 --> 00:05:56,720
+For practical implementations of ECC, we leverage the fact that the probability of bit errors
+
+78
+00:05:56,720 --> 00:05:59,840
+increases dramatically when we assume more errors.
+
+79
+00:05:59,840 --> 00:06:04,960
+In other words, given a single memory word, the probability of one bit in it flipping
+
+80
+00:06:04,960 --> 00:06:09,360
+is much greater than the probability of two bits in it flipping, which is much greater
+
+81
+00:06:09,360 --> 00:06:13,000
+than more than two bits flipping.
+
+82
+00:06:13,000 --> 00:06:17,360
+This has limited practical ECC implementations to generally provide protection up to two
+
+83
+00:06:17,360 --> 00:06:18,360
+errors.
+
+84
+00:06:18,360 --> 00:06:24,320
+Now, there are two forms of protection, error detection and error correction.
+
+85
+00:06:24,320 --> 00:06:28,200
+For error detection, we are only concerned with being able to recognize that some number
+
+86
+00:06:28,200 --> 00:06:33,120
+of bits have flipped, in which case we'll signal a problem to the OS to deal with it
+
+87
+00:06:33,120 --> 00:06:38,520
+or to kill the program to prevent the generation of incorrect results.
+
+88
+00:06:38,520 --> 00:06:43,200
+For error correction, we'd like to be able to not just identify the flip bits, but also
+
+89
+00:06:43,200 --> 00:06:50,400
+revert them back to what they were, all without the software ever knowing.
+
+90
+00:06:50,400 --> 00:06:56,080
+In an unprotected memory device with no ECC, each bit of data is stored as one bit in memory,
+
+91
+00:06:56,080 --> 00:06:57,080
+as shown.
+
+92
+00:06:57,080 --> 00:07:02,000
+We'll refer to the logical data that the program is storing as the data word and the
+
+93
+00:07:02,000 --> 00:07:07,240
+physical data that is stored in memory as the code word.
+
+94
+00:07:07,240 --> 00:07:11,200
+Note that even though we call them data words and code words, we're not referring to 32-bit
+
+95
+00:07:11,200 --> 00:07:13,600
+data in this case.
+
+96
+00:07:13,600 --> 00:07:18,400
+One important measure for ECC is the hamming distance, which describes the minimum number
+
+97
+00:07:18,400 --> 00:07:22,520
+of bits that need to be flipped in order to convert one valid code word into a different
+
+98
+00:07:22,520 --> 00:07:24,960
+valid code word.
+
+99
+00:07:24,960 --> 00:07:30,840
+With no ECC, the hamming distance is one, since there are only two possible valid code
+
+100
+00:07:30,840 --> 00:07:38,920
+words, zero and one, and they're just one bit flip from each other.
+
+101
+00:07:38,920 --> 00:07:44,280
+Single error detection, or SED, is guaranteed with a hamming distance of two.
+
+102
+00:07:44,280 --> 00:07:49,240
+The most basic implementation is to store one extra bit of redundancy in memory, that
+
+103
+00:07:49,240 --> 00:07:53,000
+is, every data word is copied once.
+
+104
+00:07:53,000 --> 00:07:57,920
+In this case, if our data word is one bit, say, zero, then the code word that's actually
+
+105
+00:07:57,920 --> 00:08:03,920
+stored in memory is two bits, zero, zero.
+
+106
+00:08:03,920 --> 00:08:07,400
+We can visualize why this yields a hamming distance of two.
+
+107
+00:08:07,400 --> 00:08:11,840
+Here each node is a possible code word, but only the highlighted ones, zero, zero and
+
+108
+00:08:11,840 --> 00:08:13,960
+zero, one, are valid.
+
+109
+00:08:13,960 --> 00:08:17,960
+Each edge represents a possible bit flip that may occur.
+
+110
+00:08:17,960 --> 00:08:22,080
+Moving from zero, zero to zero, one means bit zero flipped, while moving from zero,
+
+111
+00:08:22,080 --> 00:08:27,040
+zero to one, zero means bit one flipped.
+
+112
+00:08:27,040 --> 00:08:32,120
+This scheme provides the ability to detect a single bit flip, since a single bit flip
+
+113
+00:08:32,120 --> 00:08:37,840
+from either valid code word will always lead us to an invalid code word, zero, one or one,
+
+114
+00:08:37,840 --> 00:08:38,840
+zero.
+
+115
+00:08:38,840 --> 00:08:43,400
+In other words, it takes two bit flips to lead to another valid code word, which would
+
+116
+00:08:43,400 --> 00:08:46,200
+then be undetected.
+
+117
+00:08:46,200 --> 00:08:50,200
+So if this ever happens, we can signal that an error has occurred and stop the program
+
+118
+00:08:50,200 --> 00:08:53,000
+from potentially corrupting your files.
+
+119
+00:08:53,000 --> 00:08:57,120
+But this doesn't provide error correction, because if we observe an invalid code word
+
+120
+00:08:57,120 --> 00:09:02,200
+in memory, say, zero, one, even though we know a bit flip has occurred, we don't know
+
+121
+00:09:02,200 --> 00:09:07,480
+what the original valid code word was, because both zero, zero and zero, one are only one
+
+122
+00:09:07,480 --> 00:09:13,320
+bit flip away.
+
+123
+00:09:13,320 --> 00:09:18,440
+So to provide single error correction, which provides single error detection for free,
+
+124
+00:09:18,440 --> 00:09:20,920
+we need a hamming distance of three.
+
+125
+00:09:20,920 --> 00:09:25,200
+So extending the previous approach, the basic implementation is to use two extra bits of
+
+126
+00:09:25,200 --> 00:09:27,280
+redundancy instead of one.
+
+127
+00:09:27,280 --> 00:09:32,560
+Now as shown, the valid code words are only zero, zero, zero and one, one, one.
+
+128
+00:09:32,560 --> 00:09:38,760
+So now if we observe any invalid code words, assuming that only one bit has flipped, we
+
+129
+00:09:38,760 --> 00:09:43,400
+can identify exactly which valid code word we had previously, because it would simply
+
+130
+00:09:43,400 --> 00:09:46,440
+be the closest valid code word.
+
+131
+00:09:46,440 --> 00:09:54,280
+Now when a single bit flip occurs, we can spot it and correct it on the fly.
+
+132
+00:09:54,280 --> 00:09:58,160
+The prior approaches can get very expensive for large amounts of data, since they need
+
+133
+00:09:58,160 --> 00:10:00,240
+a lot of redundant storage.
+
+134
+00:10:00,240 --> 00:10:05,520
+To improve on that, the standard scheme for single error detection is to use bit parity.
+
+135
+00:10:05,520 --> 00:10:11,680
+For an arbitrary N bit data word, no matter how big N is, only one parity bit is needed
+
+136
+00:10:11,680 --> 00:10:14,320
+to detect a single bit flip.
+
+137
+00:10:14,320 --> 00:10:19,080
+The parity bit is defined as the exclusive OR of all of the bits in the data word.
+
+138
+00:10:19,080 --> 00:10:23,120
+This is shown in the table below for four bit data words.
+
+139
+00:10:23,120 --> 00:10:27,400
+The code word is five bits, with the parity being appended on the right.
+
+140
+00:10:27,400 --> 00:10:31,880
+Now to check if a bit flip has occurred, we compute the syndrome of the code word, which
+
+141
+00:10:31,880 --> 00:10:36,840
+is simply an exclusive OR of all bits in the code word.
+
+142
+00:10:36,840 --> 00:10:41,600
+Thanks to the parity bit, the syndrome should always be zero if no error has occurred, because
+
+143
+00:10:41,600 --> 00:10:45,720
+XOR is zero when there's an even number of ones in a code word.
+
+144
+00:10:45,720 --> 00:10:50,560
+But if the syndrome is one, then we know that a single bit flip has occurred and can detect
+
+145
+00:10:50,560 --> 00:10:52,160
+it.
+
+146
+00:10:52,160 --> 00:10:56,720
+Before we move on, note that the rest of the discussion on ECC uses one based indexing
+
+147
+00:10:56,720 --> 00:11:00,840
+of bits instead of the typical zero based indexing.
+
+148
+00:11:00,840 --> 00:11:15,280
+This is to simplify the explanation and be consistent with other literature.
+
+149
+00:11:15,280 --> 00:11:19,400
+How do we extend this concept of parity to single error correction?
+
+150
+00:11:19,400 --> 00:11:22,000
+We introduce the concept of hamming codes.
+
+151
+00:11:22,000 --> 00:11:28,000
+The goal of a hamming code is to add K check bits to an arbitrary N bit data word.
+
+152
+00:11:28,000 --> 00:11:32,880
+The most common hamming code used in practice is hamming seven comma four, where seven is
+
+153
+00:11:32,880 --> 00:11:40,320
+the size of each code word and four is the size of each data word.
+
+154
+00:11:40,320 --> 00:11:43,680
+We'll focus our discussion on hamming seven four codes.
+
+155
+00:11:43,680 --> 00:11:48,720
+The goal is to encode a four bit data word as a seven bit code word in memory.
+
+156
+00:11:48,720 --> 00:11:52,960
+Then what we want is to be able to compute a syndrome that points to exactly which bit
+
+157
+00:11:52,960 --> 00:11:55,640
+in the code word has flipped, if any.
+
+158
+00:11:55,640 --> 00:12:00,200
+So with the seven bit code word, we need a three bit syndrome, where a syndrome of
+
+159
+00:12:00,200 --> 00:12:04,720
+zero shown in binary here implies that no bit has flipped.
+
+160
+00:12:04,720 --> 00:12:09,400
+A syndrome of one implies that bit one has flipped and so on.
+
+161
+00:12:09,400 --> 00:12:12,400
+Recall that we're using one based indexing here.
+
+162
+00:12:12,400 --> 00:12:19,600
+So the least significant bit is bit one.
+
+163
+00:12:19,600 --> 00:12:22,840
+Now let's work backwards to construct a syndrome that can do this.
+
+164
+00:12:22,840 --> 00:12:24,760
+There are many different ways to implement this.
+
+165
+00:12:24,760 --> 00:12:28,800
+I'll demonstrate only one method that we'll assume in this course.
+
+166
+00:12:28,800 --> 00:12:32,400
+The simplest way to construct the syndrome is to set bit one of the syndrome to the
+
+167
+00:12:32,400 --> 00:12:39,240
+exclusive or of all the odd bits in the code word, w one, w three, w five, and w seven.
+
+168
+00:12:39,240 --> 00:12:43,360
+This is because the numbers one, three, five, and seven all have their least significant
+
+169
+00:12:43,360 --> 00:12:47,240
+bit set to one.
+
+170
+00:12:47,240 --> 00:12:51,440
+Following a similar pattern, bit two of the syndrome is the exclusive or of code words
+
+171
+00:12:51,440 --> 00:12:57,560
+w two, three, w six, and w seven, since the numbers two, three, six, and seven all have
+
+172
+00:12:57,560 --> 00:13:00,720
+bit two set to a one.
+
+173
+00:13:00,720 --> 00:13:09,000
+And finally, bit three is set as the exclusive or of code word bits w four through w seven.
+
+174
+00:13:09,000 --> 00:13:10,440
+Why did we do this?
+
+175
+00:13:10,440 --> 00:13:14,920
+Remember the goal of the syndrome is to be equal to zero if no bit flips have occurred.
+
+176
+00:13:14,920 --> 00:13:18,120
+So let's read our code worded memory and compute the syndrome.
+
+177
+00:13:18,120 --> 00:13:20,760
+Say it's one zero one.
+
+178
+00:13:20,760 --> 00:13:26,840
+Syndrome bit one is a one, which means that one of w one, w three, w five, or w seven
+
+179
+00:13:26,840 --> 00:13:28,760
+has flipped.
+
+180
+00:13:28,760 --> 00:13:34,960
+Bit syndrome bit three is also a one, which means one of w four, w five, w six, or w seven
+
+181
+00:13:34,960 --> 00:13:35,960
+has flipped.
+
+182
+00:13:35,960 --> 00:13:41,600
+w five is the only common word bit in the formulas for S one and S three.
+
+183
+00:13:41,600 --> 00:13:44,380
+So we know that w five is the flipped bit.
+
+184
+00:13:44,380 --> 00:13:49,080
+So in this approach, every code word bit affects a unique subset of the syndrome bits.
+
+185
+00:13:49,080 --> 00:13:55,280
+And that's how we're able to identify and correct the faulty bit.
+
+186
+00:13:55,280 --> 00:13:57,880
+So then now how do we encode the code word bits?
+
+187
+00:13:57,880 --> 00:14:02,800
+Well the main thing we want is for each of the syndrome bits to be zero if no bit flip
+
+188
+00:14:02,800 --> 00:14:04,560
+has occurred.
+
+189
+00:14:04,560 --> 00:14:10,200
+The simplest option is to take the first bits of each syndrome w one, two and four and use
+
+190
+00:14:10,200 --> 00:14:13,040
+them as parody check bits.
+
+191
+00:14:13,040 --> 00:14:17,920
+These three work well because they don't affect any of the other two syndrome bits.
+
+192
+00:14:17,920 --> 00:14:22,720
+So then w one can be encoded as the exclusive order of the other three code word bits w
+
+193
+00:14:22,720 --> 00:14:25,440
+three, w five and w seven.
+
+194
+00:14:25,440 --> 00:14:30,000
+Same goes for w two and w four.
+
+195
+00:14:30,000 --> 00:14:35,000
+Now the remaining four bits in the code word can be the data itself be one, be two, be
+
+196
+00:14:35,000 --> 00:14:38,000
+three and be four.
+
+197
+00:14:38,000 --> 00:14:42,080
+Finally the table on the right shows how to encode each four bit data word into a seven
+
+198
+00:14:42,080 --> 00:14:44,200
+bit code word in memory.
+
+199
+00:14:44,200 --> 00:14:53,000
+Then anytime we read the code word we recompute the syndrome and see if any bit has flipped.
+
+200
+00:14:53,000 --> 00:14:57,120
+Finally as mentioned earlier it's beneficial to provide protection for two bit flips as
+
+201
+00:14:57,120 --> 00:14:58,200
+well.
+
+202
+00:14:58,200 --> 00:15:03,040
+But since it's far less common than single bit flips detecting double bit flips is likely
+
+203
+00:15:03,040 --> 00:15:06,320
+to be sufficient in practice.
+
+204
+00:15:06,320 --> 00:15:10,400
+We don't need to correct them except in extreme circumstances.
+
+205
+00:15:10,400 --> 00:15:16,400
+This leads us to single error correction double error detection known as sec dead.
+
+206
+00:15:16,400 --> 00:15:21,080
+This basically extends the hamming seven four code with an additional parody bit.
+
+207
+00:15:21,080 --> 00:15:27,520
+This now gives us the hamming distance of four and leads us to a four bit syndrome.
+
+208
+00:15:27,520 --> 00:15:31,880
+As shown in the table depending on the syndrome bits we're able to identify exactly which
+
+209
+00:15:31,880 --> 00:15:35,280
+bit has flipped if a single bit flip has occurred.
+
+210
+00:15:35,280 --> 00:15:39,600
+But if a double bit flip has occurred we can detect this case but we won't be able to
+
+211
+00:15:39,600 --> 00:15:47,080
+identify which bits exactly have flipped.
+
+212
+00:15:47,080 --> 00:15:52,360
+To implement this we simply extend the hamming seven four code to have one more syndrome
+
+213
+00:15:52,360 --> 00:15:55,640
+bit and one more code word bit.
+
+214
+00:15:55,640 --> 00:16:02,160
+Like in single error detection this additional parody syndrome bit SP is just the exclusive
+
+215
+00:16:02,160 --> 00:16:04,920
+or of the entire code word.
+
+216
+00:16:04,920 --> 00:16:11,120
+And the additional bit W8 of the code word is the exclusive or of the other seven bits.
+
+217
+00:16:11,120 --> 00:16:16,600
+So now if SP is computed to be one then we know that one bit flip has occurred and we
+
+218
+00:16:16,600 --> 00:16:21,800
+can find out which one based on the typical hamming seven four approach.
+
+219
+00:16:21,800 --> 00:16:27,200
+But if SP is computed to be zero but at least one of the other syndrome bits is one then
+
+220
+00:16:27,200 --> 00:16:35,400
+we know that two bit flips has occurred.
+
+221
+00:16:35,400 --> 00:16:39,820
+Let's look at a quick example of how to encode a sec dead code word.
+
+222
+00:16:39,820 --> 00:16:45,120
+So given a data word zero one zero one we simply follow the equations on the right most
+
+223
+00:16:45,120 --> 00:16:57,080
+table and this gives us the code word zero zero one zero one one zero one.
+
+224
+00:16:57,080 --> 00:17:00,600
+To highlight the strength of the sec dead encoding let's compare it to applying one
+
+225
+00:17:00,600 --> 00:17:02,760
+bit redundancy.
+
+226
+00:17:02,760 --> 00:17:07,600
+Both methods convert a four bit data word into an eight bit code word but with the hamming
+
+227
+00:17:07,600 --> 00:17:12,280
+and parody encoding we're able to provide stronger protection of single error correction
+
+228
+00:17:12,280 --> 00:17:22,200
+and double error detection whereas one bit redundancy only provides single error detection.
+
+229
+00:17:22,200 --> 00:17:25,800
+We've discussed input output devices before in the form of disks.
+
+230
+00:17:25,800 --> 00:17:30,160
+Naturally in order for people to interface with our computer programs they need mechanisms
+
+231
+00:17:30,160 --> 00:17:35,080
+for providing input signals and mechanisms for receiving output signals.
+
+232
+00:17:35,080 --> 00:17:41,200
+These I O devices include video displays keyboards your mouse audio etc.
+
+233
+00:17:41,200 --> 00:17:47,680
+I O is also necessary for large scale storage of persistent or non volatile media and files.
+
+234
+00:17:47,680 --> 00:17:54,200
+I O is also needed to allow independent computers to communicate with each other via networking.
+
+235
+00:17:55,200 --> 00:18:00,360
+To give us some context let's first talk about a very important I O device magnetic
+
+236
+00:18:00,360 --> 00:18:02,560
+disks for storage.
+
+237
+00:18:02,560 --> 00:18:06,120
+These have been around for many decades now and have continued to improve in terms of
+
+238
+00:18:06,120 --> 00:18:08,000
+capacity and cost.
+
+239
+00:18:08,000 --> 00:18:12,320
+Very briefly magnetic disks are physical stacks of platters.
+
+240
+00:18:12,320 --> 00:18:16,880
+Both the top and bottom of each platter are used as surfaces and each surface consists
+
+241
+00:18:16,880 --> 00:18:19,200
+of multiple tracks.
+
+242
+00:18:19,200 --> 00:18:23,640
+The track head is able to move to select the appropriate track and the heads of all platters
+
+243
+00:18:23,640 --> 00:18:27,160
+are synchronized and move together as one.
+
+244
+00:18:27,160 --> 00:18:32,040
+Each track is broken up into sectors of data and the platters rotate to line up the sector
+
+245
+00:18:32,040 --> 00:18:38,160
+with the head to read the requested data.
+
+246
+00:18:38,160 --> 00:18:42,800
+Similar to main memory an important challenge in disk storage is dealing with failures.
+
+247
+00:18:42,800 --> 00:18:48,360
+In a 100 disk system for example if the mean time to failure or the expected lifetime of
+
+248
+00:18:48,360 --> 00:18:53,480
+each disk is five years then over a long period of time we're looking at one disk failing
+
+249
+00:18:53,480 --> 00:18:56,120
+every 18 days on average.
+
+250
+00:18:56,120 --> 00:19:00,080
+So we definitely need a way to recover data stored on failed disks.
+
+251
+00:19:00,080 --> 00:19:06,640
+RAID or redundant array of inexpensive disks is a class of standard schemes for redundant
+
+252
+00:19:06,640 --> 00:19:07,640
+storage.
+
+253
+00:19:07,640 --> 00:19:13,200
+Note that an important distinction to memory ECC is that with disk we have diagnostics
+
+254
+00:19:13,200 --> 00:19:16,480
+that can tell us when and which disks have failed.
+
+255
+00:19:16,480 --> 00:19:20,080
+So detection of failures is not necessarily a concern.
+
+256
+00:19:20,080 --> 00:19:24,600
+We just need to be able to recover the data in the failed disk in the mean time until
+
+257
+00:19:24,600 --> 00:19:29,240
+the disk is replaced.
+
+258
+00:19:29,240 --> 00:19:33,040
+The baseline disk storage system provides no failure protection.
+
+259
+00:19:33,040 --> 00:19:36,040
+This is generally referred to as RAID 0.
+
+260
+00:19:36,040 --> 00:19:40,000
+Here data is stored in coarse-grained blocks and striped across the disks in a round robin
+
+261
+00:19:40,000 --> 00:19:44,920
+fashion to allow for parallel access and faster effective bandwidth.
+
+262
+00:19:44,920 --> 00:19:49,640
+RAID 1 is the simplest form of failure recovery which replicates all data by using twice as
+
+263
+00:19:49,640 --> 00:19:50,760
+many disks.
+
+264
+00:19:50,760 --> 00:19:52,800
+This is known as mirroring.
+
+265
+00:19:52,800 --> 00:19:58,040
+So every right to a block is performed on both the primary disk and the redundant disk.
+
+266
+00:19:58,040 --> 00:20:02,160
+Then if the primary fails we simply switch to the redundant one.
+
+267
+00:20:02,160 --> 00:20:05,960
+RAID 3 takes a parity approach just like in ECC.
+
+268
+00:20:05,960 --> 00:20:11,040
+The idea is to use bitwise interleaving across disks and introduce an additional disk for
+
+269
+00:20:11,040 --> 00:20:14,080
+storing the parity bits.
+
+270
+00:20:14,080 --> 00:20:22,680
+With the disk failure we can recover the failed bits by exclusive oring the remaining bits.
+
+271
+00:20:22,680 --> 00:20:29,360
+RAID 4 extends this to block interleaved parity to allow for parallel accesses to non-contiguous
+
+272
+00:20:29,360 --> 00:20:31,720
+data sectors.
+
+273
+00:20:31,720 --> 00:20:36,280
+And RAID 5, which is the most commonly used today, distributes the parity blocks across
+
+274
+00:20:36,280 --> 00:20:42,000
+the disks to improve parallelism when performing writes, since every data write needs to update
+
+275
+00:20:42,000 --> 00:20:51,360
+the parity block as well, which ends up bottlenecking the parity disk in RAID 4.
+
+276
+00:20:51,360 --> 00:20:56,120
+So far our processors addresses have all represented storage in DRAM.
+
+277
+00:20:56,120 --> 00:21:01,000
+How are we going to update our processor to communicate with disk or any other IO device?
+
+278
+00:21:01,000 --> 00:21:03,280
+There are generally two mechanisms.
+
+279
+00:21:03,280 --> 00:21:08,920
+The first is memory mapped IO, which dedicates specific memory addresses to be IO registers
+
+280
+00:21:09,040 --> 00:21:13,160
+that control the IO device instead of mapping to physical DRAM.
+
+281
+00:21:13,160 --> 00:21:18,200
+The program can then send commands and receive information from the device by performing
+
+282
+00:21:18,200 --> 00:21:20,880
+loads and stores on that address.
+
+283
+00:21:20,880 --> 00:21:26,120
+So for example, to issue an IO command, we would encode our command into the data word
+
+284
+00:21:26,120 --> 00:21:29,000
+that we store into this memory address.
+
+285
+00:21:29,000 --> 00:21:34,640
+Note though that memory mapped loads and stores need to be declared uncashable and thus bypass
+
+286
+00:21:34,720 --> 00:21:39,400
+the cache, because these addresses aren't real memory storage, but actually control
+
+287
+00:21:39,400 --> 00:21:41,840
+signals on the IO device.
+
+288
+00:21:41,840 --> 00:21:48,560
+The second approach is to add special opcodes in the instruction set for performing IO commands.
+
+289
+00:21:48,560 --> 00:21:53,800
+These are dedicated instructions exclusively for reading and writing the IO device registers.
+
+290
+00:21:53,800 --> 00:21:58,760
+When these instructions are executed, corresponding IO commands are generated and sent over the
+
+291
+00:21:58,760 --> 00:22:01,400
+IO bus to the designated device.
+
+292
+00:22:05,520 --> 00:22:10,360
+Now that we can send commands to IO devices, we need a way for the IO device to communicate
+
+293
+00:22:10,360 --> 00:22:11,360
+back.
+
+294
+00:22:11,360 --> 00:22:13,440
+Again, there are two approaches.
+
+295
+00:22:13,440 --> 00:22:19,160
+The first is by polling or continuously reading the IO register of the corresponding IO device
+
+296
+00:22:19,160 --> 00:22:21,880
+until it gets updated.
+
+297
+00:22:21,880 --> 00:22:26,040
+Though very simple to implement, this usually wastes a lot of CPU cycles since for much
+
+298
+00:22:26,040 --> 00:22:31,080
+of the time, the processor is doing nothing but fetching instructions in a loop that's
+
+299
+00:22:31,080 --> 00:22:34,880
+just reading the IO register until some event occurs.
+
+300
+00:22:34,880 --> 00:22:38,520
+The second approach is to enable interrupts from IO devices.
+
+301
+00:22:38,520 --> 00:22:43,560
+These are functionally similar to our exceptions, except they occur asynchronously with the
+
+302
+00:22:43,560 --> 00:22:44,560
+processor.
+
+303
+00:22:44,560 --> 00:22:49,160
+As with exceptions, a cause register and handler routine provide the mechanism to the software
+
+304
+00:22:49,160 --> 00:22:52,600
+to respond accordingly to these IO interrupts.
+
+305
+00:22:56,360 --> 00:22:59,160
+Let's dig into different IO fabrics.
+
+306
+00:22:59,160 --> 00:23:05,280
+Those are a common, simple form of network used to connect devices in a computer system.
+
+307
+00:23:05,280 --> 00:23:09,440
+So far, our discussions have focused on the processor memory bus.
+
+308
+00:23:09,440 --> 00:23:13,840
+Unfortunately, these are not as straightforward as simply connecting all the IO devices onto
+
+309
+00:23:13,840 --> 00:23:19,000
+the same processor memory bus, as shown in the top, because this is usually infeasible
+
+310
+00:23:19,000 --> 00:23:23,920
+since the IO devices would incur overhead on the bandwidth between the memory and processor,
+
+311
+00:23:23,920 --> 00:23:29,680
+and there's no need for most IO devices, like a mouse, to have such high bandwidth to the
+
+312
+00:23:29,680 --> 00:23:30,680
+processor.
+
+313
+00:23:30,680 --> 00:23:33,120
+DRAM is relatively slow already.
+
+314
+00:23:33,120 --> 00:23:35,840
+We do not want it to get slower.
+
+315
+00:23:35,840 --> 00:23:39,720
+So as shown in the middle, modern systems will usually have a dedicated processor memory
+
+316
+00:23:39,720 --> 00:23:45,880
+bus, and then bus adapters would connect IO devices together via specialized IO buses.
+
+317
+00:23:45,880 --> 00:23:51,200
+In fact, most systems would take this further and use a backplane bus to move all the IO
+
+318
+00:23:51,200 --> 00:23:59,120
+devices off the main processor memory bus.
+
+319
+00:23:59,120 --> 00:24:00,120
+So what is a bus?
+
+320
+00:24:00,120 --> 00:24:05,200
+Basically, it's just a bunch of wires that's used to communicate information back and forth.
+
+321
+00:24:05,200 --> 00:24:09,160
+Typically it's shared to make routing wires easier, so we need a mechanism to arbitrate
+
+322
+00:24:09,160 --> 00:24:12,800
+and decide whose turn it is to send on the bus.
+
+323
+00:24:12,800 --> 00:24:18,960
+We need control signals, data signals, and address signals to uniquely identify specific
+
+324
+00:24:18,960 --> 00:24:25,520
+IO devices and control registers.
+
+325
+00:24:25,520 --> 00:24:29,040
+Buses generally come in two flavors.
+
+326
+00:24:29,040 --> 00:24:33,080
+Synchronous buses have a clock, so everyone connected to the bus watches the clock and
+
+327
+00:24:33,080 --> 00:24:37,240
+registers data and commands at the appropriate phases.
+
+328
+00:24:37,240 --> 00:24:42,480
+Bus transactions can take a fixed or variable number of cycles depending on the design.
+
+329
+00:24:42,480 --> 00:24:47,680
+Because of the built-in synchronization, bus transactions are usually much faster on synchronous
+
+330
+00:24:47,680 --> 00:24:49,080
+buses.
+
+331
+00:24:49,080 --> 00:24:53,720
+But conversely, the fact that an accurate clock needs to be maintained, the bus wires
+
+332
+00:24:53,720 --> 00:24:57,800
+can't be too long without incurring significant clock skew.
+
+333
+00:24:57,800 --> 00:25:02,240
+For these reasons, the processor memory bus is often synchronous.
+
+334
+00:25:02,240 --> 00:25:07,120
+Conversely, asynchronous buses require a lot of handshaking to coordinate all the information
+
+335
+00:25:07,120 --> 00:25:09,840
+transfer per transaction.
+
+336
+00:25:09,840 --> 00:25:14,840
+This is slower, but is a lot more flexible, which makes them well suited for lower bandwidth
+
+337
+00:25:14,840 --> 00:25:19,800
+IO buses.
+
+338
+00:25:19,800 --> 00:25:24,720
+This slide illustrates an example of a typical asynchronous handshaking protocol for a simple
+
+339
+00:25:24,720 --> 00:25:28,120
+transaction with a request and a data response.
+
+340
+00:25:28,120 --> 00:25:32,720
+So in the first step, the bus master sends a read request by asserting the read request
+
+341
+00:25:32,720 --> 00:25:37,840
+line and sending the request information on the main bus line.
+
+342
+00:25:37,840 --> 00:25:42,640
+Then in step two, the bus target receives the request and responds with an acknowledgement
+
+343
+00:25:42,640 --> 00:25:43,640
+signal.
+
+344
+00:25:43,640 --> 00:25:47,400
+This lets the master know that it can stop sending the request, and when it does so,
+
+345
+00:25:47,400 --> 00:25:50,960
+the target de-asserts its acknowledgement.
+
+346
+00:25:50,960 --> 00:25:58,680
+At this point, the master can wait for a response or send a new request to a different device.
+
+347
+00:25:58,680 --> 00:26:02,480
+When the original target is ready to provide the data response, perhaps after the disk
+
+348
+00:26:02,480 --> 00:26:08,040
+heads moved and it reads in a new sector, it indicates data ready in step five, and
+
+349
+00:26:08,040 --> 00:26:14,080
+just like before, the master now asserts the acknowledgement upon receiving the data,
+
+350
+00:26:14,080 --> 00:26:22,700
+and when the target sees this, they de-assert the data ready signal to complete the transaction.
+
+351
+00:26:22,700 --> 00:26:27,240
+One last thing about IO devices is how they interact with the caches.
+
+352
+00:26:27,240 --> 00:26:32,800
+Using direct memory access, or DMA, the CPU can allow IO devices to read and write from
+
+353
+00:26:32,800 --> 00:26:35,160
+main memory on their own.
+
+354
+00:26:35,160 --> 00:26:40,080
+But if we perform IO in front of the caches, as shown here, we end up slowing down the
+
+355
+00:26:40,080 --> 00:26:44,880
+CPU because now the IO devices are occupying part of the access bandwidth that the processor
+
+356
+00:26:44,880 --> 00:26:51,200
+needs to perform cached loads and stores.
+
+357
+00:26:51,200 --> 00:26:56,320
+So generally, for performance, IO devices will be pushed back closer to the memory bus.
+
+358
+00:26:56,320 --> 00:27:01,120
+But the challenge here now is that if an IO device needs to be read from memory, it may
+
+359
+00:27:01,120 --> 00:27:06,160
+not get the most up-to-date version of the data since the caches may not have written
+
+360
+00:27:06,160 --> 00:27:08,840
+back their modifications.
+
+361
+00:27:08,840 --> 00:27:12,840
+This is known as the cache coherence problem, which we'll discuss in more detail later
+
+362
+00:27:12,840 --> 00:27:15,280
+in the course.
+
+363
+00:27:15,280 --> 00:27:20,600
+So in order to support this, the caches generally have to be flushed before allowing IO to read
+
+364
+00:27:20,600 --> 00:27:28,200
+and write memory.
+
+365
+00:27:28,200 --> 00:27:31,640
+Let's end this lecture with an exercise that extends our discussion on sected hamming
+
+366
+00:27:31,640 --> 00:27:32,640
+codes.
+
+367
+00:27:32,640 --> 00:27:35,960
+This time, you go into memory and read the 8-bit code word.
+
+368
+00:27:35,960 --> 00:27:43,320
+You find that a bit flip has actually occurred, and the code word now looks like 00101001.
+
+369
+00:27:43,320 --> 00:27:45,960
+Your goal is to recover the original data word.
+
+370
+00:27:45,960 --> 00:27:56,240
+Please pause the video, calculate the syndromes, and figure out which bit has flipped.
+
+371
+00:27:56,240 --> 00:27:59,640
+Let's calculate the syndromes one bit at a time.
+
+372
+00:27:59,640 --> 00:28:05,400
+Syndrome bit one is the exclusive OR of every odd bit, which gives us one.
+
+373
+00:28:05,400 --> 00:28:13,440
+Then syndrome bit two is the exclusive OR of code word bits W2, W3, W6, and W7, which
+
+374
+00:28:13,440 --> 00:28:15,040
+is equal to one.
+
+375
+00:28:15,040 --> 00:28:22,840
+Then the same is done to compute syndrome bit three and the parity syndrome bit.
+
+376
+00:28:22,840 --> 00:28:28,880
+In this, we can now see that the syndrome is pointing to code word bit W3 is the culprit.
+
+377
+00:28:28,880 --> 00:28:33,640
+Thus code word bit W3 is the only bit that's wrong.
+
+378
+00:28:33,640 --> 00:28:38,120
+So to recover the original data word, we simply grab the code word bits that correspond to
+
+379
+00:28:38,120 --> 00:28:43,560
+data bits one through four and flip W3 back so we get the correct B1.
+
+380
+00:28:43,560 --> 00:28:47,600
+And there we have the original four bit data word, 0101.
+

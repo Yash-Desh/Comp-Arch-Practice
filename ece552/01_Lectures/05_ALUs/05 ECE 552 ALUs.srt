@@ -1,0 +1,648 @@
+1
+00:00:00,000 --> 00:00:08,000
+In this lecture, we're going to discuss arithmetic logic units, the number crunching portions of processors.
+
+2
+00:00:08,000 --> 00:00:20,000
+Let's start with signed and unsigned integer representation, addition and subtraction operations, ALUs, and the concept of overflow.
+
+3
+00:00:20,000 --> 00:00:34,000
+We're going to just cover integer multiplication and division as well as floating-point arithmetic later in the course, as they're not crucial for the semester project. Stay tuned.
+
+4
+00:00:34,000 --> 00:00:42,000
+Each word in MIPS is 32 bits, and by convention the most significant bit 31 is on the left and the least significant bit 0 is on the right.
+
+5
+00:00:42,000 --> 00:00:46,000
+Each word can represent 2 to the 32 unique values.
+
+6
+00:00:46,000 --> 00:00:56,000
+There's no inherent meaning to binary numbers. Like the sounds I'm making that mean something to someone who understands the English language, what matters is the interpretation of them.
+
+7
+00:00:56,000 --> 00:01:08,000
+A 32-bit binary number could be an integer, a floating-point number, or a J-format instruction, among others. It all depends on the logic that is interpreting them.
+
+8
+00:01:08,000 --> 00:01:23,000
+For example, let's consider these bits in register T0. Perhaps this is an integer value, which would be negative 1,389,887,488.
+
+9
+00:01:23,000 --> 00:01:32,000
+Or the integer may be unsigned, or may contain a memory instruction or pointer, or it's simply a machine instruction.
+
+10
+00:01:32,000 --> 00:01:40,000
+As an aside, if a word is all zeros, aka null, what would the MIPS instruction be?
+
+11
+00:01:40,000 --> 00:01:50,000
+Try to decode it with your MIPS green card.
+
+12
+00:01:50,000 --> 00:02:02,000
+Let's refresh our knowledge of unsigned integers. Unsigned integers are encoded simply as a sum of powers of 2 specified by the ones in the binary representation.
+
+13
+00:02:02,000 --> 00:02:09,000
+For example, a 1 at bit position 7 adds 128 to the integer value.
+
+14
+00:02:09,000 --> 00:02:18,000
+The min value that can be represented is 0, and the max value is 4 gig minus 1 represented by all ones.
+
+15
+00:02:18,000 --> 00:02:24,000
+Signed integers can be positive or negative and are represented via 2's complement.
+
+16
+00:02:24,000 --> 00:02:35,000
+This encoding is identical to unsigned integers, with the exception of the most significant bit, which is now negative bit 31 times 2 to the 31st.
+
+17
+00:02:35,000 --> 00:02:39,000
+Why not negate just the MSB? A couple of reasons.
+
+18
+00:02:39,000 --> 00:02:47,000
+First, since 2 to the 31st is half of 2 to the 32nd, this allows us to represent almost half the numbers as negative.
+
+19
+00:02:47,000 --> 00:02:57,000
+Second, this makes it very easy to figure out if an integer is positive or negative. If the most significant bit is a 1, then the number is negative.
+
+20
+00:02:57,000 --> 00:03:06,000
+Note that this leads to an asymmetric range, where there are 1 more negative numbers than positive numbers, unless you think of 0 as a positive number.
+
+21
+00:03:06,000 --> 00:03:21,000
+The simple way of negating an integer is to invert all of its bits and then add 1, as can be seen in this example converting from positive 6 to negative 6.
+
+22
+00:03:21,000 --> 00:03:28,000
+Let's look at an example of a signed 8-bit number, 11110001.
+
+23
+00:03:28,000 --> 00:03:43,000
+By the formula, the MSB is a negative value where the rest are positive. It should be obvious that when the MSB is 1, the sum of the other terms can never equal the value of the MSB, so it will always be negative.
+
+24
+00:03:43,000 --> 00:03:53,000
+We use sign extension when storing integers into wider integers. This simply means we take the value of the old MSB and copy it into the new bits created when we widened it.
+
+25
+00:03:53,000 --> 00:04:00,000
+In this case, we take the value of bit 7 and we'll copy it to each of the bits in position 15 through 8.
+
+26
+00:04:00,000 --> 00:04:06,000
+What does negative number 11110001 become?
+
+27
+00:04:06,000 --> 00:04:17,000
+Well, we copy in a bunch of 1s. How about positive number 0111001?
+
+28
+00:04:17,000 --> 00:04:21,000
+We copy in a bunch of 0s.
+
+29
+00:04:21,000 --> 00:04:36,000
+For positive integers, it's clear that putting a bunch of 0s into the upper bits does not contribute to the sum, but why does it work for negative numbers where we're putting in a bunch of 1s that will become part of the sum?
+
+30
+00:04:36,000 --> 00:04:49,000
+Let's consider a minimal example where we're converting a 4-bit signed integer into a 5-bit signed integer. We know the rule, so we copy the MSB into the newly created bit. Let's do the math on both.
+
+31
+00:04:49,000 --> 00:04:57,000
+Our original 1001 works out to be negative 8 plus 1, which equals negative 7.
+
+32
+00:04:57,000 --> 00:05:07,000
+Our new value 11001 works out to be negative 16 plus 8 plus 1, which also equals 7. Why is that?
+
+33
+00:05:08,000 --> 00:05:26,000
+The old negative MSB has become positive, and the new negative MSB offsets for zero sum. Here we started with a negative 8, and now we have negative 16 plus 8, which also equals negative 8.
+
+34
+00:05:26,000 --> 00:05:38,000
+The natural question is, why 2s complement? Why not make the most significant bit the signed bit, and then simply encode the rest of the bits as unsigned magnitude?
+
+35
+00:05:38,000 --> 00:05:54,000
+For one, 2s complement has easier hardware. Adding signed integers is virtually the same as adding unsigned integers. This is shown on the left where adding one to each integer consistently moves one step clockwise, unlike with signed magnitude.
+
+36
+00:05:54,000 --> 00:06:03,000
+The lesser reason is that 2s complement can represent one more number since signed magnitude wastes an encoding to represent negative zero.
+
+37
+00:06:06,000 --> 00:06:11,000
+Now that we've discussed signed and unsigned integers, let's work on integer addition.
+
+38
+00:06:11,000 --> 00:06:26,000
+Addition is performed the same way you learned in elementary school using decimal numbers. As shown in the top example, when adding 3 plus 10, bits are added column by column, with the one being carried into the next column when the sum exceeds one.
+
+39
+00:06:26,000 --> 00:06:41,000
+As you can see in the bottom example, interpreting the two binary inputs as signed integers is the same process and yields the same binary answer. It's just a matter of whether the inputs and outputs as interpreted are unsigned or signed.
+
+40
+00:06:42,000 --> 00:07:02,000
+Next up is integer subtraction. Instead of doing it the elementary school way with borrowing, in binary we have 2s complement. Subtracting two binary integers simply involves negating the second operand, as in taking its 2s complement and then performing integer addition.
+
+41
+00:07:03,000 --> 00:07:08,000
+This is shown in the example where the 2s complement of the value 2 is added to 3.
+
+42
+00:07:13,000 --> 00:07:20,000
+To implement addition and logic, the key building block is the full adder, which implements addition of two input bits and a carry-in.
+
+43
+00:07:21,000 --> 00:07:27,000
+We can think of it as a third value in our column in our elementary school addition. The truth table is shown here.
+
+44
+00:07:27,000 --> 00:07:39,000
+Given input operands a and b as well as a carry-in bit, the resulting sum bit is one if an odd number of the inputs are one, which is equivalent to exclusive oring all three inputs.
+
+45
+00:07:40,000 --> 00:07:47,000
+And the carry-out is one if two or more of the bits are one because the second bit is needed to represent the sum.
+
+46
+00:07:48,000 --> 00:08:05,000
+Continuing with our elementary school examples, ripple carry adders are the simplest way to extend to 32-bit addition. We sum column 0, and if necessary carrying a bit to column 1, then repeat.
+
+47
+00:08:06,000 --> 00:08:15,000
+The idea is to concatenate full adders chaining their carry bits. The carry-in of the full adder of the least significant bit is set to 0.
+
+48
+00:08:18,000 --> 00:08:24,000
+A ripple carry subtractor has the same structure as the adder, though one input operand is negated.
+
+49
+00:08:25,000 --> 00:08:44,000
+And as we recall, negating an integer in two's complement means inverting all the bits and adding one. As shown in this diagram, we add not gates to invert the bits of input b and then pass a carry-in of one into the least significant full adder instead of a 0 as in regular addition.
+
+50
+00:08:45,000 --> 00:09:06,000
+Both addition and subtraction can be supported in a unified ripple carry structure. We use an operator control signal, and if 0 means addition and 1 means subtraction, then we can use the control bit as a way to invert input b with an xor and as the carry-in for the least significant bit.
+
+51
+00:09:07,000 --> 00:09:26,000
+Logical operations are generally simpler to implement. For bitwise and, or, xor, and nor, we simply use 32 logic gates in parallel. In terms of shifts and rotates, there are several variants that are often supported in ALUs.
+
+52
+00:09:27,000 --> 00:09:45,000
+Logical shifting moves bits either left or right, inserting zeros at the ends. For example, shifting left by two bits inserts zeros into the two least significant bits and throws away the two bits from the most significant.
+
+53
+00:09:46,000 --> 00:10:00,000
+In addition to logical right shifts, we have arithmetic right shifts for signed integers. That is, instead of inserting zeros into the most significant bits, the signed bit is preserved by sign extension.
+
+54
+00:10:01,000 --> 00:10:12,000
+One noteworthy trick, which we saw used in MIPS instruction SLL examples already, is that shifting left can be used to perform integer multiplication by powers of two.
+
+55
+00:10:13,000 --> 00:10:22,000
+And logical right shift can be used for unsigned integer division, while arithmetic right shift can be used for signed integer division.
+
+56
+00:10:22,000 --> 00:10:30,000
+Finally, rotate operations exist that effectively wrap the shifted bits around to the other side instead of inserting zeros.
+
+57
+00:10:31,000 --> 00:10:46,000
+Here we show the implementation of a simple right shifter using two to one multiplexers. The shift amount, where here is encoded in three bits, is used as the select signals of the MUXes.
+
+58
+00:10:46,000 --> 00:10:54,000
+By forming a three level tree structure, we can effectively shift the input in two to the third possible ways.
+
+59
+00:10:55,000 --> 00:11:05,000
+For a logical shift, the MUX inputs that are not shown are set to zero. For rotating, these inputs are driven by the least significant bits.
+
+60
+00:11:05,000 --> 00:11:15,000
+In ALU, or Functional Unit, usually implements multiple arithmetic and logical operations in tandem.
+
+61
+00:11:15,000 --> 00:11:23,000
+Here is a simple ALU implementation that has two input additions, subtraction, logical or and logical and.
+
+62
+00:11:23,000 --> 00:11:32,000
+In this case, the ALU is performing all four operations in parallel, and the opcode drives the MUX to select one of the intermediate results to feed through.
+
+63
+00:11:33,000 --> 00:11:43,000
+This is one way where some affluented programming would get perplexed. Why do all four operations in parallel when you know which result you want?
+
+64
+00:11:43,000 --> 00:11:59,000
+Modern implementations will use clock gating to minimize dynamic power and sort of get there, but this is an important shift in a computer architect's way of reasoning about how logic circuits are different from straight line execution of programs.
+
+65
+00:12:00,000 --> 00:12:10,000
+An important topic to cover is overflow of arithmetic operations. We'll specifically focus on overflow for integer addition and subtraction.
+
+66
+00:12:10,000 --> 00:12:18,000
+With fixed n-bit values, overflow occurs when the result is beyond the two to the n possible values.
+
+67
+00:12:18,000 --> 00:12:30,000
+Let's look at adding a pair of 3-bit unsigned values, 5 plus 6. We know that the sum is 11, but the maximum unsigned integer in 3-bits is 7.
+
+68
+00:12:30,000 --> 00:12:42,000
+Thus, the carryout bit of the adder, which is the carryout of the most significant full adder, directly signifies that overflow has occurred and that the sum requires 4-bits to represent it.
+
+69
+00:12:43,000 --> 00:12:57,000
+In the past, you've always had more paper or a calculator willing to add another digit to show the correct result, but processors use fixed size integers and require compositions of these functions to perform wider arithmetic.
+
+70
+00:13:00,000 --> 00:13:08,000
+Overflow becomes more difficult when adding signed integers. Consider this example of a 3-bit addition of negative 1 and negative 1.
+
+71
+00:13:08,000 --> 00:13:18,000
+We know that the sum is negative 2, which can be represented correctly as 110 in 3-bits, so no overflow needed to occur.
+
+72
+00:13:18,000 --> 00:13:29,000
+But if we look at the carryout bit of the adder, it's actually 1. Unfortunately, carryout does not always mean overflow occurred with 2's complement numbers.
+
+73
+00:13:30,000 --> 00:13:40,000
+But we must detect when overflow has occurred. Let's think about all the scenarios when overflow is possible and when it's not.
+
+74
+00:13:40,000 --> 00:13:43,000
+Let's look at the signed bits first.
+
+75
+00:13:43,000 --> 00:13:49,000
+Recall that in 2's complement, half the numbers are positive and half are negative.
+
+76
+00:13:49,000 --> 00:14:04,000
+Thus, it's impossible to add two numbers where one is positive and one is negative and get a result that is outside of the representable range, which goes from negative 2 to the 31st to positive 2 to the 31st.
+
+77
+00:14:04,000 --> 00:14:16,000
+So if the sign bits are opposite, we can ignore the carryout. However, if the sign bits are equal, then sometimes overflow may happen and we can't tell just by looking at the sign bits in isolation.
+
+78
+00:14:17,000 --> 00:14:31,000
+Let's apply what we've learned with some signed 3-bit examples. Say we're adding 2 plus 3. We know the sum is 5, which would be 0101 with 4-bits, but signed 3-bit math results in 101 or negative 3.
+
+79
+00:14:31,000 --> 00:14:40,000
+We have a new rule. If we sum two positive numbers and the result is negative, we know an overflow happened.
+
+80
+00:14:41,000 --> 00:14:55,000
+Let's consider a similar but opposite situation with negative 1 plus negative 4. If we had 4-bits, the result should be 101-1, but we only get the bottom 3-bits, which is 011 or positive 3.
+
+81
+00:14:55,000 --> 00:15:04,000
+Since the sum of two negative numbers resulted in a positive number, we can conclude that an overflow occurred.
+
+82
+00:15:04,000 --> 00:15:15,000
+Now that we can reason about when overflow happens, how can we detect it in hardware? One option is to compare the input sign bits with the output sign bit as we discussed earlier.
+
+83
+00:15:15,000 --> 00:15:21,000
+To find a cheaper option, let's build the truth table of the most significant full adder.
+
+84
+00:15:21,000 --> 00:15:30,000
+We know that overflow happens when the input and output signs don't match, which can only happen in the two cases highlighted in yellow.
+
+85
+00:15:30,000 --> 00:15:38,000
+When we look closer, we see that what makes these cases unique is the mismatch in the carry-in bit and the carry-out bit.
+
+86
+00:15:38,000 --> 00:15:46,000
+Simplifying, we can detect overflow by comparing the carry-in and carry-out bits of the most significant full adder.
+
+87
+00:15:48,000 --> 00:15:54,000
+Detecting overflow and subtraction is similar. We just have to account for the fact that one operand is automatically negated.
+
+88
+00:15:55,000 --> 00:16:00,000
+With addition, we found that if the input signs are different, then we cannot get an overflow.
+
+89
+00:16:00,000 --> 00:16:06,000
+With subtraction, we can instead say that overflow can't happen when the input signs are the same.
+
+90
+00:16:06,000 --> 00:16:10,000
+So to detect overflow, we just have to reason about the strange cases.
+
+91
+00:16:10,000 --> 00:16:17,000
+If a negative integer minus a positive integer does not result in a negative value, then overflow has happened.
+
+92
+00:16:17,000 --> 00:16:26,000
+Conversely, if a positive integer minus a negative integer does not equal a positive value, then we again got overflow.
+
+93
+00:16:30,000 --> 00:16:33,000
+Now that we can detect overflow, what do we do about it?
+
+94
+00:16:33,000 --> 00:16:36,000
+In languages like C, overflow is simply ignored.
+
+95
+00:16:36,000 --> 00:16:42,000
+It's the programmer's responsibility to make sure that their code does not exceed the allowable integer range.
+
+96
+00:16:42,000 --> 00:16:51,000
+In Java, the try-catch semantics offer programmers more flexibility to deal with it in a slightly tedious way.
+
+97
+00:16:51,000 --> 00:16:58,000
+Some processors set a flag when overflow has occurred so that subsequent instructions can change behavior.
+
+98
+00:16:58,000 --> 00:17:06,000
+Oftentimes, this flag is sticky, as in it doesn't automatically get cleared by other instructions.
+
+99
+00:17:06,000 --> 00:17:11,000
+Once it's set, it stays set until an instruction explicitly clears it.
+
+100
+00:17:11,000 --> 00:17:22,000
+Making the flag sticky often makes it easier to deal with in hardware because you don't have to have another set of gates that clears it automatically.
+
+101
+00:17:22,000 --> 00:17:26,000
+And finally, some systems support trapping upon an overflow.
+
+102
+00:17:26,000 --> 00:17:33,000
+That is, the programmer has the option to create a service routine that gets run whenever an overflow occurs.
+
+103
+00:17:33,000 --> 00:17:39,000
+MIPS, for one, supports traps for some variants of addition, but not for others.
+
+104
+00:17:39,000 --> 00:17:56,000
+This is actually useful when writing programs and want to emulate higher precision arithmetic than their processor supports, like 64 or 128-bit integer data types and arithmetic.
+
+105
+00:17:56,000 --> 00:18:04,000
+Our last topic for this lecture will focus on speeding up addition and subtraction through logic optimization.
+
+106
+00:18:04,000 --> 00:18:11,000
+While ripple carry adders are simple, one disadvantage of them is that they're pretty slow.
+
+107
+00:18:11,000 --> 00:18:14,000
+Logic gates in silicon have delays.
+
+108
+00:18:14,000 --> 00:18:25,000
+Standard cell libraries will have different size cells for the same function, but in general, the brute-force way to make a logic gate faster is to increase its power draw.
+
+109
+00:18:25,000 --> 00:18:31,000
+Since we're going to be computer architects, let's try to avoid making mobile processors that can burn a hole in someone's pocket.
+
+110
+00:18:31,000 --> 00:18:36,000
+Let's instead solve this in a more elegant way.
+
+111
+00:18:36,000 --> 00:18:42,000
+The longest delay path goes from the least significant bit of the negated input to the most significant sum bit.
+
+112
+00:18:42,000 --> 00:18:51,000
+The value in B0 has to go through 32 full adders and an initial XOR gate before the result can be known.
+
+113
+00:18:51,000 --> 00:18:55,000
+What can we do instead?
+
+114
+00:18:55,000 --> 00:18:58,000
+One option is to build a carry lookahead adder.
+
+115
+00:18:58,000 --> 00:19:06,000
+The key observation here is that each of the sum bits can be computed completely independently from the other full adders.
+
+116
+00:19:06,000 --> 00:19:18,000
+That is, bit 31 of the sum can be computed from the inputs alone and not need to wait for the carryouts to ripple all the way through the previous full adders.
+
+117
+00:19:18,000 --> 00:19:25,000
+Specifically, each full adder needs to figure out its carry-in immediately, not after the ripple delay.
+
+118
+00:19:25,000 --> 00:19:32,000
+We have to generate two values, the carry generate and the carry propagate, and each pair of input bits.
+
+119
+00:19:32,000 --> 00:19:40,000
+Two input bits that are each one are guaranteed to generate a carryout, otherwise we cannot guarantee it.
+
+120
+00:19:40,000 --> 00:19:47,000
+However, we know they'll propagate a carry-in to the carryout if at least one of the inputs is one.
+
+121
+00:19:47,000 --> 00:20:03,000
+With these new bits, we can determine the carry-in of the i-th plus one's full adder carry-in based on whether the i-th input bits generate or propagate a carry, which we label g-sub-i and p-sub-i.
+
+122
+00:20:03,000 --> 00:20:11,000
+Note that carry propagate can also be defined as the exclusive OR of the two input bits, as you'll see from time to time.
+
+123
+00:20:11,000 --> 00:20:18,000
+The effect is similar, this method simply distinguishes the case where both inputs are one.
+
+124
+00:20:18,000 --> 00:20:28,000
+A carry that is generated isn't also propagated.
+
+125
+00:20:29,000 --> 00:20:42,000
+If we recursively unroll this, we can see how the carry-in bits of each full adder can be computed based on the generation and propagation of the inputs alone, and without waiting for each other's carry bits.
+
+126
+00:20:42,000 --> 00:20:54,000
+For each bit, the carry can be computed in only three levels of logic, one gate delay for the generate and propagate bits, and two for the sum of min terms for the carry bits.
+
+127
+00:20:54,000 --> 00:21:07,000
+As you can see, the fan-in does expand with every bit, so computing carry bit 4, you need a fan-in of 5 for the OR as well as the rightmost AND.
+
+128
+00:21:07,000 --> 00:21:14,000
+So now we can use these equations in the carry-look-ahead block, which computes the carry bits and feeds them back to the full adders.
+
+129
+00:21:14,000 --> 00:21:22,000
+At a high level, this diagram shows how the carry-propagate delay is greatly reduced compared to the ripple carry implementation.
+
+130
+00:21:22,000 --> 00:21:41,000
+The generate and propagate bits are computed in parallel with one level of logic, followed by the two levels in the carry-look-ahead block, and finally all the carry bits are then fed back down together, and the sum bits are computed in parallel.
+
+131
+00:21:41,000 --> 00:21:57,000
+You can extend a CLA to the maximum precision of the adder, but the fan-in gets pretty crazy. Instead, one trade-off is to consider a hierarchical organization, where a faster 4-bit CLA is used as the building block to create higher-precision adders.
+
+132
+00:21:57,000 --> 00:22:07,000
+To keep things fast, we just need to generate the groups, generate, and propagate bits. How can we do that?
+
+133
+00:22:07,000 --> 00:22:23,000
+Turns out that the group generate and propagate bits follow a similar recursive form. Let's look at group 0-3. This group generates a carry if the MSB generates a carry, and that's shown as the leftmost term G3.
+
+134
+00:22:23,000 --> 00:22:36,000
+The group also generates a carry if one of the input bits generates a carry, say G1, and that carry is propagated all the way to the end by the propagate bits above it, P2 and P3.
+
+135
+00:22:36,000 --> 00:22:53,000
+In other words, a generated carry G1 will only propagate to the MSB if both P2 and P3 are one. This is still nice, as is just two levels of logic, regardless of the group size.
+
+136
+00:22:54,000 --> 00:23:09,000
+Now the group-propagate bit is simply computed by ANDing the four propagate bits within the group. This is the same as a carry coming into the group that is propagated all the way and becomes a carryout of that group.
+
+137
+00:23:09,000 --> 00:23:18,000
+Now we can apply this to the rest of the bits to complete the 16-bit CLA implementation.
+
+138
+00:23:18,000 --> 00:23:34,000
+Let's apply what we've discussed in some exercises. Consider this ALU that takes in two 1-bit inputs, A and B. As designed, it includes an AND gate, an OR gate, and a full adder, and the result is mucked out by the operation bits.
+
+139
+00:23:34,000 --> 00:23:47,000
+A invert and B invert can also invert the bits if needed. Though simple in design, this ALU is actually more flexible than meets the eye.
+
+140
+00:23:47,000 --> 00:24:10,000
+Let's try to use this ALU to compute A nor B, assuming that the carry-in is zero. What would you need to set the three inputs to in order to get a nor output? Please pause the video and ponder it.
+
+141
+00:24:10,000 --> 00:24:34,000
+If you recall De Morgan's theorem from earlier classes, a nor, which is the complement of an OR, can also be represented by ANDing the complement of the inputs. So set both A invert and B invert to one, and then mucks out the AND operation to perform a nor.
+
+142
+00:24:34,000 --> 00:24:50,000
+Let's do another example, an X nor, or exclusive nor. Please pause the video and draw a truth table if it helps.
+
+143
+00:24:51,000 --> 00:25:06,000
+Turns out that an X nor is the same as taking the complement of one input and performing an Xor. The first step can be accomplishing by setting A invert or B invert to a one, but not both.
+
+144
+00:25:06,000 --> 00:25:20,000
+Since the sum bit of a full adder is an Xor of the inputs with carry-in, as long as carry-in is zero, the sum is an Xor of the two inputs.
+
+145
+00:25:21,000 --> 00:25:36,000
+Alright, here's one last exercise. Using only the core instruction set from your MIPS green cards, please convert the logical shift-right code into an arithmetic shift-right.
+
+146
+00:25:36,000 --> 00:25:58,000
+Remember that the difference between arithmetic and logical is that the arithmetic shift remains a signed integer, so while SRL emulates SRA for a positive number, it does not work for a negative number.
+
+147
+00:25:59,000 --> 00:26:10,000
+Please pause the video and give it a shot.
+
+148
+00:26:10,000 --> 00:26:17,000
+Here is a brute force solution. Let me explain.
+
+149
+00:26:17,000 --> 00:26:29,000
+So we start with the original logical-right shift by eight, which can be thought of as dividing the unsigned integer in register S0 by two to the eighth.
+
+150
+00:26:29,000 --> 00:26:43,000
+But then to make it an arithmetic shift, we need to see if the most significant bit was originally a one. We can compute the original sign bit by shifting right by 31.
+
+151
+00:26:43,000 --> 00:26:54,000
+If the sign bit was zero, then we're already done and can skip the rest. Otherwise, we quest on.
+
+152
+00:26:54,000 --> 00:27:04,000
+We need to fill the eight most significant bits with ones. So we initialize temporary register T0 to all ones, which is equal to negative one and twos complement.
+
+153
+00:27:04,000 --> 00:27:14,000
+Then we shift it left by 24 so that only the eight most significant bits are ones, and then we order that with our original result in register S1.
+
+154
+00:27:14,000 --> 00:27:20,000
+We've now emulated SRA with a sequence of six instructions.
+
+155
+00:27:20,000 --> 00:27:33,000
+Can we optimize? In this case, yes. Let's try to get rid of the branch instruction, which you'll learn later in the course, can be very expensive in terms of latency or throughput.
+
+156
+00:27:34,000 --> 00:27:46,000
+The observation is that the last three instructions after the branch are simply replicating the negative sign bit in the MSBs. However, the same can be done if the sign bit were positive.
+
+157
+00:27:46,000 --> 00:27:56,000
+As register T0 already holds the sign bit after the second instruction, we can replicate it in the eight most significant bits and then order that with S1.
+
+158
+00:27:56,000 --> 00:28:07,000
+To replicate the sign bit, we shift it left to the 24th position. Since by nature of twos complement, negating this value ends up filling the rest of the most significant bits with the sign bit.
+
+159
+00:28:07,000 --> 00:28:17,000
+As shown in the example on the bottom, we're negating 0 0 1 0 0 yields 1 1 1 0 0. We now have our desired or input.
+
+160
+00:28:17,000 --> 00:28:28,000
+Finally, we recognize that inserting the sign bits into the original shifted result can be done either by oring or adding.
+
+161
+00:28:28,000 --> 00:28:38,000
+If we choose to add, then the last two instructions are basically subtracting T0 from 0 and adding that to S1.
+
+162
+00:28:38,000 --> 00:28:53,000
+Clearly, that can be simplified by just subtracting T0 from S1. We've now shown that an arithmetic shift right can be emulated in just four instructions.
+

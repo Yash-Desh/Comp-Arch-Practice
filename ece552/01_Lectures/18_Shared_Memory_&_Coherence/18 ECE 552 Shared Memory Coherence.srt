@@ -1,0 +1,552 @@
+1
+00:00:00,000 --> 00:00:10,000
+Now that we have multi-core processors, we need to talk about how they're going to share memory and ensure all data remains coherent.
+
+2
+00:00:10,000 --> 00:00:19,000
+Shared memory is a common programming model for implicit communication. It can be used among different threads in the same process.
+
+3
+00:00:19,000 --> 00:00:31,000
+The communication in it is implicit because threads share and transfer information using standard load and store instructions as opposed to using explicit IO calls to send messages.
+
+4
+00:00:31,000 --> 00:00:41,000
+When used for threads within the same process, the different threads simply access shared regions of their common virtual address space.
+
+5
+00:00:41,000 --> 00:00:48,000
+Alternatively, shared memory can also be used for implicit communication across different processes.
+
+6
+00:00:48,000 --> 00:01:01,000
+This is when different processes map the same physical pages into their virtual address spaces so they can send each other data, again via standard loads and stores.
+
+7
+00:01:01,000 --> 00:01:14,000
+Different flavors of chip multi-processors exist, but we'll be focusing on ones that assume a shared memory model so all physical memory is accessible to all CPU cores and threads.
+
+8
+00:01:14,000 --> 00:01:22,000
+We'll generally also assume symmetric multi-processors, where all the cores are alike or homogenous.
+
+9
+00:01:22,000 --> 00:01:28,000
+So there are a few key idealisms that we strive for when building a shared memory CMP.
+
+10
+00:01:28,000 --> 00:01:41,000
+The first is that all physical memory is accessible to all cores, which is usually supported but comes at a cost of a non-uniform latency, which I'll elaborate on a coming slide.
+
+11
+00:01:41,000 --> 00:01:52,000
+The next idealisms are to achieve single cycle memory access latency and no contention or interference from other threads currently executing on the system.
+
+12
+00:01:52,000 --> 00:02:00,000
+We can approximately approach these goals by constructing a cache hierarchy with private caches, as they'll show in the next slide.
+
+13
+00:02:00,000 --> 00:02:13,000
+And the last idealism, which will be the main focus of this lecture, is that when one thread modifies a shared memory location, this modification should be instantaneously visible to all other threads.
+
+14
+00:02:13,000 --> 00:02:18,000
+This is the job of the cache coherence protocol.
+
+15
+00:02:18,000 --> 00:02:25,000
+A typical shared memory cache hierarchy will look approximately like this, though the exact configurations vary.
+
+16
+00:02:25,000 --> 00:02:34,000
+Often, closer to the processor cores, the caches are private, that is, only one core is allowed to put blocks into the cache.
+
+17
+00:02:34,000 --> 00:02:47,000
+This means that if one core is reading block X and another is also reading X, then they may both bring X into their respective private caches, resulting in multiple copies existing in the hierarchy at the same time.
+
+18
+00:02:47,000 --> 00:02:55,000
+Often, we'll have the last level caches, that is, the caches closest to memory, as shared across all cores.
+
+19
+00:02:55,000 --> 00:03:12,000
+Since the last level caches are generally much larger, they're better suited for sharing data across threads, whereas very large private caches would likely lead to underutilization because some threads use more data than others.
+
+20
+00:03:12,000 --> 00:03:21,000
+As mentioned earlier, the cost of providing full access to main memory for all cores is potentially non-uniform access latency.
+
+21
+00:03:21,000 --> 00:03:33,000
+In more classic, smaller multi-processor systems, we were able to provide uniform memory access, usually via fixed latency interconnect like a bus, with only a low number of cores and memory banks.
+
+22
+00:03:33,000 --> 00:03:46,000
+However, in many modern systems, to achieve better scalability, point-to-point interconnection networks are used to connect the processors and the shared memory banks are often distributed among the processor tiles.
+
+23
+00:03:46,000 --> 00:03:52,000
+Thus, some regions of physical memory are faster to access for some cores, while others are slower.
+
+24
+00:03:52,000 --> 00:04:12,000
+This non-uniform memory access, or NUMMA, can be very challenging for trying to provide quality of service to users because it's difficult to guarantee good enough performance when some of your memory accesses may take an unexpectedly long time.
+
+25
+00:04:12,000 --> 00:04:24,000
+Let's move on to the important problem of providing cache coherence. Due to the nature of private caches in our memory hierarchy, it is possible for some block X to exist in multiple places at once.
+
+26
+00:04:24,000 --> 00:04:36,000
+What this means is that if one core modifies X, unless we make sure this modification is propagated to all other cores immediately, then other cores may end up reading the wrong stale value of X.
+
+27
+00:04:36,000 --> 00:04:44,000
+In the example shown here at time T1, processor 2 loaves X from memory, bringing it into its private cache.
+
+28
+00:04:44,000 --> 00:04:55,000
+P1 stores the value 37 into X, but since it's a writeback, write-allocate private cache, the updated value is not propagated on the memory bus yet.
+
+29
+00:04:55,000 --> 00:05:05,000
+Only upon eviction will we perform a writeback of the dirty block. As a result, the value of X in P2's private cache is now incoherent.
+
+30
+00:05:05,000 --> 00:05:15,000
+P2 will continue to load the value from its cache thinking that everything's okay when in fact it's reading the old value.
+
+31
+00:05:15,000 --> 00:05:34,000
+Now, even if X is eventually evicted from P1 at time T4, the writeback will only update main memory, but until P2 evicts X from its own private cache, which it may never do, it will continue to read the wrong value indefinitely.
+
+32
+00:05:34,000 --> 00:05:47,000
+Thus, the role of cache coherence protocol is to provide this guarantee that all modifications to a block are made visible immediately to all other private caches.
+
+33
+00:05:47,000 --> 00:06:04,000
+More formally, the goal of a cache coherence protocol is to provide two properties. The first is write serialization, where at any moment in time only one processor can be allowed to modify a memory location and all processors agree on who it is.
+
+34
+00:06:04,000 --> 00:06:15,000
+This is known as the single writer multiple reader invariant. Since reading does not alter the values, multiple processors can read the data in parallel.
+
+35
+00:06:15,000 --> 00:06:32,000
+The second property is write propagation, whereby any processors that read the memory location immediately after someone else modifies it must observe the new modified value. This is known simply as the data value invariant.
+
+36
+00:06:32,000 --> 00:06:41,000
+Another way to think about it is that the coherence protocol must impose a global logical time in which all reads and writes to a memory location occur.
+
+37
+00:06:41,000 --> 00:06:50,000
+So the most trivial way of supporting this is by serializing all accesses to a memory location, whether it be reading or writing the data.
+
+38
+00:06:50,000 --> 00:07:07,000
+We'll discuss the simple modified invalid protocol for implementing this. This is obviously very bad for performance, since a lot of our data is read only, so we can do better by allowing reads to occur in parallel.
+
+39
+00:07:07,000 --> 00:07:14,000
+We'll show how to implement the modified shared invalid coherence protocol for this.
+
+40
+00:07:14,000 --> 00:07:27,000
+Cache coherence generally operates at cache block or cache line granularity. For simplicity, we'll be assuming that all private caches are right back right allocate for the rest of our discussion.
+
+41
+00:07:27,000 --> 00:07:38,000
+This has certain implications. This means that upon a store miss, we must first fetch the entire block. That's all of its contents, not just the data word that we're accessing.
+
+42
+00:07:38,000 --> 00:07:47,000
+In a similar vein, whenever we evict a dirty block from the cache, we write all of its contents back to memory, even the words that we didn't modify.
+
+43
+00:07:47,000 --> 00:07:54,000
+This is because the complexity required to track the dirtiness of individual words within a block can incur a lot of overhead.
+
+44
+00:07:54,000 --> 00:08:04,000
+So with this, if we did not support cache coherence, then any modified values are only visible to the rest of the caches and memory after we evict the dirty block.
+
+45
+00:08:04,000 --> 00:08:12,000
+With cache coherence enabled, all modified values are guaranteed to be made visible immediately.
+
+46
+00:08:12,000 --> 00:08:26,000
+There are two classes of coherence. The first is snooping based coherence where all private caches are able to snoop or observe all of the requests to and from memory via some form of broadcast.
+
+47
+00:08:26,000 --> 00:08:34,000
+This is a common assumption on multiprocessor systems where the caches are interconnected by a bus.
+
+48
+00:08:34,000 --> 00:08:43,000
+Directory based coherence is when all requests and responses are point to point. So individual caches cannot observe the activity of other caches.
+
+49
+00:08:43,000 --> 00:08:51,000
+So separate directory structure needs to be referenced every time we want to access data to find out who is currently got a copy of it.
+
+50
+00:08:51,000 --> 00:08:57,000
+This is an advanced topic that we won't be covering in this course.
+
+51
+00:08:57,000 --> 00:09:07,000
+There are two types of possible implementations. Update based protocols are where each cache is responsible for keeping its own blocks updated to the latest value.
+
+52
+00:09:07,000 --> 00:09:13,000
+So each cache must watch and follow the modifications being made by all other caches.
+
+53
+00:09:13,000 --> 00:09:24,000
+Invalidation based protocols, on the other hand, put the onus on the modifier to notify all the other caches of the change, effectively by invalidating their now stale copies.
+
+54
+00:09:24,000 --> 00:09:32,000
+We'll be focusing on invalidation based protocols with snooping coherence.
+
+55
+00:09:32,000 --> 00:09:41,000
+Simply put, the hardware implementation of a cache coherence protocol is a system of finite state machines for the cache and memory controllers.
+
+56
+00:09:41,000 --> 00:09:46,000
+Each controller maintains a state of each block it currently contains.
+
+57
+00:09:46,000 --> 00:09:57,000
+And then based on external events that are observed, the controller transitions to a new state for the corresponding block and performs some set of actions that are triggered by this event.
+
+58
+00:09:57,000 --> 00:10:05,000
+We'll be focusing our attention on the FSMs for the cache controller and ignoring the memory controller.
+
+59
+00:10:05,000 --> 00:10:12,000
+We'll start with the simplest invalidation based protocol, which is the modified invalid or MI protocol.
+
+60
+00:10:12,000 --> 00:10:22,000
+There are only two states that a cache block can be in, either the modified state where both reads and writes are allowed and invalid when the block is not resident in your cache.
+
+61
+00:10:22,000 --> 00:10:28,000
+The key is that in the modified state, no other copy of the block can exist in another private cache.
+
+62
+00:10:28,000 --> 00:10:38,000
+The FSM is shown on the bottom right, where each edge specifies the event that triggers the transition and the action that is performed, if any.
+
+63
+00:10:38,000 --> 00:10:43,000
+There are three kinds of events that can occur from the lower level of the cache hierarchy.
+
+64
+00:10:43,000 --> 00:10:47,000
+So for L1 caches, the lower level is the processor core itself.
+
+65
+00:10:47,000 --> 00:10:50,000
+These are loads, stores, and evictions.
+
+66
+00:10:50,000 --> 00:10:54,000
+Then there are three events that can occur on the bus.
+
+67
+00:10:54,000 --> 00:11:00,000
+These are bus read exclusive, which is sent out when a cache is requesting to read or write the block.
+
+68
+00:11:00,000 --> 00:11:11,000
+A bus reply is a response that sends the block contents across the bus, and a bus writeback sends the block's contents to main memory.
+
+69
+00:11:11,000 --> 00:11:16,000
+Let's go through an example of the MI protocol in action.
+
+70
+00:11:16,000 --> 00:11:23,000
+Assume we have two cores, P1 and P2, each with a private cache connected on a bus with main memory.
+
+71
+00:11:23,000 --> 00:11:28,000
+All actions pertain to a single memory block A that is shared by the cores.
+
+72
+00:11:28,000 --> 00:11:35,000
+The contents of block A is currently zero, and neither cache currently has the block.
+
+73
+00:11:35,000 --> 00:11:41,000
+At time T1, the thread running on P1 performs a store instruction on A.
+
+74
+00:11:41,000 --> 00:11:52,000
+So as shown in the FSM, the cache controller responds to the store by transitioning to the M state and sending out a bus read exclusive request asking for the block.
+
+75
+00:11:52,000 --> 00:11:57,000
+Since only memory has the block right now, it responds with a bus reply sending the data.
+
+76
+00:11:57,000 --> 00:12:07,000
+P1 then sets the contents of the block to a new value of P1, but doesn't yet write it back to memory since this is a writeback cache.
+
+77
+00:12:07,000 --> 00:12:14,000
+Since P1 currently has the block in the modified state, it can read and write it freely as much as it wants.
+
+78
+00:12:14,000 --> 00:12:21,000
+However, if P2 wants to read the block, as before, it needs to send out a bus read exclusive.
+
+79
+00:12:21,000 --> 00:12:34,000
+As shown in the FSM, upon observing a bus read exclusive, P1 must transition to the invalid state and send out a bus reply on the bus so that whoever is requesting it can get the most up to date value.
+
+80
+00:12:34,000 --> 00:12:40,000
+Note that in this case, main memory is not updated and still has the very old value zero.
+
+81
+00:12:40,000 --> 00:12:49,000
+That's fine because eventually the block will be evicted by the cache, which would then result in a bus writeback.
+
+82
+00:12:49,000 --> 00:12:55,000
+The problem with the MI protocol is that it only allows one reader at a time, which is a very strict constraint.
+
+83
+00:12:55,000 --> 00:13:06,000
+So the MSI coherence protocol improves on this by adding a shared state S, where only reads are allowed and multiple caches can be in the shared state at the same time.
+
+84
+00:13:06,000 --> 00:13:10,000
+To support this, we need two new events and actions.
+
+85
+00:13:10,000 --> 00:13:17,000
+One is a bus read, which is simply a read request for the block, but not requesting exclusive access to it.
+
+86
+00:13:17,000 --> 00:13:29,000
+The second is a bus invalidate, which tells everyone on the bus that you want exclusive access to the block, but you already have it in your cache, so no one needs to reply and send you the data.
+
+87
+00:13:29,000 --> 00:13:34,000
+To understand how the protocol works, we'll build up the FSM from the ground up.
+
+88
+00:13:34,000 --> 00:13:39,000
+The first transition is a load miss, which simply goes from invalid to shared state.
+
+89
+00:13:39,000 --> 00:13:50,000
+So in this case, P1 reads the contents of a which is zero by sending out a bus read request.
+
+90
+00:13:50,000 --> 00:13:57,000
+Now, unlike with the MI protocol, if P2 also has a load miss to a P1 doesn't have to get invalidated.
+
+91
+00:13:57,000 --> 00:14:05,000
+Instead, P2 will also transition to the shared state, and as shown in the FSM, P1 gets to stay in the shared state.
+
+92
+00:14:05,000 --> 00:14:11,000
+Now either processor can read the data as much as they want.
+
+93
+00:14:11,000 --> 00:14:17,000
+Upon eviction of block A and P2, the cache simply needs to transition to the invalid state.
+
+94
+00:14:17,000 --> 00:14:22,000
+Note that no external action need to be performed to evict a clean, unmodified block.
+
+95
+00:14:22,000 --> 00:14:30,000
+In other words, other caches don't care that you've now evicted the block from your cache.
+
+96
+00:14:30,000 --> 00:14:36,000
+Now what happens if P2 has a store miss? In this case, it follows a similar procedure as in the MI state.
+
+97
+00:14:36,000 --> 00:14:43,000
+It sends out a bus read exclusive request, which forces P1 to transition to the invalid state.
+
+98
+00:14:43,000 --> 00:14:51,000
+Since memory still has the most up to date copy, since no one has modified it yet, P2 receives the bus reply from memory.
+
+99
+00:14:52,000 --> 00:15:01,000
+Now what if P1 wants to read the block again? When P2 observes the bus read request, it doesn't go to invalid, but rather goes to the shared state.
+
+100
+00:15:01,000 --> 00:15:13,000
+In response, it sends the new data to the requesting core and also writes it back to memory. We'll discuss a bit more later why this writeback needs to take place now.
+
+101
+00:15:13,000 --> 00:15:21,000
+Now that both caches are in the shared state, what if P1 wants to perform a store on A? This transition is referred to as an upgrade.
+
+102
+00:15:21,000 --> 00:15:27,000
+Because P1 already has the latest copy of the data, it just wants permission to modify it.
+
+103
+00:15:27,000 --> 00:15:35,000
+So it transitions to the modified state and sends out a bus invalidate request, which forces P2 to go to invalid.
+
+104
+00:15:35,000 --> 00:15:40,000
+So how is this bus invalidate request different from a bus read exclusive?
+
+105
+00:15:40,000 --> 00:15:47,000
+The only distinction is that with a bus invalidate, no data response is needed because it's already in the requester's cache.
+
+106
+00:15:48,000 --> 00:16:05,000
+Now, if P1 is in modified and P2 wants to modify, then the same procedure as in the MI protocol takes place, with the bus read exclusive being sent out by P2 and P1 responding with the bus reply.
+
+107
+00:16:06,000 --> 00:16:19,000
+And finally, upon a dirty eviction from the modified state, the block is written back to main memory, and there you have the full FSM for the MSI protocol.
+
+108
+00:16:20,000 --> 00:16:27,000
+You'll often find cache coherence protocols represented as state transition tables like this, instead of state diagrams.
+
+109
+00:16:27,000 --> 00:16:40,000
+Given a current state, which is each row, each column specifies a possible external event, and each cell in the table describes the next state and the action that needs to be performed.
+
+110
+00:16:41,000 --> 00:16:53,000
+So first, a quick conceptual exercise. When transitioning from modified to invalid upon an external bus read exclusive, why are we not performing it right back to memory?
+
+111
+00:16:53,000 --> 00:16:56,000
+I encourage you to pause the video now to think about it.
+
+112
+00:16:56,000 --> 00:17:13,000
+This is just like the MI protocol, actually. Because another cache is requesting to modify the block, we can safely assume that it will eventually get written back, so we don't have to do it now.
+
+113
+00:17:13,000 --> 00:17:21,000
+And we can see this upon eviction in the modified state, which does perform a right back, not only here, but also on a bus read request.
+
+114
+00:17:22,000 --> 00:17:27,000
+Since we're transitioning to the shared state, we need to perform a right back to memory now.
+
+115
+00:17:27,000 --> 00:17:34,000
+Because once we go to the shared state, as shown in the FSM, we won't perform any actions upon eviction.
+
+116
+00:17:34,000 --> 00:17:41,000
+So if we don't perform the right back when transitioning from M to S, then we may lose the modified data.
+
+117
+00:17:42,000 --> 00:17:51,000
+Now for a fairly more complex exercise that should really test your understanding of the implications of incoherence.
+
+118
+00:17:51,000 --> 00:17:58,000
+So assume that cache coherence is disabled in your system, and we're running two threads on our dual core processor.
+
+119
+00:17:58,000 --> 00:18:09,000
+The threads are reading and writing to shared memory locations 2000 and 2004, which both exist in the same cache block, and are both initially zero.
+
+120
+00:18:09,000 --> 00:18:17,000
+Show how it's possible for the memory contents to end up being 10 and zero at the end of the program, given that coherence is not enabled.
+
+121
+00:18:17,000 --> 00:18:24,000
+This is an excellent thought exercise, and I suggest you take the time you need to solve this yourself and unpause the video when you're done.
+
+122
+00:18:32,000 --> 00:18:34,000
+Let's walk through the sequence to get there.
+
+123
+00:18:34,000 --> 00:18:39,000
+The highlighted box shows the instructions executed so far in each of the threads.
+
+124
+00:18:39,000 --> 00:18:47,000
+Let's assume that the program has moved forward and thread A has performed its load instruction, reading the value of zero into register T1.
+
+125
+00:18:47,000 --> 00:18:54,000
+Thread B, on the other hand, has read the data at address 2004 and incremented by five in its private cache.
+
+126
+00:18:54,000 --> 00:19:01,000
+Since this is a right back cache and coherence is disabled, no one else is aware of the modification.
+
+127
+00:19:05,000 --> 00:19:12,000
+Then let's say the next thing that happens is B evicts the block from its cache, which now performs the right back to memory.
+
+128
+00:19:15,000 --> 00:19:20,000
+Now thread A may continue its execution and modify address 2000 by setting it to one.
+
+129
+00:19:24,000 --> 00:19:30,000
+Then when it evicts the block from its cache, it completely overwrites the changes that B made.
+
+130
+00:19:30,000 --> 00:19:40,000
+Note that even though A didn't touch address 2004, the fact that it belongs to the same dirty cache block, A must write the entire contents of the block into memory on a right back.
+
+131
+00:19:43,000 --> 00:19:52,000
+So now thread B continues. It may load this now modified value of address 2000 and increment it by nine, which sets it to 10 in its private cache.
+
+132
+00:19:53,000 --> 00:20:00,000
+Meanwhile, thread A will also grab the block from memory, but this time write the value three into address 2004.
+
+133
+00:20:00,000 --> 00:20:07,000
+Again, note that both caches currently have the block in dirty state, which violates the single writer multiple reader invariant.
+
+134
+00:20:09,000 --> 00:20:15,000
+So now when A evicts the block, it performs a right back, setting the value of address 2004 to a three.
+
+135
+00:20:16,000 --> 00:20:22,000
+However, it turns out that none of that matters because B was not made aware of that modification.
+
+136
+00:20:22,000 --> 00:20:31,000
+So when it eventually evicts its dirty block, it will set 2004 back to the old value of zero while setting 2000 to the new value of 10.
+
+137
+00:20:31,000 --> 00:20:37,000
+And from that sequence of instructions, we see how incoherence led the program to the wrong values of the data.
+
+138
+00:20:45,000 --> 00:20:47,000
+Thank you.
+

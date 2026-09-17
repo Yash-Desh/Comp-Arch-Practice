@@ -1,0 +1,1088 @@
+1
+00:00:00,000 --> 00:00:12,360
+We're going to go over the MIPS R10K and implementation of the MIPS 4 ISA.
+
+2
+00:00:12,360 --> 00:00:17,200
+In the last lecture, we introduced the scoreboard implementation for out-of-order execution as
+
+3
+00:00:17,200 --> 00:00:21,600
+well as an intro on register renaming and speculation.
+
+4
+00:00:21,600 --> 00:00:26,640
+Now we'll be describing the MIPS R10K implementation, which handles false dependencies as well
+
+5
+00:00:26,640 --> 00:00:33,160
+as speculation and precise state.
+
+6
+00:00:33,160 --> 00:00:37,600
+So with the scoreboard, false dependencies became hazards and we were unable to provide
+
+7
+00:00:37,600 --> 00:00:40,040
+support for misspeculations.
+
+8
+00:00:40,040 --> 00:00:45,160
+The underlying reason for this is the right backstage is actually a combination of two
+
+9
+00:00:45,160 --> 00:00:47,040
+fundamental operations.
+
+10
+00:00:47,040 --> 00:00:52,520
+One, we need to propagate a result to younger dependent instructions.
+
+11
+00:00:52,520 --> 00:00:55,520
+This is okay to be done out of order.
+
+12
+00:00:55,520 --> 00:01:00,760
+And two, we need to write a result into the actual register file.
+
+13
+00:01:00,760 --> 00:01:06,960
+This would be better to be done in order so that at any point in time, we have a proper
+
+14
+00:01:06,960 --> 00:01:15,640
+snapshot of the state of all registers as if no one had executed out of order.
+
+15
+00:01:15,640 --> 00:01:21,000
+So what the MIPS R10K processor does is replaces the scoreboard with the reorder buffer or
+
+16
+00:01:21,000 --> 00:01:22,640
+ROB.
+
+17
+00:01:22,640 --> 00:01:27,320
+Its goal is to buffer completed results en route to the register file so that no matter
+
+18
+00:01:27,320 --> 00:01:32,120
+what arbitrary order the instructions finish executing, we can push their results to the
+
+19
+00:01:32,120 --> 00:01:34,360
+register file in order.
+
+20
+00:01:34,360 --> 00:01:38,640
+With this, we break up the right backstage into two new stages.
+
+21
+00:01:38,640 --> 00:01:43,760
+Complete is an out-of-order stage where after executing the operation, the instruction then
+
+22
+00:01:43,760 --> 00:01:50,160
+writes its result to the ROB in order to pass the value to any dependents.
+
+23
+00:01:50,160 --> 00:01:54,800
+Then retire is actually an in-order stage that comes after completion.
+
+24
+00:01:54,800 --> 00:01:59,760
+And its goal is to allow instructions to commit their changes into the register file and leave
+
+25
+00:01:59,760 --> 00:02:03,320
+the pipeline in the order that they were fetched.
+
+26
+00:02:03,320 --> 00:02:07,160
+Note that retire is sometimes also called commit or graduate.
+
+27
+00:02:07,160 --> 00:02:09,080
+This is a conceptual idea.
+
+28
+00:02:09,080 --> 00:02:15,000
+We'll get into the details of how to implement this.
+
+29
+00:02:15,000 --> 00:02:22,600
+The MIPS R10K employs register renaming, which as discussed removes WAR and WAW hazards by
+
+30
+00:02:22,600 --> 00:02:28,000
+effectively having multiple physical versions of architectural registers.
+
+31
+00:02:28,000 --> 00:02:31,480
+This completely eliminates the architectural register file.
+
+32
+00:02:31,480 --> 00:02:37,280
+Instead, we use a physical register file, and the map table simply tracks which physical
+
+33
+00:02:37,280 --> 00:02:43,960
+register currently holds the most recent value of each architectural register.
+
+34
+00:02:43,960 --> 00:02:47,760
+The free list keeps track of all unallocated physical registers.
+
+35
+00:02:47,760 --> 00:02:52,000
+To avoid running out of physical registers, the physical register file should be as large
+
+36
+00:02:52,000 --> 00:02:58,520
+as the number of architectural registers in the ISA plus the number of ROB entries.
+
+37
+00:02:58,520 --> 00:03:02,440
+This ensures enough physical registers for the worst case scenario where every single
+
+38
+00:03:02,440 --> 00:03:09,800
+instruction in the ROB is modifying a register.
+
+39
+00:03:09,800 --> 00:03:14,640
+An important question is, when is it safe to put physical registers back into the free
+
+40
+00:03:14,640 --> 00:03:15,640
+list?
+
+41
+00:03:15,640 --> 00:03:20,280
+When an instruction retires, the currently mapped physical register can't be freed
+
+42
+00:03:20,280 --> 00:03:23,720
+because younger instructions may still need to read this value.
+
+43
+00:03:23,720 --> 00:03:29,760
+However, the previously mapped physical register can now be freed upon retirement.
+
+44
+00:03:29,760 --> 00:03:31,280
+Why is this?
+
+45
+00:03:31,280 --> 00:03:35,480
+Because all instructions that will ever read this previous value must have already been
+
+46
+00:03:35,480 --> 00:03:43,200
+retired by now, if it's our turn to retire and we're overriding this register.
+
+47
+00:03:43,200 --> 00:03:47,480
+Now we'll describe the operation of our MIPS R10K processor.
+
+48
+00:03:47,480 --> 00:03:52,240
+Note that this is simply one manifestation of the principles of the original MIPS R10K
+
+49
+00:03:52,240 --> 00:03:53,400
+work.
+
+50
+00:03:53,400 --> 00:03:57,640
+Different implementations and variations are certainly possible.
+
+51
+00:03:57,640 --> 00:04:03,280
+We'll discuss a simplified MIPS R10K-like processor for the purposes of this course.
+
+52
+00:04:03,280 --> 00:04:05,080
+We'll make the following assumptions.
+
+53
+00:04:05,080 --> 00:04:10,840
+We'll assume that the front end stages, that is fetch, decode, and dispatch, are scalar.
+
+54
+00:04:10,840 --> 00:04:16,640
+Modern systems are likely to be able to fetch and decode multiple instructions in parallel.
+
+55
+00:04:16,640 --> 00:04:21,080
+We'll also assume that branches are resolved at the execute stage, and each reservation
+
+56
+00:04:21,080 --> 00:04:26,080
+station, which is a buffer for instructions waiting to perform an operation, each one
+
+57
+00:04:26,080 --> 00:04:28,080
+is bound to a functional unit.
+
+58
+00:04:28,080 --> 00:04:33,440
+That is, if our pipeline has three load units, then we'll have three reservation stations,
+
+59
+00:04:33,440 --> 00:04:39,240
+each dedicated to one load unit.
+
+60
+00:04:39,240 --> 00:04:43,360
+Let's describe the necessary hardware structures for the R10K processor.
+
+61
+00:04:43,360 --> 00:04:47,080
+First, we introduce reservation stations.
+
+62
+00:04:47,080 --> 00:04:51,760
+As just discussed, this is a buffer for tracking which instructions are waiting to use a specific
+
+63
+00:04:51,760 --> 00:04:56,680
+functional unit and tracking which operand registers they're waiting for.
+
+64
+00:04:56,680 --> 00:05:02,800
+Then we also have the ROB, map table, and free list, as previously discussed.
+
+65
+00:05:02,800 --> 00:05:07,960
+Now we'll illustrate how each pipeline stage is performed using the example add instruction
+
+66
+00:05:07,960 --> 00:05:11,560
+shown.
+
+67
+00:05:11,560 --> 00:05:14,800
+The fetch and decode stages are effectively still the same.
+
+68
+00:05:14,800 --> 00:05:19,360
+We need to get the instruction from memory, update the PC, and decode the operation and
+
+69
+00:05:19,360 --> 00:05:23,400
+operands.
+
+70
+00:05:23,400 --> 00:05:28,760
+As with the scoreboard, the dispatch stage is in order and initializes important hardware
+
+71
+00:05:28,760 --> 00:05:29,760
+structures.
+
+72
+00:05:29,760 --> 00:05:32,500
+First, we need to check for structural hazards.
+
+73
+00:05:32,500 --> 00:05:37,740
+If either there's no available reservation station, the reorder buffer is full, or there's
+
+74
+00:05:37,740 --> 00:05:45,100
+no free physical register on the free list, then we need to stall.
+
+75
+00:05:45,100 --> 00:05:50,220
+Once these structures are made available, we need to allocate a reservation station,
+
+76
+00:05:50,220 --> 00:05:54,540
+consult the map table to get the physical registers of our operands, as well as the
+
+77
+00:05:54,540 --> 00:05:59,020
+ready bits and record them in the reservation station.
+
+78
+00:05:59,020 --> 00:06:03,080
+In if our instruction writes to a register, we allocate a new physical register from the
+
+79
+00:06:03,080 --> 00:06:06,940
+free list and update the map table, clearing the ready bit.
+
+80
+00:06:06,940 --> 00:06:11,260
+Finally, we allocate the next entry in the reorder buffer, recording the old and new
+
+81
+00:06:11,260 --> 00:06:16,220
+physical register mappings.
+
+82
+00:06:16,220 --> 00:06:20,620
+Like in scoreboard, the issue stage is where instructions wait for their true dependences
+
+83
+00:06:20,620 --> 00:06:22,620
+to be resolved.
+
+84
+00:06:22,620 --> 00:06:28,140
+The only difference is now the wait in a reservation station as opposed to in the scoreboard.
+
+85
+00:06:28,140 --> 00:06:32,060
+An instruction must also wait here if there are no available functional units.
+
+86
+00:06:32,060 --> 00:06:36,420
+This is only possible in implementations where the number of reservation stations exceeds
+
+87
+00:06:36,420 --> 00:06:38,580
+the number of functional units.
+
+88
+00:06:38,580 --> 00:06:43,420
+So in these cases, an instruction will have to wait until a functional unit frees up.
+
+89
+00:06:43,420 --> 00:06:48,060
+In our simple implementation, we just assume a 1 to 1 ratio of reservation stations to
+
+90
+00:06:48,060 --> 00:06:50,340
+functional units.
+
+91
+00:06:50,340 --> 00:06:54,620
+Once an instruction is ready to issue, it moves into the functional unit and frees up
+
+92
+00:06:54,620 --> 00:06:58,500
+its reservation station.
+
+93
+00:06:58,500 --> 00:07:03,500
+The execute stage is identical to before, though note that different operations may
+
+94
+00:07:03,500 --> 00:07:08,780
+take more cycles to execute than others.
+
+95
+00:07:08,780 --> 00:07:11,780
+Complete is one of the new stages in R10K.
+
+96
+00:07:11,780 --> 00:07:14,620
+Its goal is to resolve RAW dependences.
+
+97
+00:07:14,620 --> 00:07:19,220
+If an instruction produces an output, the result will be written to the allocated physical
+
+98
+00:07:19,220 --> 00:07:20,220
+register.
+
+99
+00:07:20,780 --> 00:07:24,660
+Then the map table and all reservation stations that are currently waiting for this register
+
+100
+00:07:24,660 --> 00:07:29,100
+will be notified that it's ready to be read.
+
+101
+00:07:29,100 --> 00:07:34,380
+So in this example, the add instruction writes its result into physical register P1, which
+
+102
+00:07:34,380 --> 00:07:38,940
+sets the ready bit in the map table as well as the ready bits of the dependent instructions
+
+103
+00:07:38,940 --> 00:07:41,060
+in the reservation stations.
+
+104
+00:07:41,060 --> 00:07:48,100
+In this figure, the ready bits are shown as plus signs.
+
+105
+00:07:48,100 --> 00:07:49,900
+The last stage is retire.
+
+106
+00:07:49,900 --> 00:07:55,380
+This is the only in-order stage in the back end, and since it's in order, only the oldest
+
+107
+00:07:55,380 --> 00:07:59,540
+unretired instruction is allowed to retire at any cycle.
+
+108
+00:07:59,540 --> 00:08:04,540
+So even if an instruction has completed every other stage, it cannot perform the retire
+
+109
+00:08:04,540 --> 00:08:09,060
+operations until it's at the head of the reorder buffer.
+
+110
+00:08:09,060 --> 00:08:12,500
+Once an instruction is finally at the head of the reorder buffer and has entered the
+
+111
+00:08:12,500 --> 00:08:15,780
+retire stage, it does two key things.
+
+112
+00:08:15,780 --> 00:08:20,820
+First, it frees the old physical register that was mapped to its destination architectural
+
+113
+00:08:20,820 --> 00:08:22,260
+register.
+
+114
+00:08:22,260 --> 00:08:27,740
+In this example, this is P5, which was recorded in the ROB entry.
+
+115
+00:08:27,740 --> 00:08:33,340
+As discussed previously, it is now safe to free P5 here because any instructions that
+
+116
+00:08:33,340 --> 00:08:40,260
+needed to read P5 must have now retired since our add instruction is next in line to retire.
+
+117
+00:08:40,260 --> 00:08:45,060
+The second thing we need to do is free up the ROB entry, which makes the next instruction
+
+118
+00:08:45,060 --> 00:08:47,020
+the head.
+
+119
+00:08:47,020 --> 00:08:49,380
+Two additional things happen in retire.
+
+120
+00:08:49,380 --> 00:08:55,140
+If we're a store instruction, now is actually when we perform the write to memory instead
+
+121
+00:08:55,140 --> 00:08:57,180
+of in the execute stage.
+
+122
+00:08:57,180 --> 00:09:03,080
+The reason for this is to maintain precise state in the event of misspeculation or exceptions.
+
+123
+00:09:03,080 --> 00:09:08,100
+If we had performed the store operation during the execute stage, we risk modifying memory
+
+124
+00:09:08,100 --> 00:09:12,260
+and then later realizing that we need to flush the store.
+
+125
+00:09:12,260 --> 00:09:17,460
+Once a store instruction is ready to retire and is at the head of the ROB, only then can
+
+126
+00:09:17,460 --> 00:09:22,740
+we guarantee that it won't get flushed anymore so we can finally write to memory.
+
+127
+00:09:22,740 --> 00:09:27,580
+Any exceptions are also handled here so that we make sure the exceptions are always handled
+
+128
+00:09:27,580 --> 00:09:33,300
+in order.
+
+129
+00:09:33,300 --> 00:09:38,540
+Now let's see the MIPS R10K processor in action within an example program.
+
+130
+00:09:38,540 --> 00:09:43,100
+The top shows the pipeline diagram and the vertical line shows which point in time we're
+
+131
+00:09:43,100 --> 00:09:44,100
+currently in.
+
+132
+00:09:44,100 --> 00:09:49,060
+We'll go over how each of the hardware structures are updated at each cycle.
+
+133
+00:09:49,060 --> 00:09:53,540
+So at the end of cycle 2, the load instruction has been decoded and the branch instruction
+
+134
+00:09:53,540 --> 00:09:55,180
+has been fetched.
+
+135
+00:09:55,180 --> 00:10:04,340
+These stages don't affect the structures we're showing here.
+
+136
+00:10:04,340 --> 00:10:07,860
+Moving on to the end of cycle 3, the load has been dispatched.
+
+137
+00:10:07,860 --> 00:10:12,220
+As shown, we allocate a reservation station for the load and record the physical register
+
+138
+00:10:12,220 --> 00:10:14,060
+of its operand.
+
+139
+00:10:14,060 --> 00:10:20,060
+The load only has one input operand, which is register S0, and according to the map table,
+
+140
+00:10:20,060 --> 00:10:25,260
+this is currently mapped to physical register P6, which is ready.
+
+141
+00:10:25,260 --> 00:10:30,620
+Since the load is writing to register T0, it needs to allocate a new physical register
+
+142
+00:10:30,620 --> 00:10:32,060
+from the free list.
+
+143
+00:10:32,060 --> 00:10:39,020
+So we pop P1 from the free list and record it in the map table as well as the ROB entry.
+
+144
+00:10:39,020 --> 00:10:45,180
+And since T0 was previously mapped to P5, we record P5 in the ROB entry as well.
+
+145
+00:10:45,180 --> 00:10:53,540
+In the meantime, the branch is predicted to not be taken.
+
+146
+00:10:53,540 --> 00:10:58,940
+At the end of cycle 4, the load has issued since all its operands are ready.
+
+147
+00:10:58,940 --> 00:11:02,340
+Thus we remove it from the reservation station.
+
+148
+00:11:02,340 --> 00:11:05,300
+At the same time, the branch instruction is dispatched.
+
+149
+00:11:05,300 --> 00:11:10,700
+Its two operands are found to be mapped P1 and P4, but P1 is currently not ready since
+
+150
+00:11:10,700 --> 00:11:15,380
+it's being produced by the load instruction, hence the minus sign.
+
+151
+00:11:15,380 --> 00:11:20,420
+The branch is allocated in the ROB, and this time no register renaming needs to take place
+
+152
+00:11:20,420 --> 00:11:27,660
+because the branch instruction doesn't modify any registers.
+
+153
+00:11:27,660 --> 00:11:31,500
+Now in the end of cycle 5, the load instruction has started executing.
+
+154
+00:11:31,500 --> 00:11:35,460
+Here, we're assuming loads take three cycles to execute.
+
+155
+00:11:35,460 --> 00:11:40,700
+The branch is currently in the issue stage, but since not all of its operands are ready,
+
+156
+00:11:40,700 --> 00:11:44,140
+it needs to stay in the issue stage for the next cycle.
+
+157
+00:11:44,140 --> 00:11:49,060
+In the meantime, the add-i instruction is able to dispatch following the same procedure
+
+158
+00:11:49,060 --> 00:11:55,860
+as the others.
+
+159
+00:11:55,860 --> 00:11:57,900
+In cycle 6, not much changes.
+
+160
+00:11:57,900 --> 00:12:02,020
+The load is still executing, thus the branch and add-i instructions that are dependent
+
+161
+00:12:02,020 --> 00:12:04,980
+on it must continue to wait in issue.
+
+162
+00:12:04,980 --> 00:12:10,420
+At the same time, the subtract instruction is able to dispatch.
+
+163
+00:12:10,420 --> 00:12:19,340
+Similarly, in cycle 7, the add-i and branch continue to wait for the load to finish executing.
+
+164
+00:12:19,340 --> 00:12:24,220
+The subtract instruction, however, is able to successfully issue since both of its operands
+
+165
+00:12:24,220 --> 00:12:25,420
+are ready.
+
+166
+00:12:25,420 --> 00:12:29,060
+So then it frees up its reservation station.
+
+167
+00:12:29,060 --> 00:12:33,820
+Now the second add-i instruction is ready to dispatch, but it must actually stall because
+
+168
+00:12:33,820 --> 00:12:35,740
+of a structural hazard.
+
+169
+00:12:35,740 --> 00:12:43,580
+There are no free reservation stations for add-i available right now.
+
+170
+00:12:43,580 --> 00:12:46,380
+Now at the end of cycle 8, lots of things happen.
+
+171
+00:12:46,380 --> 00:12:51,340
+Finally, the load instruction is completed, so it was written its value to the physical
+
+172
+00:12:51,340 --> 00:12:55,860
+register file and notified all of its dependents that the data is ready.
+
+173
+00:12:55,860 --> 00:13:00,940
+So the dependents, which are now the branch and add-i instructions, are now able to successfully
+
+174
+00:13:00,940 --> 00:13:06,380
+issue in this stage, thus removing themselves from their reservation stations.
+
+175
+00:13:06,380 --> 00:13:10,740
+And because the first add-i instruction is able to exit its reservation station this
+
+176
+00:13:10,740 --> 00:13:15,740
+cycle, the second add-i instruction, which was stalled last cycle, can now successfully
+
+177
+00:13:15,740 --> 00:13:20,500
+dispatch as shown here.
+
+178
+00:13:20,500 --> 00:13:25,940
+In cycle 9, the load instruction is able to retire, so it removes itself from the ROB
+
+179
+00:13:25,940 --> 00:13:30,220
+and pushes the original physical register P5 into the free list.
+
+180
+00:13:30,220 --> 00:13:36,380
+Meanwhile, the subtract instruction completes, which passes its result to the second add-i
+
+181
+00:13:36,380 --> 00:13:39,380
+instruction, which is now able to issue.
+
+182
+00:13:39,380 --> 00:13:44,300
+And since the second add-i instruction issues and exits the reservation station, the third
+
+183
+00:13:44,300 --> 00:13:53,340
+add-i instruction can now be dispatched at the same time.
+
+184
+00:13:53,340 --> 00:13:58,100
+Now in cycle 10, both the branch and first add-i instructions complete.
+
+185
+00:13:58,100 --> 00:14:02,380
+The branch does nothing in the complete stage, while the add-i writes its result into the
+
+186
+00:14:02,380 --> 00:14:07,540
+physical register file and sets its ready bit in the map table as shown.
+
+187
+00:14:07,540 --> 00:14:12,820
+The subtract, which executed earlier, is now ready to retire, but it can't, since it's
+
+188
+00:14:12,820 --> 00:14:15,220
+not at the head of the ROB.
+
+189
+00:14:15,220 --> 00:14:19,580
+And meanwhile, the third add-i instruction successfully issues and leaves the reservation
+
+190
+00:14:19,580 --> 00:14:26,380
+station.
+
+191
+00:14:26,380 --> 00:14:31,340
+In cycle 11, three instructions are ready to retire, but only one instruction can be retired
+
+192
+00:14:31,340 --> 00:14:34,860
+in the cycle, and it has to be in order.
+
+193
+00:14:34,860 --> 00:14:40,100
+So only the branch instruction is able to retire, removing itself from the ROB.
+
+194
+00:14:40,100 --> 00:14:44,380
+Note that the second add-i instruction completes in this cycle, but it doesn't modify the
+
+195
+00:14:44,380 --> 00:14:48,140
+ready bit for register T0 in the map table.
+
+196
+00:14:48,140 --> 00:14:53,300
+That's because it no longer holds the most up-to-date value of register T0.
+
+197
+00:14:53,300 --> 00:14:58,020
+It can tell because its result went to physical register 8, but the map table entry is now
+
+198
+00:14:58,020 --> 00:15:04,340
+pointing to something else, P7, which implies that another instruction after is modifying
+
+199
+00:15:04,340 --> 00:15:16,660
+register T0, and that instruction is not ready, so the bit should remain cleared.
+
+200
+00:15:16,660 --> 00:15:21,900
+Now at the end of cycle 12, the first add-i instruction is able to retire and push P9 back
+
+201
+00:15:21,900 --> 00:15:23,260
+into the free list.
+
+202
+00:15:23,260 --> 00:15:29,220
+Meanwhile, the last add-i instruction is completed, and since it is the most recent version of
+
+203
+00:15:29,220 --> 00:15:37,540
+register T0, it sets the ready bit in the map table.
+
+204
+00:15:37,540 --> 00:15:41,820
+This process continues until the end of the program, and the final pipeline diagram is
+
+205
+00:15:41,820 --> 00:15:50,460
+shown above.
+
+206
+00:15:50,460 --> 00:15:55,020
+One of the big components of the MIPS R10K processor is its support for speculation and
+
+207
+00:15:55,020 --> 00:15:56,660
+precise state.
+
+208
+00:15:56,660 --> 00:16:02,060
+So how do we properly flush the pipeline in the event of mis-speculation or exception?
+
+209
+00:16:02,060 --> 00:16:06,700
+Like scoreboard, physical registers are written out of order in the complete stage.
+
+210
+00:16:06,700 --> 00:16:11,340
+The main difference is that unlike in scoreboard, the ROB and map table preserve the original
+
+211
+00:16:11,340 --> 00:16:15,940
+mappings of physical registers, just in case we end up needing to flush this instruction
+
+212
+00:16:15,940 --> 00:16:17,780
+later.
+
+213
+00:16:17,780 --> 00:16:22,180
+As long as we always retire instructions in order, we will always be able to revert any
+
+214
+00:16:22,180 --> 00:16:28,100
+changes we've made to registers or to memory in the event of mis-speculation.
+
+215
+00:16:28,100 --> 00:16:32,900
+To do this, we simply need to walk backwards through the ROB and roll back the contents
+
+216
+00:16:32,900 --> 00:16:36,700
+of the map table and the free list one by one.
+
+217
+00:16:36,700 --> 00:16:39,900
+Note that there's no need to modify the physical register file.
+
+218
+00:16:39,900 --> 00:16:41,140
+The data can stay there.
+
+219
+00:16:41,140 --> 00:16:47,820
+We only need to put physical registers back on the free list.
+
+220
+00:16:47,820 --> 00:16:52,020
+Let's walk through the process of handling mis-speculation using the example program
+
+221
+00:16:52,020 --> 00:16:55,700
+from earlier.
+
+222
+00:16:55,700 --> 00:17:00,140
+So earlier, we predicted the branch to be not taken, but what if after resolving it in
+
+223
+00:17:00,140 --> 00:17:03,180
+the execute stage, we find that it's actually taken?
+
+224
+00:17:03,180 --> 00:17:12,220
+How do we flush all of these instructions?
+
+225
+00:17:12,220 --> 00:17:14,060
+It's actually quite straightforward.
+
+226
+00:17:14,060 --> 00:17:17,540
+We just start from the youngest instruction and work backwards.
+
+227
+00:17:17,540 --> 00:17:21,260
+So in this case, the third add-i instruction is the youngest.
+
+228
+00:17:21,260 --> 00:17:25,740
+So we've removed it from the reservation station and the ROB.
+
+229
+00:17:25,740 --> 00:17:31,740
+Then we put its physical register P7 back into the free list and revert P8 back into
+
+230
+00:17:31,740 --> 00:17:35,540
+the map table.
+
+231
+00:17:35,540 --> 00:17:38,940
+Then we move on to the next youngest instruction and do the same thing.
+
+232
+00:17:38,940 --> 00:17:45,860
+We clear it from the ROB and revert the map table and the free list.
+
+233
+00:17:45,860 --> 00:17:50,300
+This process simply continues until we've cleared all ROB entries that came after the
+
+234
+00:17:50,300 --> 00:17:52,620
+branch instruction.
+
+235
+00:17:52,620 --> 00:17:56,340
+Then at this point, the branch is able to complete and we immediately start fetching
+
+236
+00:17:56,340 --> 00:18:02,860
+from the taken target PC.
+
+237
+00:18:02,860 --> 00:18:05,140
+So let's reiterate some key takeaways.
+
+238
+00:18:05,140 --> 00:18:12,060
+Fetch, decode, dispatch, and retire are all in order stages, while issue, execute, and
+
+239
+00:18:12,060 --> 00:18:14,980
+complete are out of order.
+
+240
+00:18:14,980 --> 00:18:19,380
+The reason why this scheme is able to maintain precise state is because all changes to register
+
+241
+00:18:19,380 --> 00:18:25,380
+mappings happen in order, either via the dispatch stage or the retire stage.
+
+242
+00:18:25,380 --> 00:18:29,540
+And one last reminder of the distinction between stalling, where all younger instructions
+
+243
+00:18:29,540 --> 00:18:38,220
+must stall too, versus waiting, where younger instructions may bypass out of order.
+
+244
+00:18:38,220 --> 00:18:43,860
+To sum up, we covered two fundamental implementations of superscalar processors, scoreboard and
+
+245
+00:18:43,860 --> 00:18:44,860
+R10K.
+
+246
+00:18:44,860 --> 00:18:51,060
+An analogy of their key concepts is say multiple students are working on different projects
+
+247
+00:18:51,060 --> 00:18:54,260
+in the same computing cluster.
+
+248
+00:18:54,260 --> 00:18:59,980
+With scoreboard, these projects can be executed in any arbitrary out of order, that is, some
+
+249
+00:18:59,980 --> 00:19:03,420
+students who started later can still end up finishing first.
+
+250
+00:19:03,420 --> 00:19:08,740
+However, there's only one installation of LLVM allowed in the system at any moment.
+
+251
+00:19:08,740 --> 00:19:13,020
+So even though all projects are independent from each other, they may need to wait for
+
+252
+00:19:13,020 --> 00:19:18,460
+each other to finish, since they may need different versions of LLVM.
+
+253
+00:19:18,460 --> 00:19:23,780
+But with R10K, we break this hazard by installing the different versions of LLVM in temporary
+
+254
+00:19:23,780 --> 00:19:25,360
+directories.
+
+255
+00:19:25,360 --> 00:19:29,940
+We maintain precise state by using a main symbolic link that points to the most recent
+
+256
+00:19:29,940 --> 00:19:30,940
+version.
+
+257
+00:19:30,940 --> 00:19:35,700
+But projects can now run fully out of order without waiting for each other, because they
+
+258
+00:19:35,700 --> 00:19:44,740
+can use temporary copies of LLVM if need be.
+
+259
+00:19:44,740 --> 00:19:48,060
+So let's close out this lecture with a quick exercise.
+
+260
+00:19:48,060 --> 00:19:51,980
+The top shows an example program that has been renamed, with the contents of the map
+
+261
+00:19:51,980 --> 00:19:54,660
+table and free list shown over time.
+
+262
+00:19:54,660 --> 00:20:00,540
+The question is which physical registers are freed when each of the instructions are retired?
+
+263
+00:20:00,540 --> 00:20:10,060
+Take some time now to try to fill in the blanks.
+
+264
+00:20:10,060 --> 00:20:14,820
+So when we dispatch the add instruction, we renamed its output to P4, but when the add
+
+265
+00:20:14,820 --> 00:20:19,940
+retires, P4 does not go back into the free list, but rather, the original mapping of
+
+266
+00:20:19,940 --> 00:20:28,300
+register T1 is what goes into the free list, which is physical register P1.
+
+267
+00:20:28,300 --> 00:20:33,460
+So similarly, when the NOR instruction retires, the original mapping for architectural register
+
+268
+00:20:33,460 --> 00:20:37,780
+T3 is freed, which is P3.
+
+269
+00:20:37,780 --> 00:20:43,660
+Then the subtract overrides T3 again, and it ends up freeing P5, which is the physical
+
+270
+00:20:43,660 --> 00:20:48,420
+register that was just allocated to the NOR instruction.
+
+271
+00:20:48,420 --> 00:20:54,140
+And finally, the ORI instruction frees up P4, which is the physical register that was
+
+272
+00:20:54,140 --> 00:20:56,460
+allocated to the add instruction earlier.
+

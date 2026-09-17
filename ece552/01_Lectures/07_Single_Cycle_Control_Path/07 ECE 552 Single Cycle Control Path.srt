@@ -1,0 +1,368 @@
+1
+00:00:00,000 --> 00:00:07,000
+This lecture will now cover the control path of our relatively simple single cycle processor implementation.
+
+2
+00:00:07,000 --> 00:00:13,000
+Last time, we talked about the components that make up the data path for the different types of instructions.
+
+3
+00:00:13,000 --> 00:00:22,000
+This included some combinational logic and storage elements like the instruction and data memories, the register file and the PC memory.
+
+4
+00:00:22,000 --> 00:00:27,000
+In contrast, the control path is purely combinational logic.
+
+5
+00:00:27,000 --> 00:00:42,000
+The instruction word we fetch from memory is the source of all outputs the control logic will generate that drive the ALU operation and the many boxes and enable bits present in the data path.
+
+6
+00:00:42,000 --> 00:00:47,000
+The key to fast control logic is to divide the work up on a need to know basis.
+
+7
+00:00:47,000 --> 00:00:51,000
+Don't give a component more input signals than it really needs.
+
+8
+00:00:51,000 --> 00:00:59,000
+Logic with lower fan in and fewer inputs will always be faster.
+
+9
+00:00:59,000 --> 00:01:10,000
+As mentioned, the input to our global control logic is the 32-bit instruction word, which for MIPS is a union of three formats, R-format, I-format and J-format.
+
+10
+00:01:10,000 --> 00:01:14,000
+We'll ignore jumps for a bit and focus on the first two.
+
+11
+00:01:14,000 --> 00:01:19,000
+Let's go after the low hanging fruit first, the inputs to the register file.
+
+12
+00:01:19,000 --> 00:01:28,000
+For both R-format and I-format instructions, any registers that need to be read are specified in the RS and RT fields.
+
+13
+00:01:28,000 --> 00:01:39,000
+We can directly feed bits 25 to 21 into read register 1 input and bits 20 to 16 into read register 2 input.
+
+14
+00:01:39,000 --> 00:01:41,000
+However, which register do we write to?
+
+15
+00:01:41,000 --> 00:01:45,000
+Well, that depends on the type of instruction we're executing.
+
+16
+00:01:45,000 --> 00:01:53,000
+For our format instructions, the output register is specified by RD, which is in bits 15 to 11 of the instruction word.
+
+17
+00:01:53,000 --> 00:02:02,000
+For I-format instructions, the output is in RT, which is still 20 to 16, meaning the right register port will need a MUX.
+
+18
+00:02:02,000 --> 00:02:14,000
+The opcode field stored in bits 31 to 26 and the function field in bits 5 to 0 of our format instructions are used to set the other global control signals, which we'll cover soon.
+
+19
+00:02:15,000 --> 00:02:26,000
+This is our single cycle processor with control signals shown in blue. Let's walk through each one.
+
+20
+00:02:26,000 --> 00:02:30,000
+The first is the register destination select signal.
+
+21
+00:02:30,000 --> 00:02:36,000
+This is the case where the output was different between the R-format and I-format that we just talked about.
+
+22
+00:02:36,000 --> 00:02:41,000
+This signal controls the MUX that determines which register is written to.
+
+23
+00:02:41,000 --> 00:02:50,000
+Register destination is 0 if the instruction is I-format, so we grab the RT field and 1 otherwise, so we grab the RD field.
+
+24
+00:02:50,000 --> 00:03:02,000
+If you're setting this MUX output in a C program, you might not set it to anything if it's not used, but this is logic and MUXes are going to select something because you can't stop them from doing so.
+
+25
+00:03:02,000 --> 00:03:12,000
+If the output of this MUX is supposed to be unused, then the register write flag should also stay de-asserted and nothing will be written despite everything being set up to do so.
+
+26
+00:03:12,000 --> 00:03:28,000
+This is a common pattern in logic design. One or more bits that provide some configuration and an action flag that actually triggers the operation that uses that configuration.
+
+27
+00:03:28,000 --> 00:03:43,000
+The register write signal enables writing into the register file. This flag is set for any instruction that produces an output that is stored in a destination register, which is all instructions except for stores and branches.
+
+28
+00:03:43,000 --> 00:03:52,000
+The memory read flag is asserted whenever we're reading a value from data memory. In our ISA, this is only true for load instructions.
+
+29
+00:03:52,000 --> 00:04:03,000
+The instruction memory doesn't need a read-enable signal. Even if it had one, this would be stuck at one since an instruction is being fetched on every cycle.
+
+30
+00:04:03,000 --> 00:04:19,000
+The memory write is the corollary to memory read. It is asserted on every store instruction. In this case, the instruction memory is generally read only. With our ISA, there's no store instruction word operation.
+
+31
+00:04:19,000 --> 00:04:37,000
+The mem to reg signal controls the MUX that determines which data is written to the register file. The data is sourced from memory on a load instruction, when mem to reg is one, or from the ALU output, when mem to reg is zero.
+
+32
+00:04:37,000 --> 00:04:50,000
+The PC source signal controls the MUX that selects the next PC value for the subsequent cycle. The common case for PC source is zero, specifying that the next PC is PC plus four.
+
+33
+00:04:50,000 --> 00:05:03,000
+The only time PC source is one is when the current instruction is a branch, and that branch is qualified to be taken. We discussed the branch flow in the last lecture.
+
+34
+00:05:03,000 --> 00:05:21,000
+Another MUX control is the ALU source signal that determines the second operand to the ALU. When the current instruction is our format or a branch, then we need to select from the second read port of the register file by setting ALU source to zero.
+
+35
+00:05:21,000 --> 00:05:30,000
+Otherwise, the second operand of the ALU comes from the sign extended immediate.
+
+36
+00:05:30,000 --> 00:05:44,000
+We're now left with the ALU control logic, determining which operation to perform in the ALU is the function of both the six bit opcode and the six bit function. Let's break it down.
+
+37
+00:05:44,000 --> 00:05:56,000
+Let's presume that the ALU can perform the following set of instructions logical and logical or addition, subtraction, and set if less than comparison.
+
+38
+00:05:56,000 --> 00:06:11,000
+The ALU control lines are inputs to the ALU to specify the operation. For example, we need to pass in 0010 to tell the ALU to add its two operands.
+
+39
+00:06:11,000 --> 00:06:28,000
+Remember that setting these control lines is a function of both the opcode and the function bits within the MIPS ISA. With the five operations we listed in the previous slide, we can perform these five instructions.
+
+40
+00:06:29,000 --> 00:06:44,000
+Of course, we can also perform loads, stores, and branches. Loads and stores need to perform base plus offset addition in the ALU to compute their memory addresses while branch on equal needs to perform subtraction to test for equality.
+
+41
+00:06:44,000 --> 00:06:58,000
+Too many encoded control bits for an ALU can make decoding quite slow and complicated, since it technically has two to the 12 possible functions with six bits of opcode and six bits of function.
+
+42
+00:06:58,000 --> 00:07:07,000
+Turns out that opcodes in our MIPS ISA were intelligently designed to simplify this control logic. This is a sign of excellent engineering.
+
+43
+00:07:07,000 --> 00:07:27,000
+Notice that the different types of instructions can be clustered together into three categories, arithmetic and logic, memory, and branches. With this, we can do a partial decode and create a derived control signal called ALU op, which is a function of the opcode.
+
+44
+00:07:27,000 --> 00:07:39,000
+This reduces the logic complexity since ALU op only needs two bits to specify three clusters. Then we can compute the four-bit ALU control lines from just an eight-bit input.
+
+45
+00:07:43,000 --> 00:07:56,000
+We're now ready to connect the previously unconnected control bits to a control block. The global control logic takes the opcode field as its input, which is bits 31 to 26 of the instruction word.
+
+46
+00:07:56,000 --> 00:08:04,000
+These five bits can be decoded to drive all of the MUX signals and enable control signals throughout the design.
+
+47
+00:08:04,000 --> 00:08:21,000
+And the ALU control logic also uses the ALU op signal derived from the opcode, as well as the six function bits of the instruction to compute the ALU control lines.
+
+48
+00:08:21,000 --> 00:08:34,000
+We've already discussed how the PC source select signal is computed, but it's worth highlighting again. First, the control logic derives a branch signal that is true if the instruction is a branch.
+
+49
+00:08:34,000 --> 00:08:50,000
+This bit is ended with the results equals zero flag from the ALU. For branch unequal, a zero flag is set if the subtraction is zero, which means the register values were equal and as such the branch is to be taken.
+
+50
+00:08:50,000 --> 00:09:02,000
+We have successfully diagrammed the control path for a simple single cycle processor. This diagram may have looked imposing on the first day, but hopefully our use of abstraction allows you to keep it all in your head.
+
+51
+00:09:05,000 --> 00:09:18,000
+Here's an exercise that you're going to have to do for your course projects. Let's say these were all of our instructions and you needed to set ALU source which controls which bits reach the second ALU operand.
+
+52
+00:09:19,000 --> 00:09:30,000
+Either a value read from a register or a sign extended immediate. Pause the video and think about the two types of instructions and the potential minimal inputs required to categorize them.
+
+53
+00:09:31,000 --> 00:09:48,000
+Since we need ALU source to be one only for load store instructions, as everything else uses to register operands, we need to somehow pick out those two. We could do a pair of six bit matches with an or.
+
+54
+00:09:49,000 --> 00:10:04,000
+But it looks like our ISA designer gave us a shortcut with some intelligent and forward looking encoding. Opcode bit zero, aka bit 26 of the word is a one for load and store instructions and a zero for everything else.
+
+55
+00:10:07,000 --> 00:10:17,000
+What about the register write signal, which enables writing to the register file? Again, pause and figure it out as if it were practice for the project.
+
+56
+00:10:18,000 --> 00:10:44,000
+This one isn't quite as minimal, but it's not too bad. We don't write to a register for either store or branch instructions. So it appears that a nor of opcodes bit two and three will do the job to set reg write to a one just for the first six instructions.
+
+57
+00:10:49,000 --> 00:11:02,000
+We've been looking at a handful of fairly clean instructions, but the control logic can get complicated when factoring in the entire MIPS ISA. We'll need a more systematic structure to simplify our logic.
+
+58
+00:11:03,000 --> 00:11:22,000
+A common solution is to use programmable logic arrays or PLAs. The MIPS opcodes were specifically designed to minimize the PLA inputs, min terms and outputs. Again, the reason we use MIPS as an educational tool is it's a great example of a well designed, well thought out ISA.
+
+59
+00:11:23,000 --> 00:11:35,000
+When you're designing your own ISA and your control logic is riddled with special cases that are often buggy, perhaps stop and think about whether the problem is with the implementation or the architecture.
+
+60
+00:11:36,000 --> 00:11:53,000
+A PLA is comprised of two planes. The first plane, the AND plane, and the different combination of input signals to get the min terms or product terms. In our case, the inputs are the bits of the opcode.
+
+61
+00:11:54,000 --> 00:12:08,000
+The min terms are then passed into the second plane or OR plane, which ORs the different combinations of min terms to produce several output signals. In our case, the outputs are the different control signals.
+
+62
+00:12:11,000 --> 00:12:15,000
+This allows control signals to share gates and reduce the total amount of logic.
+
+63
+00:12:16,000 --> 00:12:23,000
+Earlier in this lecture, we skipped the jump instructions. Let's dive back in.
+
+64
+00:12:23,000 --> 00:12:28,000
+Turns out that we only needed two extra components for the jump instruction.
+
+65
+00:12:28,000 --> 00:12:36,000
+First, we need to compute the target PC for the jump. If you see up top, this involves shifting the 26-bit immediate value and concatenating it with the four most significant bits of the jump instruction.
+
+66
+00:12:37,000 --> 00:12:46,000
+Then, we sneak in a new MUX at the top right, whose inputs consist of the jump target address and the output of the PC source MUX.
+
+67
+00:12:46,000 --> 00:12:53,000
+We have need of a new control signal for this MUX, called jump, which asserts if the current instruction is a jump.
+
+68
+00:12:53,000 --> 00:12:56,000
+This then slides into the next PC.
+
+69
+00:12:57,000 --> 00:13:04,000
+We have need of a new control signal for this MUX, called jump, which asserts if the current instruction is a jump.
+
+70
+00:13:04,000 --> 00:13:09,000
+This then selects the jump target input of the MUX.
+
+71
+00:13:09,000 --> 00:13:11,000
+And that's it.
+
+72
+00:13:15,000 --> 00:13:25,000
+Now that we've done all the work to design a single-cycle processor data path, we notice that our implementation suffers from poor performance due to high instruction variation.
+
+73
+00:13:25,000 --> 00:13:29,000
+Recall the iron law that dictates program runtime.
+
+74
+00:13:29,000 --> 00:13:33,000
+In our processor, the CPI is one cycle per instruction.
+
+75
+00:13:33,000 --> 00:13:41,000
+The clock period is as long as the critical path, aka worst case delay, which is likely the load instruction.
+
+76
+00:13:41,000 --> 00:13:51,000
+Recall that loads have to read from both instruction memory and data memory in addition to accessing the register file and adding with the ALU.
+
+77
+00:13:52,000 --> 00:14:02,000
+This means that almost all other instructions finish in less wall clock time and have to sit around waiting for the delay required should this have been a load instruction.
+
+78
+00:14:03,000 --> 00:14:16,000
+This problem only gets worse in real processors, which have way more instructions and need to support expensive operations like floating-point arithmetic and cache misses, which we'll learn about later in the course.
+
+79
+00:14:17,000 --> 00:14:20,000
+So what can we do?
+
+80
+00:14:20,000 --> 00:14:27,000
+Well, we could try to have a controller that knew per instruction delays, but that would be especially challenging to build.
+
+81
+00:14:31,000 --> 00:14:41,000
+The better solution is to break up our design into stages, fix the clock to a short time period, break up each instruction into segments that all execute within that time.
+
+82
+00:14:41,000 --> 00:14:53,000
+Since each stage is tuned and balanced to complete within a clock period, we can then send each instruction through the multi-cycle stages and perhaps exit early if there is nothing left to do.
+
+83
+00:14:53,000 --> 00:15:01,000
+We'll rebuild our single cycle processor into a multi-cycle implementation and then a pipeline implementation next time.
+
+84
+00:15:05,000 --> 00:15:08,000
+Okay, it's time to test your understanding.
+
+85
+00:15:08,000 --> 00:15:15,000
+We have yet another bug in our control logic and register destination select signal is stuck at zero.
+
+86
+00:15:15,000 --> 00:15:19,000
+Would this subtract instruction still work?
+
+87
+00:15:19,000 --> 00:15:21,000
+If not, what would it do instead?
+
+88
+00:15:21,000 --> 00:15:27,000
+Pause the video and imagine a future where you're debugging your own processor.
+
+89
+00:15:27,000 --> 00:15:38,000
+Oh, it would fail.
+
+90
+00:15:38,000 --> 00:15:46,000
+The register destination signal should only be zero for I-format instructions, which would write to the RT register instead of RD.
+
+91
+00:15:46,000 --> 00:15:51,000
+This causes an issue for this subtraction instruction, which is R-format.
+
+92
+00:15:51,000 --> 00:16:03,000
+So instead of writing to register T0 as specified by RD bits 15 to 11, this bug ends up writing the result into register T2 as specified by the RT field instead.
+

@@ -1,0 +1,604 @@
+1
+00:00:00,000 --> 00:00:07,000
+In this lecture, we will cover floating point numbers.
+
+2
+00:00:07,000 --> 00:00:12,000
+First, we'll learn about how floating point numbers are represented in binary.
+
+3
+00:00:12,000 --> 00:00:17,000
+Then we'll look at how to perform arithmetic with them.
+
+4
+00:00:17,000 --> 00:00:22,000
+To start, we motivate why we need a floating point representation in the first place.
+
+5
+00:00:22,000 --> 00:00:28,000
+In many applications, we want to be able to represent a large range of numbers without needing much precision.
+
+6
+00:00:28,000 --> 00:00:39,000
+For example, if we wanted to represent numbers ranging from 3 to 1,572,864 in a typical integer or fixed point encoding,
+
+7
+00:00:39,000 --> 00:00:41,000
+we would need at least 21 bits.
+
+8
+00:00:41,000 --> 00:00:53,000
+The value 3 is all leading zeros followed by 1,1, while the value 1,572,864 is 1,1, followed by all trailing zeros.
+
+9
+00:00:53,000 --> 00:00:57,000
+But these running zeros are a waste of space in the binary encoding.
+
+10
+00:00:57,000 --> 00:01:05,000
+The value 3 is just 1.1 times 2 to the first, while the big number is just 1.1 times 2 to the 20th.
+
+11
+00:01:05,000 --> 00:01:12,000
+So for both numbers, we really only need two bits of information and an exponent value.
+
+12
+00:01:12,000 --> 00:01:15,000
+The exponent effectively tells us where the point is.
+
+13
+00:01:15,000 --> 00:01:22,000
+For 3, the point is in bit position 1, while for the large number, the point is in bit position 20.
+
+14
+00:01:22,000 --> 00:01:26,000
+This notation is referred to as floating point.
+
+15
+00:01:26,000 --> 00:01:35,000
+Notice how it's very similar to the scientific notation that we use for very large or very small decimal numbers.
+
+16
+00:01:35,000 --> 00:01:44,000
+The floating point format consists of three binary fields, a sign bit, an exponent field, and the fraction field.
+
+17
+00:01:44,000 --> 00:01:50,000
+Looking at the value formula, you can see that if the sign bit is 1, then the encoded value is negative.
+
+18
+00:01:50,000 --> 00:01:55,000
+The exponent bits specify at which bit position the point is located.
+
+19
+00:01:55,000 --> 00:02:01,000
+And the fraction bits specify the actual number that's encoded minus the implicit leading 1.
+
+20
+00:02:01,000 --> 00:02:08,000
+Here, we're showing an example floating point representation that uses a 4-bit exponent and a 5-bit fraction.
+
+21
+00:02:08,000 --> 00:02:18,000
+As shown, the decimal number 9.25 can be represented as 1.00101 times 2 to the third in binary.
+
+22
+00:02:18,000 --> 00:02:23,000
+Thus, the exponent value is 3 and the fraction is 00101.
+
+23
+00:02:23,000 --> 00:02:25,000
+There are two things to note.
+
+24
+00:02:25,000 --> 00:02:33,000
+First, the significant is generally normalized such that there is an implicit or hidden leading 1 in front of the point.
+
+25
+00:02:33,000 --> 00:02:39,000
+With that, the leading 1 doesn't have to be encoded and we can use that bit for exponent or fraction.
+
+26
+00:02:39,000 --> 00:02:44,000
+The second thing is that the exponent is often stored in biased form.
+
+27
+00:02:44,000 --> 00:02:49,000
+We will discuss this more in the coming slides.
+
+28
+00:02:49,000 --> 00:02:55,000
+The IEEE 754 standard defines two precision levels for floating point numbers.
+
+29
+00:02:55,000 --> 00:03:01,000
+In single 32-bit precision, the exponent is 8 bits and the fraction is 23 bits.
+
+30
+00:03:01,000 --> 00:03:11,000
+Single precision floats can represent numbers roughly as high as 2 to the 127th and as low as 2 to the negative 126th.
+
+31
+00:03:11,000 --> 00:03:19,000
+In double or 64-bit precision, the exponent is 11 bits and the significant is 52 bits.
+
+32
+00:03:19,000 --> 00:03:25,000
+It can represent a broader range of numbers.
+
+33
+00:03:25,000 --> 00:03:28,000
+Why is the significant normalized?
+
+34
+00:03:28,000 --> 00:03:33,000
+Without normalization, we end up with multiple ways of representing the same number.
+
+35
+00:03:33,000 --> 00:03:46,000
+For example, the decimal number 9.25 can be represented as 1001.01 times 2 to the 0 or 100.101 times 2 to the 1st and so on.
+
+36
+00:03:46,000 --> 00:03:54,000
+So the standard encoding is to normalize this significant such that we only have one leading bit in front of the binary point.
+
+37
+00:03:54,000 --> 00:04:02,000
+Since every number has this leading 1, this bit becomes implicit and is not encoded, leaving just the fraction field.
+
+38
+00:04:02,000 --> 00:04:09,000
+Now this way, every number has a unique representation.
+
+39
+00:04:09,000 --> 00:04:13,000
+In floating point numbers, the exponent can either be positive or negative.
+
+40
+00:04:13,000 --> 00:04:17,000
+The latter is used to represent small numbers that are close to zero.
+
+41
+00:04:17,000 --> 00:04:26,000
+As mentioned briefly earlier, it is generally preferred to encode the exponent in a biased or excess notation instead of in two's complement.
+
+42
+00:04:26,000 --> 00:04:29,000
+The reason for this is to simplify sorting.
+
+43
+00:04:29,000 --> 00:04:35,000
+It's much easier to sort numbers if a larger exponent value implies a larger floating point value.
+
+44
+00:04:35,000 --> 00:04:40,000
+Floating point numbers with negative exponents are smaller in value than numbers with positive exponents.
+
+45
+00:04:40,000 --> 00:04:49,000
+However, when viewed as unsigned values, negative exponents seem bigger since their most significant bits are one.
+
+46
+00:04:49,000 --> 00:04:54,000
+So instead, exponents are generally encoded based on a predefined bias value.
+
+47
+00:04:54,000 --> 00:05:01,000
+Revisiting our example from earlier, we can use a biased notation for the exponent where the predefined bias is seven.
+
+48
+00:05:01,000 --> 00:05:14,000
+So now if we wish to represent two to the third, for example, we actually set E to be ten instead of three since ten minus seven equals three.
+
+49
+00:05:14,000 --> 00:05:23,000
+IEEE 754 uses a bias of 127 for single precision floating point and a bias of 1,023 for double precision.
+
+50
+00:05:23,000 --> 00:05:28,000
+This table shows examples how exponent values are encoded in single precision.
+
+51
+00:05:28,000 --> 00:05:33,000
+Notice how with two's complement exponents, it becomes difficult to sort values.
+
+52
+00:05:33,000 --> 00:05:42,000
+You would have to do a signed comparison of the exponent and then perform an unsigned comparison of the six significance just to compare two floating point numbers.
+
+53
+00:05:42,000 --> 00:05:50,000
+On the other hand, by using a bias, larger exponent values always have a larger unsigned encoding as shown in the rightmost column.
+
+54
+00:05:50,000 --> 00:06:00,000
+Thus comparing two floating point numbers becomes as simple as unsigned integer comparison.
+
+55
+00:06:00,000 --> 00:06:05,000
+Note that the IEEE floating point standard also supports special cases shown here.
+
+56
+00:06:05,000 --> 00:06:11,000
+First, the value zero is simply encoded as all zeros in both single and double precision.
+
+57
+00:06:11,000 --> 00:06:18,000
+For numbers that are very small and close to zero, we don't actually normalize the significant anymore.
+
+58
+00:06:18,000 --> 00:06:25,000
+These cases are specified by an exponent value of zero, which is the smallest exponent supported.
+
+59
+00:06:25,000 --> 00:06:32,000
+Conversely, infinity can be encoded by setting the maximum exponent and setting the significant bits to zero.
+
+60
+00:06:32,000 --> 00:06:40,000
+And lastly, undefined values, or not a number, are encoded by setting the max exponent with a non-zero significant.
+
+61
+00:06:40,000 --> 00:06:50,000
+Note that denormalized numbers allow for gradualized underflow. You get smaller numbers and you do not quite underflow quite as quickly.
+
+62
+00:06:50,000 --> 00:06:58,000
+Here's a website where you can look at setting your own values.
+
+63
+00:06:58,000 --> 00:07:01,000
+Next, we'll discuss floating point overflow and underflow.
+
+64
+00:07:01,000 --> 00:07:08,000
+Floating point overflow is analogous to integer overflow in that the result is too large to be represented.
+
+65
+00:07:08,000 --> 00:07:11,000
+This is detected when the exponent is too big.
+
+66
+00:07:11,000 --> 00:07:17,000
+Floating point underflow is the reverse when the result is too small or too negative.
+
+67
+00:07:17,000 --> 00:07:26,000
+Both of these scenarios can trigger an exception under the IEEE standard, if enabled.
+
+68
+00:07:26,000 --> 00:07:29,000
+Now we'll move on to how to perform addition on floating point numbers.
+
+69
+00:07:29,000 --> 00:07:36,000
+It turns out that this is just like adding decimal numbers in scientific notation, as shown in the example here.
+
+70
+00:07:36,000 --> 00:07:42,000
+Given two numbers, first thing you have to do is align their points on top of each other by shifting the smaller number.
+
+71
+00:07:42,000 --> 00:07:48,000
+Then from there, we can directly add the significant values as in regular integer addition.
+
+72
+00:07:48,000 --> 00:08:00,000
+And then finally, we normalize the sum so that there's only one digit in front of the decimal point and then round the final sum.
+
+73
+00:08:00,000 --> 00:08:05,000
+Now we'll apply this process to the binary floating point representation from earlier.
+
+74
+00:08:05,000 --> 00:08:16,000
+Now we're adding two values, 1.11001 times 2 to the third and 1.1001 times 2 to the first.
+
+75
+00:08:16,000 --> 00:08:20,000
+For reference, the exponents are shown here in biased form as well.
+
+76
+00:08:20,000 --> 00:08:27,000
+So first thing we do is shift the second operand to the right since it's smaller so that we can align the points.
+
+77
+00:08:27,000 --> 00:08:34,000
+Now that both are normalized to 2 to the third, we can directly add them using integer arithmetic.
+
+78
+00:08:34,000 --> 00:08:40,000
+After adding, we find that the sum has two leading bits so we need to perform normalization.
+
+79
+00:08:40,000 --> 00:08:46,000
+Thus, we shift the sum to the right by one, which consequently increases the exponent by one.
+
+80
+00:08:46,000 --> 00:08:58,000
+Then finally, since the significant needs to be six bits only, we round the value and drop the least significant bits.
+
+81
+00:08:58,000 --> 00:09:03,000
+This slide illustrates the typical hardware organization of a floating point adder.
+
+82
+00:09:03,000 --> 00:09:08,000
+From top to bottom, first we need to compare the exponents of the incoming operands using a small ALU
+
+83
+00:09:08,000 --> 00:09:14,000
+so that we can identify the smaller operand and shift its significant to line up the points.
+
+84
+00:09:14,000 --> 00:09:18,000
+Then we need a bigger ALU to add the aligned significance.
+
+85
+00:09:18,000 --> 00:09:24,000
+Then, depending on the resulting sum, we need to shift the significant left or right to normalize it,
+
+86
+00:09:24,000 --> 00:09:28,000
+which consequently increments or decrements the exponent value.
+
+87
+00:09:28,000 --> 00:09:32,000
+Then finally, we round the sum.
+
+88
+00:09:32,000 --> 00:09:35,000
+Let's dig a little deeper into rounding.
+
+89
+00:09:35,000 --> 00:09:42,000
+Turns out, rounding is surprisingly very important because with the billions of operations that a typical program performs,
+
+90
+00:09:42,000 --> 00:09:49,000
+small rounding errors can really accumulate and have a major impact on the program's result.
+
+91
+00:09:49,000 --> 00:10:00,000
+Let's go through the previous example once again, except now, we'll account for the fact that our hardware would only have a six-bit adder since the significant is only six bits.
+
+92
+00:10:00,000 --> 00:10:05,000
+Because of this, some least significant bits are dropped during the sum computation.
+
+93
+00:10:05,000 --> 00:10:09,000
+Then, with normalization, we may end up dropping even more bits.
+
+94
+00:10:09,000 --> 00:10:19,000
+And because all of these lost bits, we're unable to make an accurate decision of whether to round up or round down.
+
+95
+00:10:19,000 --> 00:10:24,000
+To support rounding for addition, the FP adder actually needs to introduce a guard bit.
+
+96
+00:10:24,000 --> 00:10:29,000
+The guard bit is effectively just an extra bit that we append to the right of the significant.
+
+97
+00:10:29,000 --> 00:10:36,000
+This allows us to retain an extra bit of precision in the values, and thus we can use a seven-bit adder.
+
+98
+00:10:36,000 --> 00:10:43,000
+Now, even after normalization, the guard bit is able to retain an extra bit, which happens to be one in this case.
+
+99
+00:10:43,000 --> 00:10:52,000
+Now with this, we're able to make a better decision to either round up or round down appropriately.
+
+100
+00:10:52,000 --> 00:10:55,000
+Now we'll move on to floating point multiplication.
+
+101
+00:10:55,000 --> 00:10:58,000
+To perform multiplication, we need to do a few things.
+
+102
+00:10:58,000 --> 00:11:01,000
+First, we need to compute the signed bit of the product.
+
+103
+00:11:01,000 --> 00:11:05,000
+This is simply a matter of XORing the signed bits of the operands.
+
+104
+00:11:05,000 --> 00:11:08,000
+Second, we need to compute the product's exponent.
+
+105
+00:11:08,000 --> 00:11:12,000
+To do this, we add the biased exponent values of the operands.
+
+106
+00:11:12,000 --> 00:11:20,000
+Since the two input exponent values are already biased, the sum will be doubly biased, so we need to subtract the bias once.
+
+107
+00:11:20,000 --> 00:11:28,000
+Then, to compute the product's significant, we simply perform standard integer multiplication on the significant as they are.
+
+108
+00:11:28,000 --> 00:11:33,000
+Note that no shifting nor alignment needs to be performed before multiplying them.
+
+109
+00:11:33,000 --> 00:11:47,000
+Then, after this, we may need to re-normalize and round, just like in addition, where we shift the significant in increment or decrement exponent accordingly.
+
+110
+00:11:47,000 --> 00:11:50,000
+Here we outline the specific steps that need to be taken.
+
+111
+00:11:50,000 --> 00:11:56,000
+First, we compute the sign, exponent, and significance of the product, as just discussed.
+
+112
+00:11:56,000 --> 00:12:00,000
+Then we perform normalization incrementally.
+
+113
+00:12:00,000 --> 00:12:05,000
+Depending on the current significant value, we shift left or right once.
+
+114
+00:12:05,000 --> 00:12:10,000
+Then we check for overflow or underflow and round the significant.
+
+115
+00:12:10,000 --> 00:12:16,000
+Then, we check again, and if it's still not normalized, go back to step two.
+
+116
+00:12:16,000 --> 00:12:22,000
+Here we show an example of floating point multiplication.
+
+117
+00:12:22,000 --> 00:12:26,000
+We'll assume we have a guard bit for rounding, as introduced earlier.
+
+118
+00:12:26,000 --> 00:12:28,000
+Let's start with computing the exponent.
+
+119
+00:12:28,000 --> 00:12:34,000
+We need to add A's biased exponent, which is 10, with B's biased exponent, which is 8.
+
+120
+00:12:34,000 --> 00:12:44,000
+This gives us 18, but then we need to subtract the bias of 7, so the product's biased exponent value is 11, which represents 2 to the 4th.
+
+121
+00:12:44,000 --> 00:12:51,000
+Now let's compute the significant hand by simply performing fixed point multiplication on A and B's significant hands.
+
+122
+00:12:51,000 --> 00:12:55,000
+Note that this yields a 6-bit product with an extra guard bit.
+
+123
+00:12:55,000 --> 00:13:02,000
+Now, we normalize by shifting the significant right by 1 bit and incrementing the exponent.
+
+124
+00:13:02,000 --> 00:13:10,000
+And then finally, using the guard bit, we round the final 6-bit product.
+
+125
+00:13:11,000 --> 00:13:14,000
+Let's look at another example with different values for A and B.
+
+126
+00:13:14,000 --> 00:13:19,000
+As before, we compute the product's exponent and significant hand values.
+
+127
+00:13:19,000 --> 00:13:26,000
+But this time, note that the leading bit of the significant hand is 0 after multiplying the input's significant hands.
+
+128
+00:13:26,000 --> 00:13:34,000
+As a result, after we normalize, we're actually left with a guard bit as among the 6-bits of the significant hand.
+
+129
+00:13:34,000 --> 00:13:45,000
+As a result, when we get to rounding, we don't have any bits left beyond the guard bit, and this leads to a potential rounding error.
+
+130
+00:13:45,000 --> 00:13:49,000
+So with this, let's revisit floating point rounding hardware.
+
+131
+00:13:49,000 --> 00:13:53,000
+Modern implementations usually introduce two more bits in addition to the guard bit.
+
+132
+00:13:53,000 --> 00:13:59,000
+The first is a round bit, which just serves as an extra guard bit for floating point multiplication.
+
+133
+00:13:59,000 --> 00:14:05,000
+As shown in the previous example, sometimes multiplying the significant hands results in a leading 0-bit.
+
+134
+00:14:05,000 --> 00:14:10,000
+This leads to the guard bit getting shifted into the significant hand itself.
+
+135
+00:14:10,000 --> 00:14:15,000
+So the round bit allows us to retain an additional bit for rounding in this particular case.
+
+136
+00:14:15,000 --> 00:14:21,000
+The second additional bit is the sticky bit, which effectively serves as the final guard bit.
+
+137
+00:14:21,000 --> 00:14:26,000
+During the multiplication and normalization, several bits may get shifted out and dropped.
+
+138
+00:14:26,000 --> 00:14:35,000
+The sticky bit gets set to 1 if any of those drop bits are 1, so it's effectively a logical oar of all of these bits.
+
+139
+00:14:35,000 --> 00:14:45,000
+This allows us to remember if there were any 1 bits that we dropped in order to help us decide when appropriate to round up.
+
+140
+00:14:45,000 --> 00:14:48,000
+Now with this, let's redo the previous example.
+
+141
+00:14:48,000 --> 00:14:56,000
+This time, when we compute the product's significant hand, we retain not only a guard bit, but also a round bit and a sticky bit,
+
+142
+00:14:56,000 --> 00:15:00,000
+where the sticky bit is the logical oar of all the other bits that were dropped.
+
+143
+00:15:00,000 --> 00:15:07,000
+As before, the guard bit ends up in the 6-bit significant hand, but now that we've retained additional bits,
+
+144
+00:15:07,000 --> 00:15:13,000
+we have more information to accurately round the final product.
+
+145
+00:15:13,000 --> 00:15:20,000
+To close out this lecture, let's go through another example of multiplication with 3 rounding bits.
+
+146
+00:15:20,000 --> 00:15:28,000
+Given the inputs A and B, as shown, show the significant and exponent of the product at each step of the multiplication.
+
+147
+00:15:28,000 --> 00:15:40,000
+Please pause the video and try to go through the answer.
+
+148
+00:15:40,000 --> 00:15:47,000
+This is actually the same example from a few slides ago, except now you have to account for the round bit and sticky bit.
+
+149
+00:15:47,000 --> 00:15:53,000
+As a result, we're able to retain a 6-bit significant hand along with a guard bit and a round bit and a sticky bit,
+
+150
+00:15:53,000 --> 00:15:58,000
+which is equal to 1, which is the logical oar of the 4 bits that were dropped.
+
+151
+00:15:58,000 --> 00:16:07,000
+Then with this, we're able to normalize and round the final product appropriately.
+

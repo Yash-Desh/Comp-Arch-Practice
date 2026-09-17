@@ -1,0 +1,728 @@
+1
+00:00:00,000 --> 00:00:07,000
+In this lecture, we're going to explore the multi-core era with parallel processors.
+
+2
+00:00:07,000 --> 00:00:19,000
+We'll take a look at how trends in transistor scaling have motivated the shift towards parallel multi-core processors.
+
+3
+00:00:19,000 --> 00:00:25,000
+Then we'll talk about the concept of parallelism and dive specifically into hardware multithreading.
+
+4
+00:00:25,000 --> 00:00:34,000
+For years, computer architects have benefited from very favorable transistor scaling, or denard scaling,
+
+5
+00:00:34,000 --> 00:00:39,000
+named after Robert Denard, who published the observation.
+
+6
+00:00:39,000 --> 00:00:44,000
+The scaling trend was that as we make transistors smaller by a factor of x squared,
+
+7
+00:00:44,000 --> 00:00:50,000
+their voltage, capacitance, and switching delay all scale down by a factor of x.
+
+8
+00:00:50,000 --> 00:00:54,000
+So what did this mean for our processors and integrated circuits?
+
+9
+00:00:55,000 --> 00:01:01,000
+The dynamic power consumption of a processor is proportional to the number of transistors on the chip,
+
+10
+00:01:01,000 --> 00:01:07,000
+multiplied by the capacitance and voltage squared, multiplied by the activity factor,
+
+11
+00:01:07,000 --> 00:01:14,000
+which is how often the transistors switch for a given application, and finally multiplied by the processor frequency.
+
+12
+00:01:15,000 --> 00:01:25,000
+Now with transistor scaling, by a factor of x, we're able to fit x squared more transistors on chip
+
+13
+00:01:25,000 --> 00:01:29,000
+due to the x squared reduction in area per transistor.
+
+14
+00:01:29,000 --> 00:01:33,000
+At the same time, the energy cost per transistor goes down by x cubed,
+
+15
+00:01:33,000 --> 00:01:39,000
+while the processor frequency can go up by a factor of x due to the lower switching delay.
+
+16
+00:01:39,000 --> 00:01:48,000
+Together, all of these imply that if we're able to shrink the size of our transistors in the next generation of processors,
+
+17
+00:01:48,000 --> 00:01:54,000
+we're able to retain roughly the same total dynamic power as the previous generation,
+
+18
+00:01:54,000 --> 00:02:00,000
+while improving performance via the higher clock frequency and additional transistor logic.
+
+19
+00:02:01,000 --> 00:02:07,000
+This was a huge motivation for the processor industry.
+
+20
+00:02:07,000 --> 00:02:12,000
+As observed by Gordon Moore in 1965, now known as Moore's Law,
+
+21
+00:02:12,000 --> 00:02:17,000
+the processor industry was able to continually push for smaller transistors,
+
+22
+00:02:17,000 --> 00:02:21,000
+and thanks to cost-effective innovations in processed technology,
+
+23
+00:02:21,000 --> 00:02:27,000
+we were seeing the number of transistors roughly double every 18 months, as shown in this figure.
+
+24
+00:02:28,000 --> 00:02:35,000
+What this meant was that the new processors were able to greatly improve upon the performance of their predecessors,
+
+25
+00:02:35,000 --> 00:02:41,000
+thanks to a combination of more transistors per chip and higher operating frequencies.
+
+26
+00:02:41,000 --> 00:02:48,000
+All one needed to do was to buy next-year CPU and their existing software would get faster.
+
+27
+00:02:50,000 --> 00:02:53,000
+However, this was only part of the story.
+
+28
+00:02:53,000 --> 00:03:00,000
+These scaling trends held for a while since dynamic power dominated the power that leaked out of transistors,
+
+29
+00:03:00,000 --> 00:03:05,000
+even when they're not switching. This is known as static or leakage power.
+
+30
+00:03:05,000 --> 00:03:11,000
+As transistor voltages scaled down, the threshold voltages were slowly following suit,
+
+31
+00:03:11,000 --> 00:03:16,000
+leading to static power becoming more and more significant to the point that in recent years,
+
+32
+00:03:16,000 --> 00:03:20,000
+it can often dominate the dynamic power of the system.
+
+33
+00:03:20,000 --> 00:03:27,000
+Thus, the favorable scaling of voltage, capacitance, and delay were quickly diminishing due to leakage.
+
+34
+00:03:31,000 --> 00:03:38,000
+So with this, as well as practical thermal limitations, we hit the end of denart scaling around 2005.
+
+35
+00:03:38,000 --> 00:03:42,000
+Clock speed and power advancements drastically slowed.
+
+36
+00:03:43,000 --> 00:03:48,000
+But Moore's law continued to persist. We were able to build smaller and smaller transistors,
+
+37
+00:03:48,000 --> 00:03:51,000
+even if their power density wasn't improving.
+
+38
+00:03:51,000 --> 00:03:58,000
+So then how do we make good use of abundant transistors without being able to run our cores at higher frequencies?
+
+39
+00:04:00,000 --> 00:04:06,000
+The solution was parallel processing. By using our transistors for more independent processor cores,
+
+40
+00:04:06,000 --> 00:04:10,000
+we're able to get significant speed-ups by leveraging parallelism in our programs
+
+41
+00:04:10,000 --> 00:04:14,000
+without relying on continuous improvements in clock frequency.
+
+42
+00:04:16,000 --> 00:04:21,000
+To modify a quote from Yoda in Star Wars, begun, the multi-core era has.
+
+43
+00:04:24,000 --> 00:04:31,000
+Now before we get into the design of multi-core processors, we'll first discuss the concept of parallelism.
+
+44
+00:04:31,000 --> 00:04:34,000
+There are two broad classes of parallelism.
+
+45
+00:04:34,000 --> 00:04:41,000
+Compute-level parallelism is when multiple computation streams are executed simultaneously,
+
+46
+00:04:41,000 --> 00:04:47,000
+while data-level parallelism is when multiple data streams are processed simultaneously.
+
+47
+00:04:47,000 --> 00:04:55,000
+For now, we'll focus more on compute-level parallelism, particularly in the context of executing multiple threads.
+
+48
+00:04:55,000 --> 00:05:04,000
+It's important to use precise terminology and to note the difference between concurrency and parallelism.
+
+49
+00:05:04,000 --> 00:05:08,000
+Note that you may encounter varying definitions in literature,
+
+50
+00:05:08,000 --> 00:05:12,000
+but the common definition and what we'll assume for the purposes of this course
+
+51
+00:05:12,000 --> 00:05:18,000
+is the concurrency refers to the coexistence of multiple tasks in progress,
+
+52
+00:05:18,000 --> 00:05:24,000
+while parallelism is the physical execution of multiple tasks in a simultaneous manner.
+
+53
+00:05:25,000 --> 00:05:29,000
+You can think of concurrency as logically doing multiple things at once,
+
+54
+00:05:29,000 --> 00:05:33,000
+while parallelism is actually doing multiple things at once.
+
+55
+00:05:34,000 --> 00:05:38,000
+Concurrency is typically defined with a software system and algorithm,
+
+56
+00:05:38,000 --> 00:05:42,000
+while parallelism is defined by the hardware architecture.
+
+57
+00:05:42,000 --> 00:05:46,000
+An example of execution that is concurrent but not parallel
+
+58
+00:05:46,000 --> 00:05:51,000
+is context switching between multiple programs or threads in a single processor.
+
+59
+00:05:52,000 --> 00:05:58,000
+They never physically execute at the same time, but logically, they are concurrent.
+
+60
+00:05:58,000 --> 00:06:04,000
+I encourage you to come up with examples of execution that is parallel but not concurrent.
+
+61
+00:06:08,000 --> 00:06:14,000
+As a theoretical analysis, how can we compute the potential speedup of a program due to parallelism?
+
+62
+00:06:14,000 --> 00:06:19,000
+Say we have three processor cores in our system that are able to execute
+
+63
+00:06:19,000 --> 00:06:22,000
+arbitrary parts of your program in parallel.
+
+64
+00:06:23,000 --> 00:06:29,000
+Well, first we need to figure out how much of our program can actually be executed in parallel.
+
+65
+00:06:29,000 --> 00:06:32,000
+Naturally, this won't be the entire program.
+
+66
+00:06:32,000 --> 00:06:36,000
+There will likely always be some code that can't be parallelized.
+
+67
+00:06:39,000 --> 00:06:43,000
+So then given we execute the parallel code on the three processor cores,
+
+68
+00:06:43,000 --> 00:06:47,000
+we expect to get a 3x speedup of just the parallel portion of our program.
+
+69
+00:06:47,000 --> 00:06:52,000
+This will allow us to revisit Amdahl's law and see that it is quick and easy
+
+70
+00:06:52,000 --> 00:06:57,000
+to estimate how much program speedup you can get, given some number of cores.
+
+71
+00:07:01,000 --> 00:07:06,000
+Even with how simple Amdahl's law is, it's still able to shed some valuable insights.
+
+72
+00:07:06,000 --> 00:07:13,000
+Consider a program where 75% of its original execution time was spent on parallelizable code.
+
+73
+00:07:13,000 --> 00:07:19,000
+If we had infinitely many cores, our ideal speedup for the program would be 4x,
+
+74
+00:07:19,000 --> 00:07:25,000
+which is the case where all of our time is spent just executing the 25% sequential code
+
+75
+00:07:25,000 --> 00:07:29,000
+and the parallelizable code executes somehow in zero time.
+
+76
+00:07:30,000 --> 00:07:37,000
+Now you'd think maybe we can get pretty close to the ideal of 4x speedup with just, say, 4 cores.
+
+77
+00:07:37,000 --> 00:07:42,000
+But at 4 cores, we're just barely making over 2x speedup.
+
+78
+00:07:42,000 --> 00:07:47,000
+In fact, it takes quite a lot of cores to get asymptotically closer to the ideal, as shown here.
+
+79
+00:07:51,000 --> 00:07:56,000
+It turns out that even with nearly 100% of our program being parallel,
+
+80
+00:07:56,000 --> 00:08:01,000
+even a small percentage of sequential work, in this case 2% of our program,
+
+81
+00:08:01,000 --> 00:08:05,000
+can still greatly limit our achievable speedup.
+
+82
+00:08:05,000 --> 00:08:10,000
+Even with 100 cores in this case, we're still below the ideal speedup that we'd hoped to get.
+
+83
+00:08:15,000 --> 00:08:18,000
+Now in terms of implementing parallel processors,
+
+84
+00:08:18,000 --> 00:08:23,000
+Flynn's taxonomy is a useful guide for categorizing the fundamental approaches
+
+85
+00:08:23,000 --> 00:08:28,000
+based on compute-level parallelism and data-level parallelism.
+
+86
+00:08:28,000 --> 00:08:32,000
+SIMD, which is Single Instruction Multiple Data,
+
+87
+00:08:32,000 --> 00:08:39,000
+refers to processors that are able to perform a single instruction uniformly on a batch of data in parallel.
+
+88
+00:08:39,000 --> 00:08:43,000
+Examples of this include Cray Research's vector processors,
+
+89
+00:08:43,000 --> 00:08:49,000
+x86 for ARM vector instructions, and GPUs, which we'll get to in a later lecture.
+
+90
+00:08:49,000 --> 00:08:53,000
+MISD, or Multiple Instruction Single Data,
+
+91
+00:08:53,000 --> 00:09:00,000
+refers to processors that are able to perform multiple instructions in parallel that operate on a single piece of data.
+
+92
+00:09:00,000 --> 00:09:04,000
+This is less common, but is growing in interest recently.
+
+93
+00:09:04,000 --> 00:09:08,000
+So we'll be covering SIMD and MISD in a later lecture.
+
+94
+00:09:08,000 --> 00:09:13,000
+For now, we'll focus on MIMD, Multiple Instruction Multiple Data.
+
+95
+00:09:13,000 --> 00:09:17,000
+This is effectively running multiple threads, processes, programs
+
+96
+00:09:17,000 --> 00:09:22,000
+that are each running their own set of instructions and processing their own set of data.
+
+97
+00:09:25,000 --> 00:09:33,000
+Before we get into MIMD, it's important to draw the distinction between instruction-level parallelism and thread-level parallelism.
+
+98
+00:09:33,000 --> 00:09:39,000
+Instruction-level parallelism is when we can execute multiple instructions with a single thread of a program.
+
+99
+00:09:39,000 --> 00:09:45,000
+As we've already learned, this form of parallelism can be implemented via superscalar processors
+
+100
+00:09:45,000 --> 00:09:49,000
+that can execute multiple instructions in the same cycle.
+
+101
+00:09:49,000 --> 00:09:56,000
+On the other hand, thread-level parallelism is being able to execute multiple independent threads in parallel.
+
+102
+00:09:56,000 --> 00:09:59,000
+The key difference is that threads are well-defined with a software programmer,
+
+103
+00:09:59,000 --> 00:10:05,000
+whereas instruction-level parallelism is inferred by the absence of dependencies.
+
+104
+00:10:05,000 --> 00:10:10,000
+For this reason, thread-level parallelism tends to be more coarse-grained than instruction-level,
+
+105
+00:10:10,000 --> 00:10:15,000
+executing large chunks of code in parallel as opposed to per instruction basis.
+
+106
+00:10:18,000 --> 00:10:25,000
+To write multi-threaded programs, programmers will usually use APIs and libraries like POSIX threads or P-threads
+
+107
+00:10:25,000 --> 00:10:31,000
+to explicitly declare the creation and management of threads, as shown in this very simple example,
+
+108
+00:10:31,000 --> 00:10:36,000
+where the main thread creates an independent thread to run in parallel and call the printf function.
+
+109
+00:10:40,000 --> 00:10:44,000
+MIMD processors primarily exploit thread-level parallelism.
+
+110
+00:10:44,000 --> 00:10:49,000
+This was originally motivated by time-sharing, or context-switching, on a single processor,
+
+111
+00:10:49,000 --> 00:10:54,000
+as was implemented by most operating systems to support concurrent execution.
+
+112
+00:10:54,000 --> 00:11:00,000
+So because programs were already being written in a way to explicitly declare their parallel threads,
+
+113
+00:11:00,000 --> 00:11:05,000
+it became easy to build new processors that had multiple processing cores in them.
+
+114
+00:11:07,000 --> 00:11:12,000
+This made it very scalable for companies to build processors for different product lines and price levels,
+
+115
+00:11:12,000 --> 00:11:18,000
+having low-performance, low-cost, single-core options, versus high-performance, high-cost, multi-core options,
+
+116
+00:11:18,000 --> 00:11:22,000
+all being built off the same IP blocks and hardware.
+
+117
+00:11:22,000 --> 00:11:26,000
+Applications and operating systems were still able to run seamlessly on these systems
+
+118
+00:11:26,000 --> 00:11:31,000
+because the parallel processing was abstracted away from software.
+
+119
+00:11:31,000 --> 00:11:38,000
+This resulted in clear performance gains thanks to the additional throughput provided by parallel execution.
+
+120
+00:11:40,000 --> 00:11:43,000
+The granularity of MIMD processing can vary.
+
+121
+00:11:43,000 --> 00:11:47,000
+Within a single processor core, parallel execution can be supported
+
+122
+00:11:47,000 --> 00:11:51,000
+by implementing multiple hardware threads in the microarchitecture.
+
+123
+00:11:51,000 --> 00:11:58,000
+This is known as simultaneous multithreading SMT, or hyperthreading, in Intel's line of processors.
+
+124
+00:11:58,000 --> 00:12:07,000
+Chip multiprocessors, or CMPs, integrates multiple distinct processor cores that can execute one or more threads each.
+
+125
+00:12:07,000 --> 00:12:13,000
+Since these cores are no longer sharing hardware structures like the reorder, buffer, and register file,
+
+126
+00:12:13,000 --> 00:12:18,000
+any sharing or transfer of data between them must now go through the memory hierarchy
+
+127
+00:12:18,000 --> 00:12:22,000
+and what on-chip interconnect is used between them.
+
+128
+00:12:22,000 --> 00:12:29,000
+And finally, at a large scale, CMPs can be composed into clusters of processors connected via internet-working protocols,
+
+129
+00:12:29,000 --> 00:12:34,000
+as is done in modern data centers and warehouse-scale computers.
+
+130
+00:12:36,000 --> 00:12:43,000
+This visually recalls how we're able to extract instruction-level parallelism from a single thread or program.
+
+131
+00:12:43,000 --> 00:12:50,000
+With an in-order scalar core like our five-stage pipeline, we're only able to execute one instruction at a time.
+
+132
+00:12:50,000 --> 00:12:59,000
+Using a three-wide pipeline, we can build an in-order super scalar machine that can process multiple instructions at the same time,
+
+133
+00:12:59,000 --> 00:13:04,000
+just as long as they're independent and come one after another in program order.
+
+134
+00:13:04,000 --> 00:13:11,000
+Finally, with additional hardware complexity, we can allow instructions to bypass each other out of order
+
+135
+00:13:11,000 --> 00:13:15,000
+and fill up available pipeline slots to maximize performance.
+
+136
+00:13:17,000 --> 00:13:24,000
+Multi-threading is where we have two applications, or threads, running in the same processor system.
+
+137
+00:13:24,000 --> 00:13:32,000
+The simplest case is to execute the threads concurrently, but not in parallel, where the threads are time-sharing the hardware resources.
+
+138
+00:13:32,000 --> 00:13:38,000
+Simultaneous multi-threading is when the threads run on the same processor core but are able to partition or pool
+
+139
+00:13:38,000 --> 00:13:43,000
+the hardware resources so that they can coexist in the processor pipeline,
+
+140
+00:13:43,000 --> 00:13:49,000
+while a chip multiprocessor simply dedicates separate processor cores for the two threads.
+
+141
+00:13:51,000 --> 00:13:59,000
+The key trade-off here is that towards the right, the implementations become more complex but enable more opportunity for parallel speed-out.
+
+142
+00:13:59,000 --> 00:14:09,000
+An analogy to these forms of multi-threading is how groups of cars decide to travel to common destination.
+
+143
+00:14:09,000 --> 00:14:14,000
+Context switching is like convoying, where all cars in a group cluster together,
+
+144
+00:14:14,000 --> 00:14:21,000
+likely clogging up the entire road and potentially leaving some of its lanes, like the left turn lane, underutilized.
+
+145
+00:14:21,000 --> 00:14:27,000
+SMT is like allowing the cars to self-navigate to their common destination.
+
+146
+00:14:27,000 --> 00:14:33,000
+They all still share the road, but this improves the utilization of all lanes while coming at more complexity,
+
+147
+00:14:33,000 --> 00:14:38,000
+since each individual car is now treated as an independent entity.
+
+148
+00:14:38,000 --> 00:14:45,000
+Finally, for max throughput, we can allocate completely separate roads for the different groups of cars, like a CMT,
+
+149
+00:14:45,000 --> 00:14:51,000
+allowing them the freedom to reach their final destination without having to worry about getting in each other's way.
+
+150
+00:14:52,000 --> 00:15:01,000
+Simultaneous multi-threading can be implemented by taking an out-of-order superscaler processor
+
+151
+00:15:01,000 --> 00:15:06,000
+and allowing it to fetch from multiple different thread contexts in parallel.
+
+152
+00:15:06,000 --> 00:15:12,000
+Since the out-of-order execution engine already tracks all the necessary dependencies among instructions,
+
+153
+00:15:12,000 --> 00:15:19,000
+it can already support parallel execution of threads naturally, with only small changes in hardware.
+
+154
+00:15:22,000 --> 00:15:29,000
+To enable this, the in-order structures of the pipeline should be partitioned, such as the reorder buffer and map table.
+
+155
+00:15:29,000 --> 00:15:34,000
+This is to ensure that one thread stalling does not cause another independent thread to stall.
+
+156
+00:15:34,000 --> 00:15:40,000
+This is also necessary to make sure that we don't confuse the registers of one thread for another.
+
+157
+00:15:40,000 --> 00:15:48,000
+Since the two threads are compiled using the same ISA, they may use the same set of architectural register names, like T0 or S1,
+
+158
+00:15:48,000 --> 00:15:53,000
+but the threads are actually referring to their own versions of T0 and S1.
+
+159
+00:15:53,000 --> 00:16:00,000
+On the other hand, the out-of-order components can be pooled, like the reservation stations and functional units.
+
+160
+00:16:00,000 --> 00:16:04,000
+Even the physical registers can be pooled since the map table is partitioned
+
+161
+00:16:04,000 --> 00:16:09,000
+and will correctly distinguish registers owned by thread 1 from those owned by thread 2.
+
+162
+00:16:10,000 --> 00:16:16,000
+This illustrates that concept in more detail.
+
+163
+00:16:16,000 --> 00:16:23,000
+Thread 1 and 2 would have to have their own map tables, since their architectural registers are the same.
+
+164
+00:16:23,000 --> 00:16:29,000
+But the set of physical registers can be pooled and shared among them without harming correctness.
+
+165
+00:16:29,000 --> 00:16:34,000
+You can think of this as analogous to dealing with homonyms in virtual memory.
+
+166
+00:16:35,000 --> 00:16:42,000
+This shows an example of SMT in practice as implemented by Intel Hyperthreading,
+
+167
+00:16:42,000 --> 00:16:47,000
+where in-order structures like the decode queues and the reorder buffer are partitioned,
+
+168
+00:16:47,000 --> 00:16:52,000
+while the out-of-order engine can be almost entirely pooled, including the cache.
+
+169
+00:16:56,000 --> 00:17:00,000
+For even more parallelism, we can build a chip multiprocessor
+
+170
+00:17:00,000 --> 00:17:08,000
+by simply composing multiple uniprocessors together, each with their own microarchitecture and caches.
+
+171
+00:17:08,000 --> 00:17:12,000
+Often these cores will be connected together on the same cache and memory hierarchy,
+
+172
+00:17:12,000 --> 00:17:15,000
+allowing them to share the same physical memory.
+
+173
+00:17:15,000 --> 00:17:20,000
+We'll focus on building shared memory CMPs in the coming lecture.
+
+174
+00:17:23,000 --> 00:17:25,000
+Let's wrap up with a brief exercise.
+
+175
+00:17:25,000 --> 00:17:29,000
+Here's a program that you're planning to run on some parallel processor.
+
+176
+00:17:30,000 --> 00:17:37,000
+If this were a 5-core processor, and you know that 75% of your program's sequential runtime is parallelizable,
+
+177
+00:17:37,000 --> 00:17:40,000
+what would be the total program speedup?
+
+178
+00:17:40,000 --> 00:17:44,000
+We've discussed a law for this, so pause the video and please work through it.
+
+179
+00:17:50,000 --> 00:17:55,000
+This is simply revisiting Amdahl's law in the concept of parallel execution.
+
+180
+00:17:55,000 --> 00:18:02,000
+The 75% portion of your program can be sped up by a factor of 5 since you have 5 available cores.
+
+181
+00:18:02,000 --> 00:18:06,000
+The remaining 25% take the same amount of time,
+
+182
+00:18:06,000 --> 00:18:13,000
+so in total, your program ends up being 2.5 times faster when running on this parallel processor.
+

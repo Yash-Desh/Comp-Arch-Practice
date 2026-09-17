@@ -1,0 +1,960 @@
+1
+00:00:00,960 --> 00:00:05,520
+This lecture will be split between memory consistency and SIMD architectures.
+
+2
+00:00:09,360 --> 00:00:13,120
+We will first continue exploring shared memory multi-processors
+
+3
+00:00:13,120 --> 00:00:19,120
+and discuss the concept of sequential consistency, then we'll get back to Flynn's taxonomy and cover
+
+4
+00:00:19,120 --> 00:00:27,360
+SIMD and MISD parallel systems. Let's start by distinguishing between two terms,
+
+5
+00:00:27,360 --> 00:00:34,000
+cache coherence and memory consistency. Coherence pertains to the ordering of multiple cores or
+
+6
+00:00:34,000 --> 00:00:40,560
+multiple threads, reads and writes to a single memory location. As discussed last time, enabling
+
+7
+00:00:40,560 --> 00:00:46,000
+coherence implies that all accesses to a single memory location are ordered as if they were performed
+
+8
+00:00:46,000 --> 00:00:53,200
+in some sequential order. On the other hand, memory consistency pertains to the ordering of
+
+9
+00:00:53,200 --> 00:00:59,680
+multi-threaded reads and writes to all physical memory locations. The most intuitive consistency
+
+10
+00:00:59,680 --> 00:01:05,360
+model is sequential consistency, which like coherence enforces that accesses to all memory
+
+11
+00:01:05,360 --> 00:01:12,160
+locations are ordered as if they were performed sequentially. This is the easiest model for
+
+12
+00:01:12,160 --> 00:01:17,040
+programmers to understand, but like in-order cores, this can greatly constrain performance when
+
+13
+00:01:17,040 --> 00:01:21,920
+threads want to read and write different memory locations that have no relation or dependence
+
+14
+00:01:21,920 --> 00:01:28,640
+to one another. Instead, many modern systems employ relaxed consistency models that allow
+
+15
+00:01:28,640 --> 00:01:34,560
+some reordering to happen so that we can improve performance. We'll only be discussing sequential
+
+16
+00:01:34,560 --> 00:01:39,840
+consistency in this course. Relaxed consistency is left for advanced courses.
+
+17
+00:01:43,600 --> 00:01:49,760
+Sequential consistency is met with two properties that we want to uphold. First, we want to enforce
+
+18
+00:01:49,760 --> 00:01:55,680
+intra-thread program ordering of memory accesses so that each individual cores reads and writes
+
+19
+00:01:55,680 --> 00:02:00,880
+occur in the order specified by the programmer. This means that even though memory addresses
+
+20
+00:02:00,880 --> 00:02:05,840
+x and y point to different memory locations, we need to make sure that a load from x happens
+
+21
+00:02:05,840 --> 00:02:11,680
+before a store to y, since that's what the programmer specified. Second, we want to enforce
+
+22
+00:02:11,680 --> 00:02:17,520
+serialization of all reads and writes across all threads. As shown, this can be viewed as
+
+23
+00:02:17,520 --> 00:02:23,040
+effectively having a single arbiter that allows only one core to access memory at any moment.
+
+24
+00:02:23,680 --> 00:02:30,000
+If our multiprocessor system upholds these two properties, then we can say that our system is
+
+25
+00:02:30,000 --> 00:02:39,760
+sequentially consistent. Now let's go through some sequential consistency examples and show how
+
+26
+00:02:39,760 --> 00:02:44,640
+even simple optimizations in our compiler and architecture can actually violate SC.
+
+27
+00:02:45,440 --> 00:02:50,560
+Let's consider this example multi-threaded program running on two cores. If we assume that
+
+28
+00:02:50,560 --> 00:02:56,800
+the two shared memory locations x and y are both initialized to zero, if our system were
+
+29
+00:02:56,800 --> 00:03:02,880
+sequentially consistent, would it ever be possible for both a and c to be equal to zero at the end
+
+30
+00:03:02,880 --> 00:03:11,440
+of the program? No, if you walk through all the cases, you'll find that it is not possible for
+
+31
+00:03:11,440 --> 00:03:18,000
+a and c to be equal zero. If a ends up being zero, then p1 must have executed both instructions
+
+32
+00:03:18,000 --> 00:03:26,800
+before p2 stores five to y. This is because a can't get zero without x getting eight. Continuing on,
+
+33
+00:03:26,800 --> 00:03:33,840
+that means that p2 must read the value of eight for x when it computes c, so it's not possible for c
+
+34
+00:03:33,920 --> 00:03:40,320
+to also equal zero. On your own, walk through what a would be when c was zero.
+
+35
+00:03:44,560 --> 00:03:50,400
+However, there's a very common compiler optimization typically made called common
+
+36
+00:03:50,400 --> 00:03:56,560
+sub-expression elimination. The compiler is smart enough to recognize operations that are identical,
+
+37
+00:03:56,560 --> 00:04:02,960
+such as this x times two computation. So if the compiler performs common sub-expression
+
+38
+00:04:02,960 --> 00:04:10,480
+elimination, the compiler will simply replace the computation of c with b so that it doesn't do any
+
+39
+00:04:10,480 --> 00:04:17,520
+redundant ALU work. Unfortunately, though, this seemingly harmless optimization actually violates
+
+40
+00:04:17,520 --> 00:04:24,000
+sequential consistency. This eliminates the second load of extra memory, and now it is possible for
+
+41
+00:04:24,000 --> 00:04:33,680
+both a and c to end up being zero. Let's look at another example. If you were to go through this
+
+42
+00:04:33,680 --> 00:04:40,080
+program, you'd find that it is impossible for all of a, b, and c to be equal to two at the end of the
+
+43
+00:04:40,080 --> 00:04:46,480
+program. In fact, it isn't even possible for either a or b to be equal to two in the end.
+
+44
+00:04:47,200 --> 00:04:51,120
+Please pause, walk through this, and confirm your understanding.
+
+45
+00:04:54,000 --> 00:05:01,040
+But as you might expect, simple compiler optimizations may end up compromising sequential
+
+46
+00:05:01,040 --> 00:05:07,760
+consistency. As before, common sub-expression elimination may be employed, replacing the
+
+47
+00:05:07,760 --> 00:05:15,360
+second load of x with just a copy of the value and variable a. And then, since b is now directly
+
+48
+00:05:15,360 --> 00:05:20,480
+being set to a, it seems obvious to the compiler that this if statement is always going to be true.
+
+49
+00:05:21,200 --> 00:05:26,880
+So if it's always true, then we can just remove the branch entirely, saving some cycles and
+
+50
+00:05:26,880 --> 00:05:36,240
+potentially avoiding mis-speculation. But now that we're left with just these three instructions,
+
+51
+00:05:36,240 --> 00:05:41,120
+in the compiler's mind, the store to y has no data dependence with the previous two instructions.
+
+52
+00:05:42,560 --> 00:05:48,320
+So our compiler may feel free to move the store to y earlier. And now, if we were to go through
+
+53
+00:05:48,320 --> 00:05:52,960
+this optimized program, which seemingly performs the same computation as before,
+
+54
+00:05:53,600 --> 00:06:00,160
+we'd find that sc can be violated, and indeed, all a, b, and c can equal two at the end of the program.
+
+55
+00:06:06,320 --> 00:06:10,800
+Let's look at how our hardware optimizations can also affect consistency.
+
+56
+00:06:12,800 --> 00:06:16,480
+In this program, it's clear that the assertion in p2 should never be false,
+
+57
+00:06:17,040 --> 00:06:23,680
+because p2 would not enter the if block unless y were not zero. And looking at p1's code,
+
+58
+00:06:23,680 --> 00:06:27,760
+y can only be set to one after having set x to one as well.
+
+59
+00:06:30,000 --> 00:06:34,400
+However, without of order execution and branch prediction, it's possible that the load of x
+
+60
+00:06:34,400 --> 00:06:40,320
+and p2 can finish executing before the load of y in the branch condition. For example,
+
+61
+00:06:40,320 --> 00:06:46,960
+p2's load of y may be a cache miss. But due to branch prediction, we may proceed and execute
+
+62
+00:06:46,960 --> 00:06:52,000
+the load of x, which may be a cache hit. Then by the time we finally get the data for y,
+
+63
+00:06:52,000 --> 00:06:57,440
+it's possible that y may have been set to one. Thus, the branch prediction is deemed correct,
+
+64
+00:06:57,440 --> 00:06:59,760
+even though we have read an older value of x.
+
+65
+00:07:02,640 --> 00:07:05,840
+In this case, the assertion fails and sc is violated.
+
+66
+00:07:05,840 --> 00:07:13,760
+Finally, we'll look at a more complex example with three threads running on a multiprocessor.
+
+67
+00:07:14,480 --> 00:07:18,640
+p0 effectively sets the flag y that allows p1 to continue,
+
+68
+00:07:18,640 --> 00:07:22,400
+and p1 sets the flag z that allows p5 to continue.
+
+69
+00:07:23,520 --> 00:07:27,200
+In the end, it is not possible for b to read the value zero.
+
+70
+00:07:28,000 --> 00:07:35,680
+But let's consider what happens when running these threads on a real multiprocessor,
+
+71
+00:07:35,680 --> 00:07:40,000
+where the cores are interconnected by some network. This means that for p0,
+
+72
+00:07:40,800 --> 00:07:47,840
+p1 is closer than p5. Thus, coherence messages get delivered to it in less wall clock time than
+
+73
+00:07:47,840 --> 00:07:52,640
+they do p5. So let's see how that affects the program.
+
+74
+00:07:55,920 --> 00:08:02,000
+Say the first thing that happens is p0 stores to x, and this value properly gets propagated to p1
+
+75
+00:08:02,000 --> 00:08:11,920
+and p5's caches, as shown. Now assume that network congestion has built up in the system
+
+76
+00:08:11,920 --> 00:08:19,280
+between p3 and p4 due to some unrelated programs. So now when p0 stores to y,
+
+77
+00:08:19,280 --> 00:08:24,160
+p1 is made aware of this change immediately, while p5 still has no idea that the change
+
+78
+00:08:24,160 --> 00:08:30,400
+has happened due to the congested network link. Then, since p1 is already aware of the modification
+
+79
+00:08:30,400 --> 00:08:35,920
+of y, it now breaks from the while loop and continues executing its instructions and performs
+
+80
+00:08:35,920 --> 00:08:42,800
+a store to z. Because its path to p5 is not congested, p5 notices the change to z before
+
+81
+00:08:42,800 --> 00:08:49,280
+it notices the change to y. And because of that, we now end up with an impossible scenario of b
+
+82
+00:08:49,280 --> 00:09:00,320
+being set to zero, violating sc. So how do we provide sequential consistency while allowing
+
+83
+00:09:00,320 --> 00:09:06,480
+ourselves to benefit from these optimizations? The key is that to achieve sequential consistency,
+
+84
+00:09:06,480 --> 00:09:13,360
+it only needs to look like these properties hold. To maintain intra-thread program order,
+
+85
+00:09:13,360 --> 00:09:17,760
+we can tell the compiler specifically which loads and stores should not be optimized and
+
+86
+00:09:17,760 --> 00:09:23,360
+reordered, while the rest can still be optimized freely. This applies to the first two examples
+
+87
+00:09:23,360 --> 00:09:29,600
+earlier and can be done using the volatile declaration in the program code. To account
+
+88
+00:09:29,600 --> 00:09:34,000
+for hardware optimizations like the out-of-order execution and branch prediction in the third
+
+89
+00:09:34,000 --> 00:09:39,680
+example, we can apply a mechanism of load replay, where we allow loads to be performed
+
+90
+00:09:39,680 --> 00:09:46,960
+out of program order, as long as we double check them in order upon retirement. And finally,
+
+91
+00:09:46,960 --> 00:09:52,160
+if we don't want to have to change our out-of-order hardware implementation to support replay,
+
+92
+00:09:52,160 --> 00:09:57,440
+the programmer can manually insert fences to stall younger memory operations and force program
+
+93
+00:09:57,440 --> 00:10:05,120
+ordering. Now, for inter-thread serialization, we recognize that we don't actually have to
+
+94
+00:10:05,120 --> 00:10:10,880
+serialize reads across threads because they don't modify any values, so they can happen in parallel.
+
+95
+00:10:11,520 --> 00:10:16,480
+So if that's the case, then inter-thread serialization can be simplified to just
+
+96
+00:10:17,760 --> 00:10:24,000
+inter-thread write atomicity, that is, all writes are globally serialized. And to do this,
+
+97
+00:10:24,000 --> 00:10:28,560
+we need to make sure that all writes are made visible to all cores atomically,
+
+98
+00:10:28,560 --> 00:10:34,080
+and we leverage the cache coherence protocol to do this. If one core modifies a block, we just need
+
+99
+00:10:34,080 --> 00:10:40,000
+to make sure that our protocol waits for all other cores' acknowledgment of the modification
+
+100
+00:10:40,000 --> 00:10:44,960
+before we're allowed to proceed. We'll discuss each of these four mechanisms in a bit.
+
+101
+00:10:48,640 --> 00:10:52,880
+The first mechanism is to use volatile declaration, which allows programmers to
+
+102
+00:10:52,880 --> 00:10:57,680
+tell the compiler that a memory location may potentially be modified by some other thread or
+
+103
+00:10:57,680 --> 00:11:04,800
+entity. So in this example, if memory address x is declared volatile, the compiler must assume
+
+104
+00:11:04,800 --> 00:11:10,800
+that loads to x may not return the same value each time as it could be getting updated by a
+
+105
+00:11:10,800 --> 00:11:18,160
+different thread. Thus, the compiler can't simply set b to equal to a, because during the time in
+
+106
+00:11:18,160 --> 00:11:23,280
+between the two instructions, x may have been modified externally. This forces the compiler
+
+107
+00:11:23,280 --> 00:11:28,000
+to be conservative and follow the programmer's explicit instructions and not optimize nor
+
+108
+00:11:28,000 --> 00:11:36,720
+reorder memory loads and stores for this address. So applying this to example two from earlier,
+
+109
+00:11:36,720 --> 00:11:41,760
+we force the compiler to keep all the instructions the way they're written. With this, it is now
+
+110
+00:11:41,760 --> 00:11:47,920
+impossible to have a, b, and c all equal to, which means no sc violation.
+
+111
+00:11:52,480 --> 00:11:57,920
+The second mechanism was replay. We need to make sure that despite out-of-order execution,
+
+112
+00:11:57,920 --> 00:12:03,200
+memory accesses in my thread should appear to execute in the order that they were specified
+
+113
+00:12:03,200 --> 00:12:08,640
+by the program. This is no problem for stores, because as you recall from our discussion of MIPS
+
+114
+00:12:08,640 --> 00:12:16,240
+R10K, stores are performed in order at retire instead of during execute. So we only need to deal
+
+115
+00:12:16,240 --> 00:12:21,440
+with the loads, but we don't want to lose the benefit of executing loads out of order, since
+
+116
+00:12:21,440 --> 00:12:27,440
+they can be very expensive, especially on a cache miss. So the idea is to go ahead and let loads
+
+117
+00:12:27,440 --> 00:12:32,240
+execute out of order, as long as we replay the load again when it retires, just to make sure
+
+118
+00:12:32,240 --> 00:12:38,160
+that the value has not changed since then. If it has changed, then we need to flush and re-execute
+
+119
+00:12:38,160 --> 00:12:45,680
+all of the instructions that were dependent on the load. So in the example below, it is possible
+
+120
+00:12:45,680 --> 00:12:51,120
+that the younger load may actually execute before the older load. This can violate sequential
+
+121
+00:12:51,120 --> 00:12:55,360
+consistency if we weren't allowed to read the younger load's value before the older one.
+
+122
+00:13:00,160 --> 00:13:04,000
+So to make sure there are no issues, we need to replay the younger load when it eventually
+
+123
+00:13:04,000 --> 00:13:10,080
+retires. This makes sure that the value hasn't changed since then. And this extra load operation
+
+124
+00:13:10,080 --> 00:13:15,280
+is generally not expensive, since by the time we get to retire, the load value is most likely
+
+125
+00:13:15,280 --> 00:13:19,680
+still in the cache, so it incurs minimal performance overhead to replay the load.
+
+126
+00:13:23,760 --> 00:13:28,880
+So now we can apply this replay mechanism to example 3. With branch prediction and out of
+
+127
+00:13:28,880 --> 00:13:34,080
+order execution, we will still let the load of x execute first, potentially reading the
+
+128
+00:13:34,080 --> 00:13:40,480
+stale value as 0. But that's okay, because by the time this load retires, we will get the proper
+
+129
+00:13:40,480 --> 00:13:48,320
+value of 1 since the load of y must have retired and returned 1 by now. Thus with replay, it is
+
+130
+00:13:48,320 --> 00:13:58,560
+impossible for a to be equal to 0. One way to enforce intrathread ordering of loads and stores
+
+131
+00:13:58,560 --> 00:14:04,320
+without changing the out of order hardware is to insert memory fences or memory barriers into
+
+132
+00:14:04,320 --> 00:14:11,360
+the program. A general memory fence, denoted M fence here, ensures that all earlier loads and
+
+133
+00:14:11,360 --> 00:14:15,840
+stores in this thread must be completed before any loads and stores are allowed to execute.
+
+134
+00:14:16,480 --> 00:14:22,560
+This is a fairly severe constraint, and often it's sufficient to just have a fence for either loads
+
+135
+00:14:22,560 --> 00:14:28,960
+or just stores. So a load fence stalls any future loads or stores to any address until
+
+136
+00:14:28,960 --> 00:14:35,440
+all prior loads have retired. And a store fence stalls any future loads or stores to any address
+
+137
+00:14:35,440 --> 00:14:44,080
+until all prior stores have been retired. So going back to example 3, we can ensure that
+
+138
+00:14:44,080 --> 00:14:51,680
+sequential consistency is not violated by inserting appropriate fences. In P1, we insert a store fence
+
+139
+00:14:51,680 --> 00:14:56,320
+to make sure that the store to address x completes before the store to address y is allowed to be
+
+140
+00:14:56,320 --> 00:15:02,640
+executed. And in P2, the load fence makes sure that the load of y completes before the load
+
+141
+00:15:02,640 --> 00:15:13,600
+of x is executed, thus preventing the SC violation. The last mechanism is coherence acknowledgments.
+
+142
+00:15:14,160 --> 00:15:19,120
+We need to make sure that when a core modifies a value and transitions to the M state,
+
+143
+00:15:19,760 --> 00:15:24,560
+all other cores first need to acknowledge this action before any core is allowed to read the
+
+144
+00:15:24,560 --> 00:15:30,640
+new modified state. Note that for the snooping-based coherence implementations that we focus on in
+
+145
+00:15:30,640 --> 00:15:36,080
+this course, it is implied that these writes are atomic since we're using a common atomic bus,
+
+146
+00:15:36,080 --> 00:15:40,080
+and we assume that all cores are consistently watching and snooping the bus.
+
+147
+00:15:44,400 --> 00:15:48,880
+However, if we didn't have a common atomic bus, here's what the coherence protocol would
+
+148
+00:15:48,960 --> 00:15:56,320
+support to ensure right atomicity. When y is modified by P0, the congestion between P3 and
+
+149
+00:15:56,320 --> 00:16:03,200
+P4 may slow down the notification to P5. But by ensuring that all nodes have to first acknowledge
+
+150
+00:16:03,200 --> 00:16:07,840
+the write, then P1 will not be allowed to read the new value of y just yet.
+
+151
+00:16:10,400 --> 00:16:16,320
+Only until P5 has acknowledged receipt of the notification will both P1 and P5 see the new
+
+152
+00:16:16,320 --> 00:16:25,520
+value of y, which is 3. Only after that is P1 allowed to proceed and modify the value of z.
+
+153
+00:16:26,240 --> 00:16:32,640
+But by the time P5 sees the modification of z, it is guaranteed to have seen the modification of y,
+
+154
+00:16:32,640 --> 00:16:35,840
+ensuring sequential consistency is not violated.
+
+155
+00:16:40,320 --> 00:16:44,240
+All right, that wrapped up our discussion on shared memory CMPs,
+
+156
+00:16:44,240 --> 00:16:49,840
+which was our main focus for MIMD parallel systems. Let's return to Flynn's tectonomy
+
+157
+00:16:49,840 --> 00:16:53,280
+to briefly cover the other paradigms, SIMD and MISD.
+
+158
+00:16:56,480 --> 00:17:01,920
+In general purpose processors, SIMD parallelism takes the form of vector, or superword,
+
+159
+00:17:01,920 --> 00:17:07,280
+instructions. The idea is to perform a single operation on multiple sets of data registers
+
+160
+00:17:07,280 --> 00:17:13,040
+in parallel. In the example shown here, we have a vector add instruction that is able to add four
+
+161
+00:17:13,040 --> 00:17:20,000
+registers with four other registers and write the result into four distinct registers, all as a single
+
+162
+00:17:20,000 --> 00:17:28,400
+instruction. To support vector instructions, the ISA needs to support vector registers.
+
+163
+00:17:29,040 --> 00:17:36,400
+Generally, vector registers are composed of multiple regular registers. For example, shown here,
+
+164
+00:17:36,400 --> 00:17:42,880
+vector register A can consist of four regular registers R0, R1, R2, and R3.
+
+165
+00:17:43,920 --> 00:17:48,720
+These are registers can be used individually as operands for regular instructions.
+
+166
+00:17:48,720 --> 00:17:53,840
+But to perform a vector operation, the program must first put all of its operands into one of
+
+167
+00:17:53,840 --> 00:18:01,440
+the vector registers A, B, or C. In Intel's SSE vector instruction set, there are eight 128-bit
+
+168
+00:18:01,440 --> 00:18:08,800
+vector registers that can be accessed as two 64-bit registers, four 32-bit registers, eight 16-bit
+
+169
+00:18:08,800 --> 00:18:19,120
+registers, or 16 8-bit registers. To take advantage of vector instructions, the compiler
+
+170
+00:18:19,120 --> 00:18:25,520
+usually employs two techniques, loop unrolling and loop fusion. Loop unrolling combines multiple
+
+171
+00:18:25,520 --> 00:18:30,720
+iterations into a single larger loop body. If all of the instructions in the loop body are
+
+172
+00:18:30,720 --> 00:18:36,560
+performing the same operation, there are four ads in this example, then the instruction can be
+
+173
+00:18:36,560 --> 00:18:43,440
+converted into a single vector instruction. In this example, this can approach a speed up of four
+
+174
+00:18:43,440 --> 00:18:50,400
+by vectorizing every four loop iterations. Loop fusion, on the other hand, merges multiple
+
+175
+00:18:50,400 --> 00:18:55,520
+independent loops together into one larger loop. And if all the instructions in the loop body are
+
+176
+00:18:55,520 --> 00:19:01,200
+performing the same operation, then they too can be replaced with a single vector instruction per
+
+177
+00:19:01,200 --> 00:19:12,560
+iteration. Here we compare and contrast vector, or superword level, parallelism versus instruction
+
+178
+00:19:12,560 --> 00:19:19,840
+level parallelism, which is the form of parallelism exploited by superscalar out-of-order processors.
+
+179
+00:19:20,800 --> 00:19:25,200
+The downside of vector instructions is that the program first needs to move their data into
+
+180
+00:19:25,280 --> 00:19:30,880
+dedicated vector registers. Then after executing the vector instruction, the results need to be
+
+181
+00:19:30,880 --> 00:19:35,840
+moved to their intended destinations. This is known as register packing and unpacking,
+
+182
+00:19:35,840 --> 00:19:41,600
+and can incur significant performance overhead. Further, vector instructions are less flexible
+
+183
+00:19:41,600 --> 00:19:46,960
+since the same operation needs to be done for all operands. On the other hand, instruction level
+
+184
+00:19:46,960 --> 00:19:52,560
+parallelism fetches and executes more total instructions. In the example shown, even though
+
+185
+00:19:53,280 --> 00:20:00,320
+i1, i2, and i3 are independent and can be executed in parallel, we still need to fetch and execute
+
+186
+00:20:00,320 --> 00:20:06,640
+three instructions and occupy three spaces in the ROB and other hardware structures. The advantage
+
+187
+00:20:06,640 --> 00:20:11,840
+of vector instructions is that multiple operations are encapsulated as one single instruction.
+
+188
+00:20:12,480 --> 00:20:16,960
+This is why the hardware complexity of vector instructions is much lower than a superscalar
+
+189
+00:20:16,960 --> 00:20:23,440
+out-of-order core. So to make the hardware cost of a superscalar processor worth it,
+
+190
+00:20:23,440 --> 00:20:29,200
+it needs to be utilized as much as possible by the program. If the program has too many dependent
+
+191
+00:20:29,200 --> 00:20:38,400
+instructions, then the hardware cost may not be worth it. As an analogy, vector instructions are
+
+192
+00:20:38,400 --> 00:20:43,840
+like a buy one, get one free deal. The discount is less flexible and is only really useful if you
+
+193
+00:20:43,840 --> 00:20:50,160
+plan on buying multiple of the same product, whereas implementing a superscalar processor is
+
+194
+00:20:50,160 --> 00:20:56,160
+like a membership discount. It's more flexible, but it imposes a high base cost and needs to be
+
+195
+00:20:56,160 --> 00:21:04,480
+well utilized in order to be worth this cost. Building on the SIMD principle is the notion
+
+196
+00:21:04,480 --> 00:21:11,920
+of single instruction multiple threads parallelism or SIMT. GPUs are the popular choice for SIMT
+
+197
+00:21:11,920 --> 00:21:16,560
+execution. They were originally designed as shader cores for graphics programs where
+
+198
+00:21:16,560 --> 00:21:21,200
+tons of threads are needed, and the threads basically all perform the same computation but
+
+199
+00:21:21,200 --> 00:21:27,040
+on different data. And for the most part, each thread's computation did not have complex flow
+
+200
+00:21:27,040 --> 00:21:34,160
+control and was just performing a bunch of arithmetic on its data. Today GPUs are effectively
+
+201
+00:21:34,160 --> 00:21:39,280
+general purpose, being used for a broad range of applications, not just graphics.
+
+202
+00:21:42,800 --> 00:21:47,920
+The high level architecture of a GPU revolves around three key assumptions. The first is that
+
+203
+00:21:47,920 --> 00:21:53,200
+all threads perform the same computations. If that's the case, then we can have a single set
+
+204
+00:21:53,200 --> 00:21:58,880
+of fetch and decode logic for an entire group of threads. Think of it as a very wide superscalar
+
+205
+00:21:58,880 --> 00:22:05,200
+machine with simultaneous multithreading of, say, 32 threads at a time that all run the exact
+
+206
+00:22:05,200 --> 00:22:10,400
+same instruction on every single cycle. We're able to densely pack all of these threads into a
+
+207
+00:22:10,400 --> 00:22:15,920
+single processor by fetching and decoding for all 32 threads at a time. We just need to have
+
+208
+00:22:15,920 --> 00:22:24,080
+enough ALUs and registers for all the threads. The second assumption is that the GPU program,
+
+209
+00:22:24,640 --> 00:22:30,640
+commonly called a kernel, is expected to run many threads. The idea is to stamp out
+
+210
+00:22:30,640 --> 00:22:35,920
+many of these streaming multi processors, as they're commonly called, and implement a scheduler
+
+211
+00:22:35,920 --> 00:22:45,600
+that manages placement of the threads. The last assumption is that each kernel is expected to run
+
+212
+00:22:45,600 --> 00:22:50,000
+many, many threads, way more than the number of hardware threads that the GPU supports.
+
+213
+00:22:50,800 --> 00:22:56,160
+The idea is that whenever a group of threads gets a cache miss or some form of stall event,
+
+214
+00:22:56,160 --> 00:23:01,760
+the scheduler is able to context switch in another group of threads to immediately start executing.
+
+215
+00:23:02,400 --> 00:23:07,520
+This ensures that the GPU pipeline is always utilized and hides the delays of cache misses
+
+216
+00:23:07,520 --> 00:23:18,080
+and other stalls. The last parallelism paradigm is MISTI, or multiple instruction single data.
+
+217
+00:23:18,640 --> 00:23:23,600
+This can be viewed as the transpose of vector execution, where many different operations
+
+218
+00:23:23,600 --> 00:23:29,200
+are simultaneously performed on a single piece of data. This concept is shown here where the
+
+219
+00:23:29,200 --> 00:23:35,120
+streaming MISTI architecture processes one data element at a time, which propagates through a
+
+220
+00:23:35,120 --> 00:23:40,560
+series of instructions. This has historically been a less common paradigm, but is gaining more
+
+221
+00:23:40,560 --> 00:23:45,920
+interest lately for big data computing, where lots of data needs to be processed and data
+
+222
+00:23:45,920 --> 00:23:56,880
+reuse is generally low. Let's wrap up and work through an exercise on sequential consistency.
+
+223
+00:23:57,760 --> 00:24:03,600
+Given the program from example four earlier, if our hardware and compiler does not implement SC,
+
+224
+00:24:03,600 --> 00:24:07,440
+where should we insert the minimum number of load and store fences to guarantee
+
+225
+00:24:07,440 --> 00:24:13,040
+sequentially consistent execution? Assume that the coherence protocol enforces
+
+226
+00:24:13,040 --> 00:24:16,720
+inter thread write animicity. Please pause and work this out.
+
+227
+00:24:23,360 --> 00:24:29,040
+Okay, so to ensure sequential consistency, this set of dependencies needs to be enforced in the
+
+228
+00:24:29,040 --> 00:24:37,120
+program. P1 needs to wait for y to be set before it loads x, and P5 needs to wait for z to be set
+
+229
+00:24:37,120 --> 00:24:45,040
+before it loads y. z can only be set by P1 after y has been set. Write animicity ensures that the
+
+230
+00:24:45,040 --> 00:24:51,520
+inter thread dependence between P0 and P1 and the dependence between P1 and P5 are enforced.
+
+231
+00:24:52,480 --> 00:24:57,440
+Sequential consistency can only be violated if instructions within each thread are reordered.
+
+232
+00:24:58,560 --> 00:25:03,120
+In this machine, there's no guarantee that P0 writes to x before it writes to y,
+
+233
+00:25:03,200 --> 00:25:09,280
+so there's no guarantee that P1 reads y before it accesses z and x, and there's no guarantee that
+
+234
+00:25:09,280 --> 00:25:14,880
+P5 reads z before it reads y. If you didn't get this before, and now you think you've got the
+
+235
+00:25:14,880 --> 00:25:27,200
+right hint, please pause and fill in the blanks. All right, to ensure proper program ordering,
+
+236
+00:25:27,200 --> 00:25:32,240
+we need to insert a store fence in P0 to maintain ordering between assignments to x and y,
+
+237
+00:25:32,800 --> 00:25:37,360
+a load fence in P1 to ensure we've loaded the non-zero y before we load x,
+
+238
+00:25:38,000 --> 00:25:44,880
+and a load fence in P5 for the same reason as P1. Note that no fence is needed between the store to
+
+239
+00:25:44,880 --> 00:25:50,640
+z and the load of x and P1 since these do not need to be ordered in any particular way. They'll
+
+240
+00:25:50,640 --> 00:26:01,600
+still be sequentially consistent as long as both happen after the load of y.
+

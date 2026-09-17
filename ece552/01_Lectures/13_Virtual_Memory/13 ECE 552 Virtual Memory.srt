@@ -1,0 +1,1080 @@
+1
+00:00:00,000 --> 00:00:10,340
+In this lecture, we'll cover virtual memory and TLBs.
+
+2
+00:00:10,340 --> 00:00:14,000
+Consider the memory hierarchy that we've discussed so far.
+
+3
+00:00:14,000 --> 00:00:19,560
+Now what happens when we want to run multiple programs or processes on the same CPU?
+
+4
+00:00:19,560 --> 00:00:23,720
+Today when we compile a program, we might start executing from address 0 and have the
+
+5
+00:00:23,720 --> 00:00:27,560
+stack set to a known address towards the top of the range.
+
+6
+00:00:27,560 --> 00:00:33,120
+If Process A wants to access memory address 1,000 in its program, it assumes it can because
+
+7
+00:00:33,120 --> 00:00:36,360
+it thinks it's operating in isolation.
+
+8
+00:00:36,360 --> 00:00:42,500
+How could it possibly know that Process A nor C isn't already using address 1,000?
+
+9
+00:00:42,500 --> 00:00:47,480
+Do all three programs somehow need to be compiled together in order to run on the same machine
+
+10
+00:00:47,480 --> 00:00:49,480
+and share the same memory?
+
+11
+00:00:49,480 --> 00:00:54,600
+Better yet, does this mean that Process A can read any arbitrary data that Process B and
+
+12
+00:00:54,600 --> 00:00:59,600
+C are using?
+
+13
+00:00:59,600 --> 00:01:03,200
+Our typical memory hierarchy is built for hardware performance.
+
+14
+00:01:03,200 --> 00:01:07,760
+However, we have yet to consider what the software program wants.
+
+15
+00:01:07,760 --> 00:01:10,200
+From that perspective, there are three key things.
+
+16
+00:01:10,200 --> 00:01:15,080
+First, we want to be able to write programs as if we had an arbitrary amount of memory.
+
+17
+00:01:15,080 --> 00:01:19,280
+My program shouldn't have to be rewritten or recompiled every time somebody changes
+
+18
+00:01:19,280 --> 00:01:21,800
+the amount of memory in my machine.
+
+19
+00:01:21,800 --> 00:01:26,600
+Second, we want to feel like we're the only program running on the system.
+
+20
+00:01:26,600 --> 00:01:31,120
+As we saw in the previous slide, the memory addresses that my program uses should not
+
+21
+00:01:31,120 --> 00:01:36,080
+be dependent on the memory addresses that your program uses.
+
+22
+00:01:36,080 --> 00:01:40,480
+And third, we want to make sure that no other program is able to read, write, or execute
+
+23
+00:01:40,480 --> 00:01:44,840
+my program's information because they could either steal my private data or they could
+
+24
+00:01:44,840 --> 00:01:51,640
+break my operation.
+
+25
+00:01:51,640 --> 00:01:53,720
+How can we provide all of this?
+
+26
+00:01:53,720 --> 00:01:56,240
+The answer is to virtualize our memory.
+
+27
+00:01:56,240 --> 00:02:00,680
+Specifically, we want to decouple the address space that the program uses, which is known
+
+28
+00:02:00,680 --> 00:02:06,560
+as the virtual address space, from the physical addresses that actually exist in the hardware.
+
+29
+00:02:06,560 --> 00:02:08,920
+So now we have two sets of addresses.
+
+30
+00:02:08,920 --> 00:02:13,240
+Virtual addresses describe the locations of data from the program's perspective, while
+
+31
+00:02:13,240 --> 00:02:19,600
+the physical addresses describe the actual locations of data in the memory storage.
+
+32
+00:02:19,720 --> 00:02:24,560
+When we say we have a 32-bit machine, for example, we are specifically revering to the
+
+33
+00:02:24,560 --> 00:02:27,820
+number of bits in our virtual addresses.
+
+34
+00:02:27,820 --> 00:02:31,920
+Physical addresses are generally smaller since the maximum amount of physical memory
+
+35
+00:02:31,920 --> 00:02:38,720
+that the hardware can support is often smaller than the size of the virtual address space.
+
+36
+00:02:38,720 --> 00:02:45,400
+For instance, the processor in the single-board computer Raspberry Pi 5 is 64-bit, as is the
+
+37
+00:02:45,400 --> 00:02:51,160
+latest-generation AMD EPIC data center processor.
+
+38
+00:02:51,160 --> 00:02:55,840
+While the EPIC supports more address bits than the Raspberry Pi, neither support the
+
+39
+00:02:55,840 --> 00:03:01,200
+full 64-bit range.
+
+40
+00:03:01,200 --> 00:03:05,680
+Virtual memory operates at a page granularity to reduce the amount of hardware required
+
+41
+00:03:05,680 --> 00:03:08,760
+to map between virtual and physical.
+
+42
+00:03:08,760 --> 00:03:14,560
+That is, both the virtual and physical address spaces are decomposed into pages, which are
+
+43
+00:03:14,560 --> 00:03:21,520
+relatively large regions of memory, often on the order of 4K or more.
+
+44
+00:03:21,520 --> 00:03:26,080
+So the idea is that each page in the program's virtual address space is mapped and stored
+
+45
+00:03:26,080 --> 00:03:29,640
+in some arbitrary location in physical memory.
+
+46
+00:03:29,640 --> 00:03:35,120
+The pages don't need to be stored contiguously, as in page one and page two won't necessarily
+
+47
+00:03:35,120 --> 00:03:39,240
+be next to each other in physical memory.
+
+48
+00:03:39,240 --> 00:03:44,720
+And since main memory may not be very large, any excess pages that we don't use as often
+
+49
+00:03:44,720 --> 00:03:47,400
+will be stored in disk instead.
+
+50
+00:03:47,400 --> 00:03:56,800
+And when we eventually do need them, we'll swap them into main memory.
+
+51
+00:03:56,800 --> 00:04:01,320
+Virtual memory should almost look like another cache, except in this case the blocks are
+
+52
+00:04:01,320 --> 00:04:07,240
+huge pages, it's fully associative, there's no hardwired replacement policy as it's all
+
+53
+00:04:07,240 --> 00:04:12,160
+managed by the operating system, and the write policy looks like a write back write
+
+54
+00:04:12,160 --> 00:04:18,440
+allocate cache.
+
+55
+00:04:18,440 --> 00:04:22,720
+So at a high level, virtual memory offers automatic transparent memory management with
+
+56
+00:04:22,720 --> 00:04:24,640
+four key benefits.
+
+57
+00:04:24,640 --> 00:04:27,300
+The first is program isolation.
+
+58
+00:04:27,300 --> 00:04:31,800
+This allows each process to think that it's the only one in the system, so it can pre-define
+
+59
+00:04:31,800 --> 00:04:35,000
+its addresses, such as the stack pointer.
+
+60
+00:04:35,000 --> 00:04:37,600
+The second is multi-programming.
+
+61
+00:04:37,600 --> 00:04:42,040
+This mapping allows our system to now run multiple processes at the same time, without
+
+62
+00:04:42,040 --> 00:04:48,360
+any fear of them clobbering each other's data.
+
+63
+00:04:48,360 --> 00:04:51,080
+Memory protection is the third benefit.
+
+64
+00:04:51,080 --> 00:04:56,000
+This virtual to physical mapping can be leveraged to track additional information, like permission
+
+65
+00:04:56,000 --> 00:04:57,960
+bits for each page.
+
+66
+00:04:57,960 --> 00:05:03,080
+In this way, our OS can give special permission to specific pages, like read-only data or
+
+67
+00:05:03,080 --> 00:05:09,440
+non-executable stack regions, to provide memory protection.
+
+68
+00:05:09,440 --> 00:05:13,160
+This also enables smooth inter-process communication.
+
+69
+00:05:13,160 --> 00:05:18,440
+Processes can share data by simply mapping one of their own virtual ad pages to a common
+
+70
+00:05:18,440 --> 00:05:19,720
+physical page.
+
+71
+00:05:19,720 --> 00:05:22,000
+These are known as synonym pages.
+
+72
+00:05:22,000 --> 00:05:28,040
+We'll discuss the concept of synonyms in a few minutes.
+
+73
+00:05:28,040 --> 00:05:34,040
+So how do we perform the address translation from the virtual address to the physical address?
+
+74
+00:05:34,040 --> 00:05:38,960
+Similar to how we index into caches, we break up the bits of the memory address.
+
+75
+00:05:38,960 --> 00:05:44,240
+As shown at the bottom, the most significant bits of the virtual address specify the virtual
+
+76
+00:05:44,240 --> 00:05:51,640
+page number, or VPN, while the least significant bits specify the byte offset within the page.
+
+77
+00:05:51,640 --> 00:05:57,080
+The VPN is then translated into a physical page number, or PPN.
+
+78
+00:05:57,080 --> 00:06:01,840
+The page offset bits are untouched because all they do is specify where within the page
+
+79
+00:06:01,840 --> 00:06:04,240
+each byte is located.
+
+80
+00:06:04,240 --> 00:06:10,080
+And since data is mapped at a page granularity, a piece of data that is 8 bytes from the beginning
+
+81
+00:06:10,080 --> 00:06:15,720
+of its virtual address page will still be 8 bytes from the beginning of its physical
+
+82
+00:06:15,720 --> 00:06:18,560
+page in memory.
+
+83
+00:06:18,560 --> 00:06:24,840
+In the example shown below, we assume our pages are 64k in size, and log 64k means we
+
+84
+00:06:24,840 --> 00:06:28,200
+have 16 page offset bits.
+
+85
+00:06:28,200 --> 00:06:33,400
+If we're using a 32-bit machine, then our virtual addresses are 32 bits wide, thus the
+
+86
+00:06:33,400 --> 00:06:36,080
+VPN is 16 bits.
+
+87
+00:06:36,080 --> 00:06:42,080
+And if we have 256 megs of physical memory, that means our physical address is 28 bits
+
+88
+00:06:42,080 --> 00:06:45,640
+wide, thus our PPN is only 12 bits.
+
+89
+00:06:45,640 --> 00:06:52,320
+So for 256 megs, the goal of address translation is to simply convert the 16-bit VPN into a
+
+90
+00:06:52,320 --> 00:06:58,400
+12-bit PPN.
+
+91
+00:06:58,400 --> 00:07:01,280
+And to do that, we use page tables.
+
+92
+00:07:01,280 --> 00:07:05,320
+Address translation is generally performed in the OS software, and is referred to as
+
+93
+00:07:05,320 --> 00:07:06,840
+a page walk.
+
+94
+00:07:06,840 --> 00:07:11,620
+Each process is allocated a page table, whose role is to remember the PPN of every single
+
+95
+00:07:11,620 --> 00:07:16,560
+VPN that the program is using.
+
+96
+00:07:16,560 --> 00:07:20,680
+How it works is that the OS has a pointer to the beginning of the page table.
+
+97
+00:07:20,680 --> 00:07:27,360
+With that, the VPN is simply used to index into a specific entry in the page table.
+
+98
+00:07:27,360 --> 00:07:30,640
+Each page table entry contains several things.
+
+99
+00:07:30,640 --> 00:07:37,680
+The first is the PPN, so that now we know where to find this page in physical memory.
+
+100
+00:07:37,680 --> 00:07:42,320
+Second is a valid bit, which specifies whether or not this page currently resides in physical
+
+101
+00:07:42,320 --> 00:07:43,320
+memory.
+
+102
+00:07:43,320 --> 00:07:47,800
+If we find that it's invalid, then this is considered a page fault, which I'll discuss
+
+103
+00:07:47,800 --> 00:07:49,960
+on the next slide.
+
+104
+00:07:49,960 --> 00:07:54,480
+Each page table entry also contains additional information like dirty bits for writebacks
+
+105
+00:07:54,480 --> 00:07:59,080
+and permission bits for protection.
+
+106
+00:07:59,080 --> 00:08:03,400
+A page fault occurs when the page we're looking for is currently not in physical memory.
+
+107
+00:08:03,400 --> 00:08:05,360
+Instead, it's in disk.
+
+108
+00:08:05,360 --> 00:08:10,000
+So like a typical cache, we must now choose a page to kick out a physical memory and swap
+
+109
+00:08:10,000 --> 00:08:12,480
+our requested page in.
+
+110
+00:08:12,480 --> 00:08:16,720
+The OS is responsible for performing these page swaps and must carefully balance the
+
+111
+00:08:16,720 --> 00:08:21,160
+needs of all running processes to ensure fairness.
+
+112
+00:08:21,160 --> 00:08:25,640
+Reading a page from disk is generally a super long process, so the OS will often schedule
+
+113
+00:08:25,640 --> 00:08:33,200
+something else to run on the CPU in the meantime.
+
+114
+00:08:33,200 --> 00:08:37,800
+It's important to note that each page table is not a dedicated new hardware structure.
+
+115
+00:08:37,800 --> 00:08:41,440
+Page tables are in fact themselves stored in physical memory.
+
+116
+00:08:41,440 --> 00:08:46,600
+However, they're generally not subject to address translations since page tables are
+
+117
+00:08:46,600 --> 00:08:51,800
+only ever accessed by the OS, which has full control of the system similar to the programs
+
+118
+00:08:51,800 --> 00:08:57,680
+we've written on bare metal MIPS processors.
+
+119
+00:08:57,680 --> 00:09:03,320
+So if we have a 32-bit machine with 4K pages and each entry in our page table is 4 bytes
+
+120
+00:09:03,320 --> 00:09:13,360
+wide, then how much storage space do we need to store the page table itself?
+
+121
+00:09:13,360 --> 00:09:19,880
+With a 32-bit machine, this means our entire virtual address space is 4 gigs, and if each
+
+122
+00:09:19,880 --> 00:09:26,360
+page is 4K in size, then that means our virtual address space contains 1 million virtual pages
+
+123
+00:09:26,360 --> 00:09:27,860
+in total.
+
+124
+00:09:27,860 --> 00:09:33,160
+So that must mean that our page table would need 1 million entries, thus we need 4 megabytes
+
+125
+00:09:33,160 --> 00:09:39,000
+for the entire page table.
+
+126
+00:09:39,000 --> 00:09:44,280
+Now dedicating megabytes of storage for the page table can be quite costly, especially
+
+127
+00:09:44,280 --> 00:09:46,760
+when physical memory is limited.
+
+128
+00:09:46,760 --> 00:09:52,600
+The common technique to reduce the storage requirements is to use multi-level page tables.
+
+129
+00:09:52,600 --> 00:09:56,800
+The idea is to form a tree of page tables.
+
+130
+00:09:56,800 --> 00:10:02,920
+At the last level, which is the L2 shown here, the tables contain the page table entries
+
+131
+00:10:02,920 --> 00:10:07,000
+that hold the PPN, permission bits, etc.
+
+132
+00:10:07,000 --> 00:10:13,120
+Because each entry in the earlier page tables simply contain pointers to a later level table.
+
+133
+00:10:13,120 --> 00:10:18,000
+Then different bits of the VPN are used to index into the different level page tables.
+
+134
+00:10:18,000 --> 00:10:26,120
+Generally, the first level uses the most significant bits of the VPN.
+
+135
+00:10:26,120 --> 00:10:28,280
+So let's look at an example.
+
+136
+00:10:28,280 --> 00:10:34,880
+Assume a 32-bit machine with a 2-level page table with 4K pages, and assume that the page
+
+137
+00:10:34,880 --> 00:10:41,920
+table entries are 4 bytes in size, and each level 2 page table is 4K in size.
+
+138
+00:10:41,920 --> 00:10:46,320
+So how much storage is needed?
+
+139
+00:10:46,320 --> 00:10:51,320
+Since the L2 is the last level in this case, then given that each L2 page table is 4K in
+
+140
+00:10:51,320 --> 00:10:58,080
+size and each entry is 4 bytes, then we know that there are 1,000 entries per L2 table,
+
+141
+00:10:58,080 --> 00:11:02,560
+which means that 10 bits of the VPN are used as the L2 index.
+
+142
+00:11:02,560 --> 00:11:09,160
+Then knowing that the page offset need 12 bits for 4K pages, we find that 10 bits are
+
+143
+00:11:09,160 --> 00:11:12,920
+used to index into the L1 page table.
+
+144
+00:11:12,920 --> 00:11:18,040
+That implies that there are 1,000 entries in the L1 page table, each of which could point
+
+145
+00:11:18,040 --> 00:11:22,920
+to a 1,000 entry L2 page table, where each entry is 4 bytes.
+
+146
+00:11:22,920 --> 00:11:26,560
+Thus, the total storage requirement is 4 megabytes.
+
+147
+00:11:33,560 --> 00:11:39,960
+But wait, this is the same size as our single-level page table implementation for earlier.
+
+148
+00:11:39,960 --> 00:11:45,760
+So how come we haven't really saved any space?
+
+149
+00:11:45,760 --> 00:11:50,740
+The key observation is that most programs have large regions of pages in the virtual
+
+150
+00:11:50,740 --> 00:11:55,200
+address space that remain unused throughout their execution.
+
+151
+00:11:55,200 --> 00:12:00,080
+This makes sense because programs are very unlikely to use up all 4 gigs of their address
+
+152
+00:12:00,080 --> 00:12:03,120
+space in a 32-bit processor.
+
+153
+00:12:03,120 --> 00:12:10,240
+So if some regions are never used, then we don't need to allocate page tables for them.
+
+154
+00:12:10,240 --> 00:12:13,960
+Their corresponding first-level pointers would just remain null.
+
+155
+00:12:13,960 --> 00:12:20,680
+This way, we're able to eliminate much of the unnecessary storage.
+
+156
+00:12:20,680 --> 00:12:26,520
+Continuing from the previous example, say our program only uses 2 megabytes of code,
+
+157
+00:12:26,520 --> 00:12:34,040
+64K of stack, and 16 megs of heap, then roughly how much storage is used for the entire 2-level
+
+158
+00:12:34,040 --> 00:12:38,960
+page table.
+
+159
+00:12:38,960 --> 00:12:44,240
+So from earlier, we computed that each L2 page table holds 1,000 entries, so with 4K
+
+160
+00:12:44,240 --> 00:12:50,880
+pages, that means each L2 page table is capable of translating 4 megs of virtual memory.
+
+161
+00:12:50,880 --> 00:12:55,520
+So then assuming that the code, heap, and stack are in different locations in the address
+
+162
+00:12:55,520 --> 00:13:02,720
+space, this program will need 1 L2 page table for the code region, 1 L2 page table for the
+
+163
+00:13:02,720 --> 00:13:06,840
+stack, and 4 L2 page tables for the heap.
+
+164
+00:13:06,840 --> 00:13:19,000
+In total, that's only 6 L2 page tables, which is a mere 24K of storage.
+
+165
+00:13:19,000 --> 00:13:23,760
+The problem is that before every cache access, we need to translate our program's virtual
+
+166
+00:13:23,760 --> 00:13:28,720
+address to a physical one, so that means we have to walk the page table on every single
+
+167
+00:13:28,720 --> 00:13:34,700
+load, store, and instruction fetch, which would be very expensive.
+
+168
+00:13:34,700 --> 00:13:40,640
+So because processor architects love caches almost as much as they love 3-letter acronyms,
+
+169
+00:13:40,640 --> 00:13:49,480
+the typical solution is to cache recent addresses using a translation look-aside buffer or TLB.
+
+170
+00:13:49,480 --> 00:14:00,360
+A TLB is a small set associative cache that only contains page table entries, so the VPN,
+
+171
+00:14:00,360 --> 00:14:07,400
+not the entire virtual address, is broken into a tag and set to index into the TLB.
+
+172
+00:14:07,400 --> 00:14:13,320
+Note that the TLB doesn't take in any offset bits because each block is just one page table
+
+173
+00:14:13,320 --> 00:14:14,760
+entry.
+
+174
+00:14:14,760 --> 00:14:17,280
+The organization is shown below.
+
+175
+00:14:17,280 --> 00:14:21,760
+On a memory access, we first perform a lookup in the TLB.
+
+176
+00:14:21,760 --> 00:14:25,800
+If there's a TLB hit, then we'll have the physical page number right away.
+
+177
+00:14:25,800 --> 00:14:29,280
+Otherwise, we have to walk the page tables.
+
+178
+00:14:29,280 --> 00:14:34,400
+Note that in addition to the TLB, since the page table is just an array in memory, page
+
+179
+00:14:34,400 --> 00:14:38,960
+table entries themselves can actually be cached in the regular cache hierarchy to speed up
+
+180
+00:14:38,960 --> 00:14:45,720
+the page walks.
+
+181
+00:14:45,720 --> 00:14:50,200
+A common performance metrics for TLBs is TLB reach.
+
+182
+00:14:50,200 --> 00:14:55,940
+This is saying how much of your virtual address base can the TLB translate at any moment.
+
+183
+00:14:55,940 --> 00:15:00,840
+This is equal to the number of TLB entries times the size of each page.
+
+184
+00:15:00,840 --> 00:15:07,760
+So if our TLB holds 64 entries and the page size is 4k, then our TLB is capable of translating
+
+185
+00:15:07,760 --> 00:15:14,280
+up to 256k of virtual memory at any moment.
+
+186
+00:15:14,280 --> 00:15:18,760
+In the last part of this lecture, we'll cover the different modes of indexing into caches.
+
+187
+00:15:18,760 --> 00:15:23,760
+So far, we've assumed a physical cache hierarchy, as shown on the right.
+
+188
+00:15:23,760 --> 00:15:30,720
+These caches, therefore, are physically indexed, physically tagged, or PIPT.
+
+189
+00:15:30,720 --> 00:15:35,200
+This means that both the set index bits and the tag bits are derived from the physical
+
+190
+00:15:35,200 --> 00:15:36,200
+address.
+
+191
+00:15:36,200 --> 00:15:42,880
+That's why we have to access the TLB prior to accessing the L1 cache.
+
+192
+00:15:42,880 --> 00:15:48,480
+The advantage of a PIPT is that it's very easy to support inter-process communication,
+
+193
+00:15:48,480 --> 00:15:53,200
+as in, shared physical pages among different processes.
+
+194
+00:15:53,200 --> 00:15:58,720
+Such pages can actually be cached without any issues, because with a physical cache,
+
+195
+00:15:58,720 --> 00:16:02,440
+we're guaranteed to have only one copy of a shared block at a time.
+
+196
+00:16:02,440 --> 00:16:04,880
+We'll elaborate on this in a bit.
+
+197
+00:16:04,880 --> 00:16:09,920
+The downside is that we need to perform address translation even when there's a cache hit,
+
+198
+00:16:09,920 --> 00:16:15,480
+which can significantly slow down our execution time, even if it means just adding one cycle
+
+199
+00:16:15,480 --> 00:16:21,640
+of latency to our hit.
+
+200
+00:16:21,640 --> 00:16:25,920
+The alternative is to use virtual caches, which are virtually indexed and virtually
+
+201
+00:16:25,920 --> 00:16:29,800
+tagged, or VIVT.
+
+202
+00:16:29,800 --> 00:16:34,960
+As implied, both the set index and tag bits are derived purely from the virtual address
+
+203
+00:16:34,960 --> 00:16:38,960
+now.
+
+204
+00:16:38,960 --> 00:16:44,340
+So this means that if we had virtual L1 caches, as shown on the right, then we only need to
+
+205
+00:16:44,340 --> 00:16:49,360
+perform address translation upon an L1 miss, which is far less frequent.
+
+206
+00:16:49,360 --> 00:16:53,080
+However, this comes with two key disadvantages.
+
+207
+00:16:53,080 --> 00:16:57,320
+First, virtual caches have to deal with homonyms.
+
+208
+00:16:57,320 --> 00:17:02,240
+These are virtual addresses that happen to be the same, but belong to different processes,
+
+209
+00:17:02,240 --> 00:17:06,440
+so they actually access different physical pages.
+
+210
+00:17:06,440 --> 00:17:11,320
+If both processes are using the same virtual cache, then they would confuse their data
+
+211
+00:17:11,320 --> 00:17:13,200
+with each other.
+
+212
+00:17:13,200 --> 00:17:17,960
+To alleviate this, we'd either have to flush the cache every time we switch execution to
+
+213
+00:17:17,960 --> 00:17:24,120
+a different process, or we'd have to embed the process ID along with our cache tags.
+
+214
+00:17:24,120 --> 00:17:30,000
+The second problem is synonyms, which as discussed before, are physical pages that are shared
+
+215
+00:17:30,000 --> 00:17:36,400
+by different processes, so they use different virtual addresses per process.
+
+216
+00:17:36,400 --> 00:17:41,360
+To handle synonyms properly, we'd again either have to flush the cache on a process
+
+217
+00:17:41,360 --> 00:17:49,760
+switch, or try to dynamically detect them in hardware.
+
+218
+00:17:49,760 --> 00:17:54,440
+To try to get the best of both worlds, we can implement a virtually indexed physically
+
+219
+00:17:54,440 --> 00:17:58,120
+tagged cache, or VIPT.
+
+220
+00:17:58,120 --> 00:18:02,600
+In this case, we access the TLB in parallel to the cache lookup.
+
+221
+00:18:02,600 --> 00:18:07,680
+Specifically, we use the virtual address to compute the set index, and then we perform
+
+222
+00:18:07,680 --> 00:18:09,760
+a lookup in the tag array.
+
+223
+00:18:09,760 --> 00:18:14,560
+In parallel, we access the TLB to figure out what the physical address is, and then use
+
+224
+00:18:14,560 --> 00:18:21,560
+a physical tag to check if our block is in the cache.
+
+225
+00:18:21,560 --> 00:18:26,600
+This is just as fast as the virtual cache, incurring no additional latency to cache hits
+
+226
+00:18:26,600 --> 00:18:33,840
+since TLB accesses are generally much faster than cache accesses, since TLBs are much smaller.
+
+227
+00:18:33,840 --> 00:18:38,800
+This also overcomes the problem of homonyms, we'll never compute pages from two different
+
+228
+00:18:38,800 --> 00:18:43,680
+processes anymore, because even if they have the same virtual address, we'd still be able
+
+229
+00:18:43,680 --> 00:18:46,680
+to distinguish them via their physical tags.
+
+230
+00:18:46,680 --> 00:18:52,640
+However, synonyms may still be a problem.
+
+231
+00:18:52,640 --> 00:18:57,300
+So let's dive deeper into synonyms to ask why they may still be a problem.
+
+232
+00:18:57,300 --> 00:19:02,760
+So if virtual addresses X and Y are synonyms and map to the same physical page, then what
+
+233
+00:19:02,760 --> 00:19:06,960
+happens if we put them into separate locations in the cache?
+
+234
+00:19:06,960 --> 00:19:11,920
+If we perform a write to X, then we won't propagate that modification to Y, since the
+
+235
+00:19:11,920 --> 00:19:15,240
+cache is treating them as distinct blocks.
+
+236
+00:19:15,240 --> 00:19:21,560
+Thus this defeats the purpose of sharing physical pages.
+
+237
+00:19:21,560 --> 00:19:27,200
+To solve this, the insight is that this wouldn't actually be a problem in a VIPT cache if both
+
+238
+00:19:27,200 --> 00:19:31,760
+X and Y were to map to the same set in the cache.
+
+239
+00:19:31,760 --> 00:19:35,240
+Because as long as they're in the same set, then we'll be able to recognize them as the
+
+240
+00:19:35,240 --> 00:19:38,960
+same block because we'd be checking their physical tags.
+
+241
+00:19:38,960 --> 00:19:44,800
+So we'd want to design our VIPT cache such that for any pair of synonyms X and Y, the
+
+242
+00:19:44,800 --> 00:19:53,480
+set index of X is equal to the set index of Y.
+
+243
+00:19:53,480 --> 00:19:57,840
+The concept sounds simple, but the problem is that we don't know X and Y in advance.
+
+244
+00:19:57,840 --> 00:20:02,280
+As in, we can't predict where the OS will place shared pages in different processes
+
+245
+00:20:02,280 --> 00:20:05,200
+virtual address space.
+
+246
+00:20:05,200 --> 00:20:10,080
+So how can we guarantee that the two synonyms will always end up in the same set?
+
+247
+00:20:10,080 --> 00:20:12,620
+Well, let's look at an example.
+
+248
+00:20:12,620 --> 00:20:14,380
+Today we have 4K pages.
+
+249
+00:20:14,380 --> 00:20:23,660
+If X and Y are synonyms and map to the same physical address, 1A318ED4, is there anything
+
+250
+00:20:23,660 --> 00:20:28,160
+that we know for sure about X and Y?
+
+251
+00:20:28,160 --> 00:20:33,500
+We do know that if X and Y map to the same physical address, then their page offset bits,
+
+252
+00:20:33,500 --> 00:20:39,180
+in this case, their least 12 significant bits, must be identical.
+
+253
+00:20:39,180 --> 00:20:42,980
+As if you recall from our earlier slides, the page offset bits are untouched during
+
+254
+00:20:42,980 --> 00:20:47,780
+the address translation process.
+
+255
+00:20:47,780 --> 00:20:52,500
+So when we're building our VIPT cache, all we have to do is make sure that the set index
+
+256
+00:20:52,500 --> 00:20:56,700
+bits are among the page offset bits of the virtual address.
+
+257
+00:20:56,700 --> 00:21:01,300
+This now guarantees that any two synonymous addresses will always land in the same set
+
+258
+00:21:01,300 --> 00:21:05,500
+in the cache.
+
+259
+00:21:05,500 --> 00:21:09,140
+Let's wrap up as we always do with a toy exercise.
+
+260
+00:21:09,460 --> 00:21:13,540
+Consider a 32-bit processor with three level page tables.
+
+261
+00:21:13,540 --> 00:21:20,340
+Assume that the number of entries in each L1, L2, and L3 page table is 128, 64, and 256,
+
+262
+00:21:20,340 --> 00:21:22,300
+respectively.
+
+263
+00:21:22,300 --> 00:21:26,100
+And assume we have a TLB with 512 entries.
+
+264
+00:21:26,100 --> 00:21:28,900
+So then what is the TLB reach?
+
+265
+00:21:28,900 --> 00:21:32,220
+Recall how we defined TLB reach.
+
+266
+00:21:32,220 --> 00:21:35,380
+Please take a moment now and try to compute it.
+
+267
+00:21:35,580 --> 00:21:48,300
+So, given the number of L1, L2, and L3 entries, we can figure out how many bits are used for
+
+268
+00:21:48,300 --> 00:21:51,980
+the page offset, which in this case is 11.
+
+269
+00:21:51,980 --> 00:21:57,900
+So if we have 11 page offset bits, then this must mean that our pages are 2k in size.
+
+270
+00:21:57,900 --> 00:22:01,100
+Thus, our TLB reach is 1 mb.
+

@@ -1,0 +1,916 @@
+1
+00:00:00,000 --> 00:00:09,900
+In this lecture, we'll cover how to build the data path for a simple, single-cycle processor.
+
+2
+00:00:09,900 --> 00:00:13,540
+At this point, we've gotten through the preview spots we've needed to address before we could
+
+3
+00:00:13,540 --> 00:00:15,040
+put it all together.
+
+4
+00:00:15,040 --> 00:00:18,480
+Hopefully, some parts have been reviewed, but fret not if you've been learning more
+
+5
+00:00:18,480 --> 00:00:20,200
+than you expected.
+
+6
+00:00:20,200 --> 00:00:23,840
+These are the fundamentals for building a simple processor which will be crucial to
+
+7
+00:00:23,840 --> 00:00:27,480
+understand for your semester project.
+
+8
+00:00:27,480 --> 00:00:32,080
+So first, a quick review of sequential logic design concepts, then we'll get into the
+
+9
+00:00:32,080 --> 00:00:38,440
+components of our single-cycle implementation, which is a processor that executes each instruction
+
+10
+00:00:38,440 --> 00:00:44,680
+in just one cycle.
+
+11
+00:00:44,680 --> 00:00:48,320
+Recall that a combinational circuit's output is solely a function of the inputs.
+
+12
+00:00:48,320 --> 00:00:51,480
+An example is the ALU from the previous lecture.
+
+13
+00:00:51,480 --> 00:00:56,280
+On the other hand, if a logic circuit has state, it's called sequential, as in its
+
+14
+00:00:56,280 --> 00:01:02,200
+outputs are dependent not only on its current input signals, but also of internal state
+
+15
+00:01:02,200 --> 00:01:09,280
+that was set from previous input signals.
+
+16
+00:01:09,280 --> 00:01:13,360
+To retain state before inputs change, we need to build storage elements to hold our logic
+
+17
+00:01:13,360 --> 00:01:14,360
+signals.
+
+18
+00:01:14,360 --> 00:01:18,080
+The most basic form is a latch.
+
+19
+00:01:18,080 --> 00:01:24,000
+Here is a level-sensitive D latch that is controlled by a clock C, or enable, signal.
+
+20
+00:01:24,000 --> 00:01:28,880
+When the clock is high, the latch is transparent and the input data D simply passes through
+
+21
+00:01:28,880 --> 00:01:31,520
+to the output Q.
+
+22
+00:01:31,520 --> 00:01:36,680
+When the clock is low, the output is locked and the D input can change without modifying
+
+23
+00:01:36,680 --> 00:01:39,960
+Q.
+
+24
+00:01:39,960 --> 00:01:41,400
+So how does it work?
+
+25
+00:01:41,400 --> 00:01:48,040
+When the outputs of the AND gates are zero, the current input Q is retained via the cross-coupled
+
+26
+00:01:48,040 --> 00:01:50,240
+NOR gates.
+
+27
+00:01:50,240 --> 00:01:55,640
+Whatever the current value of Q is, it is fed through the bottom NOR gate and inverted,
+
+28
+00:01:55,640 --> 00:01:59,240
+then fed back up to reinforce the Q value.
+
+29
+00:01:59,240 --> 00:02:04,000
+This acts like an infinite loop in C, but the wires don't toggle once values of Q and
+
+30
+00:02:04,000 --> 00:02:10,880
+Q0 are set.
+
+31
+00:02:10,880 --> 00:02:15,080
+We can compose two of these latches to make a flip-flop, which in this case is officially
+
+32
+00:02:15,080 --> 00:02:17,880
+called a master-slave D flip-flop.
+
+33
+00:02:17,880 --> 00:02:22,960
+The idea of a flip-flop is to make the device edge-triggered, that is to say it is opaque
+
+34
+00:02:22,960 --> 00:02:26,160
+except for the edges of the clock.
+
+35
+00:02:26,160 --> 00:02:29,200
+How is this edge-triggering accomplished?
+
+36
+00:02:29,200 --> 00:02:33,720
+In this example, when the clock C is high, the latch on the left is transparent and drives
+
+37
+00:02:33,720 --> 00:02:41,000
+the value of D to Q, while the latch on the right is locked because it gets inverted clock.
+
+38
+00:02:41,000 --> 00:02:46,800
+When clock C drops to zero, the leftmost latch locks in Q and the inverted clock makes the
+
+39
+00:02:46,800 --> 00:02:53,160
+latch on the right transparent, so the value of master Q before the falling edge is now
+
+40
+00:02:53,160 --> 00:02:57,560
+transmitted to slave Q.
+
+41
+00:02:57,560 --> 00:03:01,640
+We know that logic gates have delays, and as these delays, they prevent both latches
+
+42
+00:03:01,640 --> 00:03:06,120
+from momentarily being transparent at the same time.
+
+43
+00:03:06,120 --> 00:03:11,840
+In a design that uses this negative edge flip-flop, the value of input D can change due to the
+
+44
+00:03:11,840 --> 00:03:16,560
+cone of logic driving it, and only at the negative edge of the clock will that value
+
+45
+00:03:16,560 --> 00:03:22,320
+get locked into the flip-flops Q output.
+
+46
+00:03:22,320 --> 00:03:25,640
+So why do we need flip-flops for creating a processor?
+
+47
+00:03:25,640 --> 00:03:27,520
+Let's look at this example.
+
+48
+00:03:27,520 --> 00:03:32,800
+Here we have a D flip-flop that stores a value, then a combinatorial circuit increments it
+
+49
+00:03:32,800 --> 00:03:37,360
+by one and stores the new value back into the flip-flop.
+
+50
+00:03:37,360 --> 00:03:42,200
+This incrementer circuit works perfectly when implemented with a flip-flop, however, if we
+
+51
+00:03:42,200 --> 00:03:47,000
+were to use a latch instead, we would have a problem.
+
+52
+00:03:47,000 --> 00:03:51,920
+Whenever the clock is high, recall that the latch is transparent, which creates a combinational
+
+53
+00:03:51,920 --> 00:03:52,920
+loop.
+
+54
+00:03:52,920 --> 00:03:56,120
+Now we truly have an infinite loop on our hands.
+
+55
+00:03:56,120 --> 00:04:02,160
+When the latch is open, if the incrementer were fast enough, it could, in theory, increment
+
+56
+00:04:02,160 --> 00:04:06,240
+several times before the latch became opaque.
+
+57
+00:04:06,240 --> 00:04:11,240
+It would be impossible to predict what the value it held would be considering per-bit
+
+58
+00:04:11,240 --> 00:04:14,400
+logic delays through an incrementer.
+
+59
+00:04:14,400 --> 00:04:19,720
+The professionals all use D flip-flops, and in fact, many Veralog linters will flag inferred
+
+60
+00:04:19,720 --> 00:04:26,200
+latches as errors.
+
+61
+00:04:26,200 --> 00:04:31,680
+Like the vast majority of our industry, we will be creating a fully synchronous design.
+
+62
+00:04:31,680 --> 00:04:37,160
+Our goal is to study the architectural components of a processor, not discover how much trouble
+
+63
+00:04:37,160 --> 00:04:40,720
+we can get into with timing correctness.
+
+64
+00:04:40,720 --> 00:04:46,960
+All of the state you will use in your processor are to be implemented using D flip-flops.
+
+65
+00:04:46,960 --> 00:04:51,280
+It's your choice to determine if you want them to be positive or negative edge triggered,
+
+66
+00:04:51,280 --> 00:04:54,640
+but positive edge is more common.
+
+67
+00:04:54,640 --> 00:04:59,640
+As a simplification, all of our design diagrams can omit the clock signals.
+
+68
+00:04:59,640 --> 00:05:04,640
+All sequential cells will be connected to the same clock, and as Professor Sohi told
+
+69
+00:05:04,640 --> 00:05:09,240
+me when I took this course, it will be a long time before you are allowed to directly use
+
+70
+00:05:09,240 --> 00:05:11,480
+a clock as an input.
+
+71
+00:05:11,480 --> 00:05:12,480
+He was right.
+
+72
+00:05:12,480 --> 00:05:17,400
+I've yet to directly use a clock as a logic input, though modern synthesis flows will
+
+73
+00:05:17,400 --> 00:05:22,680
+insert clock gators during synthesis for logic that is not being activated.
+
+74
+00:05:22,680 --> 00:05:28,720
+And in your implementations, all logic should complete within a cycle, and no combinational
+
+75
+00:05:28,720 --> 00:05:33,960
+logic should run through multiple cycles and form what's known as a multi-cycle path or
+
+76
+00:05:33,960 --> 00:05:38,520
+MCP.
+
+77
+00:05:38,520 --> 00:05:42,000
+Here's our single-cycle data path at a glance.
+
+78
+00:05:42,000 --> 00:05:53,440
+You'll understand everything here by the end of this lecture.
+
+79
+00:05:53,440 --> 00:06:00,040
+The processor must first fetch or load an instruction from memory before it can be executed.
+
+80
+00:06:00,040 --> 00:06:05,880
+Recall that the program counter PC is a special register that points to the current instructions
+
+81
+00:06:05,880 --> 00:06:08,280
+address and memory.
+
+82
+00:06:08,280 --> 00:06:15,120
+The PC is stored in a dedicated 32-bit registered, which really is just 32 flip flops, which
+
+83
+00:06:15,120 --> 00:06:21,320
+you cannot access except indirectly through branch and jump instructions.
+
+84
+00:06:21,320 --> 00:06:28,280
+We read out the instruction word at the memory location specified by the PC and pass it along.
+
+85
+00:06:28,280 --> 00:06:37,040
+Ignoring branches and jumps for now, the general procedure is to increment the PC to move on
+
+86
+00:06:37,040 --> 00:06:40,440
+to the next instruction for the next cycle.
+
+87
+00:06:40,440 --> 00:06:46,400
+In our MIPS processor we've been studying, every instruction is exactly 4 bytes long,
+
+88
+00:06:46,400 --> 00:06:55,000
+so we increment the PC by 4 to stay word aligned and write this next value to the PC register.
+
+89
+00:06:55,000 --> 00:07:00,120
+The fetch component has pushed the instruction to the decode and register file components.
+
+90
+00:07:00,120 --> 00:07:05,320
+The decoder determines what kind of instruction it is and sets the control bits or busses
+
+91
+00:07:05,320 --> 00:07:08,840
+like register write and ALU operation.
+
+92
+00:07:08,840 --> 00:07:13,440
+Note the diagram hints, register write is just a line, so it's one bit.
+
+93
+00:07:13,440 --> 00:07:18,320
+The ALU operation has a slash through it, indicating it is multiple bits wide.
+
+94
+00:07:18,320 --> 00:07:22,760
+Let's consider arithmetic and logic instructions first, like the AND instruction shown in this
+
+95
+00:07:22,760 --> 00:07:25,480
+example.
+
+96
+00:07:25,480 --> 00:07:29,400
+The MIPS R format has three 5-bit register numbers in it.
+
+97
+00:07:29,400 --> 00:07:35,840
+The decoder will determine that the AND instruction is an R format, so RS and RT in the instruction
+
+98
+00:07:35,840 --> 00:07:38,840
+word specify which registers to read.
+
+99
+00:07:38,840 --> 00:07:43,760
+In this case, they are registers 2 and 3.
+
+100
+00:07:43,760 --> 00:07:47,320
+All 32-bit MIPS registers are contained in the register file.
+
+101
+00:07:47,320 --> 00:07:51,640
+We'll discuss its implementation in a later slide.
+
+102
+00:07:51,640 --> 00:07:56,680
+The input registers are specified via the read register 1 and 2 inputs to the register
+
+103
+00:07:56,680 --> 00:08:04,040
+file and their values are then read out and fed into the ALU, which performs the AND instruction,
+
+104
+00:08:04,040 --> 00:08:10,960
+which is, of course, decoded from the opcode and function bits of the instruction word.
+
+105
+00:08:10,960 --> 00:08:15,560
+The control signal register write is then asserted to enable writing the ALU result
+
+106
+00:08:15,560 --> 00:08:18,040
+back into the register file.
+
+107
+00:08:18,040 --> 00:08:23,480
+The decoder has already driven the write register to the value of the instruction field RD,
+
+108
+00:08:23,480 --> 00:08:25,840
+which is 1 in this case.
+
+109
+00:08:25,840 --> 00:08:30,960
+In the next lecture, we'll discuss how to implement the control logic that drives the
+
+110
+00:08:30,960 --> 00:08:37,120
+control signal's ALU operation and register write.
+
+111
+00:08:37,120 --> 00:08:42,920
+Now let's take a look at memory load and store instructions as specified by the MIPS I format.
+
+112
+00:08:42,920 --> 00:08:48,960
+The RS input register specifies the base address of the memory location that we will be loading
+
+113
+00:08:48,960 --> 00:08:54,560
+from or storing to.
+
+114
+00:08:54,560 --> 00:09:00,360
+This register is read out from the first read port of the register file and fed to the ALU,
+
+115
+00:09:00,360 --> 00:09:05,080
+where it is added to the immediate offset encoded in the instruction word.
+
+116
+00:09:05,080 --> 00:09:10,880
+This 16-bit immediate field is signed extended to 32 bits and fed in as the second operand
+
+117
+00:09:10,880 --> 00:09:14,160
+to the ALU.
+
+118
+00:09:14,160 --> 00:09:20,560
+The sum of the base input register plus the immediate offset yields the address that will
+
+119
+00:09:20,560 --> 00:09:23,040
+be accessed in the data memory.
+
+120
+00:09:23,040 --> 00:09:31,560
+At this point, loads and stores diverge in operation.
+
+121
+00:09:31,560 --> 00:09:34,560
+Load instructions follow the red data path.
+
+122
+00:09:34,560 --> 00:09:40,520
+The memory write control signal is de-asserted, so the write data input is ignored.
+
+123
+00:09:40,520 --> 00:09:46,160
+The memory read control signal is asserted, so after some memory read delay, the data
+
+124
+00:09:46,160 --> 00:09:50,760
+stored at the address is read out, which then heads to the register file and is written
+
+125
+00:09:50,840 --> 00:09:56,360
+to the RT register specified in the instruction word.
+
+126
+00:09:56,360 --> 00:09:59,240
+Store instructions follow the blue data path.
+
+127
+00:09:59,240 --> 00:10:05,160
+This time, the RT register is an input to the data memory component and needs to be read
+
+128
+00:10:05,160 --> 00:10:09,360
+out from the register file via the second read port.
+
+129
+00:10:09,360 --> 00:10:12,880
+This is the value that we are going to write into memory.
+
+130
+00:10:12,880 --> 00:10:17,880
+The memory write control signal is asserted, and the write data input to the memory is
+
+131
+00:10:17,880 --> 00:10:20,560
+written to the specified address.
+
+132
+00:10:20,560 --> 00:10:28,120
+The memory read and register write control signals are both de-asserted during loads.
+
+133
+00:10:28,120 --> 00:10:32,840
+Now we'll take a look at branch instructions, using branch on equal as an example.
+
+134
+00:10:32,840 --> 00:10:36,480
+Recall that branches are I-format instructions.
+
+135
+00:10:36,480 --> 00:10:41,160
+The value of the two input registers are compared, and if they are equal, then the branch
+
+136
+00:10:41,160 --> 00:10:43,120
+is taken.
+
+137
+00:10:43,120 --> 00:10:47,920
+Taking a branch simply sets the PC to the relative address specified by the immediate
+
+138
+00:10:47,920 --> 00:10:52,440
+offset.
+
+139
+00:10:52,440 --> 00:10:56,840
+Because branch instructions are relative to the next PC, we'll compute the common
+
+140
+00:10:56,840 --> 00:11:03,320
+case PC plus 4 as usual, and then compute the target PC by shifting and sign extending
+
+141
+00:11:03,320 --> 00:11:09,520
+the immediate offset and adding it to the result of PC plus 4.
+
+142
+00:11:09,520 --> 00:11:14,040
+Our processor will use the ALU to subtract the two input register values.
+
+143
+00:11:14,040 --> 00:11:19,600
+If the result is zero, then the PC is written to the target PC for the next cycle, otherwise
+
+144
+00:11:19,600 --> 00:11:25,280
+it will just get PC plus 4.
+
+145
+00:11:25,280 --> 00:11:28,520
+Here's the partial diagram for branch instructions.
+
+146
+00:11:28,520 --> 00:11:33,120
+At the top, we use another adder to compute the target PC.
+
+147
+00:11:33,120 --> 00:11:38,120
+The first operand is PC plus 4, which is the output of the adder in the fetch data path
+
+148
+00:11:38,120 --> 00:11:40,200
+from a few slides ago.
+
+149
+00:11:40,200 --> 00:11:44,460
+The second operand is the value after the immediate field has been sign extended and
+
+150
+00:11:44,460 --> 00:11:47,600
+shifted left to.
+
+151
+00:11:47,600 --> 00:11:53,740
+As planned, we'll reuse the ALU data path to subtract the two input registers to compare.
+
+152
+00:11:53,740 --> 00:11:59,000
+We augment the ALU with the zero flag, indicating the result of an operation is zero, which
+
+153
+00:11:59,000 --> 00:12:05,000
+will drive the branch control logic to multiplex either PC plus 4 or branch target to write
+
+154
+00:12:05,000 --> 00:12:08,680
+the next PC.
+
+155
+00:12:08,680 --> 00:12:12,680
+In the first lecture, we hinted that an ISA filled with simple but useful instructions
+
+156
+00:12:12,680 --> 00:12:15,520
+could be composed to solve any problem.
+
+157
+00:12:15,520 --> 00:12:19,920
+These last few slides have been an example of creating a processor architecture that
+
+158
+00:12:19,920 --> 00:12:23,040
+has simple but reusable components.
+
+159
+00:12:23,040 --> 00:12:29,360
+While we see the need to put dedicated adders to compute the next PC, the main ALU continues
+
+160
+00:12:29,360 --> 00:12:35,680
+to do heavy lifting for all three types of MIPS instructions.
+
+161
+00:12:36,680 --> 00:12:42,720
+Lastly, let's discuss how to implement the register file.
+
+162
+00:12:42,720 --> 00:12:46,920
+In our single cycle processor, the maximum number of registers we'll need to access
+
+163
+00:12:46,920 --> 00:12:50,680
+per instruction will be two for reading and one for writing.
+
+164
+00:12:50,680 --> 00:12:56,800
+Our register file consists of 32 registers, each 32 bits wide.
+
+165
+00:12:56,800 --> 00:13:01,600
+Each register is just a row of 32 D flip flops.
+
+166
+00:13:01,600 --> 00:13:04,880
+Let's start with how to read registers.
+
+167
+00:13:04,880 --> 00:13:09,680
+Each flip flops Q output is connected to two vertical output bit lines, which correspond
+
+168
+00:13:09,680 --> 00:13:12,360
+to the read data ports.
+
+169
+00:13:12,360 --> 00:13:16,680
+Each read data bit line is connected to a tri-state driver, which is controlled by the
+
+170
+00:13:16,680 --> 00:13:21,880
+corresponding word line from the one hot decoder.
+
+171
+00:13:21,880 --> 00:13:26,760
+The read register one and two inputs are the five bit register IDs, which then go through
+
+172
+00:13:26,760 --> 00:13:34,080
+the 32 bit one hot decoders and assert one of the corresponding word lines.
+
+173
+00:13:34,080 --> 00:13:39,360
+Let's say the read register one input specifies register five, then the fifth word line is
+
+174
+00:13:39,360 --> 00:13:47,880
+asserted, which activates all of the R1 tri-state drivers along the fifth row of flip flops.
+
+175
+00:13:47,880 --> 00:13:54,840
+To write a register, each flip flop's D input is connected to the write data input bit line,
+
+176
+00:13:54,840 --> 00:13:59,240
+and each flip flop's write enable is asserted by the word lines from the topmost one hot
+
+177
+00:13:59,240 --> 00:14:03,680
+decoder, which decodes the register ID to be written to.
+
+178
+00:14:03,680 --> 00:14:08,680
+With this organization, we can simultaneously read two registers and write one register
+
+179
+00:14:08,680 --> 00:14:13,400
+in the same cycle.
+
+180
+00:14:13,400 --> 00:14:17,320
+Let's put all of these components together to get the simple data path for our single
+
+181
+00:14:17,320 --> 00:14:19,600
+cycle processor.
+
+182
+00:14:19,600 --> 00:14:23,200
+Different paths are triggered depending on the instruction we're executing, whether
+
+183
+00:14:23,200 --> 00:14:26,520
+it's arithmetic load, store, or branch.
+
+184
+00:14:26,520 --> 00:14:29,880
+So we need muxes to selectively activate different parts.
+
+185
+00:14:29,880 --> 00:14:33,200
+There are three key muxes shown here.
+
+186
+00:14:33,200 --> 00:14:39,280
+The first is the ALU source mux, which picks the second ALU operand from either the second
+
+187
+00:14:39,280 --> 00:14:44,120
+read port of the register file like with our format instructions, or the sign extended
+
+188
+00:14:44,120 --> 00:14:49,000
+immediate value as seen in load store instructions.
+
+189
+00:14:49,000 --> 00:14:54,080
+Next is the mem to reg mux, which selects the data to write into the register file,
+
+190
+00:14:54,080 --> 00:14:59,200
+which could be either the ALU result or the data loaded from memory.
+
+191
+00:15:00,080 --> 00:15:05,440
+Finally, we have the PC source mux at top, which selects between the next PC or the target
+
+192
+00:15:05,440 --> 00:15:09,400
+PC depending on whether a branch is to be taken.
+
+193
+00:15:09,400 --> 00:15:13,480
+In the next lecture, we'll discuss how the wires and buses of the control block generate
+
+194
+00:15:13,480 --> 00:15:19,520
+all of these signals.
+
+195
+00:15:19,520 --> 00:15:24,400
+It's time once again to look at a few examples to test our learning.
+
+196
+00:15:24,400 --> 00:15:29,800
+Suppose a bug in your design leads to the ALU source control signal being stuck at one.
+
+197
+00:15:29,800 --> 00:15:34,280
+Would this add instruction still function correctly?
+
+198
+00:15:34,280 --> 00:15:37,560
+As before, please pause the video and work this through.
+
+199
+00:15:37,560 --> 00:15:41,680
+You'll be doing a lot of debug on your project, so I strongly encourage you to give it a shot
+
+200
+00:15:41,680 --> 00:15:43,920
+now.
+
+201
+00:15:43,920 --> 00:15:54,240
+Keep listening if you want a few hints.
+
+202
+00:15:54,240 --> 00:15:58,760
+As you're thinking about this problem, consider which instruction format is ADD.
+
+203
+00:15:58,760 --> 00:16:01,800
+Is it R, I, or J?
+
+204
+00:16:01,800 --> 00:16:04,520
+Look up the opcode and function for ADD.
+
+205
+00:16:04,520 --> 00:16:07,920
+Look up the register name to get the register number.
+
+206
+00:16:07,920 --> 00:16:11,680
+Fill in the full 32-bit value in hexadecimal format.
+
+207
+00:16:11,680 --> 00:16:17,280
+Note that this will involve regrouping these fields into groups of four.
+
+208
+00:16:17,280 --> 00:16:19,440
+Now for instructions with immediates.
+
+209
+00:16:19,440 --> 00:16:33,640
+Which bits of the instruction word do these come from?
+
+210
+00:16:33,640 --> 00:16:36,960
+If ALU source were stuck at one, the ADD would fail.
+
+211
+00:16:36,960 --> 00:16:41,960
+It would drive the second ALU input to the sign extended lower 16 bits of the instruction
+
+212
+00:16:41,960 --> 00:16:47,800
+word, since that's where the I format has the field, even though the ADD is an R format
+
+213
+00:16:47,800 --> 00:16:52,520
+instruction, which does not have an immediate field.
+
+214
+00:16:52,520 --> 00:16:59,800
+If you didn't understand where the hex 4020 constant comes from, please note that the
+
+215
+00:16:59,800 --> 00:17:05,960
+bottom 16 bits of our format consist of the RD field, the shift amount field, and the
+
+216
+00:17:05,960 --> 00:17:07,760
+funct field.
+
+217
+00:17:07,760 --> 00:17:17,160
+The destination RD is register T0, aka register 8, the shift amount for an ADD is 0, and the
+
+218
+00:17:17,160 --> 00:17:20,560
+function for an ADD is hex 20.
+
+219
+00:17:20,560 --> 00:17:26,680
+The value is positive, so sign extension consists of 16 zeros.
+
+220
+00:17:26,680 --> 00:17:32,000
+Please double check that you understand where this number is coming from.
+
+221
+00:17:32,000 --> 00:17:39,200
+Alright, same bug, but we're looking at a store instruction this time.
+
+222
+00:17:39,200 --> 00:17:45,760
+If ALU source is again stuck at one, would this store instruction still work correctly?
+
+223
+00:17:45,760 --> 00:17:49,920
+You know, maybe this is a bug you'll have on your project, so please take an honest
+
+224
+00:17:49,920 --> 00:18:02,000
+attempt at working through it after pausing this video.
+
+225
+00:18:02,000 --> 00:18:04,360
+Turns out store word is unaffected.
+
+226
+00:18:04,360 --> 00:18:09,640
+Per the MIPS green card, store word is an I format instruction, which uses the immediate
+
+227
+00:18:09,640 --> 00:18:15,280
+value as an offset to the base address stored in the register specified in the RS field.
+
+228
+00:18:15,280 --> 00:18:20,720
+A bug free design would have set ALU source to a 1 anyway, so this instruction at least
+
+229
+00:18:20,720 --> 00:18:21,600
+works correctly.
+

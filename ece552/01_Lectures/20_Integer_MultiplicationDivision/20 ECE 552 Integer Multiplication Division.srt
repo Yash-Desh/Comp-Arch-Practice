@@ -1,0 +1,1196 @@
+1
+00:00:00,000 --> 00:00:06,480
+Back in Lecture 5, I promised we'd get to the integer ALU operations for multiplication
+
+2
+00:00:06,480 --> 00:00:08,960
+and division later in the semester.
+
+3
+00:00:08,960 --> 00:00:13,960
+Well, we have arrived.
+
+4
+00:00:13,960 --> 00:00:20,880
+We are going to discuss three different algorithms for integer multiplication, array, multi-cycle,
+
+5
+00:00:20,880 --> 00:00:23,800
+and boost encoding.
+
+6
+00:00:23,800 --> 00:00:33,520
+This will do two algorithms for integer division, restoring and non-restoring.
+
+7
+00:00:33,520 --> 00:00:36,760
+Let's focus on unsigned integer multiplication first.
+
+8
+00:00:36,760 --> 00:00:40,800
+Jump back to grade school and work out this base two binary example.
+
+9
+00:00:40,800 --> 00:00:45,680
+Starting with the least significant bit of the multiplier, you multiply the entire multiple
+
+10
+00:00:45,680 --> 00:00:46,680
+can.
+
+11
+00:00:46,680 --> 00:00:49,720
+This is the first row of partial products.
+
+12
+00:00:49,720 --> 00:00:53,920
+In this example, we're going to multiply one thousand times one.
+
+13
+00:00:53,920 --> 00:00:58,160
+This gives us one thousand as the first partial sum.
+
+14
+00:00:58,160 --> 00:01:02,860
+Now you can do bit one of the multiplier times eight, and the result goes into partial sums
+
+15
+00:01:02,860 --> 00:01:04,920
+shifted left one.
+
+16
+00:01:04,920 --> 00:01:10,360
+Same for bit two, although shifted left two.
+
+17
+00:01:10,360 --> 00:01:15,120
+Here the MSB of the multiplier is a one, which we multiply by the multiple can eight, and
+
+18
+00:01:15,120 --> 00:01:18,680
+this partial sum is inserted, shifted left three.
+
+19
+00:01:18,680 --> 00:01:23,400
+Once you have the four partial sums, you sum down the columns, carrying when necessary,
+
+20
+00:01:23,400 --> 00:01:25,280
+and you're done.
+
+21
+00:01:25,280 --> 00:01:29,640
+Multiplying two four-bit numbers produces eight bits, which includes a potential carry
+
+22
+00:01:29,640 --> 00:01:31,940
+from the last partial sum.
+
+23
+00:01:31,940 --> 00:01:33,680
+This pattern holds.
+
+24
+00:01:33,680 --> 00:01:41,120
+Multiplying two 32-bit numbers produces a 64-bit result.
+
+25
+00:01:41,120 --> 00:01:52,220
+This is a more formal presentation of each bit in the partial sums.
+
+26
+00:01:52,220 --> 00:01:57,400
+The brute force way of implementing integer multiplication is using an array multiplier.
+
+27
+00:01:57,400 --> 00:02:03,220
+You simply instantiate a basic cell per bitwise partial product, as shown here.
+
+28
+00:02:03,220 --> 00:02:08,000
+Each cell consists of an AND gate to multiply two input bits from the multiple canned A
+
+29
+00:02:08,000 --> 00:02:10,220
+and the multiplier B.
+
+30
+00:02:10,220 --> 00:02:14,900
+This partial product is then added to the partial sums from the cell above and the carry
+
+31
+00:02:14,900 --> 00:02:21,300
+from the upper right diagonal.
+
+32
+00:02:21,300 --> 00:02:24,960
+These basic cells can then be composed into larger multipliers.
+
+33
+00:02:24,960 --> 00:02:28,820
+The example here shows 16-bit multiplication.
+
+34
+00:02:28,820 --> 00:02:34,180
+The basic cells make up all of the rows with the exception of the topmost and bottommost.
+
+35
+00:02:34,180 --> 00:02:39,060
+The topmost row can be implemented with just half adders, and each half adder takes in
+
+36
+00:02:39,060 --> 00:02:42,380
+two partial products from the input operands.
+
+37
+00:02:42,380 --> 00:02:47,740
+The bottommost row of adders simply accumulates all of the partial sums that have cascaded
+
+38
+00:02:47,740 --> 00:02:50,820
+down from all of the partial products.
+
+39
+00:02:50,820 --> 00:02:55,620
+So this organization is purely combinational and conceptually straightforward.
+
+40
+00:02:55,620 --> 00:03:02,060
+However, the required hardware is very expensive, requiring many, many adders.
+
+41
+00:03:02,060 --> 00:03:07,780
+And considering that nonpowers of two integer multiplications can be quite rare in real applications,
+
+42
+00:03:07,780 --> 00:03:14,980
+this ends up wasting a lot of chip real estate.
+
+43
+00:03:14,980 --> 00:03:19,700
+Instead of spending so many hardware resources on such a rare operation, we can also opt
+
+44
+00:03:19,700 --> 00:03:23,260
+to build multi-cycle multipliers instead.
+
+45
+00:03:23,260 --> 00:03:27,020
+The idea is to accumulate the partial products row by row.
+
+46
+00:03:27,020 --> 00:03:31,180
+For each bit of the multiplier, we compute the partial product.
+
+47
+00:03:31,180 --> 00:03:35,560
+Since we're dealing with binary, this is a simple conditional add.
+
+48
+00:03:35,560 --> 00:03:41,200
+If the multiplier bit is 1, then we add the multiple can to the accumulated sum, otherwise
+
+49
+00:03:41,200 --> 00:03:42,840
+we do nothing.
+
+50
+00:03:42,840 --> 00:03:46,800
+Then we shift the multiple can and move on to the next bit of the multiplier, repeating
+
+51
+00:03:46,800 --> 00:03:51,200
+the process.
+
+52
+00:03:51,200 --> 00:03:55,960
+This is a simple hardware organization of a 32-bit multi-cycle multiplier.
+
+53
+00:03:55,960 --> 00:03:58,240
+We have three registers.
+
+54
+00:03:58,240 --> 00:04:01,560
+The multiplier uses only a 32-bit register.
+
+55
+00:04:01,560 --> 00:04:06,600
+But considering that the final product needs 64 bits, the multiple can and product are
+
+56
+00:04:06,600 --> 00:04:17,160
+each stored in a 64-bit register, and we perform the accumulation with a 64-bit ALU.
+
+57
+00:04:17,160 --> 00:04:20,440
+Let's now walk through an example of how the multiplier operates.
+
+58
+00:04:20,440 --> 00:04:26,760
+To simplify things, we'll go through the 4x4 multiplication example that we saw earlier.
+
+59
+00:04:26,760 --> 00:04:31,680
+The registers are initialized with the multiple can and multiplier values, and the product
+
+60
+00:04:31,680 --> 00:04:34,280
+is initialized to 0.
+
+61
+00:04:34,280 --> 00:04:38,120
+Then we just follow the process described earlier.
+
+62
+00:04:38,120 --> 00:04:42,240
+We look at each bit of the multiplier, starting at the least significant.
+
+63
+00:04:42,240 --> 00:04:44,320
+In this case, it's a 1.
+
+64
+00:04:44,320 --> 00:04:50,560
+That means we should add the multiple can with the current product.
+
+65
+00:04:50,560 --> 00:04:54,440
+Then we move on to the next bit by shifting the multiplier right and shifting the multiple
+
+66
+00:04:54,440 --> 00:04:55,720
+can left.
+
+67
+00:04:55,720 --> 00:05:00,600
+In this case now, the least significant bit of the multiplier is 0, so that means we
+
+68
+00:05:00,600 --> 00:05:07,160
+don't add, and the product is unchanged.
+
+69
+00:05:07,160 --> 00:05:12,840
+Then we shift again, the multiplier bit is 0 again, so no change to the product.
+
+70
+00:05:12,840 --> 00:05:17,600
+Then we shift to the last bit, and it's a 1, so we add the current multiple can value
+
+71
+00:05:17,600 --> 00:05:20,560
+to the product.
+
+72
+00:05:20,560 --> 00:05:24,320
+In the end, we've shifted out all of the multiplier bits, which signals a done signal
+
+73
+00:05:24,320 --> 00:05:26,000
+in the control logic.
+
+74
+00:05:26,000 --> 00:05:30,600
+The product register now contains the final result.
+
+75
+00:05:30,600 --> 00:05:35,000
+Though straightforward and designed, the implementation is not very efficient.
+
+76
+00:05:35,000 --> 00:05:39,680
+It requires a large 64-bit ALU to perform the accumulation, but when you think about
+
+77
+00:05:39,680 --> 00:05:44,040
+it, we really only need to add 32 bits at a time.
+
+78
+00:05:44,040 --> 00:05:48,080
+You can visually see this in the 4x4 example in the top right.
+
+79
+00:05:48,080 --> 00:05:52,200
+Even though we're accumulating an 8-bit product, the individual partial products are
+
+80
+00:05:52,200 --> 00:05:58,080
+only 4 bits each.
+
+81
+00:05:58,080 --> 00:06:02,800
+So we can improve the multiplier by instead of shifting the multiple can left each time,
+
+82
+00:06:02,800 --> 00:06:05,480
+we can just shift the product right.
+
+83
+00:06:05,480 --> 00:06:10,560
+So now we only need a 32-bit ALU and 32-bit multiple can register.
+
+84
+00:06:10,560 --> 00:06:14,760
+And this time, all of the partial sums are added into the most significant half of the
+
+85
+00:06:14,760 --> 00:06:17,080
+product register.
+
+86
+00:06:17,080 --> 00:06:23,320
+With this now, you're probably wondering, where did the multiplier go?
+
+87
+00:06:23,320 --> 00:06:27,400
+Since we're only accumulating into the left half of the product register, we can actually
+
+88
+00:06:27,400 --> 00:06:30,680
+initialize the right half with the multiplier.
+
+89
+00:06:30,680 --> 00:06:34,520
+If you recall, we also shift the multiplier right each time, so it fits nicely in the
+
+90
+00:06:34,520 --> 00:06:40,080
+product register.
+
+91
+00:06:40,080 --> 00:06:45,880
+Now let's see how this improved multiplier operates using the same 4x4 example as before.
+
+92
+00:06:45,880 --> 00:06:51,120
+The left half of the product register is initialized to zero, while the right half is initialized
+
+93
+00:06:51,120 --> 00:06:54,280
+to the multiplier.
+
+94
+00:06:54,280 --> 00:06:58,260
+As before, we look at each bit in the multiplier one by one.
+
+95
+00:06:58,260 --> 00:07:06,880
+The first bit is a one, which adds the multiple canned into the left half of the product register.
+
+96
+00:07:06,880 --> 00:07:10,960
+Then the entire product register is logically shifted right by one.
+
+97
+00:07:10,960 --> 00:07:15,600
+The next bit of the multiplier is zero, so nothing is added.
+
+98
+00:07:15,600 --> 00:07:21,320
+Then we shift once more, and the next bit is zero again.
+
+99
+00:07:21,320 --> 00:07:26,880
+Then we get to the final bit, which is one, so we add the multiple canned.
+
+100
+00:07:26,880 --> 00:07:30,760
+Upon the last shift, the multiplier is gone, and the product register contains the final
+
+101
+00:07:30,760 --> 00:07:33,880
+product.
+
+102
+00:07:33,880 --> 00:07:37,800
+Note that the number of ALU instructions is equal to the number of ones in the multiplier
+
+103
+00:07:37,800 --> 00:07:43,280
+value, so for values with a lot of ones, particularly negative values, the multiplication
+
+104
+00:07:43,280 --> 00:07:49,480
+operand can take a lot of cycles.
+
+105
+00:07:49,480 --> 00:07:52,760
+Now what happens if we want to multiply negative numbers?
+
+106
+00:07:52,760 --> 00:07:57,000
+So far, we've only looked on unsigned multiplication.
+
+107
+00:07:57,000 --> 00:08:01,920
+To handle signed numbers, the most straightforward option is to convert the operands into positive
+
+108
+00:08:01,920 --> 00:08:07,320
+integers first, multiply them, then convert the product to negative if one of the inputs
+
+109
+00:08:07,320 --> 00:08:11,280
+is negative.
+
+110
+00:08:11,280 --> 00:08:15,600
+A better option would be to simply use the improved multi-cycle multiplier design that
+
+111
+00:08:15,600 --> 00:08:22,640
+we just discussed, except replace all of the logic shift writes with aromatic write shifts.
+
+112
+00:08:22,640 --> 00:08:26,880
+Then if the multiplier is negative, follow the same procedure for all bits except the
+
+113
+00:08:26,880 --> 00:08:29,480
+most significant bit of the multiplier.
+
+114
+00:08:29,480 --> 00:08:33,360
+For the MSB, subtract the multiple canned from the left half of the product register
+
+115
+00:08:33,360 --> 00:08:39,400
+instead of adding.
+
+116
+00:08:39,400 --> 00:08:44,160
+An efficient way of performing multiplication is to use Booth's algorithm.
+
+117
+00:08:44,160 --> 00:08:46,920
+Recall the trick for multiplying numbers by 9.
+
+118
+00:08:46,920 --> 00:08:52,160
+You first multiply the number by 10 instead, and then just subtract the number once, as
+
+119
+00:08:52,160 --> 00:08:57,640
+shown in this example for multiplying 1, 2, 3, 4, 5, 6 by 9.
+
+120
+00:08:57,640 --> 00:09:02,360
+This reduces the computation from adding 6 partial products to just a single shift and
+
+121
+00:09:02,360 --> 00:09:06,040
+subtraction operation.
+
+122
+00:09:06,040 --> 00:09:08,720
+Booth's multiplier works off the same principle.
+
+123
+00:09:08,720 --> 00:09:14,240
+For example, multiplying a number by 120 in decimal is equivalent to multiplying it
+
+124
+00:09:14,240 --> 00:09:17,740
+by 128 minus 8.
+
+125
+00:09:17,740 --> 00:09:22,200
+This involves less operations compared to adding up four partial products since there
+
+126
+00:09:22,200 --> 00:09:26,120
+were four 1 bits in 120.
+
+127
+00:09:26,120 --> 00:09:30,680
+To realize Booth's multiplication algorithm, we must first encode the multiplier to Booth's
+
+128
+00:09:30,680 --> 00:09:32,040
+encoding.
+
+129
+00:09:32,040 --> 00:09:35,560
+This is just another way of representing signed integers.
+
+130
+00:09:35,560 --> 00:09:39,800
+The goal is to convert each run of 1s in the multiplier into a difference of powers
+
+131
+00:09:39,800 --> 00:09:47,200
+of 2, as in the example above where the run of 4 1s in 120 can be represented as 128 minus
+
+132
+00:09:47,200 --> 00:09:51,200
+8.
+
+133
+00:09:51,200 --> 00:09:55,720
+This slide shows an example of Booth's encoding and multiplication algorithm.
+
+134
+00:09:55,720 --> 00:09:59,960
+As before, we start from the rightmost, least significant bit and walk through each of the
+
+135
+00:09:59,960 --> 00:10:01,720
+bits.
+
+136
+00:10:01,720 --> 00:10:07,520
+Whenever we see a rising edge, as in a transition from 0 to 1, then we encode a negative sign,
+
+137
+00:10:07,520 --> 00:10:13,200
+which means we should subtract the multiple can from the current product at this bit position.
+
+138
+00:10:13,200 --> 00:10:19,480
+Whenever we see a falling edge, as in a transition from 1 to 0, then we encode a positive sign,
+
+139
+00:10:19,480 --> 00:10:24,360
+which means we need to add the multiple can at this bit position.
+
+140
+00:10:24,360 --> 00:10:30,280
+In all other cases, when we're in the middle of a run of 1s or a run of 0s, we do nothing.
+
+141
+00:10:30,280 --> 00:10:36,760
+The bottom shows the notation for Booth's encoding, showing how the number 120 is represented
+
+142
+00:10:36,760 --> 00:10:42,440
+with a negative sign at bit position 3 and a positive sign at bit position 7, which is
+
+143
+00:10:42,440 --> 00:10:47,880
+another way of saying that the number 120 is composed of negative 2 to the third, which
+
+144
+00:10:47,880 --> 00:10:57,160
+is minus 8, plus positive 2 to the seventh, which is 128.
+
+145
+00:10:57,160 --> 00:11:00,160
+Let's see how Booth's multiplier operates.
+
+146
+00:11:00,160 --> 00:11:06,040
+Taking an example, with multiple can of negative 6 and a multiplier of positive 6, which is
+
+147
+00:11:06,040 --> 00:11:13,320
+represented in Booth's encoding as plus 0, minus 0 from left to right.
+
+148
+00:11:13,320 --> 00:11:16,800
+At this point is actually a similar procedure as before.
+
+149
+00:11:16,800 --> 00:11:21,920
+We start by looking at the least significant bit of the multiplier, except in Booth's encoding.
+
+150
+00:11:21,920 --> 00:11:27,680
+The first bit is 0, which means that we don't add the multiple can to the product.
+
+151
+00:11:27,680 --> 00:11:31,840
+Then we shift the multiple can and look at the next bit of the multiplier, which is a
+
+152
+00:11:31,840 --> 00:11:33,440
+minus sign.
+
+153
+00:11:33,440 --> 00:11:38,760
+This means that we need to subtract the multiple can, now negative 12, from the current product
+
+154
+00:11:38,760 --> 00:11:46,680
+0, which is 0 minus the negative 12, which leaves the value 12 in the product.
+
+155
+00:11:46,680 --> 00:11:51,360
+Then we shift again and find that the next bit is 0, so we don't do anything.
+
+156
+00:11:51,360 --> 00:11:55,880
+Then we get to the last bit, which is a plus sign, so that means we add the multiple can,
+
+157
+00:11:55,880 --> 00:11:58,800
+which at this point is negative 48.
+
+158
+00:11:58,800 --> 00:12:04,400
+This results in a final sum of negative 36 in the product register.
+
+159
+00:12:04,400 --> 00:12:10,560
+The takeaway is that unlike our previous multiplier design, the number of ALU operations is equal
+
+160
+00:12:10,560 --> 00:12:15,480
+to the number of falling and rising edges in the multiplier value, as opposed to the number
+
+161
+00:12:15,480 --> 00:12:16,840
+of ones.
+
+162
+00:12:16,840 --> 00:12:24,720
+In a lot of cases, but not all, this can be more efficient.
+
+163
+00:12:24,720 --> 00:12:26,640
+Let's move on to integer division.
+
+164
+00:12:26,640 --> 00:12:29,600
+We'll be focusing only on unsigned division here.
+
+165
+00:12:29,600 --> 00:12:33,960
+The simplest way to extend to signed division is to divide the magnitudes and correct the
+
+166
+00:12:33,960 --> 00:12:35,720
+sign of the quotient.
+
+167
+00:12:35,720 --> 00:12:40,160
+So the way we learned back in grade school was to perform long division.
+
+168
+00:12:40,160 --> 00:12:46,160
+At each bit or digit position of the dividend, starting from left most significant side,
+
+169
+00:12:46,160 --> 00:12:49,760
+we try to subtract the divisor from the subset of bits.
+
+170
+00:12:49,760 --> 00:12:54,200
+Only if the divisor fits, that is, it's less than the dividend bits.
+
+171
+00:12:54,200 --> 00:12:56,640
+Only then do we actually subtract.
+
+172
+00:12:56,640 --> 00:13:00,520
+In this case, we set the corresponding quotient bit to one.
+
+173
+00:13:00,520 --> 00:13:04,920
+Then we take the remainder and continue the process with the rest of the dividend bits
+
+174
+00:13:04,920 --> 00:13:10,800
+until we've gone through all the bits.
+
+175
+00:13:10,800 --> 00:13:16,920
+To implement division and hardware, we effectively try to follow the same long division procedure.
+
+176
+00:13:16,920 --> 00:13:21,400
+The most straightforward implementation is to employ restoring division.
+
+177
+00:13:21,400 --> 00:13:25,280
+At each bit position, we need to check if the divisor fits.
+
+178
+00:13:25,280 --> 00:13:29,240
+With restoring division, we subtract the divisor each time.
+
+179
+00:13:29,240 --> 00:13:35,040
+If the resulting remainder is less than zero, then we know that the divisor did not fit,
+
+180
+00:13:35,040 --> 00:13:38,000
+so we restore it by adding the divisor back.
+
+181
+00:13:38,000 --> 00:13:41,920
+Then we move on to the next bit position and continue this process until the end of the
+
+182
+00:13:41,920 --> 00:13:46,520
+dividend.
+
+183
+00:13:46,520 --> 00:13:51,640
+This is a simple hardware organization of 32-bit restoring division.
+
+184
+00:13:51,640 --> 00:13:57,200
+As with multiplication, the result of 32-bit division is 64 bits consisting of a 32-bit
+
+185
+00:13:57,200 --> 00:14:00,840
+quotient and a 32-bit remainder.
+
+186
+00:14:00,840 --> 00:14:05,760
+We need three registers, one for the divisor, one for the quotient, and one for the remainder
+
+187
+00:14:05,760 --> 00:14:11,400
+that's initially set to the dividend.
+
+188
+00:14:11,400 --> 00:14:14,640
+Let's walk through how it works using an 8-bit example.
+
+189
+00:14:14,640 --> 00:14:20,520
+The divisor is initialized to the left half of the divisor register with the rest as zeros.
+
+190
+00:14:20,520 --> 00:14:27,000
+The remainder is initialized with the dividend value.
+
+191
+00:14:27,000 --> 00:14:32,840
+So first thing we do is subtract the divisor from the current value in the remainder register.
+
+192
+00:14:32,840 --> 00:14:37,360
+Then we check to see if the remainder is greater than or equal to zero.
+
+193
+00:14:37,360 --> 00:14:43,080
+In this case, it's not, so we left-shift into zero into the quotient.
+
+194
+00:14:43,080 --> 00:14:48,000
+Since the divisor doesn't fit, we need to restore it by adding the divisor back to the
+
+195
+00:14:48,000 --> 00:14:52,720
+remainder register.
+
+196
+00:14:52,720 --> 00:14:58,080
+This continues in the same way for the next four-bit positions, so we'll skip ahead.
+
+197
+00:14:58,080 --> 00:15:04,440
+So now the divisor has been shifted right four times and the quotient has four zeros in it.
+
+198
+00:15:04,440 --> 00:15:10,080
+As before, we perform the subtraction, but this time the remainder is actually positive.
+
+199
+00:15:10,080 --> 00:15:16,080
+So this means that the divisor fit, so we push in a one into the quotient and now we
+
+200
+00:15:16,080 --> 00:15:20,960
+don't need to restore.
+
+201
+00:15:20,960 --> 00:15:25,560
+We shift the divisor and move on to the next bit now.
+
+202
+00:15:25,560 --> 00:15:27,600
+Again we subtract the divisor.
+
+203
+00:15:27,600 --> 00:15:33,280
+This time it doesn't fit, so we shift a zero into the quotient and consequently restore
+
+204
+00:15:33,280 --> 00:15:39,200
+the remainder by adding the divisor back into it.
+
+205
+00:15:39,200 --> 00:15:43,280
+Then we skip ahead to the last bit position.
+
+206
+00:15:43,280 --> 00:15:48,720
+We perform the subtraction and find that the divisor fits this time, so we shift a one into
+
+207
+00:15:48,720 --> 00:15:50,440
+the quotient.
+
+208
+00:15:50,440 --> 00:15:55,280
+Since we don't need to restore, the division is now complete and the final results can
+
+209
+00:15:55,280 --> 00:16:02,800
+be found in the quotient and remainder registers.
+
+210
+00:16:02,800 --> 00:16:07,200
+There are a couple ways to improve upon this simple implementation.
+
+211
+00:16:07,200 --> 00:16:10,640
+First of all, we can skip the first subtraction operation.
+
+212
+00:16:10,640 --> 00:16:14,640
+Since the remainder is initially zero, there's really no point in subtracting because the
+
+213
+00:16:14,640 --> 00:16:21,240
+divisor will never fit, so instead we can change the algorithm to shift first then subtract.
+
+214
+00:16:21,240 --> 00:16:25,320
+This works similar to before, except we need to do an extra shift in the end as we'll show
+
+215
+00:16:25,320 --> 00:16:26,920
+in the next few slides.
+
+216
+00:16:26,920 --> 00:16:32,400
+Second, we can improve the design in a similar way that we improved the multiplier from earlier.
+
+217
+00:16:32,400 --> 00:16:37,440
+Fundamentally, we're only ever adding or subtracting 32 bits at a time, so we should
+
+218
+00:16:37,440 --> 00:16:42,280
+be able to just use a 32-bit ALU.
+
+219
+00:16:42,280 --> 00:16:46,760
+We can also reduce the number of registers by storing the quotient into the remainder
+
+220
+00:16:46,760 --> 00:16:54,040
+register, saving an additional register.
+
+221
+00:16:54,040 --> 00:16:57,760
+This is the organization of the improved division.
+
+222
+00:16:57,760 --> 00:17:02,200
+Now instead of right-shifting the divisor each time, we instead left-ship the remainder
+
+223
+00:17:02,200 --> 00:17:03,840
+register.
+
+224
+00:17:03,840 --> 00:17:08,600
+As before, the right half of the remainder initially holds the dividend value, but as
+
+225
+00:17:08,600 --> 00:17:13,520
+we shift the remainder register to the left each time, we can actually insert the quotient
+
+226
+00:17:13,520 --> 00:17:18,160
+bits into it, then in the end, the left half will hold the remainder value while the right
+
+227
+00:17:18,160 --> 00:17:26,320
+half holds the quotient value.
+
+228
+00:17:26,320 --> 00:17:32,080
+So as mentioned, we skip the first subtraction since the divisor will never fit, so we left-shift
+
+229
+00:17:32,080 --> 00:17:37,960
+the remainder register and shift into zero as the first bit of the quotient.
+
+230
+00:17:37,960 --> 00:17:44,240
+Then from here on, we follow a similar procedure as before.
+
+231
+00:17:44,240 --> 00:17:48,280
+At each bit position, we first subtract the divisor from the left half of the remainder
+
+232
+00:17:48,280 --> 00:17:50,920
+register.
+
+233
+00:17:50,920 --> 00:17:57,080
+Since the resulting remainder is not positive, then we perform an addition to restore.
+
+234
+00:17:57,080 --> 00:18:05,640
+Finally, we shift into zero for the quotient since the divisor did not fit.
+
+235
+00:18:05,640 --> 00:18:09,920
+Let's skip ahead by four bits now.
+
+236
+00:18:09,920 --> 00:18:14,160
+Again we perform the subtraction, but this time the remainder is greater than zero, so
+
+237
+00:18:14,160 --> 00:18:16,840
+we do not need to restore.
+
+238
+00:18:16,840 --> 00:18:23,520
+We simply shift in a one into the quotient and then move on.
+
+239
+00:18:23,520 --> 00:18:27,400
+Let's skip ahead to the last bit position.
+
+240
+00:18:27,400 --> 00:18:32,560
+We perform the subtraction and then find that the remainder is positive, so again, no restoration
+
+241
+00:18:32,560 --> 00:18:35,400
+needs to be performed.
+
+242
+00:18:35,400 --> 00:18:43,160
+We simply need to shift in a one to the quotient.
+
+243
+00:18:43,160 --> 00:18:48,120
+So now we've gone through all the bits of the dividend, but before we finish up, because
+
+244
+00:18:48,120 --> 00:18:52,880
+we skipped the first subtraction, we now have to right-shift the left half of the remainder
+
+245
+00:18:52,880 --> 00:19:01,920
+as a correction, and now the final result can be found in the remainder register.
+
+246
+00:19:01,920 --> 00:19:06,080
+Though straightforward, this implementation can be quite inefficient since it requires
+
+247
+00:19:06,080 --> 00:19:12,640
+two ALU cycles per bit position, one to perform the subtraction to check if the divisor fits,
+
+248
+00:19:12,640 --> 00:19:17,000
+and one to perform the addition if restore is needed.
+
+249
+00:19:17,000 --> 00:19:20,360
+We can improve on this by implementing non-restoring division.
+
+250
+00:19:20,360 --> 00:19:23,360
+To do this, we start off similar to before.
+
+251
+00:19:23,360 --> 00:19:29,360
+We first subtract the divisor from the remainder, but this time, if the remainder is negative,
+
+252
+00:19:29,360 --> 00:19:31,960
+we won't restore right away.
+
+253
+00:19:31,960 --> 00:19:36,160
+The correct remainder at this current bit position i is supposed to be whatever is in
+
+254
+00:19:36,160 --> 00:19:40,980
+the remainder register plus the divisor due to restoration.
+
+255
+00:19:40,980 --> 00:19:46,780
+So that means that the correct remainder after the next position i plus one would be equal
+
+256
+00:19:46,780 --> 00:19:54,180
+to whatever is in the remainder register plus the divisor shifted left by one minus the divisor.
+
+257
+00:19:54,180 --> 00:19:58,460
+Expanding on this, we find that it simply equals whatever is in the remainder register
+
+258
+00:19:58,460 --> 00:20:01,620
+right now plus the divisor.
+
+259
+00:20:01,620 --> 00:20:07,360
+So this implies that at each bit position, if the remainder is less than zero, that instead
+
+260
+00:20:07,360 --> 00:20:16,240
+of subtracting the divisor next time, we actually need to add it instead.
+
+261
+00:20:16,240 --> 00:20:17,900
+So let's see how this works.
+
+262
+00:20:17,900 --> 00:20:23,080
+The hardware organization is similar to before, and the registers are initialized in the same
+
+263
+00:20:23,080 --> 00:20:25,560
+way as before.
+
+264
+00:20:25,560 --> 00:20:30,000
+Just like in the improved restoring division, we start off by left shifting in a zero into
+
+265
+00:20:30,000 --> 00:20:39,320
+the remainder register as shown.
+
+266
+00:20:39,320 --> 00:20:42,840
+Then the first thing we do is subtract the divisor from the left half of the remainder
+
+267
+00:20:42,840 --> 00:20:44,560
+as usual.
+
+268
+00:20:44,560 --> 00:20:50,680
+We find that the resulting remainder is not positive, but instead of restoring now, we
+
+269
+00:20:50,680 --> 00:20:56,600
+simply left shift in a zero into the quotient and set a flag that says at the next bit position,
+
+270
+00:20:56,600 --> 00:21:03,720
+we will add the divisor instead of subtracting it.
+
+271
+00:21:03,720 --> 00:21:05,780
+And that's just what we do.
+
+272
+00:21:05,780 --> 00:21:09,280
+We add the divisor into the remainder register.
+
+273
+00:21:09,280 --> 00:21:13,360
+Again we check if the resulting remainder is positive.
+
+274
+00:21:13,360 --> 00:21:19,040
+It's still negative, so we left shift in another zero and specify that we will perform add
+
+275
+00:21:19,040 --> 00:21:24,400
+again on the next bit position.
+
+276
+00:21:24,400 --> 00:21:28,500
+The same thing happens for the next three bits, so we'll skip ahead.
+
+277
+00:21:28,500 --> 00:21:31,320
+At this bit position, we add the divisor.
+
+278
+00:21:31,320 --> 00:21:34,840
+This time, we find that the remainder is positive.
+
+279
+00:21:34,840 --> 00:21:39,560
+So we left shift in a one into the quotient and specify that the next operation will be
+
+280
+00:21:39,560 --> 00:21:46,520
+a subtraction instead.
+
+281
+00:21:46,520 --> 00:21:50,760
+Let's skip ahead again to the last bit position.
+
+282
+00:21:50,760 --> 00:21:55,080
+Here we need to perform an addition again, so we add the divisor into the left half
+
+283
+00:21:55,080 --> 00:21:57,160
+of the remainder register.
+
+284
+00:21:57,160 --> 00:22:01,000
+We find that the remainder is positive.
+
+285
+00:22:01,000 --> 00:22:10,180
+So we just left shift in a one into the quotient.
+
+286
+00:22:10,180 --> 00:22:13,240
+And now we've reached the end of the dividend.
+
+287
+00:22:13,240 --> 00:22:19,040
+But just like before, we need to right shift the left half of the remainder register once
+
+288
+00:22:19,240 --> 00:22:21,280
+just to correct the remainder.
+
+289
+00:22:21,280 --> 00:22:25,520
+And we have finished.
+
+290
+00:22:25,520 --> 00:22:30,520
+Let's end this lecture with a quick example of 4-bit boost multiplication.
+
+291
+00:22:30,520 --> 00:22:35,760
+Consider a multiplicand of negative 6 and a multiplier of negative 2.
+
+292
+00:22:35,760 --> 00:22:38,640
+Compute the booth encoding of the multiplier.
+
+293
+00:22:38,640 --> 00:22:42,480
+Enlist the partial products of the boost multiplication.
+
+294
+00:22:42,480 --> 00:22:51,680
+Please take some time now to work through it.
+
+295
+00:22:51,680 --> 00:22:57,400
+The booth encoding for the multiplier is 0, 0 minus 0.
+
+296
+00:22:57,400 --> 00:23:02,200
+So the first partial product is simply the multiplicand times 0.
+
+297
+00:23:02,200 --> 00:23:08,480
+The next partial product shifts the multiplicand by 1 and multiplies it by negative 1.
+
+298
+00:23:08,480 --> 00:23:14,080
+And the last two partial products are shown simply multiplying by 0.
+
+299
+00:23:14,080 --> 00:23:17,080
+Adding these up yields the final product of 12.
+

@@ -14,13 +14,29 @@
 !ece552/Project/*.zip
 ece552/Project/project-phase3.zip
 
-# Verilog simulation output does not belong in the mirror. The compiled iverilog binaries have no
-# extension, so they cannot be matched here -- delete them by hand if a project is rebuilt.
+# Verilog simulation output does not belong in the mirror.
 *.vcd
 *.wlf
 *.fst
 wlft*
 work/
+verilogsim*.log
+verilogsim*.trace
+ece552/Project/project-phase3/project-phase3/design/dumpfile_data.img
+ece552/Project/project-phase3/project-phase3/ip/out
+
+# ModelSim project state and crash dumps.
+*.mpf
+*.cr.mti
+tcl_stacktrace.txt
+
+# Editor backups of the course-supplied Verilog sources.
+*.bak
+
+# The Vcheck style checker ships as compiled classes with no source. Keep the one canonical copy
+# under Rule_Checker/ and drop the duplicates the course dump scattered through the project.
+*.class
+!ece552/Rule_Checker/*.class
 
 # Office lock/recovery files left behind in the course material dump.
 ~$*

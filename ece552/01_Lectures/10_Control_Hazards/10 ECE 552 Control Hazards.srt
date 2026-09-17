@@ -1,0 +1,1112 @@
+1
+00:00:00,000 --> 00:00:10,280
+In this lecture, we'll talk about control hazards and exceptions.
+
+2
+00:00:10,280 --> 00:00:14,280
+Control Dependents will complete our discussion of pipeline hazards.
+
+3
+00:00:14,280 --> 00:00:19,760
+We'll discuss what control hazards are, different ways of resolving them, and then finally wrap
+
+4
+00:00:19,760 --> 00:00:25,240
+up with exception handling.
+
+5
+00:00:25,240 --> 00:00:29,280
+First let's define what we mean by program control dependence.
+
+6
+00:00:29,280 --> 00:00:35,560
+An instruction Y is control dependent on an instruction X if X determines whether or not
+
+7
+00:00:35,560 --> 00:00:37,600
+Y will be executed.
+
+8
+00:00:37,600 --> 00:00:41,120
+And this is specifically due to conditional branches.
+
+9
+00:00:41,120 --> 00:00:48,600
+A branch instruction needs to be executed to see if it will or will not be taken and
+
+10
+00:00:48,600 --> 00:00:52,080
+figure out which instruction to fetch next.
+
+11
+00:00:52,080 --> 00:01:00,520
+Many instructions that follow the branch are control dependent on it.
+
+12
+00:01:00,520 --> 00:01:06,840
+Here's an example program with a pair of branches with control dependence listed.
+
+13
+00:01:06,840 --> 00:01:11,560
+Instruction 0 is branch not equal with the target of I3.
+
+14
+00:01:11,560 --> 00:01:17,680
+This means instructions 1 and 2 are executed if and only if this branch is not taken, which
+
+15
+00:01:17,680 --> 00:01:21,680
+makes them control dependent on instruction 0.
+
+16
+00:01:21,680 --> 00:01:28,640
+Since the branch not equal targets I3, this means instructions 3 or 4 are not control dependent
+
+17
+00:01:28,640 --> 00:01:36,120
+on instruction 0 since they are executed regardless of the values in S1 and S3.
+
+18
+00:01:36,120 --> 00:01:38,820
+Instruction 4 is a branch equal instruction.
+
+19
+00:01:38,820 --> 00:01:44,320
+If the branch is taken, then the PC jumps back to instruction 0, which means instructions
+
+20
+00:01:44,320 --> 00:01:51,080
+0 through 4 are all control dependent on that branch.
+
+21
+00:01:51,080 --> 00:01:59,320
+Technically, control dependence doesn't need to be preserved to ensure program correctness.
+
+22
+00:01:59,320 --> 00:02:03,880
+It's okay for us to execute some instructions that shouldn't have been executed as long
+
+23
+00:02:03,880 --> 00:02:12,840
+as those speculative instructions still preserve data dependencies and don't cause new exceptions.
+
+24
+00:02:12,840 --> 00:02:17,680
+A control hazard occurs when an incorrect instruction is fetched into the pipeline because
+
+25
+00:02:17,680 --> 00:02:22,180
+the outcome of a branch instruction has not yet been resolved.
+
+26
+00:02:22,180 --> 00:02:26,160
+This is possible in our five-stage pipeline because branches don't get resolved until
+
+27
+00:02:26,160 --> 00:02:30,120
+a later stage.
+
+28
+00:02:30,120 --> 00:02:35,160
+In our base implementation shown here, the branch's decision is generated in the memory
+
+29
+00:02:35,160 --> 00:02:36,160
+stage.
+
+30
+00:02:36,160 --> 00:02:40,760
+Specifically, the PC will be updated to the correct instruction address after the branch's
+
+31
+00:02:40,760 --> 00:02:46,920
+memory stage.
+
+32
+00:02:46,920 --> 00:02:50,440
+Let's explore control hazards with a toy example.
+
+33
+00:02:50,440 --> 00:02:56,600
+Say that this branch equal instruction will be taken because T0 and T1 are indeed equal.
+
+34
+00:02:56,600 --> 00:03:00,760
+The issue is that we don't know if it's taken until the end of cycle 4 when the branch
+
+35
+00:03:00,760 --> 00:03:04,680
+instruction has finished the memory stage.
+
+36
+00:03:04,680 --> 00:03:10,120
+Our processor kept updating PC to PC plus 4 and three additional instructions were fetched
+
+37
+00:03:10,120 --> 00:03:17,240
+and pushed into the pipeline before the branch was resolved.
+
+38
+00:03:17,240 --> 00:03:21,000
+Next we'll discuss the ways we can resolve control hazards.
+
+39
+00:03:21,000 --> 00:03:25,760
+The first and simplest solution is to continue to fetch the next instruction, that is PC
+
+40
+00:03:25,760 --> 00:03:29,120
+plus 4, until the branch is resolved.
+
+41
+00:03:29,120 --> 00:03:34,120
+This is effectively predicting and hoping that the branch is not taken.
+
+42
+00:03:34,120 --> 00:03:40,680
+However, if the branch is to be taken, we need to flush or turn into no ops, these instructions
+
+43
+00:03:40,680 --> 00:03:45,600
+that we incorrectly fetch before they change any program visible state, like data memory
+
+44
+00:03:45,600 --> 00:03:48,420
+or the register file.
+
+45
+00:03:48,420 --> 00:03:53,040
+This is shown in the pipeline diagram as equal signs in cycle 5.
+
+46
+00:03:53,040 --> 00:03:57,920
+In this case, flushing looks like we instead chose to stall three cycles.
+
+47
+00:03:57,920 --> 00:04:02,720
+This approach is a form of speculation where we intentionally execute instructions before
+
+48
+00:04:02,720 --> 00:04:07,440
+we've confirmed that they should be executed to improve performance.
+
+49
+00:04:07,440 --> 00:04:12,360
+That means that if most branches are not taken most of the time, then the performance loss
+
+50
+00:04:12,360 --> 00:04:19,280
+that happens when they are is minimized.
+
+51
+00:04:19,280 --> 00:04:23,600
+To reduce the performance overhead, let's left shift the branch resolution as early
+
+52
+00:04:23,600 --> 00:04:24,940
+as possible.
+
+53
+00:04:24,940 --> 00:04:30,760
+This leverages the fact that in our MIPS ISA, we only need to support simple equality comparisons
+
+54
+00:04:30,760 --> 00:04:35,320
+in our branches, so they don't affect the cycle time by much.
+
+55
+00:04:35,320 --> 00:04:42,320
+We can choose to resolve branches at the execute or even in the decode stage, as shown here.
+
+56
+00:04:42,320 --> 00:04:46,800
+Let's first compute the branch target PC in the decode stage.
+
+57
+00:04:46,800 --> 00:04:50,620
+This is simple since the target only depends on the instruction word, which was already
+
+58
+00:04:50,620 --> 00:04:52,920
+available at that stage.
+
+59
+00:04:52,920 --> 00:04:57,120
+We will have to instantiate an adder as we can no longer use the existing one in the
+
+60
+00:04:57,120 --> 00:04:59,360
+ALU.
+
+61
+00:04:59,360 --> 00:05:05,160
+The comparison adds a bit of delay since it's a combinatorial logic cloud that comes after
+
+62
+00:05:05,160 --> 00:05:09,880
+the end of the decode stage, which is after the gate delay of reading registers out of
+
+63
+00:05:09,880 --> 00:05:15,200
+the register file in the second phase of the clock due to register bypass.
+
+64
+00:05:15,200 --> 00:05:20,200
+Depending on the comparison type, the result of the comparison is effectively the PC source
+
+65
+00:05:20,200 --> 00:05:27,160
+control signal that selects between PC plus 4 and the branch target for the next PC.
+
+66
+00:05:27,160 --> 00:05:29,960
+The last thing we must attend to is the flush.
+
+67
+00:05:29,960 --> 00:05:35,440
+If the branch is taken as determined by the control logic, then the IFAD pipeline register
+
+68
+00:05:35,440 --> 00:05:40,840
+must be cleared as the instruction currently in the fetch stage has been incorrectly fetched.
+
+69
+00:05:40,840 --> 00:05:48,040
+We must propagate a NOOP instead of the incorrect instruction.
+
+70
+00:05:48,040 --> 00:05:50,520
+Let's go back to our earlier example.
+
+71
+00:05:50,520 --> 00:05:55,240
+Now the branch is resolved in cycle 2 when the branch equal instruction is at the decode
+
+72
+00:05:55,240 --> 00:05:58,160
+stage.
+
+73
+00:05:58,160 --> 00:06:02,760
+This only needs to flush one instruction instead of three, which is the load instruction, which
+
+74
+00:06:02,760 --> 00:06:10,360
+gets cleared upon entering the decode stage in cycle 3.
+
+75
+00:06:10,360 --> 00:06:13,480
+Here's an animation of how the control hazard is resolved.
+
+76
+00:06:13,480 --> 00:06:18,440
+We start in cycle 2 where we fetch the load instruction speculatively, predicting that
+
+77
+00:06:18,440 --> 00:06:21,600
+the branch will not be taken.
+
+78
+00:06:21,600 --> 00:06:25,960
+But if it is taken, then the load instruction gets converted to a NOOP in the next cycle
+
+79
+00:06:25,960 --> 00:06:30,400
+and the correct subtract instruction is then fetched.
+
+80
+00:06:30,400 --> 00:06:41,480
+The NOOP then propagates through the rest of the pipeline as if the load never happened.
+
+81
+00:06:41,480 --> 00:06:43,680
+But now what about raw hazards?
+
+82
+00:06:43,680 --> 00:06:48,600
+Unlike other instructions, we now need the register operands in the decode stage for
+
+83
+00:06:48,600 --> 00:06:53,200
+branch instruction, which was previously only needed in the ALU stage, which is why
+
+84
+00:06:53,200 --> 00:06:59,120
+we created the execute to execute forwarding and memory to execute forwarding.
+
+85
+00:06:59,120 --> 00:07:03,960
+In this example, register T1 is read by the branch equal instruction, but it's not ready
+
+86
+00:07:03,960 --> 00:07:09,280
+until after the add executes.
+
+87
+00:07:09,280 --> 00:07:13,800
+One solution is to stall and implement full forwarding back to the decode stage.
+
+88
+00:07:13,800 --> 00:07:19,120
+At cycle 3, the branch needs to stall since execute is still working on the add.
+
+89
+00:07:19,120 --> 00:07:23,400
+The add's results will be ready in cycle 4 and can be forwarded to the comparison logic
+
+90
+00:07:23,400 --> 00:07:25,880
+in the branch's decode stage.
+
+91
+00:07:25,880 --> 00:07:29,920
+This is an example of execute to decode forwarding.
+
+92
+00:07:29,920 --> 00:07:37,720
+Memory to decode forwarding can be implemented in a similar way.
+
+93
+00:07:37,720 --> 00:07:42,560
+Some early architectures, including MIPS and digital signal processors, had what's known
+
+94
+00:07:42,600 --> 00:07:48,240
+as a branch delay slot instead of adding hardware complexity for resolving control hazards.
+
+95
+00:07:48,240 --> 00:07:53,480
+A branch delay slot is an instruction immediately after a branch that is unconditionally executed
+
+96
+00:07:53,480 --> 00:07:57,200
+regardless of whether or not the branch is taken.
+
+97
+00:07:57,200 --> 00:08:02,280
+This puts the onus on the software to handle control hazards with legal instructions instead
+
+98
+00:08:02,280 --> 00:08:05,880
+of imposing hardware complexity.
+
+99
+00:08:05,880 --> 00:08:10,360
+In the example program shown, the add instruction is currently in the delay slot.
+
+100
+00:08:10,360 --> 00:08:15,240
+This means that whether or not the branch is taken, the add will be executed to completion
+
+101
+00:08:15,240 --> 00:08:19,560
+and will never be flushed.
+
+102
+00:08:19,560 --> 00:08:24,440
+In this example, the add instruction in the branch delay slot is illegal because it violates
+
+103
+00:08:24,440 --> 00:08:30,280
+program correctance by introducing a false data dependence on registered T5.
+
+104
+00:08:30,280 --> 00:08:34,280
+If the branch were taken, then the subtract instruction is supposed to read a different
+
+105
+00:08:34,280 --> 00:08:39,120
+value of T5, not the one produced by the add, which wouldn't be executed in the original
+
+106
+00:08:39,160 --> 00:08:41,840
+program.
+
+107
+00:08:41,840 --> 00:08:46,400
+We have two options for filling the branch delay slots.
+
+108
+00:08:46,400 --> 00:08:51,360
+The first is to insert a no op into the program at the branch delay slot.
+
+109
+00:08:51,360 --> 00:08:55,760
+No ops don't affect program state and thus are always safe to insert.
+
+110
+00:08:55,760 --> 00:08:59,840
+With this, the add instruction will only be executed when the branch is not taken, which
+
+111
+00:08:59,840 --> 00:09:04,560
+is the correct program behavior.
+
+112
+00:09:04,560 --> 00:09:08,160
+The better option would be to fill the branch delay slot with an instruction that needed
+
+113
+00:09:08,200 --> 00:09:10,240
+to be executed anyway.
+
+114
+00:09:10,240 --> 00:09:13,120
+This avoids the loss cycle due to the no op.
+
+115
+00:09:13,120 --> 00:09:18,280
+In this example, we can move the load that preceded the branch equal to after, as the
+
+116
+00:09:18,280 --> 00:09:24,120
+load did not write any registers that the branch equal depended on reading.
+
+117
+00:09:24,120 --> 00:09:29,120
+This program would produce correct results whether the branch were taken or not.
+
+118
+00:09:29,120 --> 00:09:36,120
+A common approach to resolving control hazards is dynamic branch prediction.
+
+119
+00:09:36,840 --> 00:09:41,840
+This is implemented in most modern processors, including the ones in your tablet, laptop,
+
+120
+00:09:41,840 --> 00:09:46,320
+or phone that you're probably watching this video on.
+
+121
+00:09:46,320 --> 00:09:50,400
+The idea is to predict the branch outcome or direction, which is either taken or not
+
+122
+00:09:50,400 --> 00:09:51,760
+taken.
+
+123
+00:09:51,760 --> 00:09:55,960
+This prediction is typically employed in the fetch stage, which is cycle one in the pipeline
+
+124
+00:09:55,960 --> 00:10:00,960
+diagram, so that upon the next cycle, the subtract instruction can be immediately fetched
+
+125
+00:10:00,960 --> 00:10:04,800
+if the branch is predicted to be taken.
+
+126
+00:10:04,800 --> 00:10:09,360
+Obviously the branch target address is also either computed earlier or predicted in some
+
+127
+00:10:09,360 --> 00:10:13,880
+way using branch target buffers, but this is a more advanced topic that we won't be
+
+128
+00:10:13,880 --> 00:10:15,880
+covering in this course.
+
+129
+00:10:15,880 --> 00:10:21,040
+So in this example, by the end of cycle two, we will know whether or not the branch is
+
+130
+00:10:21,040 --> 00:10:22,800
+indeed taken.
+
+131
+00:10:22,800 --> 00:10:29,800
+In this case, our prediction is correct, so we don't have to do anything else.
+
+132
+00:10:30,680 --> 00:10:34,680
+If our branch predictor instead mispredicts thinking that the branch won't be taken,
+
+133
+00:10:34,680 --> 00:10:40,760
+then after cycle two, the add instruction will be flushed as usual.
+
+134
+00:10:40,760 --> 00:10:47,760
+In the end, we'd have the same single cycle penalty as in the previous predict.taken approach.
+
+135
+00:10:50,440 --> 00:10:55,880
+The simplest way to implement branch direction prediction is to use a branch history table
+
+136
+00:10:55,880 --> 00:10:59,600
+or BHT with one-bit predictions.
+
+137
+00:10:59,600 --> 00:11:04,240
+Bits of the current PC, which is the address of the branch instruction itself, are used
+
+138
+00:11:04,240 --> 00:11:08,440
+to index into the BHT and select an entry.
+
+139
+00:11:08,440 --> 00:11:14,760
+In this example, an 8-bit BHT is indexed by three bits of the PC.
+
+140
+00:11:14,760 --> 00:11:20,600
+As an aside, for MIPS, we typically ignore the two least significant bits of the PC.
+
+141
+00:11:20,600 --> 00:11:25,520
+Why is that?
+
+142
+00:11:25,520 --> 00:11:30,280
+So now once we've selected an entry in the BHT, each entry contains a one-bit prediction
+
+143
+00:11:30,280 --> 00:11:32,760
+to indicate taken or not taken.
+
+144
+00:11:32,760 --> 00:11:38,120
+The bit is then updated according to the FSM or finite state machine on the right.
+
+145
+00:11:38,120 --> 00:11:41,120
+This FSM looks more complex than it really is.
+
+146
+00:11:41,120 --> 00:11:45,400
+The branch table will show one if a branch at that address alias was taken last time
+
+147
+00:11:45,400 --> 00:11:53,400
+and zero if it was not.
+
+148
+00:11:53,400 --> 00:11:55,360
+Let's see how this works with an example.
+
+149
+00:11:55,360 --> 00:12:00,080
+Here, we're predicting the branch equal instruction upon each iteration of the loop.
+
+150
+00:12:00,080 --> 00:12:04,640
+In the first iteration, we read the prediction from the BHT.
+
+151
+00:12:04,640 --> 00:12:07,680
+In this case, let's say the BHT entry is zero.
+
+152
+00:12:07,680 --> 00:12:11,840
+So we predict that we will not take the branch.
+
+153
+00:12:11,840 --> 00:12:15,880
+Then let's say it turns out that the branch is actually taken.
+
+154
+00:12:15,880 --> 00:12:22,360
+So we need to update the prediction accordingly to predict taken next time.
+
+155
+00:12:22,360 --> 00:12:26,800
+This algorithm continues where on each iteration, our prediction is the last outcome of the
+
+156
+00:12:26,800 --> 00:12:29,160
+branch from the previous iteration.
+
+157
+00:12:29,160 --> 00:12:33,680
+In this example program, our branch predictor mispredicts four times out of eight, leading
+
+158
+00:12:33,680 --> 00:12:40,600
+to four flush penalties.
+
+159
+00:12:40,600 --> 00:12:44,800
+Modern high-performance branch predictors use two-bit prediction instead.
+
+160
+00:12:44,800 --> 00:12:50,520
+The motivation is that most branches are biased to either taken or not taken, and a one-bit
+
+161
+00:12:50,520 --> 00:12:56,400
+prediction usually changes its mind too quickly, leading to more mispredictions.
+
+162
+00:12:56,400 --> 00:13:01,240
+One-bit prediction is a similar structure except now each entry of the BHT is a two-bit
+
+163
+00:13:01,240 --> 00:13:03,200
+saturating counter.
+
+164
+00:13:03,200 --> 00:13:09,160
+This can be thought of as an FSM with four states, strong not taken and strong taken,
+
+165
+00:13:09,160 --> 00:13:13,760
+and weak not taken and weak taken.
+
+166
+00:13:13,760 --> 00:13:18,640
+If the prediction is currently strong taken or strong not taken, then we need to mispredict
+
+167
+00:13:18,640 --> 00:13:21,080
+twice in order to change our minds.
+
+168
+00:13:21,080 --> 00:13:25,760
+If we only mispredict once from a strong position, then we'll stick to our current prediction
+
+169
+00:13:25,760 --> 00:13:31,040
+but we're less confident about it.
+
+170
+00:13:31,040 --> 00:13:37,600
+In this table, capital letters indicate strong prediction and lowercase letter indicates
+
+171
+00:13:37,600 --> 00:13:43,640
+weak prediction.
+
+172
+00:13:43,640 --> 00:13:47,840
+Now going back to our example program, on the first iteration, let's say that our initial
+
+173
+00:13:47,840 --> 00:13:51,680
+prediction is weak not taken.
+
+174
+00:13:51,680 --> 00:13:54,800
+Then we find that the branch is actually taken.
+
+175
+00:13:54,800 --> 00:13:58,760
+So then we update our BHT entry to weak taken.
+
+176
+00:13:58,760 --> 00:14:03,240
+If the branch is taken again, that's now two times in a row.
+
+177
+00:14:03,240 --> 00:14:06,200
+We update our BHT entry to strong taken.
+
+178
+00:14:06,200 --> 00:14:10,760
+This yields a better misprediction rate since this program seems to be biased towards being
+
+179
+00:14:10,760 --> 00:14:12,160
+taken.
+
+180
+00:14:12,160 --> 00:14:15,880
+As we continue to execute the program, our two-bit prediction will fluctuate between
+
+181
+00:14:15,880 --> 00:14:25,640
+strong taken and weak taken, and it'll still be right most of the time.
+
+182
+00:14:25,640 --> 00:14:28,240
+Our last topic for this lecture is exceptions.
+
+183
+00:14:28,240 --> 00:14:31,800
+You may have seen exceptions when programming.
+
+184
+00:14:31,800 --> 00:14:37,200
+Perhaps it was arithmetic overflow or an unsupported instruction attempts to execute.
+
+185
+00:14:37,200 --> 00:14:42,440
+Other exceptions include page faults while accessing memory or an IO device had a status
+
+186
+00:14:42,440 --> 00:14:43,560
+change.
+
+187
+00:14:43,560 --> 00:14:48,080
+These surprises are called exceptions because they're not usual or common.
+
+188
+00:14:48,080 --> 00:14:52,520
+You can think of them as surprise procedure calls that get invoked at any time while executing
+
+189
+00:14:52,520 --> 00:14:56,160
+a program.
+
+190
+00:14:56,160 --> 00:15:00,360
+There are two types of exceptions, interrupts and traps.
+
+191
+00:15:00,360 --> 00:15:05,440
+Interrupts happen outside from the processor due to an event from IO devices.
+
+192
+00:15:05,440 --> 00:15:11,080
+Some IO devices may be polled instead of waiting for interrupts if they happen often enough.
+
+193
+00:15:11,080 --> 00:15:15,480
+Interrupts happen synchronously as a result of instructions at execution.
+
+194
+00:15:15,480 --> 00:15:19,840
+The hardware performs some preliminary actions, but then will rely on software to deal with
+
+195
+00:15:19,840 --> 00:15:21,600
+the exception.
+
+196
+00:15:21,600 --> 00:15:27,040
+The operating system implements a handler for each type of exception, which is placed at
+
+197
+00:15:27,040 --> 00:15:33,000
+a predefined memory location that is agreed upon by hardware and software.
+
+198
+00:15:33,000 --> 00:15:37,480
+In our MIPS architecture, the handler code for arithmetic overflow is located at the
+
+199
+00:15:37,480 --> 00:15:39,360
+address shown.
+
+200
+00:15:39,360 --> 00:15:50,360
+Instances ECE-552 will only focus on the hardware's role in exception handling.
+
+201
+00:15:50,360 --> 00:15:54,320
+MIPS performs three actions when an exception is detected.
+
+202
+00:15:54,320 --> 00:15:57,960
+First, it records the cause of the exception.
+
+203
+00:15:57,960 --> 00:16:04,080
+Second, it saves the PC of the instruction that caused the exception into the EPC register.
+
+204
+00:16:04,080 --> 00:16:10,200
+Finally, it writes the exception handler's PC to the PC.
+
+205
+00:16:10,200 --> 00:16:15,560
+This is essentially a special and surprising jump and link through though the return address
+
+206
+00:16:15,560 --> 00:16:23,080
+will be the EPC not register RA.
+
+207
+00:16:23,080 --> 00:16:27,640
+Here's our latest processor diagram before we add the changes required to support arithmetic
+
+208
+00:16:27,640 --> 00:16:30,560
+overflow exceptions.
+
+209
+00:16:30,560 --> 00:16:34,680
+Let's introduce two special registers, cause and EPC.
+
+210
+00:16:34,680 --> 00:16:39,200
+EPC will be set to the PC of the instruction that overflowed which is currently in the
+
+211
+00:16:39,200 --> 00:16:41,200
+execute stage.
+
+212
+00:16:41,200 --> 00:16:46,320
+These registers are not in the register file but are baked into the architecture.
+
+213
+00:16:46,320 --> 00:16:52,800
+Next, we need to flush the instruction from the pipeline as well as those in the decode
+
+214
+00:16:52,800 --> 00:16:54,760
+and fetch stages.
+
+215
+00:16:54,760 --> 00:16:58,720
+We're going to be returning from the handler and re-executing the function that caused the
+
+216
+00:16:58,720 --> 00:17:03,960
+overflow so without flushing we'd be executing those instructions twice.
+
+217
+00:17:03,960 --> 00:17:08,560
+This is the first time we've had to flush these two stages so we'll need muxes to clear
+
+218
+00:17:08,560 --> 00:17:12,840
+control signals just as we originally did with branching.
+
+219
+00:17:12,840 --> 00:17:19,360
+Lastly, we set the PC to the predefined exception handler address for arithmetic overflow.
+
+220
+00:17:19,360 --> 00:17:30,440
+Now our processor can catch exceptions and delegate the handling to software.
+
+221
+00:17:30,440 --> 00:17:34,520
+As we typically do, let's wrap up with some exercises to check our understanding.
+
+222
+00:17:34,520 --> 00:17:37,680
+Let's look at our five stage pipeline.
+
+223
+00:17:37,680 --> 00:17:44,960
+Perhaps when we only account for data hazards in our program, our average CPI is 1.2.
+
+224
+00:17:44,960 --> 00:17:50,560
+Now let's say our branches are resolved in the decode stage and that 30% of our instructions
+
+225
+00:17:50,560 --> 00:17:55,400
+are branches and 60% of them are taken.
+
+226
+00:17:55,400 --> 00:18:00,640
+Now the team is considering two options for resolving control hazards in our processor.
+
+227
+00:18:00,640 --> 00:18:05,920
+The first option is to implement a predict not taken policy which yields a clock period
+
+228
+00:18:05,920 --> 00:18:10,160
+of 300 microseconds.
+
+229
+00:18:10,160 --> 00:18:15,880
+The second option is to implement a branch predictor that achieves 90% accuracy but has
+
+230
+00:18:15,880 --> 00:18:21,040
+a higher clock period of 325 microseconds.
+
+231
+00:18:21,040 --> 00:18:23,520
+So pause the video and work it out.
+
+232
+00:18:23,520 --> 00:18:29,120
+Hint, compute the adjusted CPI for each and then use the clock period to determine the
+
+233
+00:18:29,120 --> 00:18:39,400
+new IPC.
+
+234
+00:18:39,400 --> 00:18:43,720
+In the first option, branches are resolved in the decode stage so we only have a one
+
+235
+00:18:43,720 --> 00:18:47,840
+cycle flush penalty when we mispredict.
+
+236
+00:18:47,840 --> 00:18:53,400
+Since 30% of the instructions are branches and 60 of them will incur this one cycle penalty,
+
+237
+00:18:53,400 --> 00:19:06,840
+we get a new CPI of 1.38 which at 300 microseconds results in 2,415 instructions per second.
+
+238
+00:19:06,840 --> 00:19:14,080
+For option 2, we only have a one cycle flush penalty on 10% of our branches barely bumping
+
+239
+00:19:14,080 --> 00:19:17,920
+our CPI to 1.23.
+
+240
+00:19:17,920 --> 00:19:22,400
+If we calculate the new wall clock time for an instruction, we can see that we can process
+
+241
+00:19:22,400 --> 00:19:29,800
+2,501 instructions per second or 86 more instructions than the basic predictor.
+
+242
+00:19:29,800 --> 00:19:35,840
+If your crucial workloads have 30% branches, the branch predictor should be one place that's
+
+243
+00:19:35,840 --> 00:19:43,000
+high on your list to research.
+
+244
+00:19:43,000 --> 00:19:45,400
+Now let's review branch delay slots.
+
+245
+00:19:45,400 --> 00:19:49,040
+Given this program, we put a no-op in the branch delay slot.
+
+246
+00:19:49,040 --> 00:19:52,200
+We prefer to keep our processor fully utilized.
+
+247
+00:19:52,200 --> 00:19:55,460
+Which of these instructions are legal to replace the no-op with?
+
+248
+00:19:55,460 --> 00:20:02,560
+You could ignore potential exceptions for this exercise.
+
+249
+00:20:02,560 --> 00:20:05,760
+Does this reordering result in a legal substitution?
+
+250
+00:20:05,760 --> 00:20:10,360
+Pause the video and reason about any data hazards.
+
+251
+00:20:10,360 --> 00:20:17,120
+Yeah, this is legal.
+
+252
+00:20:17,120 --> 00:20:22,680
+The branch on equal doesn't read the subtracts result and it needs to be executed anyway
+
+253
+00:20:22,680 --> 00:20:27,760
+so the program would still produce the same result.
+
+254
+00:20:27,760 --> 00:20:29,760
+How about the NOR instruction?
+
+255
+00:20:29,760 --> 00:20:33,040
+Does here and look for hazards?
+
+256
+00:20:33,040 --> 00:20:40,880
+Nope, this is not legal since there was a raw dependence on register S1 between the
+
+257
+00:20:40,880 --> 00:20:43,800
+NOR and branch equal instruction.
+
+258
+00:20:43,800 --> 00:20:48,560
+The branch needs the new value of S1 for its comparison and without this the program wouldn't
+
+259
+00:20:48,560 --> 00:20:56,600
+produce the same results.
+
+260
+00:20:56,600 --> 00:20:59,280
+How about the add instruction after the branch?
+
+261
+00:20:59,280 --> 00:21:02,320
+Can we shift that up into the branch delay slot?
+
+262
+00:21:02,320 --> 00:21:06,320
+Pause here.
+
+263
+00:21:06,320 --> 00:21:12,400
+And no, this is also not legal.
+
+264
+00:21:12,400 --> 00:21:17,840
+In the original program, the add was only executed if the branch was not taken.
+
+265
+00:21:17,840 --> 00:21:21,520
+Since it's now in a branch delay slot, it will get executed every time.
+
+266
+00:21:21,520 --> 00:21:23,400
+Also, it gets worse.
+
+267
+00:21:23,400 --> 00:21:29,240
+If the branch is taken, T1 now reads a different value of S1 in the OR instruction because
+
+268
+00:21:29,240 --> 00:21:37,320
+the add instruction was executed.
+
+269
+00:21:37,320 --> 00:21:38,560
+Okay, last one.
+
+270
+00:21:38,560 --> 00:21:39,760
+How about this?
+
+271
+00:21:39,760 --> 00:21:44,000
+Can we move the OR from T1 up to the main line?
+
+272
+00:21:44,000 --> 00:21:51,760
+Please pause again.
+
+273
+00:21:51,760 --> 00:21:53,360
+Actually, yes, this is legal.
+
+274
+00:21:53,360 --> 00:21:58,360
+This creates a right after right anti-dependence hazard because if we do not take the branch,
+
+275
+00:21:58,640 --> 00:22:02,880
+then add is going to overwrite S4 anyway.
+
+276
+00:22:02,880 --> 00:22:09,720
+In a way, this means that OR is a know-op if we do not branch, but it's useful work
+
+277
+00:22:09,720 --> 00:22:11,280
+if we do.
+
+278
+00:22:11,280 --> 00:22:14,120
+So it's not a win for both branch possibilities.
+

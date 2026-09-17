@@ -1,0 +1,676 @@
+1
+00:00:00,000 --> 00:00:08,000
+With each lecture, we get closer and closer to understand how the modern processor you're using to watch this video operates.
+
+2
+00:00:08,000 --> 00:00:16,000
+Let's take a big step forward by looking at superscalar and out-of-order execution.
+
+3
+00:00:16,000 --> 00:00:27,000
+So far, our processor implementation has been limited to an in-order scalar pipeline with at most one instruction per stage at any given cycle.
+
+4
+00:00:27,000 --> 00:00:31,000
+There are three key limitations to this approach.
+
+5
+00:00:31,000 --> 00:00:39,000
+First, the upper bound of our throughput is an IPC of one, or in other words, we can't get a CPI of less than one.
+
+6
+00:00:39,000 --> 00:00:47,000
+And that's the ideal case. We've seen data and control hazards prevent our performance from reaching an IPC of one anyway.
+
+7
+00:00:47,000 --> 00:00:59,000
+Second, our pipeline has inefficient utilization because it enforces that all instructions, no matter what operation is being performed, to go through all stages despite having varying latencies.
+
+8
+00:00:59,000 --> 00:01:10,000
+For example, add instructions are quick and do nothing useful in the memory stage, but they need to go through it anyway to make sure every instruction does everything in order.
+
+9
+00:01:10,000 --> 00:01:21,000
+Third, our in-order pipeline has a very rigid stall policy. If one instruction is forced to stall, then all younger or newer instructions must also stall.
+
+10
+00:01:21,000 --> 00:01:28,000
+Even if the younger instructions are not dependent, we still need to propagate the stall.
+
+11
+00:01:28,000 --> 00:01:32,000
+In this lecture, we'll discuss the key concepts for solving these problems.
+
+12
+00:01:32,000 --> 00:01:42,000
+To achieve better performance and reach IPCs greater than one, we'll discuss superscalar processors, which are able to execute more than one instruction in a given cycle.
+
+13
+00:01:42,000 --> 00:01:54,000
+Second, we'll see how modern processors use a combination of diversified, specialized pipelines and out-of-order execution to get the most efficient use of the processor functional units.
+
+14
+00:01:55,000 --> 00:02:05,000
+With out-of-order execution, independent instructions are able to bypass each other since the program's output would still be correct if they were executed out of order.
+
+15
+00:02:09,000 --> 00:02:17,000
+At a high level, superscalar processor can be defined as a processor where more than one instruction can be executed in a cycle.
+
+16
+00:02:17,000 --> 00:02:30,000
+The simplest implementation of this is a static multi-issue pipeline. As shown here, we simply replicate the pipeline into multiple lanes, allowing multiple instructions to exist in the same stage at the same time.
+
+17
+00:02:30,000 --> 00:02:38,000
+Potentially with help from the compiler, this allows us to execute more instructions at once as long as they are not dependent on each other.
+
+18
+00:02:38,000 --> 00:02:51,000
+This is a simplified example of a dual-issue pipeline where one lane is dedicated to ALU and branch instructions, while the other lane is dedicated to loads and stores.
+
+19
+00:02:51,000 --> 00:03:01,000
+The compiler can take advantage of this by reordering the instructions in the program to alternate between ALU and memory operations so that we can approach an IPC of two.
+
+20
+00:03:01,000 --> 00:03:14,000
+Though effective, note that such an approach puts a lot of pressure on the instruction memory, as well as on the register file, requiring additional ports to support parallel access, which can be expensive in hardware.
+
+21
+00:03:17,000 --> 00:03:22,000
+The modern approach to superscalar processors utilizes out-of-order execution.
+
+22
+00:03:22,000 --> 00:03:36,000
+At a high level, the idea is to split up the pipeline into in-order and out-of-order regions. The front end, which consists of fetching and decoding the instruction, stays as our typical in-order pipeline.
+
+23
+00:03:36,000 --> 00:03:46,000
+But when the instructions get into the execute stage, they can do so out-of-order, in case one instruction has to wait longer for its operands than the other instructions.
+
+24
+00:03:46,000 --> 00:04:01,000
+This allows independent instructions to bypass each other. This also enables separate functional unit pipelines for the different operations, since some instructions, say loads, can take more cycles to execute than others.
+
+25
+00:04:01,000 --> 00:04:06,000
+We'll get into the new terminology in this lecture and next.
+
+26
+00:04:07,000 --> 00:04:18,000
+We'll describe the implementation of a simple out-of-order processor step-by-step. First, in this lecture, we'll discuss the scoreboard, a mechanism for enabling out-of-order execution.
+
+27
+00:04:18,000 --> 00:04:29,000
+Then we'll discuss the concept of register renaming, which is a prerequisite for implementing the MIPS R10K processor that we'll discuss in the next lecture.
+
+28
+00:04:29,000 --> 00:04:37,000
+So first, as a motivation, given our typical in-order five-stage pipeline, what's happening in this program at cycle four?
+
+29
+00:04:37,000 --> 00:04:44,000
+A couple things. First, we have a RAW hazard between the load and the add instructions.
+
+30
+00:04:44,000 --> 00:04:57,000
+In this example, say the load instruction misses, which now forces the add to stall. This is as intended. RAW dependencies are true dependencies, so it's an unavoidable problem.
+
+31
+00:04:57,000 --> 00:05:02,000
+The add cannot execute before it has one of its arguments.
+
+32
+00:05:02,000 --> 00:05:10,000
+But the second thing that's happening is that the stall is propagating to the subtract instruction, which is not dependent on the load nor the add.
+
+33
+00:05:10,000 --> 00:05:16,000
+Yet it has to stall because it's not allowed to proceed through the rest of the pipeline.
+
+34
+00:05:16,000 --> 00:05:25,000
+This is a form of structural hazard in that the inputs to the subtract instruction are already available in registers, but it's forced to stall anyway.
+
+35
+00:05:25,000 --> 00:05:32,000
+So how can we address this?
+
+36
+00:05:32,000 --> 00:05:47,000
+This leads to the concept of out-of-order execution. Though it can be implemented in many ways, the high-level idea is to perform the fetching and decoding in order, then push instructions into an instruction buffer where they wait for the operands to be ready.
+
+37
+00:05:47,000 --> 00:06:05,000
+At each cycle, each instruction checks its operands, and if it has a RAW dependence with an instruction that's still executing, then it needs to wait longer. Otherwise, it's dynamically scheduled onto the appropriate functional unit.
+
+38
+00:06:05,000 --> 00:06:16,000
+Because instruction operands become available in any arbitrary order, this approach allows instructions to move ahead in the pipeline if their operands are ready before an older instruction.
+
+39
+00:06:16,000 --> 00:06:26,000
+Note that in this course, we'll only be looking at register data dependencies and ignoring memory dependencies.
+
+40
+00:06:26,000 --> 00:06:38,000
+Let's walk through a toy example. Consider the program shown below with four instructions. The bottom shows when these instructions are able to execute based on the readiness of their operands.
+
+41
+00:06:38,000 --> 00:06:56,000
+The first row of the ready table is time zero. At time zero, the ad's operands are both ready and thus the ad is able to execute. Then, register T4, which the ad is producing, becomes ready upon the next time step thanks to a forwarding path.
+
+42
+00:06:56,000 --> 00:07:10,000
+Not only the subtract instruction is ready to execute, but so is the add-i instruction. Even though the add-i comes after the or instruction, it can be executed immediately because all of its operands are ready.
+
+43
+00:07:10,000 --> 00:07:23,000
+Then on the last time step, the or instruction can be executed only after the subtract instruction has executed due to the dependence with register T5.
+
+44
+00:07:23,000 --> 00:07:32,000
+An instruction scheduler will rearrange instructions to enable rapid issuing for instruction while still making sure that the program produces the correct output.
+
+45
+00:07:32,000 --> 00:07:46,000
+Note the important distinction between the terms issue and schedule. Issue is the absolute time in which an instruction executes while schedule is the ordering at which instructions execute.
+
+46
+00:07:46,000 --> 00:08:03,000
+Performing instruction scheduling requires knowledge of the pipeline as well as program dependencies. It also requires a large scope to be effective, that is, it needs a large window of instructions in order to find enough independent instructions to execute.
+
+47
+00:08:03,000 --> 00:08:14,000
+Instruction scheduling comes in two flavors. Static scheduling is when the compiler performs the reordering, while dynamic scheduling is when the hardware performs the reordering.
+
+48
+00:08:14,000 --> 00:08:24,000
+Abstract from the software. Since we're computer architects, we'll be focusing on the latter.
+
+49
+00:08:24,000 --> 00:08:38,000
+We'll now discuss the scoreboard implementation, which is a simple out-of-order processor implementation. Scoreboard introduces two new stages. The first is dispatch, which is an in-order stage after fetch and decode.
+
+50
+00:08:38,000 --> 00:08:52,000
+The goal is to allocate a slot in the scoreboard, which is effectively the instruction buffer. If there is no space, then the instruction must stall at this stage and just like our five-stage pipeline, stalling here propagates to younger instructions.
+
+51
+00:08:52,000 --> 00:09:04,000
+The second new stage is issue, which is an out-of-order stage after dispatch. This is where the scheduler selects instructions from the scoreboard to execute as soon as their operands are ready.
+
+52
+00:09:04,000 --> 00:09:18,000
+Since this stage is out-of-order, if an instruction needs to wait because of an RAW dependence, it doesn't block all younger instructions behind it. They can bypass this instruction if their operands are ready.
+
+53
+00:09:18,000 --> 00:09:32,000
+Note the important distinction between stalling and waiting. In-order stages must stall and block all younger instructions, while out-of-order stages simply wait and allow younger instructions to bypass.
+
+54
+00:09:32,000 --> 00:09:55,000
+This organization now allows us to integrate a diverse set of functional units for the different operations that our ISA supports. For example, here's what it looks like to integrate floating-point operations in our pipeline. We simply append them to the back end, that is, the out-of-order execution stages of the pipeline.
+
+55
+00:09:55,000 --> 00:10:22,000
+So now let's look at our pipeline stages given the scoreboard implementation. Fetch and decode are identical to before. The dispatch stage is an in-order stage. Here, if either we have a structural hazard where there is no scoreboard entry available, or we have a right-after-right hazard with an older instruction that's still currently in flight, then we need to stall until the older instruction has completed right back.
+
+56
+00:10:22,000 --> 00:10:35,000
+Otherwise, there's no problem and the instruction is dispatched onto a scoreboard entry. Note that we'll assume that scoreboard entries are coupled to specific functional units, as we'll see in the next example.
+
+57
+00:10:36,000 --> 00:10:58,000
+Then we move to the out-of-order back end of the processor. The issue stage is where we check the instructions operands. If a raw dependence has not yet been resolved, that is, the writer instruction has not yet performed right back, then we need to wait. Only when all operands are ready do we read the register file and proceed to the corresponding functional unit.
+
+58
+00:10:59,000 --> 00:11:09,000
+The execute stage now performs whatever operation we want, ALU, branch, load, store, and these can all vary in latency.
+
+59
+00:11:09,000 --> 00:11:24,000
+We then move on to the right back stage. Here, if we have a WAR hazard with an older instruction that hasn't yet read its operands, we need to wait. Otherwise, we would overwrite the value they want with our future value leading to an incorrect program.
+
+60
+00:11:24,000 --> 00:11:33,000
+Once the older instruction has completely issued, we can complete right back by writing the register into the register file and freeing up our scoreboard entry.
+
+61
+00:11:33,000 --> 00:11:42,000
+Generally, we assume that RF bypassing is implemented between the right back and issue stages.
+
+62
+00:11:42,000 --> 00:11:51,000
+Let's walk through an example program. The top is the pipeline diagram and the bottom is the current state to the scoreboard at this moment in time.
+
+63
+00:11:51,000 --> 00:11:58,000
+The vertical slash line in the middle diagram shows the current point in time.
+
+64
+00:11:58,000 --> 00:12:03,000
+Assume that branches use a predict not taken policy and they're resolved in the execute stage.
+
+65
+00:12:03,000 --> 00:12:10,000
+Also, assume that all instructions take one cycle to execute except for the load instruction, which takes five cycles.
+
+66
+00:12:10,000 --> 00:12:20,000
+Okay, here we go. The first two cycles are straightforward. Just as in the simple five stage pipeline, the load and branch go through fetch and decode.
+
+67
+00:12:20,000 --> 00:12:34,000
+Now at the end of cycle three, two things have happened. The load instruction has successfully dispatched into the scoreboard occupying the entry dedicated to the load functional unit.
+
+68
+00:12:34,000 --> 00:12:43,000
+It specifies its input register operands, which is just register s zero in this case, and the plus sign indicates that the register is ready to be read.
+
+69
+00:12:43,000 --> 00:12:54,000
+Meanwhile, the branch instruction has moved to decode and the next instruction has been fetched due to the predict not taken policy.
+
+70
+00:12:54,000 --> 00:13:02,000
+In cycle four, the load instruction checks to see that its operands are ready and thus issues to the load functional unit to start executing.
+
+71
+00:13:02,000 --> 00:13:15,000
+The branches dispatched onto the scoreboard. This time one register operand is not ready register t zero since it is currently produced by the load instruction.
+
+72
+00:13:15,000 --> 00:13:20,000
+Now the load begins executing and recall that it'll take five cycles to complete.
+
+73
+00:13:20,000 --> 00:13:29,000
+Meanwhile, the branch instruction is in the issue stage waiting for t zero. Since it's still not ready, it'll have to wait a cycle.
+
+74
+00:13:29,000 --> 00:13:37,000
+The store instruction is dispatched and both of its operands are ready to go.
+
+75
+00:13:37,000 --> 00:13:43,000
+The load continues to execute and because of the raw dependence, the branch continues to wait in the issue stage.
+
+76
+00:13:43,000 --> 00:13:51,000
+The store, though, is able to issue successfully at the end of cycle six since all of its registers are ready.
+
+77
+00:13:51,000 --> 00:13:56,000
+So it goes ahead and reads them from the register file and prepares to execute.
+
+78
+00:13:56,000 --> 00:14:03,000
+Meanwhile, the subtract instruction has dispatched onto the scoreboard.
+
+79
+00:14:03,000 --> 00:14:12,000
+As the load and branch stay the same, the store instruction is already allowed to execute by passing the branch instruction before it.
+
+80
+00:14:12,000 --> 00:14:15,000
+The subtract instruction then moves on to issue.
+
+81
+00:14:15,000 --> 00:14:21,000
+But this time the add I instruction has entered the dispatch stage but cannot successfully dispatch.
+
+82
+00:14:21,000 --> 00:14:27,000
+This is because of a write after write hazard on register t zero with the load instruction.
+
+83
+00:14:27,000 --> 00:14:32,000
+The reason we have to stall is because we don't know how much longer the load will take.
+
+84
+00:14:32,000 --> 00:14:39,000
+If we let the add I instruction go ahead now, it may end up writing to the register file even earlier than the load which would be wrong
+
+85
+00:14:39,000 --> 00:14:47,000
+since when the load finally finishes, it would overwrite with an older value. Thus, we need to stall.
+
+86
+00:14:47,000 --> 00:14:55,000
+The store now fully completes by the end of cycle eight. In the write back stage, it simply removes itself from the scoreboard.
+
+87
+00:14:55,000 --> 00:15:02,000
+Meanwhile, the subtract instruction has executed and the add I instruction continues to stall in dispatch.
+
+88
+00:15:02,000 --> 00:15:11,000
+And since dispatch is an in order stage, this stall propagates to the store instruction after it.
+
+89
+00:15:11,000 --> 00:15:21,000
+Now at the end of cycle nine, two things happen. The load instruction has finished its five cycle execution and the subtract enters the write back stage
+
+90
+00:15:21,000 --> 00:15:27,000
+but actually can't write back yet due to a WA our dependence with the branch instruction.
+
+91
+00:15:27,000 --> 00:15:35,000
+Since the branch hasn't issued yet and thus hasn't read register s one yet, the subtract can't overwrite it yet and thus has to wait.
+
+92
+00:15:35,000 --> 00:15:40,000
+That's why it hasn't deallocated itself from the scoreboard.
+
+93
+00:15:41,000 --> 00:15:48,000
+Finally, in cycle 10, the load word writes back to T zero and deallocates itself from the scoreboard.
+
+94
+00:15:48,000 --> 00:15:56,000
+Due to RF bypassing, the branch instruction is able to receive the new value of T zero immediately and successfully issues in the cycle.
+
+95
+00:15:56,000 --> 00:16:05,000
+The subtract though still can't write back yet because if it did, then RF bypassing would feed its value to the branch, which is incorrect.
+
+96
+00:16:05,000 --> 00:16:13,000
+So it needs to wait another cycle. On the other hand, the add I instruction is now able to successfully dispatch onto the scoreboard.
+
+97
+00:16:13,000 --> 00:16:22,000
+Since it's right after right dependence is now resolved, that is the load has now completed right back.
+
+98
+00:16:22,000 --> 00:16:26,000
+And at the end of cycle 11, the branch has begun executing.
+
+99
+00:16:26,000 --> 00:16:32,000
+Thus the WA our hazard is resolved and the subtract can successfully complete right back.
+
+100
+00:16:32,000 --> 00:16:41,000
+Meanwhile, the add I issues and the second store instruction is able to dispatch.
+
+101
+00:16:41,000 --> 00:16:46,000
+After all instructions have completed the pipeline diagram looks like this.
+
+102
+00:16:46,000 --> 00:16:54,000
+Though the scoreboard implementation has enabled out of order execution, there are two key drawbacks highlighted in this example.
+
+103
+00:16:54,000 --> 00:16:58,000
+First, there's a lot of waiting installing due to false dependences.
+
+104
+00:16:58,000 --> 00:17:09,000
+For example, the subtract instruction waiting in right back for a while due to a WR hazard and the add I instruction installed in dispatch for a while due to a right after right hazard.
+
+105
+00:17:09,000 --> 00:17:14,000
+These are false dependences and should fundamentally not inhibit performance.
+
+106
+00:17:14,000 --> 00:17:23,000
+But in this case, we need to enforce these dependencies otherwise the program result may be incorrect.
+
+107
+00:17:23,000 --> 00:17:26,000
+The second drawback is dealing with speculation.
+
+108
+00:17:26,000 --> 00:17:29,000
+What if the branch actually ended up being taken?
+
+109
+00:17:29,000 --> 00:17:34,000
+We wouldn't find out until the end of cycle 11 after the branch has executed.
+
+110
+00:17:34,000 --> 00:17:42,000
+But by then we may have already made global changes like in cycle seven, our store instruction has gone ahead and modified memory.
+
+111
+00:17:42,000 --> 00:17:47,000
+But because the branch ended up being taken, we technically shouldn't have touched memory.
+
+112
+00:17:47,000 --> 00:17:56,000
+We need to be able to revert back to a state as if none of the speculative instructions ever executed.
+
+113
+00:17:56,000 --> 00:18:03,000
+These drawbacks lead us to the MIPS R10K design, which we'll be discussing in detail in the next lecture.
+
+114
+00:18:03,000 --> 00:18:12,000
+For now, we'll go over the high level concept of register renaming and speculation.
+
+115
+00:18:12,000 --> 00:18:22,000
+So now that instructions can execute out of order, WAR and WAW dependencies become hazards too, unlike in our simple five stage pipeline.
+
+116
+00:18:22,000 --> 00:18:25,000
+All right, let's motivate this with an example.
+
+117
+00:18:25,000 --> 00:18:28,000
+In this program, the load instruction has a cache miss.
+
+118
+00:18:28,000 --> 00:18:32,000
+And as we know, this may take a while to fetch data.
+
+119
+00:18:32,000 --> 00:18:40,000
+It would be great for us to allow instructions to bypass it and execute in order to hide the performance penalty of the cache miss.
+
+120
+00:18:40,000 --> 00:18:46,000
+So if you look at the OR and the subtract instruction, you'll see that these are not truly dependent on the load.
+
+121
+00:18:46,000 --> 00:18:57,000
+In essence, the programmer loaded T1 for use in the add instruction, and then they went to reuse the register, but not the value in that register.
+
+122
+00:18:57,000 --> 00:19:05,000
+In an ideal world, we'd move them both to up before the load instruction in order to improve performance.
+
+123
+00:19:05,000 --> 00:19:14,000
+But because of the false dependencies with register T1, doing this would now lead to the wrong result by the time the branch is executed.
+
+124
+00:19:14,000 --> 00:19:17,000
+To deal with this, we apply register renaming.
+
+125
+00:19:17,000 --> 00:19:20,000
+The idea is to change the register names.
+
+126
+00:19:20,000 --> 00:19:31,000
+That is, think of our ISAs registers like T1, S0, and so on as simple names or labels, and not as physical storage locations in the processor.
+
+127
+00:19:31,000 --> 00:19:38,000
+By decoupling these notions, we can actually have more storage locations than names, and we can have multiple versions of the same name.
+
+128
+00:19:38,000 --> 00:19:41,000
+We then introduce two new structures.
+
+129
+00:19:41,000 --> 00:19:51,000
+The map table provides a mapping of names or architectural registers to the storage location or physical register that holds the most recent copy of it.
+
+130
+00:19:51,000 --> 00:20:02,000
+Similar to virtual memory, you can think of architectural registers as virtual registers that the program refers to, but in reality they are mapped to arbitrary physical registers.
+
+131
+00:20:02,000 --> 00:20:08,000
+The second structure is a free list with tracks which physical registers are currently unallocated.
+
+132
+00:20:08,000 --> 00:20:13,000
+Now the procedure for each instruction is as follows.
+
+133
+00:20:14,000 --> 00:20:22,000
+First, for each source architectural register operand, we consult the map table and identify the physical register that has the most recent copy.
+
+134
+00:20:22,000 --> 00:20:31,000
+Then, for the destination architectural register, we allocate a new physical register from the free list and record this new mapping in the map table.
+
+135
+00:20:31,000 --> 00:20:39,000
+Now any new instructions that want to read this architectural register will look for this new physical register.
+
+136
+00:20:39,000 --> 00:20:45,000
+Upon performing right back, we can safely deallocate the old physical register back into the free list.
+
+137
+00:20:45,000 --> 00:20:53,000
+This is the physical register that was mapped before we placed it in step two.
+
+138
+00:20:53,000 --> 00:21:02,000
+Now that we know the register renaming process, I encourage you to go through this example program and, given the current states of the map table and free list,
+
+139
+00:21:02,000 --> 00:21:09,000
+rename the program by replacing all of its architectural registers with physical ones.
+
+140
+00:21:09,000 --> 00:21:19,000
+Please pause the video and take some time to go through it.
+
+141
+00:21:19,000 --> 00:21:23,000
+Let's go through how each instruction is renamed one by one.
+
+142
+00:21:23,000 --> 00:21:26,000
+First, always start with the source registers.
+
+143
+00:21:26,000 --> 00:21:33,000
+So the add-i is reading architectural register t0, which is currently mapped to physical register p1.
+
+144
+00:21:33,000 --> 00:21:37,000
+Then the add-i instruction is writing to destination register t0.
+
+145
+00:21:37,000 --> 00:21:45,000
+Instead of reusing p1, we instead rename the register by grabbing p5 from the free list and replacing p1 in the map table.
+
+146
+00:21:45,000 --> 00:21:57,000
+So now, what's happening is the add-i is reading its input from p1, which holds the original value of t0, but then is writing its output to a brand new location p5.
+
+147
+00:21:57,000 --> 00:22:04,000
+The point of this is to preserve the value currently in p1 just in case some other instruction still needs to use it.
+
+148
+00:22:04,000 --> 00:22:12,000
+And we'll see why that's important for WAR and WAW hazards soon.
+
+149
+00:22:12,000 --> 00:22:20,000
+Next is the load. So starting with its inputs, we consult the map table and find that s0 currently maps to p6.
+
+150
+00:22:20,000 --> 00:22:30,000
+Then the load writes to register t1. We need to rename it by grabbing p8 from the free list and overwriting p3 in the map table.
+
+151
+00:22:30,000 --> 00:22:35,000
+Continuing the process for the rest of the instructions leads us to this final state of the map table,
+
+152
+00:22:35,000 --> 00:22:41,000
+and now all of the instructions have been renamed to refer to physical registers instead of architectural ones.
+
+153
+00:22:41,000 --> 00:22:50,000
+Now, as we wanted to do before, we'd like to move the OR and subtract instructions up before the load since there is no true dependence with the load.
+
+154
+00:22:50,000 --> 00:22:55,000
+We could not do that before.
+
+155
+00:22:55,000 --> 00:22:59,000
+But now that we've renamed the registers, all of the false dependencies are gone.
+
+156
+00:22:59,000 --> 00:23:06,000
+The OR and subtract instructions can now be safely moved up without compromising the correctness of the program.
+
+157
+00:23:06,000 --> 00:23:17,000
+If you examine the program correctly, you'll find that all WAAR and WAW dependencies are gone, and only true RAW dependencies remain.
+
+158
+00:23:17,000 --> 00:23:27,000
+That is the power of register renaming, and why as a programmer you can reuse t0 frequently without slowing down your program.
+
+159
+00:23:27,000 --> 00:23:36,000
+The only caveat is that even though the instructions can be executed out of order freely, we still need to perform right back in order.
+
+160
+00:23:36,000 --> 00:23:44,000
+This allows instructions to release the old physical registers back to the free list in a safe order.
+
+161
+00:23:44,000 --> 00:23:47,000
+The last topic of this lecture is speculation.
+
+162
+00:23:47,000 --> 00:23:57,000
+Broadly, speculation refers to the execution of instructions before confirming that they're supposed to be executed or before confirming that their operands are correct.
+
+163
+00:23:57,000 --> 00:24:04,000
+An example that we've discussed before is branch prediction, which speculates the instructions along the predicted control path.
+
+164
+00:24:05,000 --> 00:24:14,000
+Though outside the scope of this course, other forms include memory dependence prediction, which speculates that a load is not reading the same address as an earlier store.
+
+165
+00:24:14,000 --> 00:24:25,000
+Thus, we let the load bypass the store and value prediction, which speculates that the operand value of instruction so that it doesn't need to wait for its writer to complete.
+
+166
+00:24:25,000 --> 00:24:31,000
+The challenge is that precise state needs to be maintained upon mis-speculation.
+
+167
+00:24:31,000 --> 00:24:41,000
+That is, we need to make sure we haven't exposed any changes to global state and need to revert back the processor as if the younger instructions never executed.
+
+168
+00:24:41,000 --> 00:24:46,000
+Note that this is actually the same procedure for responding to exceptions and interrupts.
+
+169
+00:24:46,000 --> 00:24:53,000
+Our simple scoreboard implementation does not support this. We'll talk about how the MIPS R10K does in the next lecture.
+

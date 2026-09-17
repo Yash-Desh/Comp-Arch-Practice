@@ -12,14 +12,14 @@ is not meant to be maintained.
 | --- | --- |
 | `README.md` | One-line description of the repo |
 | `AGENTS.md` | This file. `CLAUDE.md` is a symlink to it, so both names resolve to the same instructions |
-| `ece552/` | COMP SCI/ECE 552 Introduction to Computer Architecture (Fall 2024, UW–Madison). Mirror of the course Google Drive, so it keeps that folder's names verbatim — spaces and all |
-| `ece552/NN Topic/` | One folder per lecture, `01 Introduction` … `21 Floating Point`: lecture deck, in-class deck, exercise solution, `.srt` captions, and the recording where one exists |
-| `ece552/Homework/homework NN/` | Homework 01–10, handouts plus solutions; a few include Verilog sources |
+| `ece552/` | COMP SCI/ECE 552 Introduction to Computer Architecture (Fall 2024, UW–Madison). Mirror of the course Google Drive. Directory names have been normalised to underscores; the files inside still carry the original names, spaces and all |
+| `ece552/01_Lectures/NN_Topic/` | One folder per lecture, `01_Introduction` … `21_Floating_Point`: lecture deck, in-class deck, exercise solution, `.srt` captions, and the recording where one exists |
+| `ece552/Homework/homework_NN/` | Homework 01–10, handouts plus solutions; a few include Verilog sources |
 | `ece552/Project/` | Multi-cycle RISC processor project: phase 1–3 descriptions and reports, plus the phase 1 and 2 archives. `project-phase3/` is extracted with its simulation output stripped, so `project-phase3.zip` is kept local and untracked |
 | `ece552/Exams/`, `Quizes/`, `Discussions/` | Past exams with solutions, weekly quizzes, discussion decks |
-| `ece552/General Information/` | Syllabus-adjacent material: Verilog tutorial and rules, ModelSim tutorial |
-| `ece552/Rule Checker/` | Compiled `Vcheck.class` / `VerFile.class` Verilog style checker used by the project |
-| `ece552/*.mp4`, `ece552/*.mov` | ~3.2 GB of lecture recordings. Untracked — the `.srt` caption next to each one is the tracked copy |
+| `ece552/General_Information/` | Syllabus-adjacent material: Verilog tutorial and rules, ModelSim tutorial |
+| `ece552/Rule_Checker/` | Compiled `Vcheck.class` / `VerFile.class` Verilog style checker used by the project. This is the canonical copy; duplicates elsewhere in the tree are ignored |
+| `ece552/01_Lectures/**/*.mp4`, `*.mov` | ~3.2 GB of lecture recordings. Untracked — the `.srt` caption next to each one is the tracked copy |
 | `ece752/` | CS/ECE 752 Advanced Computer Architecture I (Spring 2025, UW–Madison, Sohi) |
 | `ece752/README.md` | Mirror of the course schedule; every entry links the local copy first, then the original course URL |
 | `ece752/1_lecture_slides/` | Unit lecture notes as `NN_topic.pdf` (Units 0–12; the schedule has no Unit 10) |
@@ -39,9 +39,11 @@ is not meant to be maintained.
   the original course link. Material that is not a PDF on the course server is listed under
   "Not mirrored locally" with the external link only.
 - Keep large binaries (audio, video) out of git; only text and course PDFs are tracked.
-- Verilog simulation output is not mirrored: compiled `vvp` binaries, `.vcd`/`.wlf` waveforms, and
-  ModelSim `work/` libraries were stripped from the ECE 552 project. Delete them rather than
-  committing them if a project is ever rebuilt.
+- Directory names under `ece552/` use underscores instead of spaces. Keep new ones that way.
+- Verilog simulation output is not mirrored: compiled `vvp` binaries, `.vcd`/`.wlf` waveforms,
+  ModelSim `work/` libraries and project state, `verilogsim*` logs and traces, and `.bak` editor
+  backups are all ignored. The `loadfile_*.img` test vectors and `.do` waveform scripts are project
+  inputs and are tracked.
 
 ## Commit messages
 

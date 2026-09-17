@@ -1,0 +1,1144 @@
+1
+00:00:00,000 --> 00:00:12,800
+Let's continue our discovery of caches and cover advanced cache design and cache performance.
+
+2
+00:00:12,800 --> 00:00:17,480
+In the last lecture, we motivated the need for a memory hierarchy that consisted of one
+
+3
+00:00:17,480 --> 00:00:22,080
+or more levels of caches between the processor pipeline and main memory.
+
+4
+00:00:22,080 --> 00:00:27,400
+Here, I'm showing a two-level cache hierarchy integrated in our now-familiar five-stage
+
+5
+00:00:27,400 --> 00:00:30,560
+pipeline processor.
+
+6
+00:00:30,560 --> 00:00:35,880
+Separate L1 caches are typically used for instructions and data, since in any given
+
+7
+00:00:35,880 --> 00:00:40,360
+clock cycle we would need to read from both simultaneously.
+
+8
+00:00:40,360 --> 00:00:46,760
+The upper-level caches are typically unified, storing both instructions and data.
+
+9
+00:00:46,760 --> 00:00:51,600
+The advantage of this organization is that while accessing main memory can be slow, if
+
+10
+00:00:51,600 --> 00:00:56,640
+we keep most of the instructions and data we need, often a level or two closer to the
+
+11
+00:00:56,640 --> 00:01:06,400
+processor, then we can minimize the number of full penalty trips to main memory.
+
+12
+00:01:06,400 --> 00:01:10,400
+Last time, we discussed three key design considerations for caches.
+
+13
+00:01:10,400 --> 00:01:16,240
+However, our discussion of placement and replacement were limited to direct mapped caches.
+
+14
+00:01:16,240 --> 00:01:25,440
+In this lecture, we'll cover the more general concept of set associativity.
+
+15
+00:01:25,440 --> 00:01:30,680
+The problem of cache placement is that the cache capacity is much smaller than main memory,
+
+16
+00:01:30,680 --> 00:01:35,320
+so we need a smart way of choosing where to put blocks into the cache, such that if we
+
+17
+00:01:35,320 --> 00:01:40,960
+tend to reuse blocks x and y often, we want to minimize the likelihood of x and y kicking
+
+18
+00:01:40,960 --> 00:01:43,280
+each other out of the cache.
+
+19
+00:01:43,280 --> 00:01:49,200
+Set associativity is the extent of flexibility that the cache has in terms of selecting where
+
+20
+00:01:49,200 --> 00:01:51,280
+to place the block.
+
+21
+00:01:51,280 --> 00:01:53,560
+Please note two new definitions.
+
+22
+00:01:53,560 --> 00:01:59,480
+A cache way is one possible location in the cache that a given block can be placed.
+
+23
+00:01:59,480 --> 00:02:04,720
+A cache set is a group of ways for a given block.
+
+24
+00:02:04,720 --> 00:02:11,200
+A general n-way set associative cache is one where every single block has exactly n locations
+
+25
+00:02:11,200 --> 00:02:14,360
+or n ways where it can be placed.
+
+26
+00:02:14,360 --> 00:02:18,640
+At one extreme is a direct mapped cache that we discussed before.
+
+27
+00:02:18,640 --> 00:02:25,080
+Here n is equal to 1, so every block has no choice but to go in its designated index.
+
+28
+00:02:25,080 --> 00:02:29,460
+At the other extreme is a fully associative cache where n is equal to the total number
+
+29
+00:02:29,460 --> 00:02:31,800
+of blocks that the cache can fit.
+
+30
+00:02:31,800 --> 00:02:39,960
+In this case, every block can go anywhere in the cache.
+
+31
+00:02:39,960 --> 00:02:43,800
+This is the standard structure of an n-way set associative cache.
+
+32
+00:02:43,800 --> 00:02:48,120
+As before, the cache consists of a tag array and a data array.
+
+33
+00:02:48,120 --> 00:02:53,800
+The difference now is that both arrays are composed of multiple sub arrays, one for each
+
+34
+00:02:53,800 --> 00:02:56,160
+of the n-ways.
+
+35
+00:02:56,160 --> 00:03:02,000
+To figure out which set of ways to use for a given block x, as before, we break it up
+
+36
+00:03:02,000 --> 00:03:08,920
+into bits of its memory address, into a tag, an index, in this case a set index, and a
+
+37
+00:03:08,920 --> 00:03:11,120
+block offset.
+
+38
+00:03:11,120 --> 00:03:15,480
+This is the standard hash function used to index into a cache.
+
+39
+00:03:15,480 --> 00:03:20,560
+The set bits select a specific index in each of the tags sub arrays.
+
+40
+00:03:20,560 --> 00:03:26,720
+Upon a cache lookup, all n-ways are accessed in parallel, and each of the n tags are checked
+
+41
+00:03:26,720 --> 00:03:28,160
+for a hit.
+
+42
+00:03:28,160 --> 00:03:34,840
+In parallel to this, the data array is also accessed to retrieve the n-possible data blocks.
+
+43
+00:03:34,840 --> 00:03:39,320
+If a tag hit is found, the corresponding block is selected and shifted based on the block
+
+44
+00:03:39,320 --> 00:03:40,320
+offset.
+
+45
+00:03:41,080 --> 00:03:50,080
+Finally, the data word for x is sent through the output port.
+
+46
+00:03:50,080 --> 00:03:56,360
+Consider an example cache where memory addresses are 32 bits, blocks are 64 bytes in size,
+
+47
+00:03:56,360 --> 00:04:04,280
+and the cache is 16-way set associative with a capacity of 128 kibabytes.
+
+48
+00:04:04,280 --> 00:04:10,000
+Given our standard hash function, what is the minimum number of tag bits needed?
+
+49
+00:04:10,000 --> 00:04:11,520
+Let's do some math.
+
+50
+00:04:11,520 --> 00:04:17,680
+In a 128k cache with 64 bytes per block, we know that there's storage for 2048 blocks
+
+51
+00:04:17,680 --> 00:04:19,360
+in this cache.
+
+52
+00:04:19,360 --> 00:04:24,960
+But we have 16 ways, which mean we can hold 16 cache lines per set, so we further divide
+
+53
+00:04:24,960 --> 00:04:34,080
+2048 by 16 and see that there are 128 sets.
+
+54
+00:04:34,080 --> 00:04:38,120
+Now that we have the number of sets, we can figure out the number of bits in the tag,
+
+55
+00:04:38,120 --> 00:04:39,720
+set, and offset.
+
+56
+00:04:39,720 --> 00:04:46,320
+Log 64 means 6 bits for offset, log 128 means 7 bits for set, and subtracting those from
+
+57
+00:04:46,320 --> 00:04:54,000
+the 32-bit address says we need 19 bits in the tag.
+
+58
+00:04:54,000 --> 00:04:57,320
+We could choose a different hash function than what we've chosen, but there are two
+
+59
+00:04:57,320 --> 00:04:58,320
+requirements.
+
+60
+00:04:58,320 --> 00:05:03,160
+A block cannot map to multiple locations in the cache at once, and we must never wrongly
+
+61
+00:05:03,160 --> 00:05:07,240
+think that block x is block y or vice versa.
+
+62
+00:05:07,240 --> 00:05:12,120
+Every block must be uniquely identifiable.
+
+63
+00:05:12,120 --> 00:05:17,640
+Okay, let's revisit cache replacement.
+
+64
+00:05:17,640 --> 00:05:22,320
+As discussed last time, replacement in direct map caches is straightforward because each
+
+65
+00:05:22,320 --> 00:05:25,520
+block only has one possible place it can go.
+
+66
+00:05:25,520 --> 00:05:30,640
+If an address lookup goes to an occupied entry with a different tag, it's a miss and we
+
+67
+00:05:30,640 --> 00:05:32,400
+have to evict.
+
+68
+00:05:32,400 --> 00:05:37,240
+For set associative caches, if there are n ways, then we have n possible candidates
+
+69
+00:05:37,240 --> 00:05:38,960
+for replacement.
+
+70
+00:05:38,960 --> 00:05:45,080
+In an ideal world, we would use belated optimal replacement policy where we would evict the
+
+71
+00:05:45,080 --> 00:05:50,360
+block that would be used furthest away in the future.
+
+72
+00:05:50,360 --> 00:05:54,280
+This maximizes our ability to reuse blocks in the cache effectively.
+
+73
+00:05:54,280 --> 00:06:00,960
+However, this policy requires perfect knowledge of the future and is impossible to achieve.
+
+74
+00:06:00,960 --> 00:06:05,840
+More practical common policies include FIFO, which evicts the oldest block by tracking
+
+75
+00:06:05,840 --> 00:06:07,280
+their ages.
+
+76
+00:06:07,280 --> 00:06:12,920
+The next is LRU, where we store a stack in the order of which each of the n blocks were
+
+77
+00:06:12,920 --> 00:06:14,120
+used.
+
+78
+00:06:14,120 --> 00:06:19,120
+This is a good approximation of the ladies' algorithm as it gets expensive to execute
+
+79
+00:06:19,120 --> 00:06:24,640
+in hardware if the associativity, aka the number of ways, is high.
+
+80
+00:06:24,640 --> 00:06:28,880
+A practical approximation of LRU is not most recently used.
+
+81
+00:06:28,880 --> 00:06:33,600
+The idea here is to track the most recently used and then evict any one of the others
+
+82
+00:06:33,600 --> 00:06:35,100
+randomly.
+
+83
+00:06:35,100 --> 00:06:47,160
+It actually turns out that this performs well in most applications.
+
+84
+00:06:47,160 --> 00:06:50,240
+Let's walk through an example with LRU replacement.
+
+85
+00:06:50,240 --> 00:06:54,240
+Here's a 32-byte cache with an associativity of two.
+
+86
+00:06:54,240 --> 00:06:59,880
+Some of the blocks are four bytes in size and assume a right back, right allocate policy.
+
+87
+00:06:59,880 --> 00:07:02,280
+Memory addresses are six bits wide.
+
+88
+00:07:02,280 --> 00:07:07,840
+With this organization, there are four sets in the cache, thus we need two set index bits,
+
+89
+00:07:07,840 --> 00:07:11,680
+two bits for the block offset, and two bits for the tag.
+
+90
+00:07:11,680 --> 00:07:17,460
+The right side shows the current state of the tag array, which is initially empty.
+
+91
+00:07:17,460 --> 00:07:20,800
+The first instruction loads address 2A.
+
+92
+00:07:20,800 --> 00:07:26,720
+In binary, this is 101010, thus the set index is 2.
+
+93
+00:07:26,720 --> 00:07:31,560
+We check the tag array and see that it's not there, so this is a cache miss.
+
+94
+00:07:31,560 --> 00:07:37,560
+When the block arrives, we put our tag 10 into one of the ways in set 2.
+
+95
+00:07:37,560 --> 00:07:42,240
+In this case, the LRU bit was pointing to way 0 initially, so that's where we'll insert
+
+96
+00:07:42,240 --> 00:07:44,440
+the block.
+
+97
+00:07:44,440 --> 00:07:50,640
+After this, way 1 becomes the least recently used in the set.
+
+98
+00:07:50,640 --> 00:07:53,360
+The next access is to address 2B.
+
+99
+00:07:53,360 --> 00:07:57,840
+This byte is within the same block as 2A, so we have a cache hit, and nothing changes
+
+100
+00:07:57,840 --> 00:08:00,900
+in the tag array.
+
+101
+00:08:00,900 --> 00:08:04,480
+The next access is 3C, which accesses set3.
+
+102
+00:08:04,480 --> 00:08:08,640
+This is a miss, so we fetch the block and then update the tag array with the tag and
+
+103
+00:08:08,640 --> 00:08:11,400
+the new LRU.
+
+104
+00:08:11,400 --> 00:08:16,360
+The same goes for 2-0, this time with set0.
+
+105
+00:08:16,360 --> 00:08:18,840
+Now the program accesses 3-3.
+
+106
+00:08:18,840 --> 00:08:24,320
+This block also falls into set0, but since our cache is 2-way associative, we don't
+
+107
+00:08:24,320 --> 00:08:27,200
+need to evict the other block currently in set0.
+
+108
+00:08:27,200 --> 00:08:32,800
+We have a space for two blocks at the same set index.
+
+109
+00:08:32,800 --> 00:08:38,720
+But now if we access the third block that falls into set0, say address 1-1, then we
+
+110
+00:08:38,720 --> 00:08:41,480
+are forced to kick out one of the blocks.
+
+111
+00:08:41,480 --> 00:08:46,720
+The one that we kick out is the least recently used, which is block 2-0, since it was accessed
+
+112
+00:08:46,720 --> 00:08:50,360
+furthest away in the past.
+
+113
+00:08:50,360 --> 00:08:52,040
+So what happens on a store?
+
+114
+00:08:52,040 --> 00:08:57,800
+If we store address 2-9, we access set2, and in this case we have a cache hit.
+
+115
+00:08:57,800 --> 00:09:02,320
+Since this is a writeback cache, we won't directly write the new value to memory yet.
+
+116
+00:09:02,320 --> 00:09:06,960
+Instead, we'll store the modified value in the cache and set a dirty bit to remind us
+
+117
+00:09:06,960 --> 00:09:14,360
+to write the value back to memory when this block eventually gets evicted.
+
+118
+00:09:14,360 --> 00:09:19,640
+As we saw in the previous example, low associativity may result in conflicts and evictions known
+
+119
+00:09:19,640 --> 00:09:22,120
+as cache thrashing.
+
+120
+00:09:22,120 --> 00:09:26,880
+But making associativity too high is expensive because we need more comparators to perform
+
+121
+00:09:26,880 --> 00:09:37,360
+the tag checks in parallel, and we expend more energy retrieving more data blocks.
+
+122
+00:09:37,360 --> 00:09:41,400
+One creative optimization is to build skewed associative caches.
+
+123
+00:09:41,400 --> 00:09:44,520
+The idea is to use different hash functions per way.
+
+124
+00:09:44,520 --> 00:09:49,240
+Though this requires a bit more combinational logic to implement multiple hash functions,
+
+125
+00:09:49,240 --> 00:09:53,720
+the benefit is that now potential collisions are more spread out in the cache.
+
+126
+00:09:53,720 --> 00:09:57,880
+For example, a pair of blocks x and y are less likely to constantly kick each other
+
+127
+00:09:57,880 --> 00:10:02,840
+out because if they have the same index in way 1, chances are they will have different
+
+128
+00:10:02,840 --> 00:10:05,720
+indices in way 2.
+
+129
+00:10:05,720 --> 00:10:09,720
+An analogy of this is to say you have a tightly packed course schedule.
+
+130
+00:10:09,720 --> 00:10:14,240
+With the standard scheduling scheme, it would be unfortunate but surprisingly likely that
+
+131
+00:10:14,240 --> 00:10:18,920
+the discussion sections of two courses that you really want to take end up conflicting
+
+132
+00:10:18,920 --> 00:10:23,640
+with each other every Monday, Wednesday, Friday at 1 p.m.
+
+133
+00:10:23,640 --> 00:10:27,160
+So you basically have to miss three discussion sections every week.
+
+134
+00:10:27,160 --> 00:10:32,440
+With a skewed scheduling scheme, one course may get discussion section on Monday 1 p.m.,
+
+135
+00:10:32,440 --> 00:10:39,200
+Wednesdays 3 p.m., and Fridays 10 a.m. while the other may get Mondays 1 p.m., Wednesdays
+
+136
+00:10:39,200 --> 00:10:42,240
+11 a.m. and Fridays 4 p.m.
+
+137
+00:10:42,240 --> 00:10:46,160
+Here the sessions still collide but only once a week on Monday.
+
+138
+00:10:46,160 --> 00:10:50,720
+So this way you'd be able to attend far more discussion sections and excel in those exams.
+
+139
+00:10:55,360 --> 00:11:00,000
+Now let's learn how to assess the performance or effectiveness of a cache.
+
+140
+00:11:00,000 --> 00:11:02,880
+The proxy for cache performance is its miss rate.
+
+141
+00:11:02,880 --> 00:11:06,480
+There are two metrics generally used to describe this miss rate.
+
+142
+00:11:06,560 --> 00:11:11,200
+The first is the local miss rate which is the percentage of accesses or requests to the cache
+
+143
+00:11:11,200 --> 00:11:17,280
+that are misses. For example, if you access the cache 50 times and five of those times is a cache
+
+144
+00:11:17,280 --> 00:11:25,360
+miss, then your local miss rate is 10%. As you'd expect, the local hit rate is 100% minus the
+
+145
+00:11:25,360 --> 00:11:31,600
+local miss rate. The second metric is the global miss rate which defines misses relative to the
+
+146
+00:11:31,600 --> 00:11:37,840
+program's execution. Specifically, it's the measure of the number of misses per instruction
+
+147
+00:11:37,840 --> 00:11:45,440
+executed. The common measure is MPKI which is the number of misses for every thousand instructions.
+
+148
+00:11:46,560 --> 00:11:50,000
+Conversely, you may sometimes see this as instructions per miss.
+
+149
+00:11:55,040 --> 00:12:01,120
+Here's a quick example of how to reason about miss rates. Say the L1 has a global miss rate of
+
+150
+00:12:01,120 --> 00:12:08,240
+one miss per 30 instructions and a local miss rate of 10%. Then we can infer what fraction of
+
+151
+00:12:08,240 --> 00:12:14,640
+the instructions in our program access the L1 either via load or store. Simply dividing the
+
+152
+00:12:14,640 --> 00:12:19,600
+global miss rate by the local miss rate gives us this fraction which is equal to one-third in this
+
+153
+00:12:19,600 --> 00:12:28,800
+case. Let's move to an example with a two-level cache hierarchy. If the global miss rate of the
+
+154
+00:12:28,800 --> 00:12:35,120
+L1 is one miss per 20 instructions and the global miss rate of the L2 is one miss per 80
+
+155
+00:12:35,120 --> 00:12:41,360
+instructions, then what is the local miss rate of the L2 cache? Remember that the L2 cache is
+
+156
+00:12:41,360 --> 00:12:47,920
+only ever accessed upon a miss in the L1. Since we miss in the L1 once every 20 instructions,
+
+157
+00:12:48,560 --> 00:12:55,440
+then we know that we access the L2 once every 20 instructions. So based on that, it's clear that one
+
+158
+00:12:55,440 --> 00:13:00,960
+of every four L2 accesses is a miss or 25% local miss rate.
+
+159
+00:13:04,960 --> 00:13:09,920
+Now that we have a sense of the miss rates, what does this mean for actual cycle performance?
+
+160
+00:13:09,920 --> 00:13:15,920
+A common metric for measuring the performance of the memory hierarchy is average memory access time
+
+161
+00:13:15,920 --> 00:13:22,640
+or AMAT. This is the number of cycles between when the processor issues a memory request
+
+162
+00:13:22,640 --> 00:13:28,800
+and when it's received. So with a single level cache hierarchy, average memory access time is
+
+163
+00:13:28,800 --> 00:13:36,160
+a function of the cache access latency here shown as TL1, its local miss rate, as well as the latency
+
+164
+00:13:36,160 --> 00:13:42,240
+of main memory. Basically what this is saying is that on every memory request, we incur the delay
+
+165
+00:13:42,240 --> 00:13:48,320
+of accessing the L1 cache, but only when it misses do we incur the delay of accessing main memory.
+
+166
+00:13:49,280 --> 00:13:53,280
+Note that L1 caches usually have an access latency of only one cycle.
+
+167
+00:13:55,920 --> 00:14:01,920
+Next, we'll extend this to a two-level hierarchy. Upon a miss in the L1, we will incur the access
+
+168
+00:14:01,920 --> 00:14:08,080
+latency of the L2, and only when the L2 misses will we incur the access latency of memory.
+
+169
+00:14:09,920 --> 00:14:15,120
+Hopefully you can see the pattern here, and this can be applied recursively for an N-level
+
+170
+00:14:15,200 --> 00:14:16,400
+cache hierarchy.
+
+171
+00:14:21,280 --> 00:14:27,120
+Let's put it all together with an example. Assume an L1 cache with a one-cycle latency
+
+172
+00:14:27,120 --> 00:14:32,720
+and a miss rate of 5%. Note that when we state the miss rate percentage of a cache,
+
+173
+00:14:32,720 --> 00:14:38,560
+generally you can assume that we're referring to its local miss rate. Assume we also have a 10-cycle
+
+174
+00:14:38,560 --> 00:14:46,080
+L2 cache with a 20% miss rate, and our memory has a 50-cycle delay. The question is,
+
+175
+00:14:46,080 --> 00:14:51,600
+if we were to remove the L2 cache, how bad would our average memory access time be?
+
+176
+00:14:54,800 --> 00:15:02,720
+When we have an L2, we incur the one-cycle access of the L1, 5% of the time will miss,
+
+177
+00:15:02,720 --> 00:15:09,280
+and thus incur the 10-cycle access of the L2, and 20% of the time will miss and incur the
+
+178
+00:15:09,280 --> 00:15:16,240
+50-cycle access of memory. All this means is that on average, we'll expend two cycles per load and
+
+179
+00:15:16,240 --> 00:15:25,840
+store. Without the L2, we need to access memory as soon as we miss in the L1, which makes our
+
+180
+00:15:25,840 --> 00:15:34,080
+average memory access time 3.5 cycles, which is 1.75 times higher. Adding more levels of cache can
+
+181
+00:15:34,080 --> 00:15:43,440
+significantly improve performance. Finally, how do we measure cache performance in conjunction
+
+182
+00:15:43,440 --> 00:15:49,360
+with the processor? To start, think about what happens on a cache miss. In general, we'd have
+
+183
+00:15:49,360 --> 00:15:56,160
+to stall our pipeline. Modern processors may actually choose to flush the pipeline instead,
+
+184
+00:15:56,160 --> 00:16:01,360
+since global stall logic can be pretty expensive when you have so many more functional units in
+
+185
+00:16:01,360 --> 00:16:07,680
+your processor. But for the purposes of our five-stage pipeline in this course, you can
+
+186
+00:16:07,680 --> 00:16:14,240
+generally assume that we'll stall on a cache miss. So now consider a processor with a base CPI of one
+
+187
+00:16:14,880 --> 00:16:19,200
+running a program with about 30% of the instructions being a loader store.
+
+188
+00:16:20,560 --> 00:16:26,640
+Now, if the base CPI is one, then we can assume that our L1 access latency is only one cycle.
+
+189
+00:16:27,280 --> 00:16:32,320
+In other words, an L1 hit can fit inside one cycle of the memory stage in our pipeline.
+
+190
+00:16:33,120 --> 00:16:38,080
+So then to compute the average CPI, we only need to reason about how many stall cycles we
+
+191
+00:16:38,080 --> 00:16:43,680
+introduce in the event of an L1 miss. But this can get a little bit tricky because we have to
+
+192
+00:16:43,680 --> 00:16:49,600
+remember that our processor actually has two L1 caches, one for instructions and one for data.
+
+193
+00:16:50,560 --> 00:16:55,760
+Say we have single-level hierarchy, where our L1 instruction cache has a miss rate of 2%,
+
+194
+00:16:56,560 --> 00:17:03,120
+and our L1 data cache has a miss rate of 10%. And let's assume our main memory has a delay of 10
+
+195
+00:17:03,120 --> 00:17:11,040
+cycles. In this case, to compute the average CPI, we first compute the penalty of a data cache miss.
+
+196
+00:17:11,040 --> 00:17:16,000
+In our program, we only access the data cache for 30% of the instructions,
+
+197
+00:17:16,000 --> 00:17:22,000
+and 10% of those are misses incurred during a 10-cycle penalty. This means our average
+
+198
+00:17:22,000 --> 00:17:28,960
+data cache penalty is 0.3 cycles per instruction. The instruction cache, on the other hand, is
+
+199
+00:17:28,960 --> 00:17:35,520
+accessed by every instruction in the fetch stage, and 2% of the time, we miss and incur the 10-cycle
+
+200
+00:17:35,520 --> 00:17:41,120
+memory latency. Thus, our instruction cache penalty is 0.2 cycles per instruction on average.
+
+201
+00:17:42,320 --> 00:17:48,800
+So adding these to our base CPI of 1, we can compute our average CPI to now be 1.5 cycles per
+
+202
+00:17:48,800 --> 00:17:58,560
+instruction. Let's categorize the types of cache misses. Here is what is known as the three C's
+
+203
+00:17:58,560 --> 00:18:04,480
+of cache misses. The first type of miss is a compulsory, or cold, miss. This is when the
+
+204
+00:18:04,480 --> 00:18:10,080
+program has never accessed the block since it began executing. You have no choice but to miss
+
+205
+00:18:10,080 --> 00:18:16,720
+in the cache for this address. The second type is a capacity miss. This is when the program
+
+206
+00:18:16,720 --> 00:18:23,280
+accesses more blocks than it can fit in the cache. This implies that a cache miss is inevitable,
+
+207
+00:18:23,280 --> 00:18:28,960
+because our cache is not big enough to fully store our program's working set. The last type
+
+208
+00:18:28,960 --> 00:18:35,040
+is a conflict miss. This is when we have a cache miss for a block that would have been a hit if
+
+209
+00:18:35,040 --> 00:18:40,400
+it weren't for the fact that placement restrictions forced another block to evict it. This happens
+
+210
+00:18:40,400 --> 00:18:46,640
+when we have limited associativity in the cache, which is a small number of ways. Another way to
+
+211
+00:18:46,640 --> 00:18:52,320
+think about it is, say block X is not the least likely to be reused, but because of limited
+
+212
+00:18:52,320 --> 00:18:58,720
+associativity, we need to evict it. The next time we access X, it will be a conflict miss.
+
+213
+00:19:01,200 --> 00:19:06,160
+To fundamentally distinguish between the types of misses, it's best to reason about their effects
+
+214
+00:19:06,160 --> 00:19:13,120
+in isolation. On one extreme, given an infinite-sized cache, then everything would be a hit except for
+
+215
+00:19:13,120 --> 00:19:19,760
+the very first access to each block. These would be cold misses. If we had a finite-sized cache,
+
+216
+00:19:19,760 --> 00:19:25,040
+but we made it fully associative, then every miss that isn't in the first access,
+
+217
+00:19:25,040 --> 00:19:31,600
+as in every miss that isn't a cold miss, is a capacity miss. In other words, conflict misses
+
+218
+00:19:31,600 --> 00:19:36,080
+won't exist because there are no placement restrictions in a fully associative cache.
+
+219
+00:19:36,880 --> 00:19:43,120
+Conflict misses can only occur when a block only has a subset of the cache to be placed.
+
+220
+00:19:43,120 --> 00:19:50,480
+To see their effects, let's look at how types of misses vary depending on the
+
+221
+00:19:50,480 --> 00:19:56,240
+cache capacity and associativity. The first artifact to note is that compulsory misses
+
+222
+00:19:56,240 --> 00:20:02,160
+are an artifact of the program, so they're the same regardless of the cache's capacity
+
+223
+00:20:02,160 --> 00:20:09,120
+and associativity. The second thing to notice is that increasing the associativity while keeping
+
+224
+00:20:09,120 --> 00:20:16,080
+the capacity fixed results in a decrease in conflict misses, but doesn't affect the capacity
+
+225
+00:20:16,080 --> 00:20:23,040
+misses. This makes sense since the cache size is unchanged and all we've done is reduce the
+
+226
+00:20:23,040 --> 00:20:33,360
+amount of placement restrictions. Now let's try varying the capacity and block size.
+
+227
+00:20:33,600 --> 00:20:38,720
+This time, if we fix the capacity but increase the block size,
+
+228
+00:20:39,440 --> 00:20:45,600
+we find that the number of cold misses go down. Why? Well, by increasing the block size,
+
+229
+00:20:45,600 --> 00:20:50,880
+we are fetching more data into the cache per miss, which increases the likelihood
+
+230
+00:20:50,880 --> 00:20:56,000
+of hitting spatial locality. What's interesting is that with larger blocks,
+
+231
+00:20:56,000 --> 00:21:01,680
+the number of capacity and conflict misses can actually increase. This may not seem intuitive
+
+232
+00:21:01,680 --> 00:21:08,000
+at first, but the reason is that increasing the block size actually means fewer blocks in the cache.
+
+233
+00:21:08,720 --> 00:21:15,040
+So if our program doesn't have perfect spatial locality and isn't fully utilizing all of the
+
+234
+00:21:15,040 --> 00:21:20,400
+data in each block, then we are actually hurting ourselves and potentially causing more misses.
+
+235
+00:21:21,120 --> 00:21:26,400
+I encourage you to reason about how this chart would look if our program instead had perfect
+
+236
+00:21:26,480 --> 00:21:27,840
+spatial locality.
+
+237
+00:21:33,840 --> 00:21:37,680
+So now that we know about the different types of misses, we can reason about potential
+
+238
+00:21:37,680 --> 00:21:43,840
+optimizations in our cache design. If we want to reduce capacity misses, obviously increasing
+
+239
+00:21:43,840 --> 00:21:49,840
+the cache size is the way to go. But if that's not feasible, you can modify the program to improve
+
+240
+00:21:49,840 --> 00:21:55,520
+its temporal locality. In other words, if we are getting cache misses because our working
+
+241
+00:21:55,520 --> 00:22:02,160
+set is too big, and some of our data is getting kicked out before we reuse it, then ideally,
+
+242
+00:22:02,160 --> 00:22:07,280
+we'd want to target spatial locality and fully use each piece of data when we bring it into the
+
+243
+00:22:07,280 --> 00:22:11,840
+cache so that when it does get evicted, we won't ever need to use it again.
+
+244
+00:22:13,840 --> 00:22:18,720
+In terms of conflict misses, increasing the associativity helps as well as improving the
+
+245
+00:22:18,720 --> 00:22:23,920
+replacement policy of the hash function, as we saw in the skewed associative cache.
+
+246
+00:22:24,720 --> 00:22:31,040
+And finally, reducing cold misses is a little tougher. As was discussed, increasing the block
+
+247
+00:22:31,040 --> 00:22:37,600
+size and or the program's spatial locality helps. Another option is to implement a common technique
+
+248
+00:22:37,600 --> 00:22:43,600
+called prefetching, which uses prediction to fetch a block into the cache before we actually access
+
+249
+00:22:43,600 --> 00:22:47,760
+it. This is an active research area and has a lot of cool work.
+
+250
+00:22:51,440 --> 00:22:56,720
+Let's wrap up this lecture with a couple of exercises. Consider the C program running on a
+
+251
+00:22:56,720 --> 00:23:04,320
+processor with a 4K fully associative data cache with 64 byte blocks and LRU replacement.
+
+252
+00:23:04,880 --> 00:23:09,360
+How many cold misses will we get? Try to take some time to work through it.
+
+253
+00:23:14,160 --> 00:23:23,760
+Let's visualize the hits and misses. With 64 byte blocks, each block can hold 16
+
+254
+00:23:23,760 --> 00:23:30,000
+4 byte integers from array A. Since we're looking at cold misses, then we're only concerned with
+
+255
+00:23:30,000 --> 00:23:36,960
+the first iteration of the N loop, which is when N is equal to 0. Because subsequent iterations
+
+256
+00:23:36,960 --> 00:23:42,960
+will just access the array again. So in the beginning of the loop, we access A sub 0,
+
+257
+00:23:42,960 --> 00:23:49,120
+which is a cold miss, but this also fetches the next 15 integers. And because we're accessing
+
+258
+00:23:49,120 --> 00:23:57,360
+the array sequentially, all 15 of these will be cache hits. Then when we access A sub 16,
+
+259
+00:23:57,920 --> 00:24:03,440
+we have another cold miss followed by 15 cache hits. This pattern continues and we find that
+
+260
+00:24:03,440 --> 00:24:08,400
+one sixteenth of our accesses in the first iteration of the N loop is a cold miss,
+
+261
+00:24:08,480 --> 00:24:11,440
+leading to 2048 cold misses in total.
+
+262
+00:24:14,960 --> 00:24:20,160
+Now how many capacity misses are there? Please pause and try to work through this one also.
+
+263
+00:24:28,080 --> 00:24:33,120
+As we just showed, all of the misses in the first iteration of the N loop are cold misses.
+
+264
+00:24:33,120 --> 00:24:37,280
+So we must only focus on the next two iterations of integer N.
+
+265
+00:24:39,440 --> 00:24:44,560
+When N is equal to one, we see the same pattern of one miss per 15 hits. But this time,
+
+266
+00:24:44,560 --> 00:24:51,200
+this is a capacity miss. That's because the array A is 128k in size, which is larger than the 4k
+
+267
+00:24:51,200 --> 00:24:56,960
+cache. And we know that these aren't conflict misses because our cache is fully associative.
+
+268
+00:24:57,680 --> 00:25:04,320
+So then like before, we end up with 2048 misses when N is equal to one, except this time these are
+
+269
+00:25:04,320 --> 00:25:12,720
+all capacity misses. When N is equal to two, we see the same pattern and get 2048 more misses.
+
+270
+00:25:12,720 --> 00:25:16,560
+Thus in total, we have 4096 capacity misses.
+
+271
+00:25:17,040 --> 00:25:26,160
+So in total for this program, we end up with 6144 cache misses.
+
+272
+00:25:30,400 --> 00:25:34,160
+Now what would happen if we were to interchange the two loops? That is,
+
+273
+00:25:34,160 --> 00:25:38,320
+we move the N loop to the inside. How many misses would we have now?
+
+274
+00:25:38,880 --> 00:25:41,280
+Please pause and take a moment to work through this one.
+
+275
+00:25:47,440 --> 00:25:53,680
+Visualizing the accesses, we see that when we get the first integers a sub zero,
+
+276
+00:25:53,680 --> 00:25:58,720
+we get a cold miss, but then we access a sub zero two more times, resulting in two hits.
+
+277
+00:25:59,440 --> 00:26:04,800
+At the same time, we fetch 15 more integers along with a zero, each of which are access
+
+278
+00:26:04,800 --> 00:26:10,720
+three times, leading to 45 more hits. So we end up with this pattern where we have one cold miss
+
+279
+00:26:10,720 --> 00:26:16,480
+for every 47 hits. In total, this yields only 2048 misses for the program.
+
+280
+00:26:18,080 --> 00:26:23,680
+So why did this reduce our cache misses so much? It's because we improved temporal locality with
+
+281
+00:26:23,680 --> 00:26:28,960
+our program. By interchanging the loops, we made sure to access each piece of data as much
+
+282
+00:26:28,960 --> 00:26:34,640
+as possible right away as soon as we brought it into the cache. So instead of fetching a zero,
+
+283
+00:26:34,640 --> 00:26:38,960
+using it once, then going through the entire array before fetching a zero again,
+
+284
+00:26:39,680 --> 00:26:43,760
+we are now simply using a zero as much as possible, the first and only time that we
+
+285
+00:26:43,760 --> 00:26:49,360
+fetch it. So by improving temporal locality, we actually managed to eliminate all of the
+
+286
+00:26:49,360 --> 00:26:55,200
+capacity misses in our program as nothing gets evicted that needs to be accessed in the future.
+

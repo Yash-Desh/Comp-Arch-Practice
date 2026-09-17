@@ -1,0 +1,744 @@
+1
+00:00:00,000 --> 00:00:10,000
+In this lecture, we'll introduce memory hierarchy and caches.
+
+2
+00:00:10,000 --> 00:00:17,000
+Hopefully by now you know that data is just an ocean of unlabeled ones and zeros that our program can load and store.
+
+3
+00:00:17,000 --> 00:00:22,000
+This method of storing these bits has evolved over the decades, but the fundamentals remain.
+
+4
+00:00:22,000 --> 00:00:33,000
+Let's discuss a few different memory technologies and use their relative performance and cost to motivate the creation of a memory hierarchy.
+
+5
+00:00:33,000 --> 00:00:45,000
+Our modern computers have many types of memories. The table summarizes the four general categories and gives you a sense of the differences in size, speed, and cost per bit.
+
+6
+00:00:45,000 --> 00:00:50,000
+The on-chip registers are small, blazing fast, but the cost is high.
+
+7
+00:00:50,000 --> 00:01:02,000
+SRAM is the acronym for Static Random Access Memory, which is used for structures like caches. Static means that once you write a value, the SRAM holds it as long as the chip is powered up.
+
+8
+00:01:02,000 --> 00:01:09,000
+They are larger, but slower than registers. Their size and speed are connected.
+
+9
+00:01:09,000 --> 00:01:16,000
+The larger or more dense that they get, the slower they get because wires get longer and decode logic grows.
+
+10
+00:01:16,000 --> 00:01:22,000
+SRAM sizes on processors continues to grow for reasons we'll explain in a bit.
+
+11
+00:01:22,000 --> 00:01:27,000
+Next, we move off the processor die to bring in DRAM or Dynamic Random Access Memory.
+
+12
+00:01:27,000 --> 00:01:35,000
+The dynamic means that values are held in capacitors that leak their charge until they either get to be refreshed or they become zero.
+
+13
+00:01:35,000 --> 00:01:42,000
+This memory has been our main memory that stores almost all the program data.
+
+14
+00:01:42,000 --> 00:01:52,000
+In GPUs and ML accelerators, HBM, or High Bandwidth Memory, lives inside the multi-die package and consists of layers of DRAM silicon stacked to make a cube.
+
+15
+00:01:52,000 --> 00:02:04,000
+Apple Silicon also puts DRAM inside the package, but generally, the largest and least expensive DRAM lives off the package and is connected via board traces to the processor.
+
+16
+00:02:04,000 --> 00:02:14,000
+Finally, we get to disk, which today consists either of spinning disk-shaped platters that hold magnetic charges or solid-state flash chips.
+
+17
+00:02:14,000 --> 00:02:24,000
+This check technology is inexpensive per bit and has capacities that can store all of your files reliably. However, relative to the other storage, they're slow.
+
+18
+00:02:24,000 --> 00:02:35,000
+You'll feel the speed when you launch large applications, such as program data and graphics, that are read from disk and put into DRAM.
+
+19
+00:02:35,000 --> 00:02:42,000
+Let's talk about the first three and save disk for a future lecture.
+
+20
+00:02:42,000 --> 00:02:54,000
+We've already discussed register files in an earlier lecture. This one has two read ports and one write port, and has 32 registers that are each 32 bits wide.
+
+21
+00:02:54,000 --> 00:03:05,000
+SRAM technology is conceptually very similar to register files, but instead of a flip-flop storing each bit, it uses a level-sensitive latch to hold data.
+
+22
+00:03:05,000 --> 00:03:18,000
+In this simplified diagram, the cross-coupled inverters are actually two CMOS transistors each, making this the classic 6-transistor or 6T SRAM cell.
+
+23
+00:03:18,000 --> 00:03:29,000
+These cells are built into an array with a one-hot address decoder to choose the word line which activates the word or row of the array by turning on the past transistors or transmission gates.
+
+24
+00:03:29,000 --> 00:03:35,000
+The complement column bitlines are used to write or read from the corresponding bit position.
+
+25
+00:03:35,000 --> 00:03:42,000
+When writing, the drive strength of the new value flowing down the top is enough to upset the latch and change its value.
+
+26
+00:03:42,000 --> 00:03:57,000
+When reading large SRAM arrays, however, the bitline and complement bitline pass their values down to the bottom where their voltage level has actually decreased substantially due to resistance, and they can't simply be read at normal logic levels.
+
+27
+00:03:57,000 --> 00:04:01,000
+So these SRAMs will get a differential sense amplifier.
+
+28
+00:04:01,000 --> 00:04:10,000
+A sense amp is essentially an analog circuit that takes a small perturbation in the voltage and amplifies it back to the appropriate logic level.
+
+29
+00:04:10,000 --> 00:04:17,000
+In low-cost SRAM devices, we typically have one bitline per bit, so ground is the reference.
+
+30
+00:04:17,000 --> 00:04:27,000
+For high-performance SRAM devices, both the true and complement value are sent down and we leverage the fact that one line is swinging to zero while the other is swinging to one.
+
+31
+00:04:27,000 --> 00:04:43,000
+To let it quickly be able to pick up the first derivative of that and figure out which side is high, meaning which side is a zero or a one, this allows SRAM access time to stay fairly low, even with larger arrays.
+
+32
+00:04:43,000 --> 00:04:50,000
+Lastly, we have DRAM technology, which is logically similar to SRAM in the way that it is addressed.
+
+33
+00:04:50,000 --> 00:05:01,000
+Commodity DRAM ships are very inexpensive, with typical capacities of one gigabit per chip, and they come with standardized data, address, control interfaces built in.
+
+34
+00:05:01,000 --> 00:05:09,000
+They're also very dense, requiring very little logic per bit cell, just a transistor that provides the access via the wordline.
+
+35
+00:05:10,000 --> 00:05:22,000
+The data itself is stored as a charge in the capacitor as opposed to a flip-flop or an inverter loop. This makes up the 1T1C, or one transistor, one capacitor element.
+
+36
+00:05:22,000 --> 00:05:31,000
+The capacitor means that the charge decays over time due to leakage, and must be periodically refreshed by reading them out and writing them back in.
+
+37
+00:05:31,000 --> 00:05:44,000
+While DRAM density has been increasing, for cost reasons DRAM latency has barely been improving, at least compared to the rate of speed increase in computation logic.
+
+38
+00:05:44,000 --> 00:05:49,000
+So what are the memory requirements imposed by our processor and important applications?
+
+39
+00:05:49,000 --> 00:05:58,000
+First of all, we need lots of bandwidth. Let's do some back-of-the-envelope math, assuming a processor with one IPC running at 1 GHz.
+
+40
+00:05:58,000 --> 00:06:12,000
+If 40% of our instructions access the word from data memory, and all of our instructions need to fetch from IMEM, then we're looking at 5.6 GBps of bandwidth to keep our processor from blocking.
+
+41
+00:06:12,000 --> 00:06:23,000
+And of course, we need lots of storage. At the low end, even mobile applications require dozens of megs and high-performance servers will hold multiple terabytes of memory.
+
+42
+00:06:23,000 --> 00:06:35,000
+And finally, we need to be able to afford it all, so we'd need a per-bit cost at a minimum. These requirements seem incompatible. What can we do?
+
+43
+00:06:35,000 --> 00:06:47,000
+The general solution is to form a memory hierarchy. You do this in your everyday life. The registers are like front pockets, easily accessible, and only fit what you need right now.
+
+44
+00:06:47,000 --> 00:06:54,000
+On-chip SRAM is your backpack, which holds your laptop and books, but takes a few extra seconds to open up.
+
+45
+00:06:54,000 --> 00:07:02,000
+Off-chip DRAM is your apartment, which keeps all your books in close. And maybe the disk is the storage in the basement of the building.
+
+46
+00:07:02,000 --> 00:07:12,000
+The idea is that not all bits are created equal. We have lots of stuff that we could access, but much of it is not needed as often as others.
+
+47
+00:07:12,000 --> 00:07:17,000
+As we just saw, the different memory technologies offer trade-offs in speed versus capacity and cost.
+
+48
+00:07:17,000 --> 00:07:33,000
+Registers in SRAM are more expensive, but having a small amount of them can really help speed up the accesses to critical data that we use often, while the rest of the data can reside in DRAM or disk.
+
+49
+00:07:33,000 --> 00:07:42,000
+So why a memory hierarchy? Because the heterogeneity of memory technologies works very well with the heterogeneity of the data that our programs access.
+
+50
+00:07:42,000 --> 00:07:56,000
+Fast memories are expensive, but we can dedicate a small amount of them for storing data that we expect to use often, while slow memories are much cheaper and more dense, which is what works to store the rest of our data.
+
+51
+00:07:56,000 --> 00:08:07,000
+Taken together, this hierarchy appears to be a large, fast memory with roughly the cost of slow memory.
+
+52
+00:08:07,000 --> 00:08:20,000
+Here we start our implementation of memory hierarchy of our processor with a cache. On-chip caches are typically built using SRAM and sits between the register file and the main DRAM memory.
+
+53
+00:08:20,000 --> 00:08:34,000
+This cache's goal is to hold recently accessed data stored in the form of multi-byte blocks, often 64 bytes in size. Note that people use cache blocks and cache lines synonymously.
+
+54
+00:08:34,000 --> 00:08:45,000
+Caches leverage data reuse. They often faster access than main memory, so it behooves us to reserve cache storage for data we expect to use a lot.
+
+55
+00:08:45,000 --> 00:08:59,000
+Let's walk through the concept. Upon a load or store instruction hitting the memory stage, we perform a lookup in the cache. Here we want the data at address 4000, so we need to see if it's already in the cache.
+
+56
+00:08:59,000 --> 00:09:05,000
+If it is, it's a cache hit. If not, it's called a cache miss.
+
+57
+00:09:05,000 --> 00:09:20,000
+In this example, we have a cache miss and we go to main memory to fetch it, but we don't just fetch 4 bytes, we fetch the 64 byte cache line at address 4000 or bytes 4000 through 4063.
+
+58
+00:09:20,000 --> 00:09:34,000
+We write this cache line into the cache and replay the lookup. This time we're able to read out the 4 bytes at address 4000 and put it into register t0 during the right backstage.
+
+59
+00:09:34,000 --> 00:09:40,000
+Now say our program executes another load instruction, this time reading address 4032.
+
+60
+00:09:40,000 --> 00:09:53,000
+As before, we perform a cache lookup. This time, however, this word exists in the cache because it's within the 64 byte block fetched by the previous load instruction.
+
+61
+00:09:53,000 --> 00:10:15,000
+And with that, we're able to immediately deliver the data word to the register file in one cycle. Programmers looking for the best performance for their code will ensure that blocks of related data, like structs, are packed tightly as well as cache line aligned to make optimal use of the processor's cache.
+
+62
+00:10:15,000 --> 00:10:26,000
+A modern memory hierarchy consists of multiple levels of on-chip caches. The first level cache, or the L1, is physically closest to the processor and also sized to be the fastest.
+
+63
+00:10:26,000 --> 00:10:36,000
+And there are typically two L1 caches, one specifically for instructions accessed in the fetch stage and one for data accessed in the memory stage.
+
+64
+00:10:36,000 --> 00:10:47,000
+Upper level caches, like the L2, are often unified, storing blocks from both instruction and data memory. And main memory itself is usually unified as well.
+
+65
+00:10:47,000 --> 00:11:03,000
+Upper level caches can be inclusive or exclusive of caches at the lower level. An inclusive L2 cache stores a superset of L1 blocks, which means that any block that is currently in the L1 cache must also be in the L2.
+
+66
+00:11:03,000 --> 00:11:14,000
+On the flip side, an exclusive L2 cache implies no redundancy. Any block that is currently in the L1 must not be in the L2 at the same time.
+
+67
+00:11:14,000 --> 00:11:24,000
+The main idea for caches is because of data locality or reuse. There are two flavors of locality, temporal and spatial.
+
+68
+00:11:24,000 --> 00:11:34,000
+Temporal means that applications need working set of data that cannot fit in registers, so they frequently load and store many of the same words as time progresses.
+
+69
+00:11:34,000 --> 00:11:42,000
+Spatial location is the phenomenon that programs access nearby memory locations at roughly the same time.
+
+70
+00:11:42,000 --> 00:11:49,000
+These localities occur naturally in most programs, just by the nature that we process information.
+
+71
+00:11:49,000 --> 00:12:01,000
+This is why even a small cache of 8 kb can satisfy over 90% of all accesses in a multi-mibb dataset.
+
+72
+00:12:01,000 --> 00:12:09,000
+Let's look at another analogy to see why locality naturally exists and why it is significant.
+
+73
+00:12:09,000 --> 00:12:14,000
+Consider how and where you store books for those of you who still prefer paper books.
+
+74
+00:12:14,000 --> 00:12:20,000
+Any book you could ever want can be found in a library or bookstore, but the chances are you'll never read all of them.
+
+75
+00:12:20,000 --> 00:12:27,000
+So you build a collection of books you need for your major, call it your working set, and put them on your bookshelf at home.
+
+76
+00:12:27,000 --> 00:12:36,000
+Now that you're in this semester, you keep the books that you need to access frequently in a stack on your desk. These books are like blocks of data.
+
+77
+00:12:37,000 --> 00:12:45,000
+Let's consider the locality here. As you study different classes, you keep opening the same set of books from your desk to read and study a chapter.
+
+78
+00:12:45,000 --> 00:12:55,000
+As you study a chapter, what are the chances you need to refer back to the last chapter or move to the next one? This is spatial locality in action.
+
+79
+00:12:55,000 --> 00:13:03,000
+Or when the semester ends, you find you don't need to look at that book as much, if ever. This is temporal locality.
+
+80
+00:13:03,000 --> 00:13:09,000
+You'll use these books heavily for this semester, then move on to the next semester.
+
+81
+00:13:09,000 --> 00:13:18,000
+Now imagine you want to read a bit about Aristotle for a change of pace. Would you go to the library, find a book on Greek philosophers, and read a chapter?
+
+82
+00:13:18,000 --> 00:13:24,000
+Maybe you want to read about other philosophers, so perhaps you should check it out and bring it home to keep it close.
+
+83
+00:13:25,000 --> 00:13:43,000
+This simple program demonstrates locality. Array A is accessed in a nested loop. The accesses to the array can be visualized in terms of the iterations of the I loop and the iterations of the J loop.
+
+84
+00:13:43,000 --> 00:13:55,000
+We see that temporal locality exists in each row, as in each iteration of the I loop. Each element of the array is accessed four times in each I iteration.
+
+85
+00:13:55,000 --> 00:14:05,000
+The spatial locality exists across iterations of the I loop. Each subsequent I iteration accesses the neighboring array element.
+
+86
+00:14:06,000 --> 00:14:17,000
+Let's talk about how to design a cache. A cache architecture consists of two key structures, a data array and a tag array.
+
+87
+00:14:17,000 --> 00:14:25,000
+The data array holds the cache line blocks from memory. The tag array holds the tags of the corresponding data blocks.
+
+88
+00:14:25,000 --> 00:14:32,000
+A tag is a specific subset of the blocks address that are used to uniquely identify this block.
+
+89
+00:14:33,000 --> 00:14:41,000
+For example, the block at address 4000 will have a tag that distinguishes it from the block at memory address 5000.
+
+90
+00:14:41,000 --> 00:14:51,000
+The tag also contains metadata stored per block. This includes a valid bit, which means the cache line entry is occupied and not empty.
+
+91
+00:14:51,000 --> 00:15:02,000
+A dirty bit, which indicates that data has been modified since being read from main memory, and replacement bits, which are used for ranking blocks based on how likely they'll be reused.
+
+92
+00:15:02,000 --> 00:15:08,000
+Dirty and replacement blocks will be discussed more in a bit.
+
+93
+00:15:08,000 --> 00:15:15,000
+There are three key design considerations for building a cache, placement, or where can a block of memory go within the data array.
+
+94
+00:15:16,000 --> 00:15:21,000
+Replacement, how do we make space for new blocks in the event that the cache is full?
+
+95
+00:15:21,000 --> 00:15:31,000
+Finally, write policy, how do we propagate modifications from store instructions to the rest of the memory hierarchy? We'll discuss each of these next.
+
+96
+00:15:34,000 --> 00:15:40,000
+The goal of cache placement is to map all of the memory addresses to a finite set of cache storage locations.
+
+97
+00:15:40,000 --> 00:15:49,000
+We'll initially focus on direct map caches in this lecture. In a direct mapped cache, there is only one place in the data array that a block can reside in.
+
+98
+00:15:49,000 --> 00:15:55,000
+Given the memory address, we just drive an index into the data array to decide where to place the block.
+
+99
+00:15:55,000 --> 00:16:02,000
+Set associative caches, which we will introduce later, can hold the data in multiple possible locations.
+
+100
+00:16:03,000 --> 00:16:11,000
+The standard cache indexing scheme is to split the memory address into three components.
+
+101
+00:16:11,000 --> 00:16:18,000
+Tag bits, index bits, and block offset bits. The tag bits are a unique identifier for each block.
+
+102
+00:16:18,000 --> 00:16:23,000
+The index bits specify which location in the cache to find and place this block.
+
+103
+00:16:23,000 --> 00:16:28,000
+And the block offset bits specify which byte in the block we are requesting.
+
+104
+00:16:28,000 --> 00:16:34,000
+Here's an example cache that holds 64 byte blocks with a capacity of 256 bytes.
+
+105
+00:16:34,000 --> 00:16:42,000
+As each cache block is 64 bytes in size, we need six bits to specify which byte in the block we want to access.
+
+106
+00:16:42,000 --> 00:16:55,000
+Since the capacity is 256 bytes, this means that the array has four block storage locations in total, so two bits are needed to specify which of these four locations to place the block.
+
+107
+00:16:55,000 --> 00:17:02,000
+The rest of the address bits are used as the tag.
+
+108
+00:17:02,000 --> 00:17:10,000
+Suppose a program's first read from DRAM is a word at memory access 10000F348.
+
+109
+00:17:10,000 --> 00:17:17,000
+The cache index for this block is 1, which is bit 7 to 6 of the memory address.
+
+110
+00:17:17,000 --> 00:17:28,000
+We'd write the 24-bit tag into index 1 of the tag array, and then we'd write the 64 bytes of data from DRAM into the data array at index 1 again.
+
+111
+00:17:28,000 --> 00:17:44,000
+When the data returns, the data array will contain the data from the byte address hex 100F340 through 100F37F because offset 8 is inside that range of 64 bytes.
+
+112
+00:17:44,000 --> 00:17:55,000
+Now we can return the word to the processor. The data block is read down through the bitlines, and then we shift the block by offset 8 bytes to get the word to return to the processor.
+
+113
+00:17:55,000 --> 00:18:05,000
+This is the standard mechanism for placing a block in the cache and reading out a word.
+
+114
+00:18:05,000 --> 00:18:12,000
+Our caches are usually smaller than all the data we'll ever read, so eventually we'll have to evict and make room for a different block.
+
+115
+00:18:12,000 --> 00:18:17,000
+For now, let's use a direct map scheme which makes the eviction policy straightforward.
+
+116
+00:18:17,000 --> 00:18:27,000
+If our block maps to an index that has a different tag, we have no choice but to evict that block to free the storage.
+
+117
+00:18:27,000 --> 00:18:32,000
+Let's pick up where we left off with the previous example.
+
+118
+00:18:32,000 --> 00:18:39,000
+This time, we request the word at memory address A060BB70.
+
+119
+00:18:39,000 --> 00:18:43,000
+The first step is to split the address into fields to get the index.
+
+120
+00:18:43,000 --> 00:18:51,000
+Taking a look at bits 7 to 6 of the address, we find that the index is 1, but another block is currently occupying the spot in the cache.
+
+121
+00:18:51,000 --> 00:18:58,000
+This means that we have a cache miss and we need to fetch the data block that we want from memory.
+
+122
+00:18:58,000 --> 00:19:07,000
+Once that block arrives, we simply evict the block that was occupying that spot in both the tag and data arrays and write in new values.
+
+123
+00:19:07,000 --> 00:19:17,000
+Now we can retrieve our requested data word, which is at byte position 30 in the data block.
+
+124
+00:19:17,000 --> 00:19:20,000
+The last design consideration is the write policy.
+
+125
+00:19:20,000 --> 00:19:31,000
+In a multi-level hierarchy, more than one copy of a block can exist in the memory hierarchy at once, so we need to be able to correctly propagate any modifications the processor stores.
+
+126
+00:19:31,000 --> 00:19:34,000
+There are two axes to the write policy.
+
+127
+00:19:34,000 --> 00:19:39,000
+The first is whether or not we allocate and bring a block into the cache upon a store miss.
+
+128
+00:19:39,000 --> 00:19:51,000
+So if we perform a store instruction and the block is not currently in the cache, a write no allocate cache will simply send the store value to memory without fetching the block into the cache.
+
+129
+00:19:51,000 --> 00:20:03,000
+On the other hand, a write allocate cache would actually fetch the block and bring it into the cache with anticipation that the program is likely to read it or other words of the block in the near future.
+
+130
+00:20:03,000 --> 00:20:10,000
+The second axis, it deals with whether or not a cache is allowed to hold a newer value than DRAM.
+
+131
+00:20:10,000 --> 00:20:16,000
+With write through, every store would update the values of the block and then propagate a write to DRAM.
+
+132
+00:20:16,000 --> 00:20:21,000
+Write through is typically with write no allocation.
+
+133
+00:20:21,000 --> 00:20:33,000
+On the flip side, a write back cache allows dirty or newer than DRAM data to exist in the cache without burning DRAM bandwidth on every store until it's time to affect when the full block is written back to DRAM.
+
+134
+00:20:33,000 --> 00:20:43,000
+Write back is often implemented with write allocate.
+
+135
+00:20:43,000 --> 00:20:47,000
+Alright, let's work through an example sequence of memory requests.
+
+136
+00:20:47,000 --> 00:20:55,000
+We'll assume a smaller 32 byte cache with four byte blocks and eight bit memory addresses so it all fits on the slide.
+
+137
+00:20:55,000 --> 00:21:00,000
+All memory addresses will be shown here in base four representation for simplicity.
+
+138
+00:21:00,000 --> 00:21:05,000
+With four byte blocks, the least two significant bits correspond to the block offset.
+
+139
+00:21:05,000 --> 00:21:15,000
+With eight blocks, that implies the next three bits correspond to the cache index and the remaining most significant three bits correspond to the tag.
+
+140
+00:21:15,000 --> 00:21:21,000
+The initial cache contents are shown from index zero on the left to index seven on the right.
+
+141
+00:21:21,000 --> 00:21:25,000
+So the first request that we get is to address 3020.
+
+142
+00:21:25,000 --> 00:21:30,000
+This is a cache miss since the tag doesn't match what's at the current index.
+
+143
+00:21:30,000 --> 00:21:35,000
+Looking at bits two to four, we said that this blocks index is two.
+
+144
+00:21:35,000 --> 00:21:44,000
+So when we fetch the block from memory, we insert it into the cache at index two, which replaces blocks 0020.
+
+145
+00:21:44,000 --> 00:21:52,000
+The next address we request is 3030, which is also a miss, but this time it maps into index three.
+
+146
+00:21:52,000 --> 00:21:59,000
+We also get a miss for address 2100, which is then fetched in place into index four.
+
+147
+00:21:59,000 --> 00:22:03,000
+Next we request address 0012.
+
+148
+00:22:03,000 --> 00:22:13,000
+This is a hit because 0012 is contained in the block that's currently at index one of the cache, which is 0010.
+
+149
+00:22:13,000 --> 00:22:20,000
+So when we perform the cache lookup, we simply retrieve the data at byte offset two in the cache blocks.
+
+150
+00:22:20,000 --> 00:22:22,000
+The next request is a miss.
+
+151
+00:22:22,000 --> 00:22:27,000
+Unfortunately, we evicted block 0020 a few accesses earlier.
+
+152
+00:22:27,000 --> 00:22:32,000
+So now we have to pay the penalty of retrieving the block from memory again.
+
+153
+00:22:32,000 --> 00:22:39,000
+The same thing happens for the next block 0030, which was in the cache before it got evicted.
+
+154
+00:22:39,000 --> 00:22:46,000
+The next request is 0110, which is a hit since that block is currently in the cache at index five.
+
+155
+00:22:46,000 --> 00:22:54,000
+Then we have a miss for address 0100, which unfortunately was also evicted in the cache earlier.
+
+156
+00:22:54,000 --> 00:23:04,000
+And lastly, we request address 2100, which conflicts with 0100 and kicks it out again resulting in another cache miss.
+
+157
+00:23:04,000 --> 00:23:12,000
+Hopefully this toy example gives a glimpse into how hardware caches function.
+
+158
+00:23:12,000 --> 00:23:15,000
+Let's wrap up with a couple of exercises.
+
+159
+00:23:15,000 --> 00:23:22,000
+First, given the standard indexing scheme that we discussed, we need to figure out the number of tag bits that we need.
+
+160
+00:23:22,000 --> 00:23:32,000
+Assume a 64 kibba byte direct map cache with 128 byte blocks and a 32 bit memory address.
+
+161
+00:23:32,000 --> 00:23:42,000
+So take a moment to work through the problem. Please pause the video.
+
+162
+00:23:42,000 --> 00:23:45,000
+Step one is to calculate how many blocks we can hold in the cache.
+
+163
+00:23:45,000 --> 00:23:54,000
+Note that when we state the capacity of a cache, we are referring only to the size of the data array, that is how many blocks can it hold.
+
+164
+00:23:54,000 --> 00:23:58,000
+The size of the tag array is not included in the cache capacity.
+
+165
+00:23:58,000 --> 00:24:05,000
+So in this case, we have a 64 kb cache and each block is 128 bytes in size.
+
+166
+00:24:05,000 --> 00:24:10,000
+So that means we can store 512 blocks in the cache.
+
+167
+00:24:10,000 --> 00:24:13,000
+That means we must have 512 indices.
+
+168
+00:24:13,000 --> 00:24:20,000
+So now we know how many bits we need for the index, which is log 512 equal to 9.
+
+169
+00:24:20,000 --> 00:24:25,000
+The number of bits for the block offset is log 128, which is 7.
+
+170
+00:24:25,000 --> 00:24:31,000
+Thus the remaining 16 bits of the 32 bit memory address are used for the tag.
+
+171
+00:24:31,000 --> 00:24:37,000
+Note that technically the tag can be longer containing bits that are also used for the index.
+
+172
+00:24:37,000 --> 00:24:49,000
+It works, but it's not efficient use of Silicon area, as the full address can be rebuilt using the tag and index anyway.
+
+173
+00:24:49,000 --> 00:24:53,000
+Alright, let's return to our simple program from earlier.
+
+174
+00:24:53,000 --> 00:25:00,000
+If we assume that the array A is 256 integers and our cache block size is 16 bytes,
+
+175
+00:25:00,000 --> 00:25:08,000
+then compute how many cache hits we get specifically due to spatial locality after running this program.
+
+176
+00:25:08,000 --> 00:25:11,000
+Assume that the cache is empty in the beginning.
+
+177
+00:25:11,000 --> 00:25:22,000
+Please pause and take some time to work on this one.
+
+178
+00:25:22,000 --> 00:25:25,000
+Let's work through every memory access.
+
+179
+00:25:25,000 --> 00:25:32,000
+With 16 byte blocks, each block contains 4 consecutive 4 byte elements of the array A.
+
+180
+00:25:32,000 --> 00:25:43,000
+The first access to a block will be a miss, as is shown here in red for A sub 0 on the 0th iteration of the I loop and the 0th iteration of the J loop.
+
+181
+00:25:43,000 --> 00:25:52,000
+After that, subsequent accesses in the J loop are hits due to temporal locality since they are reusing A0.
+
+182
+00:25:52,000 --> 00:25:59,000
+However, on the next iteration of the I loop, we will access the neighboring element, in this case, I sub 1.
+
+183
+00:25:59,000 --> 00:26:08,000
+We have never accessed this element before, but it's already in the cache thanks to the cache block size, so it's a hit due to spatial locality.
+
+184
+00:26:08,000 --> 00:26:15,000
+Subsequent accesses to A sub 1 in the J loop are hits due to temporal locality.
+
+185
+00:26:15,000 --> 00:26:22,000
+So this pattern continues for the rest of the program, where each block brings in 4 elements of array A at the same time.
+
+186
+00:26:22,000 --> 00:26:30,000
+This yields 192 hits due to spatial locality.
+
