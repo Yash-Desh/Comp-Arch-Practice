@@ -14,6 +14,10 @@
 !ece552/Project/*.zip
 ece552/Project/project-phase3.zip
 
+# The ece757 lecture archive stays ignored for the same reason: it duplicates the extracted
+# ece757/Lectures/ folder, which is what gets tracked.
+ece757/*.zip
+
 # Verilog simulation output does not belong in the mirror.
 *.vcd
 *.wlf

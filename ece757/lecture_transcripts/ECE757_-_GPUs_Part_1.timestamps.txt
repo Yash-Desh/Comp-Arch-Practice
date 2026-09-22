@@ -1,0 +1,1517 @@
+Title: ECE757 - GPUs (Part 1)
+Source file: ECE757 - GPUs (Part 1).mp4
+Detected language: en
+------------------------------------------------------------
+
+[00:00:00 -> 00:00:04] Finally, about to close out the interconnects topic.
+[00:00:04 -> 00:00:04] We're almost there.
+[00:00:04 -> 00:00:06] Bear with me.
+[00:00:06 -> 00:00:08] Last time we were discussing flow control
+[00:00:08 -> 00:00:10] and the implication on deadlocks.
+[00:00:10 -> 00:00:12] We're going to finish up the flow control discussion
+[00:00:12 -> 00:00:14] and discuss the last piece of interconnects,
+[00:00:14 -> 00:00:16] which is router microarchitecture.
+[00:00:16 -> 00:00:17] And then we'll move on to the GPU stuff
+[00:00:17 -> 00:00:19] and then towards the heterogeneous
+[00:00:19 -> 00:00:20] and accelerator things.
+[00:00:21 -> 00:00:24] Okay, so the last piece of flow control
+[00:00:24 -> 00:00:26] that we didn't get a chance to go through last time
+[00:00:26 -> 00:00:29] was the buffer back pressure piece.
+[00:00:29 -> 00:00:31] So how do you actually deal with the fact
+[00:00:31 -> 00:00:33] that buffers are finite in size?
+[00:00:33 -> 00:00:35] So you need some form of mechanism
+[00:00:35 -> 00:00:37] to prevent the overflow.
+[00:00:37 -> 00:00:39] And the only reason why this is a little bit
+[00:00:39 -> 00:00:42] of a consideration is because when you connect to routers,
+[00:00:42 -> 00:00:44] there is still some delay associated
+[00:00:44 -> 00:00:46] with even any form of signaling,
+[00:00:46 -> 00:00:47] not just with sending the data,
+[00:00:47 -> 00:00:49] but also for signaling of things
+[00:00:49 -> 00:00:52] like my buffer is about to overflow, et cetera.
+[00:00:52 -> 00:00:54] So you need to then trade off
+[00:00:54 -> 00:00:55] how often you do signaling
+[00:00:55 -> 00:00:57] and how precise you want the control
+[00:00:57 -> 00:01:00] of the buffer utilization to be.
+[00:01:00 -> 00:01:03] So in NOX, I know it wasn't necessarily
+[00:01:03 -> 00:01:05] explicitly said before,
+[00:01:05 -> 00:01:06] but the network on chip that we assume
+[00:01:06 -> 00:01:09] for a chip multiprocessor are lossless.
+[00:01:09 -> 00:01:11] That means packets are never dropped.
+[00:01:11 -> 00:01:14] Every packet that is injected into the network
+[00:01:14 -> 00:01:15] is eventually expected and guaranteed
+[00:01:15 -> 00:01:17] to arrive and eject from the network
+[00:01:17 -> 00:01:19] at its destination.
+[00:01:19 -> 00:01:23] So contrast that to internetworking, the internet,
+[00:01:23 -> 00:01:26] which uses TCPIP and other internet protocols
+[00:01:26 -> 00:01:29] that allows for packets to be dropped arbitrarily
+[00:01:29 -> 00:01:31] because it's built to be robust
+[00:01:31 -> 00:01:33] against nodes and routers themselves
+[00:01:33 -> 00:01:36] dropping from the network arbitrarily.
+[00:01:36 -> 00:01:37] At any moment in time,
+[00:01:37 -> 00:01:38] you could lose a wifi connection
+[00:01:38 -> 00:01:40] and the world doesn't end.
+[00:01:40 -> 00:01:43] So in NOX, there's a different story.
+[00:01:43 -> 00:01:45] We need to build the entire system to be lossless,
+[00:01:45 -> 00:01:47] but that's okay because when you build
+[00:01:47 -> 00:01:49] your entire multiprocessor anyway,
+[00:01:49 -> 00:01:51] all the other compute components,
+[00:01:51 -> 00:01:54] cache components are expected to be reliable already.
+[00:01:54 -> 00:01:55] You can make your interconnect
+[00:01:55 -> 00:01:58] that interconnects these also reliable too.
+[00:01:59 -> 00:02:00] So there are two main types
+[00:02:00 -> 00:02:03] of buffer back pressure flow control mechanisms
+[00:02:03 -> 00:02:05] that you're expected to see in the literature.
+[00:02:05 -> 00:02:07] The first one that you'll see most commonly
+[00:02:07 -> 00:02:09] is credit-based flow control.
+[00:02:09 -> 00:02:10] I've used this term before.
+[00:02:10 -> 00:02:14] All that simply means is each upstream router,
+[00:02:14 -> 00:02:18] so the sender, maintains credit count
+[00:02:18 -> 00:02:22] of the available space in all of its downstream routers.
+[00:02:22 -> 00:02:26] So if I am capable of going north, south, east, or west,
+[00:02:26 -> 00:02:29] then the north router about my north neighbor,
+[00:02:29 -> 00:02:30] my south neighbor, my east neighbor,
+[00:02:30 -> 00:02:33] and my west neighbor are all potential downstream routers
+[00:02:33 -> 00:02:36] because I could send the packet to all of them.
+[00:02:36 -> 00:02:39] So I will maintain the number of credits,
+[00:02:39 -> 00:02:40] which is just the number of space left,
+[00:02:40 -> 00:02:42] the number of flits left
+[00:02:42 -> 00:02:44] in the buffers of each of my neighbors.
+[00:02:45 -> 00:02:47] So that's all that simply means.
+[00:02:47 -> 00:02:49] So then when you do that,
+[00:02:49 -> 00:02:51] when the credit count goes to zero,
+[00:02:51 -> 00:02:53] it simply means that there is no more space,
+[00:02:53 -> 00:02:55] so I should stop sending.
+[00:02:55 -> 00:02:58] So we'll get into the exact processing pipeline
+[00:02:58 -> 00:03:01] within a router in a few slides.
+[00:03:02 -> 00:03:06] We'll assume right now that when there is space available
+[00:03:06 -> 00:03:09] and we're ready to send out a flit from our router,
+[00:03:09 -> 00:03:11] it takes three cycles.
+[00:03:11 -> 00:03:13] There is a processing pipeline,
+[00:03:13 -> 00:03:16] that takes three cycles, let's say.
+[00:03:16 -> 00:03:18] So when we have our upstream and a downstream router,
+[00:03:18 -> 00:03:21] what could happen is when the downstream router
+[00:03:21 -> 00:03:24] frees up space and sends out a flit
+[00:03:25 -> 00:03:27] from the buffer that we are vying for,
+[00:03:27 -> 00:03:29] the virtual channel, whatever it may be,
+[00:03:29 -> 00:03:33] a credit will be sent back towards us
+[00:03:33 -> 00:03:35] to let us know that there is now space
+[00:03:35 -> 00:03:36] at that buffer downstream.
+[00:03:37 -> 00:03:40] So this credit will usually take the same link delay
+[00:03:40 -> 00:03:42] that the data is also taking to.
+[00:03:42 -> 00:03:43] So if we're assuming a one cycle link delay,
+[00:03:43 -> 00:03:46] then they'll both take one cycle.
+[00:03:46 -> 00:03:48] So that credit will go out simultaneously
+[00:03:48 -> 00:03:49] and we will receive it.
+[00:03:49 -> 00:03:52] That signals to us that we can now begin processing
+[00:03:52 -> 00:03:55] another flit to send over to the downstream router
+[00:03:55 -> 00:03:58] because now we know there is space.
+[00:03:58 -> 00:04:00] So we will have a three cycle processing pipeline
+[00:04:00 -> 00:04:01] to do this.
+[00:04:02 -> 00:04:04] We will then send that flit over
+[00:04:04 -> 00:04:06] with a one cycle delay,
+[00:04:06 -> 00:04:08] which subsequently also sends a credit backwards
+[00:04:08 -> 00:04:11] because we are now freeing up a buffer slot
+[00:04:11 -> 00:04:14] in our router, so we should tell our upstream router
+[00:04:14 -> 00:04:16] that we've freed up a spot.
+[00:04:17 -> 00:04:18] And then when this flit arrives,
+[00:04:18 -> 00:04:22] it itself will also incur the three cycle processing
+[00:04:22 -> 00:04:23] at the downstream router
+[00:04:23 -> 00:04:24] before it's eventually sent out.
+[00:04:26 -> 00:04:27] So this is the typical procedure
+[00:04:27 -> 00:04:30] and it's a simple handshake
+[00:04:30 -> 00:04:33] where we're able to count and using these signals,
+[00:04:33 -> 00:04:35] be able to tell us how much space we have available
+[00:04:35 -> 00:04:36] at any moment in time.
+[00:04:37 -> 00:04:40] Now, if you want to have good performance,
+[00:04:40 -> 00:04:43] you need to figure out what the credit round trip delay
+[00:04:43 -> 00:04:47] is and that's simply the time between,
+[00:04:47 -> 00:04:51] the time it takes for having freed up a slot
+[00:04:51 -> 00:04:54] in your router to being at that point
+[00:04:54 -> 00:04:56] where then that slot is consumed
+[00:04:57 -> 00:04:59] and then freed up again.
+[00:05:00 -> 00:05:02] So this is effectively for a single credit
+[00:05:02 -> 00:05:05] the entire lifetime of one slot in your router.
+[00:05:06 -> 00:05:08] And if the credit round trip delay here
+[00:05:08 -> 00:05:11] in this case is eight cycles,
+[00:05:11 -> 00:05:16] then you need to have at least eight flits size of a buffer
+[00:05:16 -> 00:05:18] if you want to get maximum performance
+[00:05:18 -> 00:05:21] because you need to keep yourself busy
+[00:05:21 -> 00:05:24] and constantly be sending out flits at every cycle
+[00:05:24 -> 00:05:26] if you want maximum performance.
+[00:05:27 -> 00:05:30] So the longer this flit processing pipeline
+[00:05:30 -> 00:05:34] and the longer the delay incurred by your credit links
+[00:05:34 -> 00:05:36] and the credit signaling,
+[00:05:36 -> 00:05:39] the bigger the size of the buffers that you'll need.
+[00:05:39 -> 00:05:40] Of course, it doesn't mean
+[00:05:40 -> 00:05:43] that things won't work properly if you had smaller buffers.
+[00:05:43 -> 00:05:46] You just won't get a perfectly smooth pipeline.
+[00:05:46 -> 00:05:49] There will be delays and stalls in there
+[00:05:49 -> 00:05:51] because you just have either nothing to process
+[00:05:51 -> 00:05:54] or there is no space available in your buffers.
+[00:05:54 -> 00:05:55] So the general rule of thumb
+[00:05:55 -> 00:05:59] with any simple credit-based flow control mechanism,
+[00:05:59 -> 00:06:01] figure out how long it takes for this credit round trip
+[00:06:02 -> 00:06:06] and then have enough flit buffers available
+[00:06:06 -> 00:06:08] and then you will in theory be able
+[00:06:08 -> 00:06:10] to get maximum performance and utilization.
+[00:06:12 -> 00:06:13] Now this involves a lot of signaling
+[00:06:14 -> 00:06:16] in order to send the credits.
+[00:06:16 -> 00:06:18] Every time a flint goes downstream,
+[00:06:18 -> 00:06:21] a credit signal goes upstream.
+[00:06:21 -> 00:06:24] So we always have bi-directional signaling traffic
+[00:06:24 -> 00:06:25] every single time.
+[00:06:25 -> 00:06:28] Now a credit signal is tiny.
+[00:06:28 -> 00:06:28] It doesn't change the fact
+[00:06:28 -> 00:06:31] that it's still incurring some form of energy to go up
+[00:06:31 -> 00:06:34] and needs to be processed by the pair of routers
+[00:06:34 -> 00:06:36] that are dealing with the credits.
+[00:06:36 -> 00:06:40] So if you wanna sort of trade off the amount of signaling
+[00:06:40 -> 00:06:42] for potentially a little bit worse performance,
+[00:06:42 -> 00:06:46] the more basic implementation is on-off flow control.
+[00:06:46 -> 00:06:48] Because the router pipelines tend to be deterministic
+[00:06:48 -> 00:06:50] in how long they'll take,
+[00:06:50 -> 00:06:53] then you could just have sort of a threshold that says,
+[00:06:53 -> 00:06:55] hey, my buffer is at such capacity,
+[00:06:55 -> 00:06:57] I will send an on signal
+[00:06:57 -> 00:07:01] so that I can now take on more information, more flits
+[00:07:01 -> 00:07:03] and then subsequently take an off signal.
+[00:07:03 -> 00:07:08] Say for example, we have six flit buffers in the downstream
+[00:07:09 -> 00:07:11] and we have a one cycle flit processing pipeline
+[00:07:11 -> 00:07:12] and a one cycle link delay.
+[00:07:13 -> 00:07:16] So upstream sends some flits.
+[00:07:16 -> 00:07:18] Each cycle it's able to send down a flit
+[00:07:18 -> 00:07:20] to the downstream router.
+[00:07:21 -> 00:07:23] And then at some point, the downstream router
+[00:07:23 -> 00:07:26] will have a threshold that you will carefully set.
+[00:07:27 -> 00:07:30] In this case, if it has a six flit buffer size,
+[00:07:30 -> 00:07:32] it knows that the link delay is one cycle
+[00:07:32 -> 00:07:35] and the processing delay is one cycle.
+[00:07:35 -> 00:07:38] So when it gets the fourth flit,
+[00:07:38 -> 00:07:40] it should be ready to send the signal back
+[00:07:40 -> 00:07:42] to say, hey, stop sending more.
+[00:07:43 -> 00:07:45] So that by the time this signal
+[00:07:45 -> 00:07:48] is able to be processed upstream,
+[00:07:48 -> 00:07:51] you have exactly your buffer size
+[00:07:51 -> 00:07:54] so that you don't overflow your buffer downstream.
+[00:07:54 -> 00:07:56] Okay, so this will depend on the delay
+[00:07:56 -> 00:07:58] it takes to send the signal
+[00:07:58 -> 00:08:00] and it takes to send flits down.
+[00:08:00 -> 00:08:03] So you will just send that and time it accordingly
+[00:08:03 -> 00:08:04] and that's usually fine
+[00:08:04 -> 00:08:05] because everything is deterministic
+[00:08:05 -> 00:08:07] in terms of how long things take the process,
+[00:08:07 -> 00:08:09] generally speaking.
+[00:08:09 -> 00:08:14] So now say the downstream router was stalled in some way
+[00:08:14 -> 00:08:16] and wasn't able to send out these flits
+[00:08:16 -> 00:08:18] and it gets an on signal.
+[00:08:18 -> 00:08:22] So now with one cycle processing pipeline,
+[00:08:22 -> 00:08:24] it's able to start sending out flits.
+[00:08:24 -> 00:08:25] It'll do the same process
+[00:08:26 -> 00:08:29] and it'll have a threshold to send an on signal.
+[00:08:30 -> 00:08:33] And then you could set this sort of aggressively
+[00:08:33 -> 00:08:34] if you want, it could have been sent earlier
+[00:08:34 -> 00:08:37] because you started freeing up space right away.
+[00:08:38 -> 00:08:40] But the upper bound that you'd want to send it
+[00:08:40 -> 00:08:43] is such that by the time you've exhausted all your flits,
+[00:08:43 -> 00:08:47] you immediately have a new flit to process,
+[00:08:47 -> 00:08:48] ready to go.
+[00:08:49 -> 00:08:50] Okay, so this on signal, for example,
+[00:08:50 -> 00:08:54] is timed to be the latest it should be,
+[00:08:54 -> 00:08:56] in which case a flit has arrived right here at the end
+[00:08:56 -> 00:08:58] which will take one cycle to process
+[00:08:58 -> 00:09:00] and it should be able to be sent out
+[00:09:00 -> 00:09:02] after the sixth flit goes out of the downstream.
+[00:09:04 -> 00:09:06] So with this, you then control just how the level
+[00:09:06 -> 00:09:08] of signaling that you want to do.
+[00:09:08 -> 00:09:11] So you're not constantly sending signals back and forth
+[00:09:11 -> 00:09:13] and every time a new flit leaves.
+[00:09:13 -> 00:09:16] Otherwise, if this is credit-based flow control,
+[00:09:16 -> 00:09:17] if you recall, we're going to send out a credit this way,
+[00:09:17 -> 00:09:19] a credit this way, a credit this way,
+[00:09:19 -> 00:09:22] a credit this way every single time we send something off.
+[00:09:23 -> 00:09:25] So that's the trade-off in terms of performance
+[00:09:25 -> 00:09:27] that you'll get and the amount of signaling overhead
+[00:09:27 -> 00:09:30] that's induced.
+[00:09:30 -> 00:09:34] Okay, any questions on that?
+[00:09:34 -> 00:09:36] So that's the last bit of flow control.
+[00:09:36 -> 00:09:37] We're doing the last quick piece
+[00:09:37 -> 00:09:39] which is the router microarchitecture
+[00:09:40 -> 00:09:41] because it's important to know
+[00:09:41 -> 00:09:43] and you need to walk out of this course
+[00:09:43 -> 00:09:45] with a little bit of this knowledge.
+[00:09:45 -> 00:09:47] So effectively, the router microarchitecture
+[00:09:47 -> 00:09:50] just describes a high level concept of the circuitry
+[00:09:50 -> 00:09:52] and logic within the routers
+[00:09:52 -> 00:09:55] that implements everything that we've discussed so far.
+[00:09:55 -> 00:09:56] And so your baseline router
+[00:09:56 -> 00:09:58] and the one that you're going to see
+[00:09:58 -> 00:09:59] in most standard places
+[00:09:59 -> 00:10:02] is going to look something like this.
+[00:10:02 -> 00:10:06] There will be a set of input ports over here.
+[00:10:06 -> 00:10:09] Usually you'll see it depicted as five
+[00:10:09 -> 00:10:10] because the most common topology
+[00:10:10 -> 00:10:13] will be a two-dimensional mesh
+[00:10:13 -> 00:10:15] which has a north, south, east, west input
+[00:10:15 -> 00:10:18] as well as the input of your injection,
+[00:10:18 -> 00:10:20] the node, the processor and cache
+[00:10:20 -> 00:10:22] that's connected to the router.
+[00:10:22 -> 00:10:26] You can view it as the driveway of this intersection.
+[00:10:26 -> 00:10:27] So this is the standard.
+[00:10:27 -> 00:10:28] And then the output is the same thing,
+[00:10:28 -> 00:10:30] northbound, eastbound, southbound, westbound
+[00:10:30 -> 00:10:32] and ejection into the driveway.
+[00:10:34 -> 00:10:37] So then the router components is simply,
+[00:10:37 -> 00:10:41] generally speaking, the routers will be input buffered.
+[00:10:41 -> 00:10:44] So the buffers that hold the flits and packets
+[00:10:44 -> 00:10:47] will be at the input ports and not the output ports,
+[00:10:47 -> 00:10:48] though both are possible.
+[00:10:49 -> 00:10:52] And the whole idea is for each input port,
+[00:10:52 -> 00:10:53] we've talked about there will be
+[00:10:53 -> 00:10:56] multiple virtual channels, VCs.
+[00:10:56 -> 00:10:58] Sometimes these will be broken up
+[00:10:58 -> 00:10:59] into different virtual networks.
+[00:10:59 -> 00:11:04] This might be a virtual network for request packets.
+[00:11:04 -> 00:11:07] This might be a virtual network for response packets.
+[00:11:07 -> 00:11:10] All that simply means is that depending on the type
+[00:11:10 -> 00:11:13] of your coherence packet, your coherence message,
+[00:11:13 -> 00:11:15] there will be a subset of the VCs
+[00:11:15 -> 00:11:17] that you're allowed to take.
+[00:11:17 -> 00:11:19] And if you recall, the whole point of that
+[00:11:19 -> 00:11:21] was to get rid of protocol-level deadlock
+[00:11:21 -> 00:11:23] because a response should never have to be
+[00:11:23 -> 00:11:26] blocked behind a request.
+[00:11:26 -> 00:11:31] If a request gets stuck, then that request may be stuck
+[00:11:31 -> 00:11:33] because it's waiting on the response to arrive
+[00:11:33 -> 00:11:36] and it shouldn't subsequently be blocking that response.
+[00:11:37 -> 00:11:39] Okay, and then there's gonna be multiple steps
+[00:11:39 -> 00:11:42] that we're gonna discuss in a moment.
+[00:11:42 -> 00:11:44] So as I mentioned, knock routers tend to be
+[00:11:44 -> 00:11:47] input buffered, and then there is a typical
+[00:11:47 -> 00:11:49] five-stage pipeline.
+[00:11:49 -> 00:11:51] Just like we learned with processors,
+[00:11:51 -> 00:11:53] there's typically a five-stage pipeline,
+[00:11:53 -> 00:11:55] and that doesn't include the link traversal
+[00:11:55 -> 00:11:58] because this can vary on the delay,
+[00:11:58 -> 00:11:59] even within a single network.
+[00:11:59 -> 00:12:01] Some links can be longer than others,
+[00:12:01 -> 00:12:05] so the traversal through the links can vary in time.
+[00:12:05 -> 00:12:06] But there's usually a five-stage pipeline
+[00:12:06 -> 00:12:08] that occurs when you enter,
+[00:12:08 -> 00:12:11] when you're inside a router at each hop.
+[00:12:11 -> 00:12:15] So first piece is assume we have a flit
+[00:12:15 -> 00:12:18] that has just entered our router.
+[00:12:18 -> 00:12:19] It's all the way down here,
+[00:12:19 -> 00:12:21] tiny little orange in the bottom.
+[00:12:21 -> 00:12:24] Okay, it has entered this input five port.
+[00:12:24 -> 00:12:27] Say this is the south input port,
+[00:12:27 -> 00:12:30] so this is coming from underneath the router.
+[00:12:30 -> 00:12:33] So there's the south input port entering here.
+[00:12:33 -> 00:12:35] The first stage is a buffer write,
+[00:12:35 -> 00:12:39] which simply looks at the metadata of the flit
+[00:12:39 -> 00:12:43] and then figures out which VC it's supposed to be in.
+[00:12:44 -> 00:12:47] And you know that ahead of time at the previous router,
+[00:12:47 -> 00:12:48] as we'll see in a moment,
+[00:12:48 -> 00:12:51] when you do that stage in this router.
+[00:12:51 -> 00:12:56] So in this case, this flit was bound for VC3 of that port.
+[00:12:57 -> 00:12:58] So that's the first stage.
+[00:12:58 -> 00:13:00] It's a simple stage, buffer write.
+[00:13:00 -> 00:13:02] The next stage is the routing computation.
+[00:13:03 -> 00:13:06] What that means is with the routing computation,
+[00:13:06 -> 00:13:09] if you are at the head and you are ready to compute
+[00:13:09 -> 00:13:10] where you're going to go next,
+[00:13:10 -> 00:13:11] you need to figure out
+[00:13:11 -> 00:13:13] where you're going to turn in this router.
+[00:13:13 -> 00:13:15] Am I gonna take the output one?
+[00:13:15 -> 00:13:17] Am I gonna go northbound, eastbound, southbound,
+[00:13:17 -> 00:13:21] et cetera, depending on where my flit is bound for.
+[00:13:22 -> 00:13:23] So in this case, say we figure out that,
+[00:13:23 -> 00:13:26] hey, we're gonna go take the east output.
+[00:13:28 -> 00:13:32] So that means I will be looking at my east neighbor
+[00:13:32 -> 00:13:37] router and I am bound to go to their west input port
+[00:13:39 -> 00:13:40] because that's what will be connected
+[00:13:40 -> 00:13:43] to my east output port at the current route.
+[00:13:43 -> 00:13:44] So the route computation simply says,
+[00:13:44 -> 00:13:47] hey, the turn you are going to take now,
+[00:13:47 -> 00:13:48] you came from the, in this case,
+[00:13:48 -> 00:13:50] let's pretend I came from south,
+[00:13:50 -> 00:13:53] you are now going to go and turn right to the east.
+[00:13:54 -> 00:13:57] So you figure that out during route computation.
+[00:13:57 -> 00:13:58] All the while, you are still sitting
+[00:13:58 -> 00:14:00] in this VC spot that you've been holding.
+[00:14:02 -> 00:14:03] Then the next stage,
+[00:14:03 -> 00:14:05] you will do virtual channel allocation,
+[00:14:05 -> 00:14:07] so VC allocation.
+[00:14:07 -> 00:14:09] What that simply means is once you've figured out
+[00:14:09 -> 00:14:12] the potential places you can turn to,
+[00:14:12 -> 00:14:14] you have to pick a VC among them
+[00:14:14 -> 00:14:17] that is free that you can take.
+[00:14:17 -> 00:14:19] This will fail if all the VCs are full
+[00:14:19 -> 00:14:21] and you'll just have to sit there and wait.
+[00:14:21 -> 00:14:22] What if there's one available?
+[00:14:22 -> 00:14:26] Say you've identified VC four is available for us.
+[00:14:26 -> 00:14:30] Then you will reserve it and eat up a credit
+[00:14:30 -> 00:14:31] in the credit counter that you have here
+[00:14:31 -> 00:14:34] in your allocator.
+[00:14:34 -> 00:14:36] Then once that's good to go,
+[00:14:36 -> 00:14:38] you have a spot reserved.
+[00:14:38 -> 00:14:40] You have a free spot that you're able to go
+[00:14:40 -> 00:14:43] in the downstream router.
+[00:14:43 -> 00:14:46] You will now try to time multiplex
+[00:14:46 -> 00:14:50] and use the switch so that you can use the physical link
+[00:14:50 -> 00:14:52] because there are four VCs here.
+[00:14:52 -> 00:14:53] There's a whole bunch of VCs here
+[00:14:53 -> 00:14:56] that could all be vying for this output port
+[00:14:56 -> 00:14:59] that a lot of people wanna go east
+[00:14:59 -> 00:15:01] at any moment in time.
+[00:15:01 -> 00:15:04] We have to take turns and time multiplex through that.
+[00:15:04 -> 00:15:06] That's the reason why we call the virtual channels.
+[00:15:06 -> 00:15:10] We have four ports coming in
+[00:15:10 -> 00:15:13] or four VC buffers available, virtual channels,
+[00:15:13 -> 00:15:15] but it's only one link,
+[00:15:15 -> 00:15:17] so we have to time multiplex through it.
+[00:15:17 -> 00:15:19] So switch allocation simply says,
+[00:15:19 -> 00:15:22] hey, let me vie for this.
+[00:15:22 -> 00:15:26] And if I win, then that means in the next cycle
+[00:15:26 -> 00:15:28] I can proceed to the switch traversal,
+[00:15:28 -> 00:15:30] which lets me finally leave the VC,
+[00:15:31 -> 00:15:33] traverse through the crossbar.
+[00:15:33 -> 00:15:35] This should always work
+[00:15:35 -> 00:15:38] because I wouldn't have one switch allocation otherwise
+[00:15:38 -> 00:15:39] if there was a conflict.
+[00:15:40 -> 00:15:43] And then finally is link traversal.
+[00:15:43 -> 00:15:46] And then everything starts again in the next router.
+[00:15:46 -> 00:15:49] We will then proceed to buffer write
+[00:15:49 -> 00:15:52] starting in the next router.
+[00:15:52 -> 00:16:05] Question here first.
+[00:16:05 -> 00:16:06] Right, so if you're stuck here
+[00:16:06 -> 00:16:10] because in VC allocation you're still stuck,
+[00:16:10 -> 00:16:14] you don't succeed, there's no available free slot,
+[00:16:14 -> 00:16:16] then what you'll have to do is anyone behind you,
+[00:16:16 -> 00:16:18] so among these three flip buffers,
+[00:16:18 -> 00:16:19] we'll have to wait behind you.
+[00:16:19 -> 00:16:20] So the head of line blocking
+[00:16:20 -> 00:16:21] is limited to everyone in your lane,
+[00:16:22 -> 00:16:23] just like in real life.
+[00:16:23 -> 00:16:24] If you're trying to turn right
+[00:16:24 -> 00:16:27] but there's a pedestrian that's walking really slowly,
+[00:16:27 -> 00:16:28] you will have to stop there
+[00:16:28 -> 00:16:30] and everyone behind you on the right turn lane
+[00:16:30 -> 00:16:31] is also paused, but people going straight
+[00:16:31 -> 00:16:36] shouldn't have to wait behind you.
+[00:16:36 -> 00:16:39] They assume you have a right turn lane.
+[00:16:39 -> 00:16:48] Is there a question there?
+[00:16:48 -> 00:16:51] So in the VA stage here,
+[00:16:51 -> 00:16:54] you're not writing to this.
+[00:16:54 -> 00:16:56] What you're doing is you are declaring
+[00:16:56 -> 00:16:58] that that's where you're bound to go.
+[00:16:58 -> 00:17:00] So you could think of your VC allocator
+[00:17:00 -> 00:17:04] has the credit counts.
+[00:17:04 -> 00:17:05] Say this is the input one,
+[00:17:05 -> 00:17:07] it'll have the credit counts
+[00:17:07 -> 00:17:11] for sort of that input this port here
+[00:17:11 -> 00:17:13] from your neighbor router
+[00:17:13 -> 00:17:15] and then you will be decrementing one of them
+[00:17:15 -> 00:17:17] to say I am going to consume that slot.
+[00:17:18 -> 00:17:21] That way you guarantee you have somewhere to go
+[00:17:21 -> 00:17:22] so that if you traverse this link,
+[00:17:22 -> 00:17:24] you're not just showing up at the router
+[00:17:24 -> 00:17:26] and be like I have nowhere to go,
+[00:17:26 -> 00:17:32] then you're going to be a lost packet.
+[00:17:32 -> 00:17:33] Okay.
+[00:17:34 -> 00:17:37] So this is a typical five-stage pipeline.
+[00:17:38 -> 00:17:40] So it is a pipeline just like with any pipeline.
+[00:17:40 -> 00:17:42] The only difference in consideration
+[00:17:42 -> 00:17:43] is that it's not entirely the same
+[00:17:43 -> 00:17:45] for all the flits of a packet.
+[00:17:45 -> 00:17:48] So in this case if we have like a four-flit packet,
+[00:17:48 -> 00:17:50] only the head flits, as mentioned before,
+[00:17:50 -> 00:17:52] is responsible for doing things
+[00:17:52 -> 00:17:55] like the routing computation and for picking the VC.
+[00:17:56 -> 00:17:58] The head basically, in other words,
+[00:17:58 -> 00:18:01] decides we are going to turn left
+[00:18:01 -> 00:18:03] and we are going to take the third lane.
+[00:18:04 -> 00:18:08] Then everyone in the convoy behind it will follow suit.
+[00:18:08 -> 00:18:10] So that stage just needs to be encoded
+[00:18:10 -> 00:18:13] in the router itself and part of that VC.
+[00:18:13 -> 00:18:15] So then none of the body flits and the tail flit
+[00:18:15 -> 00:18:17] have to do any of those stages.
+[00:18:17 -> 00:18:18] But it's still a pipeline
+[00:18:18 -> 00:18:21] so they will have to consume idle cycles
+[00:18:21 -> 00:18:23] during those stages in order to do it.
+[00:18:25 -> 00:18:26] Okay.
+[00:18:27 -> 00:18:29] So then at the end of the day,
+[00:18:29 -> 00:18:31] as briefly discussed before,
+[00:18:31 -> 00:18:33] when we have a wormhole flow control,
+[00:18:33 -> 00:18:37] so flip-based flow control system,
+[00:18:37 -> 00:18:40] then your zero load packet latency,
+[00:18:40 -> 00:18:41] recall zero load packet latency,
+[00:18:41 -> 00:18:45] that simply means in the absence of any contention,
+[00:18:45 -> 00:18:47] would be the serialization delay
+[00:18:47 -> 00:18:49] associated with your packet.
+[00:18:50 -> 00:18:53] So someone tell me again,
+[00:18:53 -> 00:18:55] what is the serialization delay?
+[00:18:56 -> 00:18:59] Say my link bandwidths can support one flit per cycle
+[00:19:00 -> 00:19:06] and my packets are five flits in size.
+[00:19:06 -> 00:19:11] What is the serialization delay?
+[00:19:11 -> 00:19:12] Is that a hand or is that a five?
+[00:19:15 -> 00:19:17] I picked five for a reason.
+[00:19:17 -> 00:19:18] Yeah, so your serialization delay
+[00:19:18 -> 00:19:19] is gonna be five cycles.
+[00:19:19 -> 00:19:21] It simply is a mandatory delay
+[00:19:21 -> 00:19:23] you're always going to incur
+[00:19:23 -> 00:19:25] because your five flit size packet
+[00:19:25 -> 00:19:27] can't move all as one
+[00:19:27 -> 00:19:29] because your channels, your physical links
+[00:19:29 -> 00:19:32] are not big enough the whole thing.
+[00:19:32 -> 00:19:33] So at some point in the network
+[00:19:33 -> 00:19:36] you're gonna have to do this serialized piece by piece,
+[00:19:36 -> 00:19:39] one at a time and there will be five of us.
+[00:19:39 -> 00:19:41] Now if everything else is properly pipelined,
+[00:19:41 -> 00:19:44] you only have to incur that delay once.
+[00:19:44 -> 00:19:46] Then everyone else is perfectly overlapping,
+[00:19:46 -> 00:19:49] progressing through the interconnect from now on.
+[00:19:49 -> 00:19:51] Of course that changes the moment there is contention,
+[00:19:51 -> 00:19:54] you will pay the cost of serialization again
+[00:19:54 -> 00:19:57] once we have to stop at any moment in time.
+[00:19:58 -> 00:20:00] But beyond that it should be typically safe.
+[00:20:00 -> 00:20:02] So then in the absence of contention,
+[00:20:02 -> 00:20:05] you're paying this once and then at each hop
+[00:20:05 -> 00:20:08] you're expending the five stage router pipeline
+[00:20:08 -> 00:20:13] plus the link delay every single time.
+[00:20:13 -> 00:20:15] Okay, so in modern routers
+[00:20:15 -> 00:20:17] we're typically built for higher performance
+[00:20:17 -> 00:20:20] and will not usually follow this pipeline
+[00:20:20 -> 00:20:21] in the same way a modern processor
+[00:20:21 -> 00:20:23] is not your typical five stage pipeline.
+[00:20:23 -> 00:20:25] Example optimizations,
+[00:20:25 -> 00:20:27] we're not gonna go through all the details of this,
+[00:20:27 -> 00:20:31] just a few example ones that are common that you'll see.
+[00:20:31 -> 00:20:33] The first is lookahead routing.
+[00:20:33 -> 00:20:36] This is the easiest one to reason about.
+[00:20:36 -> 00:20:38] So when we show up at an intersection,
+[00:20:38 -> 00:20:40] we decide then and there
+[00:20:40 -> 00:20:45] if we're going to turn left, right or go straight.
+[00:20:45 -> 00:20:46] Lookahead routing simply means
+[00:20:46 -> 00:20:47] we can just change the logic
+[00:20:47 -> 00:20:51] because the topology is fixed and known ahead of time.
+[00:20:52 -> 00:20:54] That you can do your decision
+[00:20:54 -> 00:20:56] for the next intersection at the current one.
+[00:20:57 -> 00:20:59] So when you get to this intersection
+[00:20:59 -> 00:21:01] I could do the route computation
+[00:21:01 -> 00:21:03] in parallel to something else I'm busy doing
+[00:21:03 -> 00:21:05] because I already know which way I'm turning.
+[00:21:06 -> 00:21:09] And then now I will just do route computation for it.
+[00:21:09 -> 00:21:11] So I know here pre-computed
+[00:21:11 -> 00:21:14] that I'm going to turn left at this intersection.
+[00:21:14 -> 00:21:16] And when I turn left, I know I'm gonna next hit,
+[00:21:16 -> 00:21:18] I'm gonna hit, I don't know,
+[00:21:18 -> 00:21:21] West Johnson or something next.
+[00:21:21 -> 00:21:24] Then I'm gonna decide now here at this point
+[00:21:24 -> 00:21:27] what I'm gonna do when I hit that intersection.
+[00:21:27 -> 00:21:30] So you always do it one step, one hop ahead.
+[00:21:30 -> 00:21:32] And that's sufficient.
+[00:21:32 -> 00:21:34] That way then you can concurrently do route computation
+[00:21:34 -> 00:21:37] with any of the other stages in the current router.
+[00:21:37 -> 00:21:40] A common case would be to do it during VC allocation.
+[00:21:41 -> 00:21:42] Okay, so now you save yourself
+[00:21:42 -> 00:21:44] one pipeline stage for your router.
+[00:21:46 -> 00:21:49] Another common one is speculation.
+[00:21:49 -> 00:21:52] We are allocating two things, technically speaking.
+[00:21:52 -> 00:21:54] We are allocating which lane we're gonna take
+[00:21:54 -> 00:21:57] in our neighbor, in our downstream router
+[00:21:57 -> 00:21:59] when we eventually get there.
+[00:21:59 -> 00:22:01] And we are allocating the switch,
+[00:22:01 -> 00:22:04] the chance to access the crossbar in our router
+[00:22:04 -> 00:22:09] on the next cycle, because we have the time multiplex.
+[00:22:09 -> 00:22:11] There is four lanes going east,
+[00:22:11 -> 00:22:14] but there is only one physical link going east.
+[00:22:14 -> 00:22:16] So if there's four of us all trying to go east,
+[00:22:16 -> 00:22:17] we're all going to have to wait
+[00:22:17 -> 00:22:19] and serialize one after another.
+[00:22:19 -> 00:22:22] In the absence of a lot of traffic,
+[00:22:22 -> 00:22:24] then you could expect that a lot of time,
+[00:22:24 -> 00:22:25] these will succeed.
+[00:22:26 -> 00:22:30] So let's just speculate and do it ahead of time.
+[00:22:30 -> 00:22:33] I will preemptively try to get access to the switch,
+[00:22:33 -> 00:22:37] assuming that I will successfully get a lane,
+[00:22:37 -> 00:22:39] a VC downstream.
+[00:22:39 -> 00:22:42] And if that fails, I will then have to incur here
+[00:22:42 -> 00:22:47] a proper switch allocation stage in between,
+[00:22:47 -> 00:22:49] just like with a regular pipeline.
+[00:22:49 -> 00:22:51] But if it succeeds, then with that extra logic,
+[00:22:51 -> 00:22:54] hopefully I've saved myself a full cycle at each hop.
+[00:22:55 -> 00:22:57] And these kinds of optimizations make sense simply
+[00:22:57 -> 00:22:59] because, as we talked about before,
+[00:22:59 -> 00:23:01] the utilization of the network tends to be low.
+[00:23:01 -> 00:23:04] Contention is rare.
+[00:23:04 -> 00:23:06] You do want high throughput when contention is high
+[00:23:06 -> 00:23:08] and there is a burst of traffic.
+[00:23:08 -> 00:23:11] But the general case is that you are not
+[00:23:11 -> 00:23:14] experiencing anybody on the road on the way
+[00:23:14 -> 00:23:19] to where you're trying to go, so you can speculate.
+[00:23:19 -> 00:23:23] And finally, the last piece is pure bypassing.
+[00:23:23 -> 00:23:25] It's easy to take in sort of a little OR signal
+[00:23:25 -> 00:23:28] that quickly can tell if any of the input buffers
+[00:23:28 -> 00:23:30] are occupied to begin with,
+[00:23:30 -> 00:23:32] the same way that we can quickly see
+[00:23:32 -> 00:23:34] that when we get to a stop sign,
+[00:23:34 -> 00:23:36] there's absolutely no one at any point,
+[00:23:36 -> 00:23:38] and then we could illegally just drive
+[00:23:38 -> 00:23:40] through the stop sign and go straight.
+[00:23:40 -> 00:23:43] Now, you shouldn't be doing this,
+[00:23:43 -> 00:23:45] but in theory, that's what you can do
+[00:23:45 -> 00:23:47] in a system like this.
+[00:23:47 -> 00:23:51] So you will walk in, you see the input buffers are free.
+[00:23:51 -> 00:23:53] Why bother doing the buffer write stage?
+[00:23:53 -> 00:23:55] Just do everything that I'm going to do,
+[00:23:55 -> 00:23:57] write computation, vibe for the switches,
+[00:23:57 -> 00:24:01] and hopefully, if there is an available VC,
+[00:24:01 -> 00:24:02] I will be totally fine.
+[00:24:04 -> 00:24:05] But then what could also happen is
+[00:24:05 -> 00:24:08] someone is coming in at the exact same moment
+[00:24:08 -> 00:24:10] from a different port that I don't see.
+[00:24:10 -> 00:24:11] They're not in the input buffers.
+[00:24:11 -> 00:24:12] I don't see them,
+[00:24:12 -> 00:24:15] but they're also doing the exact same thing.
+[00:24:15 -> 00:24:18] So then we will potentially contend and have a conflict.
+[00:24:18 -> 00:24:19] We have to detect that as well.
+[00:24:19 -> 00:24:22] So here's some examples of what's going on.
+[00:24:22 -> 00:24:25] So say packet A arrives,
+[00:24:25 -> 00:24:27] and it's coming in from the south input,
+[00:24:28 -> 00:24:31] and it's going to show up with a quick signal.
+[00:24:31 -> 00:24:34] It's going to be able to see that no one's there.
+[00:24:34 -> 00:24:38] So it's going to, before trying to write into the VC
+[00:24:38 -> 00:24:39] and to occupy a slot,
+[00:24:39 -> 00:24:41] it'll just preemptively do its
+[00:24:41 -> 00:24:43] look ahead writing computation.
+[00:24:43 -> 00:24:45] So it's figuring out its turn for the next hop,
+[00:24:45 -> 00:24:46] not the current hop.
+[00:24:46 -> 00:24:47] It already knows where it's going to turn,
+[00:24:47 -> 00:24:51] and it wants to go east at this point.
+[00:24:51 -> 00:24:52] So it's going to figure out
+[00:24:52 -> 00:24:54] where it wants to go after it goes east.
+[00:24:54 -> 00:24:55] And then it's going to figure out,
+[00:24:55 -> 00:24:59] is there a VC, a lane available eastbound from here?
+[00:25:00 -> 00:25:02] And then hopefully there is.
+[00:25:03 -> 00:25:05] And then also speculatively check,
+[00:25:05 -> 00:25:07] is there going to be a conflict
+[00:25:07 -> 00:25:11] if I try to take this crossbar to go east right now?
+[00:25:11 -> 00:25:13] And there's no one else in the road.
+[00:25:13 -> 00:25:14] So I will go ahead and say,
+[00:25:14 -> 00:25:15] hey, in the very next cycle,
+[00:25:15 -> 00:25:17] I will then do the switch traversal.
+[00:25:19 -> 00:25:20] And then I am out.
+[00:25:20 -> 00:25:21] And then the next cycle after that,
+[00:25:21 -> 00:25:23] I am already doing link traversal.
+[00:25:23 -> 00:25:25] And all is good because there is a guaranteed spot.
+[00:25:25 -> 00:25:28] My VC allocation should have succeeded.
+[00:25:28 -> 00:25:29] There's a guaranteed spot and lane
+[00:25:29 -> 00:25:31] for me to go to eastbound.
+[00:25:33 -> 00:25:36] Now what could happen though is I can show up
+[00:25:36 -> 00:25:37] and two of us could show up at the exact same time
+[00:25:37 -> 00:25:41] and both see that the input buffers are entirely free.
+[00:25:41 -> 00:25:42] Now we both might show up.
+[00:25:42 -> 00:25:44] We will do the same thing.
+[00:25:45 -> 00:25:46] But then if we're both bound
+[00:25:46 -> 00:25:48] to the same output, for example,
+[00:25:48 -> 00:25:51] that'll signal a conflict.
+[00:25:51 -> 00:25:53] So our speculation would then fail.
+[00:25:54 -> 00:25:59] We will have to do buffer right as normal
+[00:25:59 -> 00:26:02] and then try again in the second cycle.
+[00:26:03 -> 00:26:04] So we will both do buffer right.
+[00:26:04 -> 00:26:06] We're both coming from two different places.
+[00:26:06 -> 00:26:07] B is coming from the north
+[00:26:07 -> 00:26:09] and A is coming from the south,
+[00:26:09 -> 00:26:11] but they both want to go east.
+[00:26:11 -> 00:26:14] So then when this happens, they will do this.
+[00:26:14 -> 00:26:17] This is still speculatively doing switch allocation.
+[00:26:17 -> 00:26:19] And say only one of them succeeds.
+[00:26:20 -> 00:26:24] So in this case, because the switch allocation
+[00:26:24 -> 00:26:26] only lets one of them go through the switch
+[00:26:26 -> 00:26:27] at any moment in time,
+[00:26:27 -> 00:26:29] because there's only one physical length for E,
+[00:26:29 -> 00:26:30] let's say B wins.
+[00:26:30 -> 00:26:33] So then B will be able to go in the third cycle
+[00:26:33 -> 00:26:35] and A will have to go in the fourth cycle.
+[00:26:36 -> 00:26:38] Okay, so more often than not,
+[00:26:38 -> 00:26:40] the router can still function as normal
+[00:26:40 -> 00:26:43] in the presence of this level of aggressive speculation.
+[00:26:44 -> 00:26:47] And what that could do is it could save you
+[00:26:47 -> 00:26:50] sort of a delay in your zero load latency
+[00:26:51 -> 00:26:54] that's proportional to the number of hops in your network.
+[00:26:54 -> 00:26:55] So for scalability purposes,
+[00:26:55 -> 00:26:57] when there is low utilization of your network,
+[00:26:57 -> 00:27:00] that's a really, really favorable trade off.
+[00:27:00 -> 00:27:02] Because you can potentially have to travel tens
+[00:27:02 -> 00:27:05] to hundreds of hops away
+[00:27:05 -> 00:27:08] for a very big multi-core multiprocessor.
+[00:27:08 -> 00:27:10] And if you have to do that,
+[00:27:10 -> 00:27:11] it will be great to save yourself
+[00:27:11 -> 00:27:15] tens to hundreds of cycles as well.
+[00:27:15 -> 00:27:16] Okay.
+[00:27:17 -> 00:27:18] So then the little pieces
+[00:27:18 -> 00:27:20] of the router microarchitecture to note.
+[00:27:20 -> 00:27:23] So first of all, the buffer organization.
+[00:27:23 -> 00:27:25] So we've talked about this before.
+[00:27:25 -> 00:27:28] You have one physical channel
+[00:27:28 -> 00:27:31] for each of your input ports, one physical link,
+[00:27:31 -> 00:27:33] but generally multiple VCs.
+[00:27:34 -> 00:27:35] Usually the way to organize this
+[00:27:35 -> 00:27:38] is a simple set of fixed length queues.
+[00:27:38 -> 00:27:39] But as I talked about before,
+[00:27:39 -> 00:27:41] you could use a general memory
+[00:27:41 -> 00:27:44] as your input buffer for each port.
+[00:27:44 -> 00:27:45] And with this, it gives you a way
+[00:27:45 -> 00:27:50] to dynamically program the size of your VCs and queues.
+[00:27:50 -> 00:27:52] For example, the common reason why is
+[00:27:53 -> 00:27:56] some of your VCs may be set for requests.
+[00:27:57 -> 00:28:00] So request messages tend to be tiny.
+[00:28:00 -> 00:28:01] A lot of them are just like,
+[00:28:01 -> 00:28:04] get me data, get me exclusive access.
+[00:28:05 -> 00:28:08] And then responses can be a little bit bigger
+[00:28:08 -> 00:28:10] because it usually will be a gigantic cache line
+[00:28:10 -> 00:28:12] that the directory is handing over to you.
+[00:28:12 -> 00:28:14] So because of that, you could change
+[00:28:14 -> 00:28:15] the size of each of your VCs,
+[00:28:15 -> 00:28:18] depending on which lanes are expected to be used
+[00:28:18 -> 00:28:21] for certain types of coherence messages.
+[00:28:21 -> 00:28:23] There is, this is a natural trade-off
+[00:28:23 -> 00:28:27] of just more complex circuitry needed to maintain this
+[00:28:27 -> 00:28:28] for potential benefit in the performance
+[00:28:28 -> 00:28:30] and buffer utilization in your network.
+[00:28:32 -> 00:28:35] So naturally having shallow VCs versus deep VCs
+[00:28:35 -> 00:28:37] is always going to be a trade-off.
+[00:28:37 -> 00:28:42] It's just note that shallow VCs is only possible
+[00:28:42 -> 00:28:44] when you have wormhole.
+[00:28:45 -> 00:28:46] As we talked about before,
+[00:28:46 -> 00:28:50] when you have packet-based or message-based flow control,
+[00:28:50 -> 00:28:51] then at the end of the day,
+[00:28:51 -> 00:28:53] your buffers have to be at least as big
+[00:28:53 -> 00:28:55] as the size of a single packet.
+[00:28:55 -> 00:28:57] But if you do flip-based flow control,
+[00:28:57 -> 00:28:59] like we saw in the last paper review,
+[00:28:59 -> 00:29:01] then in that kind of circumstance,
+[00:29:01 -> 00:29:03] then you can be aggressive
+[00:29:03 -> 00:29:06] and your lanes can be the size of a single car
+[00:29:06 -> 00:29:07] in your convoy.
+[00:29:07 -> 00:29:09] Everything should still work correctly.
+[00:29:09 -> 00:29:12] So with that, you can opt for a scenario
+[00:29:12 -> 00:29:16] where if I give you 20 VCs in your router to use,
+[00:29:16 -> 00:29:20] you could just use that to create 20 lanes,
+[00:29:20 -> 00:29:23] each of one size, right?
+[00:29:23 -> 00:29:26] And that has obviously extreme trade-offs
+[00:29:26 -> 00:29:28] that could be good for lots of traffic
+[00:29:28 -> 00:29:30] and preventing anyone from head-of-line blocking.
+[00:29:30 -> 00:29:32] It's like a road that has, I don't know,
+[00:29:32 -> 00:29:35] five left-turn lanes and 10 right-turn lanes
+[00:29:35 -> 00:29:37] available to you, something like that,
+[00:29:38 -> 00:29:40] versus one that's deeper
+[00:29:40 -> 00:29:42] and has now head-of-line blocking
+[00:29:42 -> 00:29:45] but makes the allocation process much less complex.
+[00:29:45 -> 00:29:48] Because trying to allocate all of this,
+[00:29:48 -> 00:29:50] if I have 10 people trying to turn right,
+[00:29:50 -> 00:29:52] just trying to decide who gets the turn right
+[00:29:52 -> 00:29:55] is tricky if there's only like two spots
+[00:29:55 -> 00:29:58] for them to turn right.
+[00:29:58 -> 00:29:59] Okay, other piece?
+[00:29:59 -> 00:30:14] Yes, you could.
+[00:30:14 -> 00:30:16] So some people have proposed,
+[00:30:16 -> 00:30:19] mostly for the purpose of dealing with deadlocks
+[00:30:20 -> 00:30:21] as opposed to for performance,
+[00:30:21 -> 00:30:25] but you could implement any of the VCs as priority queues
+[00:30:25 -> 00:30:27] and then the priority information
+[00:30:27 -> 00:30:31] would just have to be embedded in the flits themselves.
+[00:30:31 -> 00:30:33] That said, to make that simplified,
+[00:30:34 -> 00:30:36] that priority information typically
+[00:30:36 -> 00:30:38] will have to be embedded in all of the flits
+[00:30:38 -> 00:30:41] of your packet, not just the header.
+[00:30:41 -> 00:30:43] So you'll have to accommodate space in each of the flits
+[00:30:43 -> 00:30:46] otherwise a priority queue will have a little bit of,
+[00:30:46 -> 00:30:49] it'll be really complex to try to rip out
+[00:30:49 -> 00:30:52] sort of an arbitrary length set of entities
+[00:30:52 -> 00:30:55] from within the queue otherwise.
+[00:30:55 -> 00:30:58] But yes, you could very well do a priority queue.
+[00:30:58 -> 00:31:01] Something that's not really possible
+[00:31:01 -> 00:31:05] in the real life road analogy.
+[00:31:05 -> 00:31:09] Unless, it'll be like your car just,
+[00:31:09 -> 00:31:10] there's like a monster truck
+[00:31:10 -> 00:31:11] so you could lift yourself above
+[00:31:11 -> 00:31:15] and go above another car in front of you, one day.
+[00:31:17 -> 00:31:19] So the other pieces are the crossbar within.
+[00:31:19 -> 00:31:21] So this is the intersection design
+[00:31:21 -> 00:31:23] that just connects the input ports to the output ports
+[00:31:23 -> 00:31:26] once you have a lane to go to in the end.
+[00:31:26 -> 00:31:29] So common ways are to you do this using MUXsys.
+[00:31:29 -> 00:31:31] I don't know if you guys have already seen
+[00:31:31 -> 00:31:33] this kind of stuff before in other courses
+[00:31:33 -> 00:31:37] but it's simply just deciding for any of the five inputs
+[00:31:37 -> 00:31:40] some mechanism to then allow them to go
+[00:31:40 -> 00:31:42] but you can't have a conflict.
+[00:31:42 -> 00:31:45] You can't have two packets using the same input
+[00:31:45 -> 00:31:46] at the same cycle.
+[00:31:46 -> 00:31:48] They're gonna have to serialize behind each other
+[00:31:48 -> 00:31:51] and you can't have two packets being arbitrated
+[00:31:51 -> 00:31:53] for the same output at the same cycle.
+[00:31:53 -> 00:31:56] But in theory, you could have perfect parallelism
+[00:31:56 -> 00:31:58] if each, you have five packets
+[00:31:58 -> 00:32:00] all coming from five different inputs
+[00:32:00 -> 00:32:03] all going to five unique outputs.
+[00:32:03 -> 00:32:06] That could all happen in a single cycle.
+[00:32:06 -> 00:32:09] The MUX select signals can make that happen.
+[00:32:09 -> 00:32:10] The other way you'll usually see
+[00:32:10 -> 00:32:13] crossbars implemented is with tri-state buffers.
+[00:32:13 -> 00:32:16] It will usually be a grid that looks something like this
+[00:32:16 -> 00:32:18] and it simply means then if we,
+[00:32:18 -> 00:32:20] this whoever is here and wants to go east
+[00:32:20 -> 00:32:22] then this will simply activate
+[00:32:22 -> 00:32:24] and let the signal go downward
+[00:32:24 -> 00:32:28] and be read out by the east port, output port.
+[00:32:28 -> 00:32:29] And again, it's the same thing.
+[00:32:29 -> 00:32:31] You can kind of view it as diagonals
+[00:32:31 -> 00:32:33] and that'll be relevant when we get to
+[00:32:33 -> 00:32:35] the allocation process in a moment
+[00:32:35 -> 00:32:38] but like a diagonal here
+[00:32:38 -> 00:32:40] can perfectly happen concurrently
+[00:32:41 -> 00:32:42] because what that means is
+[00:32:42 -> 00:32:44] we are all coming from different inputs
+[00:32:44 -> 00:32:46] and we are all going to different outputs
+[00:32:46 -> 00:32:48] and that is totally okay.
+[00:32:48 -> 00:32:50] And then there are other variants of diagonals
+[00:32:50 -> 00:32:53] that would also work something like this
+[00:32:53 -> 00:32:58] would also be totally fine too.
+[00:32:58 -> 00:32:59] And then in terms of crossbar
+[00:32:59 -> 00:33:01] you might see this term in the literature,
+[00:33:01 -> 00:33:03] crossbar speed up.
+[00:33:03 -> 00:33:06] That usually just means that you are raising
+[00:33:06 -> 00:33:08] the number of inputs for the crossbar
+[00:33:08 -> 00:33:10] higher than the number of outputs.
+[00:33:10 -> 00:33:14] So it's more of a many to less than many mapping.
+[00:33:15 -> 00:33:20] So usually you would have sort of a one-to-one mapping.
+[00:33:20 -> 00:33:22] So north inputs and a north output
+[00:33:22 -> 00:33:25] and then vice versa all the way down.
+[00:33:25 -> 00:33:28] But as we saw before, you could have multiple VCs.
+[00:33:28 -> 00:33:30] So if you allow for them to divide
+[00:33:30 -> 00:33:31] for the crossbar as well
+[00:33:31 -> 00:33:35] you could have a 10 to five crossbar which is bigger.
+[00:33:35 -> 00:33:37] But then you can now allow for example
+[00:33:37 -> 00:33:39] two people coming from the north
+[00:33:40 -> 00:33:41] to use the crossbar in the same cycle
+[00:33:41 -> 00:33:47] as long as they're buying for different outputs, okay?
+[00:33:47 -> 00:33:48] In theory you could do the same thing with the output
+[00:33:48 -> 00:33:49] but there's no benefit
+[00:33:49 -> 00:33:52] because the outputs doesn't have the VCs.
+[00:33:52 -> 00:33:53] They just have one physical link
+[00:33:53 -> 00:33:58] that you're gonna have to serialize for anyway.
+[00:33:58 -> 00:34:02] Okay, and the last piece is how the allocators are built.
+[00:34:02 -> 00:34:07] This is a whole area in sort of CAD and EDA communities.
+[00:34:08 -> 00:34:10] And that's something that we wanna go into
+[00:34:10 -> 00:34:10] too much in detail.
+[00:34:10 -> 00:34:12] I'll just talk about some of the common ones
+[00:34:12 -> 00:34:13] that you'll see.
+[00:34:14 -> 00:34:16] But effectively an allocator is just something
+[00:34:16 -> 00:34:20] that matches some N amount of requests and requesters
+[00:34:20 -> 00:34:24] to M available resources.
+[00:34:24 -> 00:34:28] And then an arbiter is a special case of an allocator.
+[00:34:28 -> 00:34:30] This is the general term that just has one resource
+[00:34:30 -> 00:34:32] that they're vying for.
+[00:34:32 -> 00:34:34] And in some cases like we'll see later on
+[00:34:34 -> 00:34:38] you could build allocators by composing arbiters together.
+[00:34:39 -> 00:34:41] So when we talk about this,
+[00:34:41 -> 00:34:43] this is for the VC allocation
+[00:34:43 -> 00:34:45] and switch allocation stages.
+[00:34:45 -> 00:34:49] So our requester is the packets for these allocations
+[00:34:49 -> 00:34:52] and then the resources are either the VCs
+[00:34:52 -> 00:34:54] in the VC allocation or the crossbar switch ports
+[00:34:54 -> 00:34:58] in the switch allocation.
+[00:34:58 -> 00:35:02] So, and the goal of the allocator at the end of the day
+[00:35:02 -> 00:35:07] is to have a high likelihood of providing matching.
+[00:35:07 -> 00:35:09] It's because each input packet may have
+[00:35:09 -> 00:35:13] multiple potential resources that they're vying for.
+[00:35:13 -> 00:35:16] We want to maximize and be able to support
+[00:35:16 -> 00:35:17] more of them at the same time,
+[00:35:17 -> 00:35:19] but to trade this off with the design complexity
+[00:35:19 -> 00:35:22] of the hardware because we want things to be fast
+[00:35:22 -> 00:35:23] and ideally pipelined as well.
+[00:35:24 -> 00:35:27] So one example, one that you'll see
+[00:35:27 -> 00:35:32] and more of the complex kinds is a wavefront allocator.
+[00:35:32 -> 00:35:33] So there's a lot of text.
+[00:35:33 -> 00:35:34] Let's just get into what, how it does
+[00:35:34 -> 00:35:37] because it's much easier to reason about visually.
+[00:35:37 -> 00:35:41] But you predefined wavefronts and wavefront mappings.
+[00:35:41 -> 00:35:42] Usually this matches.
+[00:35:42 -> 00:35:44] So it's just like how we saw with the crossbar,
+[00:35:44 -> 00:35:47] how a wave can happen in parallel.
+[00:35:47 -> 00:35:51] You want to try assigning resources to requesters
+[00:35:51 -> 00:35:52] along these diagonals
+[00:35:52 -> 00:35:55] because that's what allows them to get concurrent access.
+[00:35:55 -> 00:35:57] So say we have the request signals
+[00:35:57 -> 00:36:00] will be coming in on the left
+[00:36:00 -> 00:36:03] and then the resources represent the columns,
+[00:36:03 -> 00:36:05] the different columns that they're vying for.
+[00:36:05 -> 00:36:07] So say we have an example here
+[00:36:07 -> 00:36:10] where the top most requester
+[00:36:10 -> 00:36:13] is happy with either resource zero one or two.
+[00:36:14 -> 00:36:16] If this is your VC allocator,
+[00:36:16 -> 00:36:19] it's like saying, hey, whoever's in VC zero right now
+[00:36:19 -> 00:36:22] is happy to go output to VC zero, VC one or VC two.
+[00:36:22 -> 00:36:24] If this is your switch allocator,
+[00:36:24 -> 00:36:26] then whoever is in the north input
+[00:36:26 -> 00:36:29] is happy to go either in this case,
+[00:36:29 -> 00:36:31] north, south, east or west.
+[00:36:31 -> 00:36:32] I'm happy to go take a U-turn,
+[00:36:32 -> 00:36:34] I'm happy to go south, I'm happy to go east,
+[00:36:34 -> 00:36:37] but I don't want to go in this direction.
+[00:36:38 -> 00:36:40] So that's just what it's trying to say.
+[00:36:40 -> 00:36:42] So whatever use case of your allocator it is
+[00:36:42 -> 00:36:45] that you're just mapping requesters to resources.
+[00:36:46 -> 00:36:48] So then the way the wavefront allocator will work
+[00:36:49 -> 00:36:52] is it'll go through, in this case there are four waves.
+[00:36:52 -> 00:36:55] It'll start with the first wave
+[00:36:55 -> 00:36:57] and what it does is insert a token
+[00:36:57 -> 00:37:01] on all the corresponding cells that belong to this wave.
+[00:37:01 -> 00:37:03] So that's these ones right here.
+[00:37:04 -> 00:37:06] So this is a diagonal.
+[00:37:06 -> 00:37:10] If you view this as having a wraparound
+[00:37:10 -> 00:37:13] through the entire grid, this is one valid diagonal
+[00:37:13 -> 00:37:16] because it's kind of just like a diagonal up this way
+[00:37:16 -> 00:37:19] except this one wrapped around, back to the left.
+[00:37:20 -> 00:37:22] Okay, so this is a valid one
+[00:37:22 -> 00:37:24] where if we can allocate everyone here,
+[00:37:24 -> 00:37:27] they would all be able to get a resource
+[00:37:27 -> 00:37:28] and there would be zero conflicts.
+[00:37:30 -> 00:37:32] So we will set a token there
+[00:37:32 -> 00:37:34] and then anyone who's among this wave
+[00:37:34 -> 00:37:36] who hasn't already gotten a token will consume it.
+[00:37:37 -> 00:37:40] So in this case here, this person will consume this token
+[00:37:42 -> 00:37:45] and then everyone else has a simple mechanism
+[00:37:45 -> 00:37:49] to propagate their tokens down and right by one.
+[00:37:49 -> 00:37:53] All that means is we're moving to the next diagonal
+[00:37:53 -> 00:37:54] to propagate our tokens.
+[00:37:56 -> 00:37:58] So now we are looking at this wave.
+[00:37:58 -> 00:38:00] So we're looking at this wave
+[00:38:00 -> 00:38:03] which has these two again wrapped around.
+[00:38:04 -> 00:38:07] Let's try to assign them a resource if there are any,
+[00:38:07 -> 00:38:09] if there are no conflicts.
+[00:38:09 -> 00:38:12] So in this case, we will see that this person
+[00:38:12 -> 00:38:14] is able to be granted
+[00:38:14 -> 00:38:15] but these two won't be.
+[00:38:17 -> 00:38:19] The one at the top here is because Requestor A
+[00:38:19 -> 00:38:20] already got a resource
+[00:38:20 -> 00:38:22] so they shouldn't get another one.
+[00:38:22 -> 00:38:25] And down here, this resource is already taken
+[00:38:25 -> 00:38:26] by Requestor A
+[00:38:26 -> 00:38:29] so it shouldn't be taken by Requestor B as well.
+[00:38:29 -> 00:38:32] But this one is perfectly fine.
+[00:38:32 -> 00:38:36] So we will give them that and then it moves on.
+[00:38:36 -> 00:38:38] Tokens are passed to the next wave.
+[00:38:39 -> 00:38:43] So this is this wave.
+[00:38:43 -> 00:38:44] Easier to draw it this way now.
+[00:38:44 -> 00:38:48] This one wrapped around.
+[00:38:48 -> 00:38:51] So then again, we will be able to consume this token
+[00:38:51 -> 00:38:53] and it will check the last wave
+[00:38:53 -> 00:38:55] and there are no more tokens to be consumed.
+[00:38:55 -> 00:38:57] And all the wavefronts have been propagated.
+[00:38:58 -> 00:39:02] So this doesn't necessarily give the optimal all the time
+[00:39:02 -> 00:39:05] but it still gives a really pretty good allocation.
+[00:39:05 -> 00:39:08] That said, the hardware complexity of it,
+[00:39:08 -> 00:39:10] it's also not entirely pipelineable.
+[00:39:10 -> 00:39:12] You have to wait the full delay of, in this case,
+[00:39:12 -> 00:39:15] four cycles worth of token exchange
+[00:39:15 -> 00:39:18] in order for the allocation to complete.
+[00:39:18 -> 00:39:19] But it gives you a nice allocation
+[00:39:19 -> 00:39:22] and now three of our requesters,
+[00:39:22 -> 00:39:23] four people requesting things
+[00:39:23 -> 00:39:25] but three of them managed to get a resource
+[00:39:25 -> 00:39:27] which is pretty darn good.
+[00:39:27 -> 00:39:28] And it's probably the best case.
+[00:39:28 -> 00:39:29] It is the best case
+[00:39:29 -> 00:39:33] we would have gotten with this set right now.
+[00:39:33 -> 00:39:36] Now to trade off with performance though,
+[00:39:36 -> 00:39:37] you may want something
+[00:39:37 -> 00:39:40] that's a little bit less hardware complex
+[00:39:40 -> 00:39:42] as well as pipelineable.
+[00:39:42 -> 00:39:44] That you could do allocation sort of
+[00:39:44 -> 00:39:45] to match your router pipeline
+[00:39:45 -> 00:39:47] and not extend that any further.
+[00:39:47 -> 00:39:49] So the way you would usually do this
+[00:39:49 -> 00:39:52] is to do multiple stages of arbiters.
+[00:39:52 -> 00:39:55] So an example of a four three allocator
+[00:39:55 -> 00:39:58] where we have four requesters vying for three resources
+[00:39:59 -> 00:40:03] would be to have the first stage first
+[00:40:03 -> 00:40:06] reduce one resource for each requester
+[00:40:06 -> 00:40:09] and you would do this using four three to one arbiters.
+[00:40:10 -> 00:40:15] So say requester zero again wants ABC as its resources
+[00:40:16 -> 00:40:18] and requester one wants A and B as its resource.
+[00:40:18 -> 00:40:21] The first stage is to say hey,
+[00:40:21 -> 00:40:23] requester zero is like hey,
+[00:40:25 -> 00:40:27] say you're like a dessert place
+[00:40:27 -> 00:40:28] and they have a limited menu.
+[00:40:28 -> 00:40:33] They're only offering a cake, a croissant and ice cream.
+[00:40:34 -> 00:40:38] And requester zero is like hey, I want all three.
+[00:40:39 -> 00:40:43] So the first stage is to say you're only gonna get one.
+[00:40:43 -> 00:40:45] Let's figure out which one you're going to get.
+[00:40:45 -> 00:40:48] So you're gonna run it through a three to one arbiter
+[00:40:48 -> 00:40:50] and it's gonna run independently
+[00:40:50 -> 00:40:52] of requester one's arbiter.
+[00:40:52 -> 00:40:55] Requester one says I only want the cake and the croissant.
+[00:40:56 -> 00:40:59] So then they're gonna have to choose only one of them.
+[00:40:59 -> 00:41:00] So in the first stage,
+[00:41:00 -> 00:41:02] everyone's going to have to commit
+[00:41:02 -> 00:41:05] independently of which one they're gonna go for.
+[00:41:06 -> 00:41:08] So once everyone does that, say requester zero says
+[00:41:08 -> 00:41:10] okay fine, I'll go for cake.
+[00:41:10 -> 00:41:14] Requester one is also like I'm also gonna go for cake.
+[00:41:14 -> 00:41:17] Requester two is like I only want cake.
+[00:41:17 -> 00:41:19] And requester three says I got ice cream.
+[00:41:20 -> 00:41:22] So then the signals are gonna propagate
+[00:41:22 -> 00:41:24] through to the next stage
+[00:41:24 -> 00:41:25] and then now for all the people
+[00:41:25 -> 00:41:27] who decided they want cake,
+[00:41:27 -> 00:41:28] there's four possible people.
+[00:41:28 -> 00:41:31] We will choose one of them to win it.
+[00:41:31 -> 00:41:33] For all the people who decided for croissant,
+[00:41:33 -> 00:41:35] unfortunately no one ended up picking croissant
+[00:41:35 -> 00:41:37] so no one's gonna get picked.
+[00:41:37 -> 00:41:38] And then all the people who wanted ice cream
+[00:41:38 -> 00:41:40] are gonna get a selection.
+[00:41:41 -> 00:41:43] So only one of the three is going to win here.
+[00:41:43 -> 00:41:44] Requester zero is the happy one
+[00:41:44 -> 00:41:46] that gets the cake in the end
+[00:41:46 -> 00:41:48] and a requester three is the only one
+[00:41:48 -> 00:41:49] that will get the ice cream.
+[00:41:51 -> 00:41:52] So that's how this will work.
+[00:41:52 -> 00:41:53] This is a nice pipeline-able system now
+[00:41:53 -> 00:41:55] because as the second stage is happening,
+[00:41:55 -> 00:41:57] you could do the first stage
+[00:41:57 -> 00:41:59] and at the same time concurrently.
+[00:41:59 -> 00:42:02] That said, you can see that it's already less than optimal.
+[00:42:03 -> 00:42:06] A better allocation would have allowed requester one
+[00:42:06 -> 00:42:08] to at least get the croissant at the end.
+[00:42:10 -> 00:42:12] But because these happen independently
+[00:42:12 -> 00:42:13] and not full knowledge
+[00:42:13 -> 00:42:15] as like the wavefront allocator would do,
+[00:42:15 -> 00:42:17] it ended up picking suboptimally
+[00:42:17 -> 00:42:23] and then lost out on the object choice that it made.
+[00:42:23 -> 00:42:30] Yes.
+[00:42:30 -> 00:42:31] Yeah, that's a good question.
+[00:42:31 -> 00:42:33] So I didn't really go and elaborate into that
+[00:42:33 -> 00:42:35] but the most simple designs that you will see
+[00:42:35 -> 00:42:38] is an arbiter that's simply round robin.
+[00:42:38 -> 00:42:39] Fairness is usually the way you'd go
+[00:42:40 -> 00:42:41] and you'd want to make sure
+[00:42:41 -> 00:42:44] that whatever round robin sequence you're using for these,
+[00:42:44 -> 00:42:47] they're trying to be out of phase.
+[00:42:47 -> 00:42:48] And that's usually it.
+[00:42:48 -> 00:42:51] Another way is to use something that's pure random
+[00:42:51 -> 00:42:55] but it's hard to generally get something that's fairer
+[00:42:55 -> 00:42:57] when you do some form of random arbitration
+[00:42:57 -> 00:42:59] but that is one that can arguably be fair
+[00:42:59 -> 00:43:08] with a decent random quality.
+[00:43:08 -> 00:43:10] Yeah, you would want to, for example,
+[00:43:10 -> 00:43:13] so that they're not all initialized to pick cake.
+[00:43:13 -> 00:43:14] Pick first.
+[00:43:14 -> 00:43:17] Exactly, yeah.
+[00:43:17 -> 00:43:18] So I didn't go into the details
+[00:43:18 -> 00:43:20] but again, there's a lot of work going into
+[00:43:20 -> 00:43:23] how to build an arbiter that's cheap and effective,
+[00:43:23 -> 00:43:25] that's fair, et cetera, et cetera.
+[00:43:25 -> 00:43:28] But there are simple implementations in your readings
+[00:43:28 -> 00:43:30] on the synthesis lecture
+[00:43:30 -> 00:43:34] that talks about how to do a round robin arbiter.
+[00:43:34 -> 00:43:41] Okay, any questions?
+[00:43:41 -> 00:43:46] All right, we did it.
+[00:43:46 -> 00:43:49] We are through interconnects.
+[00:43:50 -> 00:43:54] We are now welcoming a new topic of GPUs.
+[00:43:54 -> 00:43:58] Okay, so this is, I was debating on the order
+[00:43:58 -> 00:44:00] that I should go through the accelerators and GPUs.
+[00:44:00 -> 00:44:01] I think it made more sense to go this route
+[00:44:01 -> 00:44:05] just because compared to other accelerators,
+[00:44:05 -> 00:44:08] it's easier to reason about GPUs coming from CPU land
+[00:44:08 -> 00:44:10] before you delve into more exotic accelerators
+[00:44:10 -> 00:44:12] that are built out there now.
+[00:44:12 -> 00:44:15] So GPUs, graphics processor and units
+[00:44:15 -> 00:44:17] were effectively built to target a killer app
+[00:44:17 -> 00:44:19] which is graphics.
+[00:44:19 -> 00:44:21] So rendering and other types of algorithms
+[00:44:21 -> 00:44:23] that you may have for processing.
+[00:44:25 -> 00:44:28] This was sort of propelled at the time
+[00:44:28 -> 00:44:32] because of economic pressure from the video game industry
+[00:44:32 -> 00:44:35] and multimedia, et cetera, et cetera.
+[00:44:35 -> 00:44:36] And it became more and more expected
+[00:44:36 -> 00:44:38] that you're going to see a GPU present
+[00:44:38 -> 00:44:41] in any mobile or computing device out there
+[00:44:41 -> 00:44:45] because of the kind of IO that is provided to the users.
+[00:44:45 -> 00:44:49] That said, with the reason for this machine learning
+[00:44:49 -> 00:44:51] and artificial intelligence boom
+[00:44:51 -> 00:44:52] is that we recognize that this thing that we built
+[00:44:52 -> 00:44:54] to do computation for graphics
+[00:44:54 -> 00:44:56] is also really, really good
+[00:44:56 -> 00:44:58] at a lot of the simple matrix operations
+[00:44:58 -> 00:45:01] that are needed to make neural networks
+[00:45:01 -> 00:45:05] become a real thing and particularly training them
+[00:45:05 -> 00:45:08] and training some massive neural network models
+[00:45:08 -> 00:45:10] that we didn't realize could actually happen
+[00:45:10 -> 00:45:12] in a reasonable amount of time
+[00:45:12 -> 00:45:14] are perfectly easy and simple to do
+[00:45:14 -> 00:45:16] when you use a graphics processing unit.
+[00:45:17 -> 00:45:20] So with that, when you look at a lot of the GPU stuff,
+[00:45:20 -> 00:45:22] it's probably a little bit less so now
+[00:45:22 -> 00:45:23] than it was before.
+[00:45:23 -> 00:45:25] But a lot of the terminologies you see
+[00:45:25 -> 00:45:29] will still be in the context of graphics
+[00:45:29 -> 00:45:31] because that's what they were built for.
+[00:45:31 -> 00:45:34] GPUs are effectively a bunch of shader cores
+[00:45:34 -> 00:45:36] as they were performing sort of the typical
+[00:45:36 -> 00:45:39] shader algorithms and operations
+[00:45:39 -> 00:45:41] that you would do in computer graphics.
+[00:45:41 -> 00:45:44] So a lot of the geometry is defined that way
+[00:45:44 -> 00:45:46] when you define how your threads
+[00:45:46 -> 00:45:48] and how your operations are going to be performed.
+[00:45:49 -> 00:45:51] But now a GPU is generally regarded
+[00:45:51 -> 00:45:53] as you'll see this term,
+[00:45:53 -> 00:45:54] actually this term is dying
+[00:45:54 -> 00:45:57] because it's now becoming generally assumed
+[00:45:57 -> 00:45:59] that your GPU is general purpose
+[00:45:59 -> 00:46:02] and for broader and any general use.
+[00:46:02 -> 00:46:03] But this term was a popular one
+[00:46:03 -> 00:46:06] that describes general purpose GPUs
+[00:46:06 -> 00:46:09] and trying to gear GPUs for regular computing.
+[00:46:09 -> 00:46:11] That said, it's arguable that a GPU
+[00:46:11 -> 00:46:12] still doesn't have the same flexibility
+[00:46:12 -> 00:46:15] and capability that a CPU does.
+[00:46:15 -> 00:46:17] For example, supporting basic things
+[00:46:17 -> 00:46:19] like operating systems, interrupts,
+[00:46:19 -> 00:46:21] and all these things are not something
+[00:46:21 -> 00:46:23] that you will find in a modern GPU.
+[00:46:23 -> 00:46:26] That said, usually that's why GPUs
+[00:46:26 -> 00:46:29] are still part of the accelerator land,
+[00:46:29 -> 00:46:32] which simply means they are a processing engine
+[00:46:32 -> 00:46:35] or processing entity that usually still depends
+[00:46:35 -> 00:46:40] on a host, a general processor, a CPU,
+[00:46:40 -> 00:46:42] to do some of the legwork that it needs
+[00:46:42 -> 00:46:44] to either initialize or wrap it up.
+[00:46:46 -> 00:46:49] So that's why it's still generally viewed as an accelerator.
+[00:46:49 -> 00:46:51] That said, the day we can get to a point
+[00:46:51 -> 00:46:54] where a GPU is as to or incomplete,
+[00:46:54 -> 00:46:56] that is it's able to perform
+[00:46:56 -> 00:46:59] any arbitrary operation you want as much as a CPU
+[00:46:59 -> 00:47:03] and it could run OSs and things,
+[00:47:03 -> 00:47:05] the day that comes, it could be fully independent,
+[00:47:05 -> 00:47:07] but that said, in my opinion,
+[00:47:07 -> 00:47:10] you're probably going to see a significant performance dip
+[00:47:10 -> 00:47:12] that is not going to make them worth
+[00:47:12 -> 00:47:16] sort of their market stance at the moment.
+[00:47:16 -> 00:47:18] So it's a bit of a tricky game.
+[00:47:18 -> 00:47:21] If there is a way that that can actually happen
+[00:47:21 -> 00:47:25] without actually compromising performance, wonderful,
+[00:47:25 -> 00:47:25] but at the end of the day,
+[00:47:25 -> 00:47:27] if I could always just ship out a CPU
+[00:47:27 -> 00:47:30] next to this thing that does all the legwork,
+[00:47:30 -> 00:47:31] then why bother?
+[00:47:31 -> 00:47:34] Just keep this thing as a super, super aggressive machine
+[00:47:34 -> 00:47:37] that's really good at the one thing it's really good at.
+[00:47:37 -> 00:47:39] So we'll talk about why it's really good
+[00:47:39 -> 00:47:40] at the one thing it's good at.
+[00:47:40 -> 00:47:43] But yes, it's effectively, you'll define,
+[00:47:43 -> 00:47:45] the term you'll see defines a kernel,
+[00:47:45 -> 00:47:46] so the subset of your program
+[00:47:46 -> 00:47:51] that is then compiled for the GPU's ISA
+[00:47:51 -> 00:47:53] and is then run and mapped onto the GPU
+[00:47:53 -> 00:47:55] is known as the kernel.
+[00:47:55 -> 00:47:57] We'll talk a little bit about sort of how you would
+[00:47:57 -> 00:47:58] write the software for that,
+[00:47:58 -> 00:48:00] but there's more details in other courses here
+[00:48:00 -> 00:48:01] that goes through that
+[00:48:01 -> 00:48:04] and gives you the experience to do this, so.
+[00:48:04 -> 00:48:07] But effectively, the point of a GPU
+[00:48:07 -> 00:48:09] is to target the kinds of programs you write
+[00:48:09 -> 00:48:12] that one, have many, many,
+[00:48:12 -> 00:48:14] if not many, many threads in them.
+[00:48:15 -> 00:48:18] The threads themselves are performing
+[00:48:18 -> 00:48:20] very similar operations with each other,
+[00:48:20 -> 00:48:23] if not the exact same operations with each other.
+[00:48:24 -> 00:48:27] They tend to be very compute intensive,
+[00:48:27 -> 00:48:30] the main goal being the amount of computation
+[00:48:30 -> 00:48:33] you do per unit of data that you need
+[00:48:33 -> 00:48:37] is high enough that you are well utilizing
+[00:48:37 -> 00:48:39] the computation processing pipeline
+[00:48:39 -> 00:48:41] that's available to you.
+[00:48:42 -> 00:48:44] Your control flow is very simple and straightforward.
+[00:48:44 -> 00:48:47] This kind of goes hand in hand with this.
+[00:48:47 -> 00:48:50] The idea that with minimal control flow,
+[00:48:50 -> 00:48:52] the higher the chance that we are performing
+[00:48:52 -> 00:48:53] the exact same operations.
+[00:48:54 -> 00:48:57] And finally, the threads are mostly independent
+[00:48:57 -> 00:49:00] without needing to share any memory locations
+[00:49:00 -> 00:49:02] nor have any synchronization with them.
+[00:49:03 -> 00:49:05] That's the general rule of thumb
+[00:49:05 -> 00:49:07] of the target applications.
+[00:49:07 -> 00:49:09] That said, there is growing more and more support
+[00:49:09 -> 00:49:12] for GPUs to be able to be strong enough to handle
+[00:49:12 -> 00:49:16] when some of these are not necessarily the case.
+[00:49:16 -> 00:49:17] And we'll talk a little bit about that,
+[00:49:17 -> 00:49:19] but this is generally what you're looking at
+[00:49:19 -> 00:49:21] as your killer app for a GP.
+[00:49:22 -> 00:49:24] So then with this, how do you map this
+[00:49:24 -> 00:49:26] to how you will actually build
+[00:49:26 -> 00:49:27] and design the architecture?
+[00:49:28 -> 00:49:31] So if you have many, many, many threads,
+[00:49:31 -> 00:49:35] then what that means is that you will more likely
+[00:49:35 -> 00:49:40] have far more threads ready to run
+[00:49:40 -> 00:49:42] than hardware lanes or threads
+[00:49:42 -> 00:49:44] that can actually process them.
+[00:49:45 -> 00:49:47] So it would be nice for us to build a system
+[00:49:47 -> 00:49:51] where we can context switch threads in and out
+[00:49:51 -> 00:49:54] really, really quickly,
+[00:49:54 -> 00:49:56] because the moment one of them has a stall,
+[00:49:56 -> 00:50:00] we know we have hundreds of other threads ready to run.
+[00:50:00 -> 00:50:02] It would be nice if they can just come in
+[00:50:02 -> 00:50:03] and swoop in and take that pipeline
+[00:50:03 -> 00:50:06] while the other thread is stopped.
+[00:50:06 -> 00:50:08] So that's the benefit that you get
+[00:50:08 -> 00:50:10] when you have an abundance of threads
+[00:50:10 -> 00:50:12] far more than exceeds your computing capability.
+[00:50:14 -> 00:50:17] Next is if we perform very similar operations,
+[00:50:17 -> 00:50:19] then it only makes sense for us
+[00:50:19 -> 00:50:23] to minimize the complexities of fetching and decoding,
+[00:50:23 -> 00:50:26] because if everyone is expected to run the same thing,
+[00:50:26 -> 00:50:29] then we only need to fetch and decode once for everybody.
+[00:50:31 -> 00:50:33] So the more likely our program runs the same thing,
+[00:50:33 -> 00:50:36] the easier it becomes to deal with the front end
+[00:50:36 -> 00:50:38] of our processing pipeline.
+[00:50:39 -> 00:50:41] Because we're compute intensive,
+[00:50:41 -> 00:50:45] then we can maximize the throughput of accessing our data
+[00:50:46 -> 00:50:48] and use sort of a more sophisticated
+[00:50:48 -> 00:50:52] bank memory structure that's less about latency
+[00:50:52 -> 00:50:54] and more about just being able
+[00:50:54 -> 00:50:57] to get more data at any moment in time.
+[00:50:58 -> 00:51:00] If control flow is going to be simple,
+[00:51:00 -> 00:51:03] then provide minimal, if not completely zero,
+[00:51:03 -> 00:51:07] support for speculation in your architecture.
+[00:51:07 -> 00:51:09] Why do branch prediction
+[00:51:09 -> 00:51:13] when there is no branches to predict, right?
+[00:51:13 -> 00:51:15] And then finally, if the threads are mostly independent,
+[00:51:15 -> 00:51:17] why support atomics and locks
+[00:51:17 -> 00:51:20] when there are no atomics and locks to begin with?
+[00:51:21 -> 00:51:26] So if you have killer apps that match this paradigm,
+[00:51:27 -> 00:51:29] then you can get rid of a lot of these overheads
+[00:51:29 -> 00:51:32] and have some very, really good performance capability
+[00:51:33 -> 00:51:34] as long as you're not trying
+[00:51:34 -> 00:51:36] to be a general purpose machine.
+[00:51:38 -> 00:51:38] You're just saying,
+[00:51:38 -> 00:51:42] I am only going to target these specific cases.
+[00:51:42 -> 00:51:43] And there's an argument for this
+[00:51:43 -> 00:51:46] as long as these specific cases are a marketable case.
+[00:51:47 -> 00:51:51] And that's exactly what GPUs have been targeting.
+[00:51:51 -> 00:51:54] So GPUs, there'll be different terms.
+[00:51:54 -> 00:51:57] We talked about before sort of the whole SIMD,
+[00:51:58 -> 00:52:00] MISD, and MIMD, right?
+[00:52:00 -> 00:52:02] The single instruction, multiple data,
+[00:52:02 -> 00:52:04] different types of parallelism.
+[00:52:04 -> 00:52:07] Generally, you'll see GPUs described
+[00:52:07 -> 00:52:10] as single program, multiple data.
+[00:52:11 -> 00:52:13] So they're similar to SIMD.
+[00:52:13 -> 00:52:15] SIMD we saw were like vector instructions,
+[00:52:15 -> 00:52:17] super word instructions.
+[00:52:17 -> 00:52:19] That said, it's a little bit trickier
+[00:52:19 -> 00:52:23] to call them SIMD necessarily,
+[00:52:23 -> 00:52:26] mostly because some threads will not necessarily
+[00:52:26 -> 00:52:28] be performing said instruction.
+[00:52:28 -> 00:52:29] We'll see why when we get
+[00:52:29 -> 00:52:32] to different levels of control flow.
+[00:52:32 -> 00:52:34] The other piece is not every thread,
+[00:52:34 -> 00:52:36] even though every thread is running
+[00:52:36 -> 00:52:38] the same 10 instructions,
+[00:52:38 -> 00:52:42] not every thread will be on instruction two right now.
+[00:52:42 -> 00:52:44] Some will be on instruction five,
+[00:52:44 -> 00:52:46] some will be on instruction six.
+[00:52:46 -> 00:52:49] So that is not the principle of SIMD.
+[00:52:49 -> 00:52:52] SIMD will basically say every single thread,
+[00:52:52 -> 00:52:53] if this is single instruction, multiple data,
+[00:52:53 -> 00:52:55] is on the exact same instruction.
+[00:52:56 -> 00:52:58] So that's just a conceptual technicality.
+[00:52:59 -> 00:53:02] That's so people don't like using the term SIMD
+[00:53:02 -> 00:53:04] for GPUs for this very reason,
+[00:53:04 -> 00:53:06] because fundamentally we're not always
+[00:53:06 -> 00:53:07] on the same instruction.
+[00:53:07 -> 00:53:11] Okay, so you'll see SPMD as the common term,
+[00:53:11 -> 00:53:13] and there may be some variance as well.
+[00:53:13 -> 00:53:15] Some people use single instruction multiple threads,
+[00:53:15 -> 00:53:20] which I don't understand, but that's also there.
+[00:53:20 -> 00:53:24] Okay, so the programming model for GPUs,
+[00:53:24 -> 00:53:26] actually there's different ways to write kernels.
+[00:53:26 -> 00:53:28] There's probably a lot more now.
+[00:53:28 -> 00:53:29] I think a lot of the terminology
+[00:53:29 -> 00:53:30] I'm gonna be using for these slides
+[00:53:30 -> 00:53:31] will be with CUDA,
+[00:53:31 -> 00:53:32] that's sort of the Nvidia standards
+[00:53:32 -> 00:53:35] for writing GPU kernels.
+[00:53:36 -> 00:53:38] And effectively, you will just define
+[00:53:38 -> 00:53:40] some form of function,
+[00:53:40 -> 00:53:42] which uses certain specific syntax
+[00:53:42 -> 00:53:45] and extensions to a common language like C.
+[00:53:46 -> 00:53:50] And then you would specify within there
+[00:53:50 -> 00:53:52] the what each thread is able to do
+[00:53:52 -> 00:53:54] by having some level of access
+[00:53:54 -> 00:53:56] to the ID of the thread that you have.
+[00:53:57 -> 00:53:59] And then just based on your thread ID,
+[00:53:59 -> 00:54:01] you would be able to know which memory locations
+[00:54:01 -> 00:54:01] you need to process
+[00:54:01 -> 00:54:04] and where you need to send them to when you are done.
+[00:54:04 -> 00:54:06] And then they will go to the specific ISA
+[00:54:06 -> 00:54:09] built for the GPU and be compiled there.
+[00:54:09 -> 00:54:12] And your CPU's responsibility is to send that off
+[00:54:12 -> 00:54:13] to the GPU for processing.
+[00:54:14 -> 00:54:17] Okay, so at a high level,
+[00:54:17 -> 00:54:20] this is how the GPU structure and architecture was built.
+[00:54:21 -> 00:54:25] Effectively, we know that we want to have
+[00:54:25 -> 00:54:28] some parallelism on our threads,
+[00:54:28 -> 00:54:30] and we have abundant parallelism.
+[00:54:30 -> 00:54:32] So we could have had them that we might have,
+[00:54:32 -> 00:54:35] in this case, a couple of cores
+[00:54:35 -> 00:54:38] that are able to fetch, decode, and execute,
+[00:54:38 -> 00:54:40] and then do all the typical things
+[00:54:40 -> 00:54:41] of our five-stage pipeline.
+[00:54:41 -> 00:54:44] I could run two things at the same time.
+[00:54:44 -> 00:54:45] So first of all, we know we have a lot of threads,
+[00:54:45 -> 00:54:48] so what we want to do is scale this up
+[00:54:48 -> 00:54:50] to many, many, many, many cores.
+[00:54:50 -> 00:54:52] That's obviously the appropriate thing
+[00:54:52 -> 00:54:54] and the right thing to do.
+[00:54:54 -> 00:54:56] We want to have as many cores as possible.
+[00:54:57 -> 00:55:02] That said, there are practical implications of this.
+[00:55:02 -> 00:55:04] We know we have to interconnect all of these,
+[00:55:04 -> 00:55:06] and there is a lot of hardware overhead,
+[00:55:06 -> 00:55:10] and this may not get you to the thousands of cores
+[00:55:10 -> 00:55:13] of computing that you may want to get.
+[00:55:13 -> 00:55:16] So the first thing we can do and recognize is,
+[00:55:16 -> 00:55:19] well, everyone is running the same thing,
+[00:55:20 -> 00:55:25] so what if we rip out the execution components
+[00:55:26 -> 00:55:28] for each of these cores,
+[00:55:30 -> 00:55:33] and then have them share the fetch and decode units?
+[00:55:34 -> 00:55:37] If everyone's running the same instructions,
+[00:55:37 -> 00:55:40] then let's just run these execution units in lockstep
+[00:55:41 -> 00:55:43] at a chunk at a time,
+[00:55:43 -> 00:55:45] and effectively everyone will do the add.
+[00:55:45 -> 00:55:47] We will decode the add, and everyone will do the add,
+[00:55:47 -> 00:55:50] but with their own set of registers.
+[00:55:50 -> 00:55:54] So you need separate ALUs to support, in this case,
+[00:55:54 -> 00:55:57] eight ways of multi-threading,
+[00:55:57 -> 00:55:59] as well as separate eight contexts.
+[00:55:59 -> 00:56:01] What that is is just register files
+[00:56:01 -> 00:56:03] and program counters, et cetera.
+[00:56:04 -> 00:56:05] And everyone is going through,
+[00:56:05 -> 00:56:07] and then we could have many of these.
+[00:56:08 -> 00:56:10] So that's the first key takeaway
+[00:56:10 -> 00:56:14] and key insight to building a GPU.
+[00:56:14 -> 00:56:17] So this is the fundamental building block for one SM,
+[00:56:17 -> 00:56:21] or a streaming multiprocessor effectively, in a GPU.
+[00:56:21 -> 00:56:24] They share their fetch and decode components.
+[00:56:25 -> 00:56:26] Next will be what happens
+[00:56:26 -> 00:56:28] when we have conditional branches.
+[00:56:29 -> 00:56:31] So it's not like they're impossible.
+[00:56:31 -> 00:56:34] They are still available and can be compiled
+[00:56:34 -> 00:56:35] in your system.
+[00:56:36 -> 00:56:38] That said, you have to be able to deal with them,
+[00:56:38 -> 00:56:41] and you can still optimize your architecture,
+[00:56:41 -> 00:56:43] expecting these to be very infrequent.
+[00:56:44 -> 00:56:48] So if everybody is running the exact same instructions
+[00:56:48 -> 00:56:51] all the time in lockstep,
+[00:56:51 -> 00:56:52] then how do we do if else statements
+[00:56:52 -> 00:56:54] when some of the threads will go if,
+[00:56:54 -> 00:56:56] and some of the threads are going to go else?
+[00:56:56 -> 00:56:58] Because the if conditions might be based
+[00:56:58 -> 00:57:00] on the data that they're processing,
+[00:57:00 -> 00:57:01] and we can't change the fact,
+[00:57:01 -> 00:57:02] and we won't know ahead of time
+[00:57:02 -> 00:57:04] that this thread's if statement,
+[00:57:04 -> 00:57:06] this thread's data is gonna be negative,
+[00:57:06 -> 00:57:08] and this thread's data is gonna be positive,
+[00:57:08 -> 00:57:09] for example.
+[00:57:09 -> 00:57:11] You can't know that ahead of time.
+[00:57:12 -> 00:57:13] So the way we do it,
+[00:57:13 -> 00:57:18] this is known as a concept of branch divergence,
+[00:57:18 -> 00:57:21] where the threads that you're running at the same time
+[00:57:21 -> 00:57:24] end up taking different paths in your control flow logic.
+[00:57:24 -> 00:57:28] So the way to do it is known as a concept of predication,
+[00:57:28 -> 00:57:29] if you will,
+[00:57:29 -> 00:57:32] or similar to that concept of predication in architecture,
+[00:57:32 -> 00:57:36] which is you will run both the if and the else,
+[00:57:36 -> 00:57:37] one after another.
+[00:57:38 -> 00:57:41] And if you are if only,
+[00:57:41 -> 00:57:44] then when the else is happening, you will do nothing.
+[00:57:44 -> 00:57:45] If you are else only,
+[00:57:45 -> 00:57:48] when the if is happening, you do nothing.
+[00:57:48 -> 00:57:51] So in this case here, we're at this if statement.
+[00:57:52 -> 00:57:54] These three threads are true.
+[00:57:55 -> 00:57:59] So that means when we execute the true piece of the if,
+[00:57:59 -> 00:58:01] they will be active,
+[00:58:01 -> 00:58:03] and everyone else will be sitting idly,
+[00:58:03 -> 00:58:05] not consuming resources.
+[00:58:05 -> 00:58:08] And otherwise, in the else,
+[00:58:08 -> 00:58:11] everyone will be doing what those three will be inactive.
+[00:58:11 -> 00:58:14] This still gets you the correct behavior.
+[00:58:14 -> 00:58:16] That said, if you're trying to have a well-optimized
+[00:58:16 -> 00:58:18] and good-performing GPU program,
+[00:58:18 -> 00:58:22] you're trying to minimize the likelihood of this happening
+[00:58:22 -> 00:58:25] because you are fortunately reducing your utilization
+[00:58:25 -> 00:58:29] by half whenever you have a divergent branch.
+[00:58:32 -> 00:58:34] So it works, and it's correct,
+[00:58:34 -> 00:58:35] but for performance purposes,
+[00:58:35 -> 00:58:42] you want to try to avoid it whenever possible.
+[00:58:42 -> 00:58:44] So then now, in the worst case,
+[00:58:44 -> 00:58:48] if you have an eight-way condition,
+[00:58:48 -> 00:58:50] if, else if, else if, else if,
+[00:58:50 -> 00:58:52] and everyone is completely divergent,
+[00:58:52 -> 00:58:54] then you are getting a very, very poor performance,
+[00:58:54 -> 00:58:56] and you're only using one-eighth in this case,
+[00:58:56 -> 00:58:58] if it's eight hardware threads,
+[00:58:58 -> 00:59:02] one-eighth of your utilization of your GPU.
+[00:59:02 -> 00:59:04] Now, how about memory stalls?
+[00:59:04 -> 00:59:06] Memory stalls is another source of performance overhead
+[00:59:06 -> 00:59:09] in a typical processing pipeline.
+[00:59:09 -> 00:59:13] So because we have an abundance of software threads
+[00:59:13 -> 00:59:15] that could run at any moment in time,
+[00:59:15 -> 00:59:18] the nice thing is if we have one machine
+[00:59:18 -> 00:59:21] that can handle, let's say, eight threads at any moment,
+[00:59:21 -> 00:59:26] we can run eight threads, and we can have contexts,
+[00:59:26 -> 00:59:29] so the register files and program counters,
+[00:59:29 -> 00:59:31] for even more than that.
+[00:59:33 -> 00:59:36] So each set of eight threads,
+[00:59:36 -> 00:59:37] we're gonna get to this terminology later,
+[00:59:37 -> 00:59:39] but we could call it a warp.
+[00:59:39 -> 00:59:43] So each set of those, we can have, in this case,
+[00:59:43 -> 00:59:45] instead of a single warp, we could have four warps
+[00:59:46 -> 00:59:49] of register files in our architecture.
+[00:59:49 -> 00:59:51] That's just extra additional memory.
+[00:59:51 -> 00:59:54] That way, at any moment in time,
+[00:59:54 -> 00:59:58] if the warp that's currently running on our ALUs
+[00:59:58 -> 01:00:01] happens to have a memory stall in some way
+[01:00:01 -> 01:00:03] because they have a cache miss,
+[01:00:04 -> 01:00:08] then we can very quickly switch in
+[01:00:08 -> 01:00:11] one of our other warps that are ready to go.
+[01:00:12 -> 01:00:14] They could come in, we could start fetching
+[01:00:14 -> 01:00:15] and decoding their instructions
+[01:00:15 -> 01:00:19] and start running them too in order to use the same
+[01:00:19 -> 01:00:23] and make sure we're never using idle resources in our GPU.
+[01:00:23 -> 01:00:25] And at some point, they will also have a memory stall.
+[01:00:27 -> 01:00:28] So when they have a memory stall,
+[01:00:28 -> 01:00:30] then we can put in another warp,
+[01:00:31 -> 01:00:33] and et cetera, et cetera.
+[01:00:34 -> 01:00:36] So at the end of the day,
+[01:00:36 -> 01:00:40] there is a potential increase in your per thread runtime
+[01:00:40 -> 01:00:42] because once you have your stall,
+[01:00:42 -> 01:00:45] you may not be able to get a spot back in for a while,
+[01:00:45 -> 01:00:48] depending on how many other threads preempt you.
+[01:00:49 -> 01:00:53] So within each thread, you may have a longer latency.
+[01:00:53 -> 01:00:54] But at the end of the day,
+[01:00:54 -> 01:00:56] it gives higher overall throughput.
+[01:00:56 -> 01:00:59] And as we know from any multi-threading application,
+[01:00:59 -> 01:01:02] you're really only as slow as your slowest thread.
+[01:01:02 -> 01:01:05] So being able to run everyone who can run
+[01:01:05 -> 01:01:06] will probably give you better performance
+[01:01:06 -> 01:01:08] at the end of the day when you have so many threads
+[01:01:08 -> 01:01:11] that you have to eventually run.
+[01:01:11 -> 01:01:12] But the key piece and takeaway from this
+[01:01:12 -> 01:01:16] is that you should have a good understanding
+[01:01:16 -> 01:01:19] of how long your memory delay,
+[01:01:19 -> 01:01:21] a memory stall is going to take,
+[01:01:21 -> 01:01:23] your cache miss would take,
+[01:01:23 -> 01:01:27] so that you allocate in your hardware enough warps,
+[01:01:27 -> 01:01:32] enough thread context in there to fill that space.
+[01:01:33 -> 01:01:35] Because what you don't want is everyone to have
+[01:01:35 -> 01:01:37] a cache miss of all the threads in your system,
+[01:01:37 -> 01:01:40] and you still have, and then you now idle,
+[01:01:40 -> 01:01:43] waiting for any of their cache misses to be serviced.
+[01:01:44 -> 01:01:46] You wanna have always enough compute to run,
+[01:01:46 -> 01:01:49] so which is why it's always encouraged
+[01:01:49 -> 01:01:53] to have more and more threads to support in your GPU,
+[01:01:53 -> 01:02:12] even if you can't have the hardware to support it, yes.
+[01:02:12 -> 01:02:15] Right, so switching between the warps
+[01:02:15 -> 01:02:18] may affect our cache utilization in some way.
+[01:02:18 -> 01:02:20] That is generally going to be true
+[01:02:20 -> 01:02:23] if you assume, if you're not assuming
+[01:02:23 -> 01:02:26] that your programs are very compute-intensive.
+[01:02:26 -> 01:02:29] So if you have a high computational intensity
+[01:02:29 -> 01:02:31] or operational intensity, is that term,
+[01:02:31 -> 01:02:35] which is usually just a ratio of how much work you do
+[01:02:35 -> 01:02:38] per byte of data that you request,
+[01:02:38 -> 01:02:41] if that is high, then your cache
+[01:02:41 -> 01:02:43] doesn't need to grow too high accordingly,
+[01:02:43 -> 01:02:45] because most of the work your threads are doing
+[01:02:45 -> 01:02:46] is purely compute.
+[01:02:48 -> 01:02:49] If that is not high,
+[01:02:49 -> 01:02:51] and this is a completely very
+[01:02:51 -> 01:02:52] memory-intensive application,
+[01:02:52 -> 01:02:55] then you will find yourself being bottlenecked
+[01:02:55 -> 01:02:58] by memory over the compute,
+[01:02:58 -> 01:03:00] which is a difficult situation to deal with
+[01:03:00 -> 01:03:04] because a GPU is not built to make memory accesses faster.
+[01:03:04 -> 01:03:06] It gives you high throughput,
+[01:03:06 -> 01:03:07] but there's only so much we could do
+[01:03:07 -> 01:03:09] to speed up what your memory can do.
+[01:03:10 -> 01:03:12] The memory wall still exists.
+[01:03:12 -> 01:03:14] Your DRAMs and your memory will still be slower
+[01:03:14 -> 01:03:17] to access than your processing pipeline.
+[01:03:17 -> 01:03:18] So yes.
+[01:03:20 -> 01:03:53] Yes, yes.
+[01:04:06 -> 01:04:08] Right, so locality will be an important thing.
+[01:04:08 -> 01:04:09] We'll get to it when we talk about
+[01:04:09 -> 01:04:12] the memory hierarchy for GPUs.
+[01:04:13 -> 01:04:14] But you're right.
+[01:04:14 -> 01:04:17] When your locality is a little bit weaker,
+[01:04:17 -> 01:04:20] then you're not able to capitalize,
+[01:04:20 -> 01:04:23] and a single miss can dramatically affect
+[01:04:23 -> 01:04:24] all of the threads in the same warp
+[01:04:24 -> 01:04:26] that are trying to move.
+[01:04:26 -> 01:04:28] It only takes one of them to miss to have an issue.
+[01:04:30 -> 01:04:33] That said, it's actually interesting the way that works,
+[01:04:33 -> 01:04:34] because you could always trade it off again
+[01:04:34 -> 01:04:38] if somehow you could support more thread contexts.
+[01:04:38 -> 01:04:43] And if you're smart, even if your locality is weak,
+[01:04:43 -> 01:04:45] as long as if one thread misses,
+[01:04:45 -> 01:04:47] all other threads in that same warp
+[01:04:47 -> 01:04:48] are expected to miss too,
+[01:04:48 -> 01:04:51] you're not actually losing out on much.
+[01:04:51 -> 01:04:53] The penalty and impact of that one thread
+[01:04:53 -> 01:04:56] out of eight or 16 or 32 missing
+[01:04:56 -> 01:04:59] is much more diminished if all of us are missing anyway.
+[01:05:00 -> 01:05:03] So it's kind of like if you're gonna fail this class,
+[01:05:03 -> 01:05:05] it's fine if everyone fails the class,
+[01:05:05 -> 01:05:07] because then you're on par with the average.
+[01:05:09 -> 01:05:10] Please do not quote me on that.
+[01:05:10 -> 01:05:12] I know this is on recording now.
+[01:05:14 -> 01:05:16] But right, so when that happens then,
+[01:05:16 -> 01:05:18] then the utilization and the waste you're getting
+[01:05:18 -> 01:05:19] is not really there,
+[01:05:19 -> 01:05:23] because then you throw in another warp to run in,
+[01:05:23 -> 01:05:25] and nothing feels wasted.
+[01:05:25 -> 01:05:27] It was an inevitable miss at the end of the day.
+[01:05:27 -> 01:05:29] So as long as you have other compute to throw in,
+[01:05:29 -> 01:05:32] your cache behavior, you don't have to see hits
+[01:05:32 -> 01:05:34] that often at the end of the day.
+[01:05:34 -> 01:05:37] You can just throw in enough other compute to be done
+[01:05:37 -> 01:05:40] to hide the latency of that miss,
+[01:05:40 -> 01:05:44] which is crazy when you think about it.
+[01:05:44 -> 01:05:46] The fundamental thing that will hold you back
+[01:05:46 -> 01:05:50] will be missing because of your instruction caches,
+[01:05:50 -> 01:05:52] but the nice thing about your GPU programs
+[01:05:52 -> 01:05:54] is we're all running the same thing,
+[01:05:54 -> 01:05:57] so you're not very high in your instruction memory usage
+[01:05:57 -> 01:05:59] to begin with.
+[01:05:59 -> 01:06:01] But that is the one thing that will,
+[01:06:01 -> 01:06:05] technically speaking, hold you back.
+[01:06:05 -> 01:06:07] Okay, I think this is probably
+[01:06:07 -> 01:06:08] a good point to stop right now.
+[01:06:08 -> 01:06:11] There's a lot of stuff for interconnects and GPUs today,
+[01:06:11 -> 01:06:12] and you guys need a little bit of time.
+[01:06:12 -> 01:06:17] Reminder for Friday is still your progress report.
+[01:06:18 -> 01:06:19] Hopefully it's just really trying to instigate
+[01:06:19 -> 01:06:20] and make sure you guys are moving
+[01:06:20 -> 01:06:22] and moving in a direction,
+[01:06:22 -> 01:06:24] and identify the issues that you might have,
+[01:06:24 -> 01:06:26] if not already had,
+[01:06:26 -> 01:06:27] and then specify it and show us
+[01:06:27 -> 01:06:29] that you've thought about a plan to change.
+[01:06:29 -> 01:06:30] So no class on Friday.
+[01:06:30 -> 01:06:32] I will see you all again on Monday.

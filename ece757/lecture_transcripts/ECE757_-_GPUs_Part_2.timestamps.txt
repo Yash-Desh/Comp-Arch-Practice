@@ -1,0 +1,1187 @@
+Title: ECE757 - GPUs (Part 2)
+Source file: ECE757 - GPUs (Part 2).mp4
+Detected language: en
+------------------------------------------------------------
+
+[00:00:00 -> 00:00:07] Hope everyone's enjoying this fine winter's day out there.
+[00:00:07 -> 00:00:09] Shall I compare these to a summer's day that
+[00:00:09 -> 00:00:12] are more snowy and less temperate?
+[00:00:12 -> 00:00:14] So we're going to continue off our discussion of GPUs.
+[00:00:14 -> 00:00:17] So last time we closed out interconnects,
+[00:00:17 -> 00:00:20] that was the last piece of flow control and the router
+[00:00:20 -> 00:00:21] microarchitecture.
+[00:00:21 -> 00:00:24] And then we got into the high-level concept of the GPUs.
+[00:00:24 -> 00:00:26] Today we'll go and dig a little bit more
+[00:00:26 -> 00:00:27] into the architecture.
+[00:00:27 -> 00:00:29] There's a lot of nuances to the architecture.
+[00:00:29 -> 00:00:31] I'll try to focus on the high-level things
+[00:00:31 -> 00:00:33] that you could walk away from.
+[00:00:33 -> 00:00:36] A lot of it is also not very well documented.
+[00:00:36 -> 00:00:39] So I'll keep things broad so that the concepts still apply,
+[00:00:39 -> 00:00:41] regardless of any new innovations,
+[00:00:41 -> 00:00:44] because this industry moves very quickly.
+[00:00:44 -> 00:00:46] So we'll be looking at the architecture, the memory
+[00:00:46 -> 00:00:49] organization, and the coherence in detail,
+[00:00:49 -> 00:00:53] and then a little bit of the programming side.
+[00:00:53 -> 00:00:55] So I know there's another course that's focused on this,
+[00:00:55 -> 00:00:57] like 759, and many of you will take that.
+[00:00:57 -> 00:00:58] So more of the details there.
+[00:00:58 -> 00:01:00] I would highly recommend taking a course like that
+[00:01:00 -> 00:01:03] if you want the GPU programming experience.
+[00:01:03 -> 00:01:04] OK.
+[00:01:04 -> 00:01:07] So first, to understand how the architecture is built,
+[00:01:07 -> 00:01:09] you need to know how the threads are organized
+[00:01:09 -> 00:01:11] and what that means.
+[00:01:11 -> 00:01:15] So effectively, just like in CUDA in particular,
+[00:01:15 -> 00:01:17] that's what I'm going to use for the most part
+[00:01:17 -> 00:01:18] as our baseline.
+[00:01:18 -> 00:01:21] So I'm describing using the NVIDIA terminology.
+[00:01:21 -> 00:01:23] But a lot of the concepts extend.
+[00:01:23 -> 00:01:25] There's a lot of terms that are synonymous.
+[00:01:25 -> 00:01:27] I'll try to use both terms at the same time
+[00:01:27 -> 00:01:28] whenever I can.
+[00:01:28 -> 00:01:30] But effectively, the idea is that, as we said,
+[00:01:30 -> 00:01:32] the GPU is this accelerator that's
+[00:01:32 -> 00:01:35] coupled with a host machine, a general purpose
+[00:01:35 -> 00:01:39] machine that's capable of supporting a runtime in an OS.
+[00:01:39 -> 00:01:42] So that would typically be your CPU.
+[00:01:42 -> 00:01:44] And the idea is you need that CPU
+[00:01:44 -> 00:01:48] to initialize and post-process anything
+[00:01:48 -> 00:01:50] and everything the GPU does.
+[00:01:50 -> 00:01:54] So effectively, the way your GPU application will look like
+[00:01:54 -> 00:01:58] is you'll have code running on the CPU with regular, quote,
+[00:01:58 -> 00:02:00] unquote, serial execution.
+[00:02:00 -> 00:02:02] It could be a multiprocessor.
+[00:02:02 -> 00:02:04] It could be multi-threaded, whatever it may be.
+[00:02:04 -> 00:02:05] It's running on the CPU.
+[00:02:05 -> 00:02:07] The host will prepare things.
+[00:02:07 -> 00:02:11] And then it will invoke a kernel call.
+[00:02:11 -> 00:02:13] So we'll see the semantics a bit
+[00:02:13 -> 00:02:14] when we get to the programming side.
+[00:02:14 -> 00:02:18] But effectively, you are just providing some specifications
+[00:02:18 -> 00:02:19] on how many threads there will be,
+[00:02:19 -> 00:02:22] the organization of the threads, et cetera.
+[00:02:22 -> 00:02:28] And then they will then be sent over and run on the GPU.
+[00:02:28 -> 00:02:30] So the kernel call will be a dedicated function
+[00:02:30 -> 00:02:32] that has its own syntax that will
+[00:02:32 -> 00:02:35] be compiled into a separate binary that uses
+[00:02:35 -> 00:02:37] the ISA supported by the GPU.
+[00:02:37 -> 00:02:40] And when that's done, when a kernel is finished,
+[00:02:40 -> 00:02:43] there is an implicit synchronization
+[00:02:43 -> 00:02:45] that waits for all the threads to finish before it comes back
+[00:02:45 -> 00:02:48] and tells the CPU that you're ready to go.
+[00:02:48 -> 00:02:50] The CPU will post-process this and do whatever it takes
+[00:02:50 -> 00:02:55] and could potentially be running other kernels afterwards
+[00:02:55 -> 00:02:57] and potentially even at the same time,
+[00:02:57 -> 00:03:00] issuing multiple kernels onto the GPU.
+[00:03:00 -> 00:03:07] So each kernel is executed as a grid of thread blocks.
+[00:03:07 -> 00:03:10] So a grid is the overall space of all the threads
+[00:03:10 -> 00:03:14] that comprise your GPU program.
+[00:03:14 -> 00:03:18] And then the thread blocks are a dedicated separate region.
+[00:03:18 -> 00:03:20] So all the threads are assumed to share the same memory
+[00:03:20 -> 00:03:21] space that's available.
+[00:03:21 -> 00:03:23] So that's the global memory that will
+[00:03:23 -> 00:03:25] be available to all threads.
+[00:03:25 -> 00:03:28] A thread block, though, is a specific batch
+[00:03:28 -> 00:03:30] of the threads that are actually
+[00:03:30 -> 00:03:34] capable of some level of cooperation with each other.
+[00:03:34 -> 00:03:35] So you would synchronize.
+[00:03:35 -> 00:03:37] They're able to synchronize their execution
+[00:03:37 -> 00:03:40] using barriers and other sort of primitive methods.
+[00:03:40 -> 00:03:42] They have a shared memory because they
+[00:03:42 -> 00:03:46] are expected to run on the same sort of device
+[00:03:46 -> 00:03:47] and the exact same processor.
+[00:03:47 -> 00:03:50] We'll get into the architecture of that in a moment.
+[00:03:50 -> 00:03:54] So then they have access to a dedicated local shared memory.
+[00:03:54 -> 00:03:56] And then outside of a thread block,
+[00:03:56 -> 00:04:00] the cooperation is expected to be zero or minimal.
+[00:04:00 -> 00:04:02] Generally speaking, you would write your program
+[00:04:02 -> 00:04:04] assuming you have no cooperation outside the thread
+[00:04:04 -> 00:04:04] block.
+[00:04:04 -> 00:04:08] And if you needed that level of cooperation globally,
+[00:04:08 -> 00:04:10] you would be writing separate kernels
+[00:04:10 -> 00:04:12] so that you could leverage the implicit synchronization that
+[00:04:12 -> 00:04:15] happens when a kernel terminates and a kernel
+[00:04:15 -> 00:04:17] starts.
+[00:04:17 -> 00:04:18] So what are these thread blocks?
+[00:04:18 -> 00:04:22] So all the threads in the thread block
+[00:04:22 -> 00:04:24] execute on the same machine.
+[00:04:24 -> 00:04:29] So when you do scheduling and you have dedicated GPU machines,
+[00:04:29 -> 00:04:31] at least any of the threads that
+[00:04:31 -> 00:04:32] are within the same thread block,
+[00:04:32 -> 00:04:35] you can guarantee those will end up on the same one.
+[00:04:35 -> 00:04:37] And then you usually declare your block size.
+[00:04:37 -> 00:04:40] There's different sort of block sizes
+[00:04:40 -> 00:04:42] supported for different architectures
+[00:04:42 -> 00:04:43] and different systems.
+[00:04:43 -> 00:04:45] You can expect sort of up to hundreds
+[00:04:45 -> 00:04:49] of concurrent threads within your thread block.
+[00:04:49 -> 00:04:51] And then you would also define a dimensionality to it
+[00:04:51 -> 00:04:54] if it simplifies as your algorithm.
+[00:04:54 -> 00:04:57] So that simply provides simple indexing and mechanisms
+[00:04:57 -> 00:05:00] for storing your data in one-dimensional,
+[00:05:00 -> 00:05:02] two-dimensional, three-dimensional formats.
+[00:05:02 -> 00:05:04] As we talked about before, legacy reasons for this
+[00:05:04 -> 00:05:09] is because GPUs were graphics processing units and still are.
+[00:05:09 -> 00:05:11] And a lot of the graphics that we deal with
+[00:05:11 -> 00:05:15] tend to operate in this kind of organization.
+[00:05:15 -> 00:05:21] And then each thread has an ID, a unique ID, within its block.
+[00:05:21 -> 00:05:23] And it also has a unique ID globally.
+[00:05:23 -> 00:05:26] But usually, you would use this thread ID within the block
+[00:05:26 -> 00:05:27] in order to select which work you
+[00:05:27 -> 00:05:29] are going to take care of.
+[00:05:29 -> 00:05:31] So because each of us is unique,
+[00:05:31 -> 00:05:34] then we simply have to reason about the data using
+[00:05:34 -> 00:05:36] some common base address.
+[00:05:36 -> 00:05:40] As an example, we would then access the data that's
+[00:05:40 -> 00:05:43] our ID offset to that common base address.
+[00:05:44 -> 00:05:47] That's how we're all able to do concurrent work on all the data
+[00:05:47 -> 00:05:48] available.
+[00:05:48 -> 00:05:52] So a typical GPU architecture will look something like this.
+[00:05:52 -> 00:05:55] So these terms are specific to the NVIDIA architecture.
+[00:05:55 -> 00:05:57] At the end of the day, the concepts
+[00:05:57 -> 00:05:59] are going to be generalizable.
+[00:05:59 -> 00:06:04] So your overall GPU consists of a streaming processor array.
+[00:06:04 -> 00:06:07] And then each of these is composed
+[00:06:07 -> 00:06:12] into what's often referred to as a texture processing cluster.
+[00:06:12 -> 00:06:13] At the end of the day, whatever that terminology
+[00:06:13 -> 00:06:17] and organization is, is just a tile composed of streaming
+[00:06:17 -> 00:06:19] multiprocessors, or SMs.
+[00:06:19 -> 00:06:21] Now, your SMs are the key piece.
+[00:06:21 -> 00:06:23] And that's the key piece that's
+[00:06:23 -> 00:06:24] generalizable across architectures.
+[00:06:24 -> 00:06:29] And effectively, what it is is, as we saw before,
+[00:06:29 -> 00:06:35] it's that merged execution hardware threads of many lanes.
+[00:06:35 -> 00:06:38] And the idea is that we merged our fetch and decode,
+[00:06:38 -> 00:06:41] and we're able to store register files and contexts
+[00:06:41 -> 00:06:45] for many threads at the same time.
+[00:06:45 -> 00:06:47] So what that allows us to do is
+[00:06:47 -> 00:06:51] we could allocate a whole bunch of thread blocks
+[00:06:51 -> 00:06:56] onto this one SM, even if this SM can only run 32 threads
+[00:06:56 -> 00:06:58] at any moment in time.
+[00:06:58 -> 00:06:58] That's OK.
+[00:06:58 -> 00:07:01] We will be able to have space for all of their register
+[00:07:01 -> 00:07:04] files so we know what current state they're in,
+[00:07:04 -> 00:07:06] what their current PC, their program counter,
+[00:07:06 -> 00:07:09] is at the moment to know where they left off
+[00:07:09 -> 00:07:13] and be able to schedule them in at any moment in time.
+[00:07:13 -> 00:07:16] That's what each of these SMs does.
+[00:07:16 -> 00:07:18] And a thread block guarantees that all of your threads
+[00:07:18 -> 00:07:22] will end up on the same SM.
+[00:07:22 -> 00:07:25] And then within this, you have these streaming processors
+[00:07:25 -> 00:07:27] that's simply your scalar lanes.
+[00:07:27 -> 00:07:30] So that's where a single thread will operate.
+[00:07:30 -> 00:07:32] And it will provide some number of these
+[00:07:32 -> 00:07:35] in order to support the size of each warp.
+[00:07:35 -> 00:07:37] So we briefly discussed that term before.
+[00:07:37 -> 00:07:39] That's how many threads can run at any moment in time
+[00:07:39 -> 00:07:40] in parallel.
+[00:07:40 -> 00:07:42] There will also be special functional units
+[00:07:42 -> 00:07:46] that could do sine, cosine, reciprocal, square roots,
+[00:07:46 -> 00:07:48] these kinds of things.
+[00:07:48 -> 00:07:50] And then there will also be texture units,
+[00:07:50 -> 00:07:53] which we don't get into in too much detail.
+[00:07:53 -> 00:07:54] But effectively, these are able to do
+[00:07:54 -> 00:07:58] texture-based processing that's common for graphics.
+[00:07:58 -> 00:07:59] That simply means is you usually
+[00:07:59 -> 00:08:04] want to map out a texture, a predefined 2D image
+[00:08:04 -> 00:08:07] onto a surface of a 3D model.
+[00:08:07 -> 00:08:10] And a lot of that will involve some sophisticated hardware,
+[00:08:10 -> 00:08:13] which is actually provided, such as texture caches that
+[00:08:13 -> 00:08:16] are capable of doing automatic floating point conversion
+[00:08:16 -> 00:08:20] for you, as well as linear interpolation of values that
+[00:08:20 -> 00:08:21] lets you do it.
+[00:08:21 -> 00:08:22] There's actually some cool things there.
+[00:08:22 -> 00:08:24] I'll get to that in a moment when we
+[00:08:24 -> 00:08:27] get to some of that architecture.
+[00:08:27 -> 00:08:29] OK, so the main piece of the GPU
+[00:08:29 -> 00:08:32] is this super processor, if you will.
+[00:08:32 -> 00:08:34] That's just a whole bunch of hardware threads
+[00:08:34 -> 00:08:38] that amortize the cost of the fetches and decodes within it.
+[00:08:38 -> 00:08:41] So that's your SM, your streaming multiprocessor.
+[00:08:41 -> 00:08:44] So the way it works is you're able to dispatch
+[00:08:44 -> 00:08:46] the instructions through all of the lanes
+[00:08:46 -> 00:08:50] with the assumption that all of the threads within a chunk
+[00:08:50 -> 00:08:52] are running the exact same instruction
+[00:08:52 -> 00:08:53] at any moment in time.
+[00:08:53 -> 00:08:55] And we saw what happens when we have deviations
+[00:08:55 -> 00:08:57] in control flow, for example.
+[00:08:57 -> 00:08:59] If there's an if-else statement,
+[00:08:59 -> 00:09:01] it just means that if we're in the if part,
+[00:09:01 -> 00:09:06] anyone who resolves to else will end up being idle.
+[00:09:06 -> 00:09:08] And if we're in the else part, anyone who resolves to if
+[00:09:08 -> 00:09:11] will end up being idle.
+[00:09:11 -> 00:09:15] So we can usually store orders of magnitude worth of thread
+[00:09:15 -> 00:09:20] context here with the flexible space and the memory inside
+[00:09:20 -> 00:09:22] that's holding all of the registers.
+[00:09:22 -> 00:09:26] And we'll talk about how that is dynamically partitioned.
+[00:09:26 -> 00:09:29] And then a warp is what we had defined,
+[00:09:29 -> 00:09:33] which is very commonly the standard is 32 threads per warp.
+[00:09:33 -> 00:09:37] And the idea here is that any threads within a warp
+[00:09:37 -> 00:09:41] will execute in lockstep.
+[00:09:41 -> 00:09:44] Now, any threads within a warp will be guaranteed
+[00:09:44 -> 00:09:48] to be within the same thread block.
+[00:09:48 -> 00:09:50] So your thread block will consist
+[00:09:50 -> 00:09:52] of a whole bunch of warps.
+[00:09:52 -> 00:09:54] You could view this as analogous
+[00:09:54 -> 00:09:59] to how pages and cache blocks and cache lines
+[00:09:59 -> 00:10:00] are allocated in memory.
+[00:10:00 -> 00:10:05] They're all generally aligned to powers of two sizes.
+[00:10:05 -> 00:10:08] And I could have a 4 kilobyte page.
+[00:10:08 -> 00:10:11] And in windedness, I have data organized in cache lines,
+[00:10:11 -> 00:10:14] or in lines, or blocks, whatever it may be.
+[00:10:14 -> 00:10:16] And if you are in the same cache line,
+[00:10:16 -> 00:10:19] you are guaranteed to be on the same page as well.
+[00:10:19 -> 00:10:21] So it's sort of just different granularity.
+[00:10:21 -> 00:10:23] So a warp is the granularity of execution.
+[00:10:23 -> 00:10:26] If we are in the same warp, we are always
+[00:10:26 -> 00:10:30] on the same instruction, because when I run this add,
+[00:10:30 -> 00:10:33] you are running this add with me.
+[00:10:33 -> 00:10:36] Within a thread block, though, we
+[00:10:36 -> 00:10:38] may be on different instructions,
+[00:10:38 -> 00:10:43] but we are still running the same GPU program.
+[00:10:43 -> 00:10:45] So that's why, as I talked about before,
+[00:10:45 -> 00:10:47] people view this less as SIMD,
+[00:10:47 -> 00:10:50] because you have SIMD execution within your warp.
+[00:10:50 -> 00:10:52] That is true.
+[00:10:52 -> 00:10:57] But it's SPMD, Single Program Multiple Data Execution,
+[00:10:57 -> 00:11:01] within all the threads in your program, in your thread block,
+[00:11:01 -> 00:11:03] et cetera, because you may not all be at the same
+[00:11:03 -> 00:11:06] instruction at the same time.
+[00:11:06 -> 00:11:09] So what the scheduler does is it
+[00:11:09 -> 00:11:12] allows for each of the streaming processors
+[00:11:12 -> 00:11:17] to then take some thread blocks from your grid,
+[00:11:17 -> 00:11:20] so your entire set of threads available in your kernel,
+[00:11:20 -> 00:11:23] and it will distribute them among all the available SMs
+[00:11:23 -> 00:11:24] in your GPU.
+[00:11:24 -> 00:11:26] So if we have eight SMs, it'll try
+[00:11:26 -> 00:11:29] to figure out the proper organization to usually
+[00:11:29 -> 00:11:32] uniformly distribute your thread blocks across the eight
+[00:11:32 -> 00:11:33] SMs.
+[00:11:33 -> 00:11:36] And then with some recent research from the folks
+[00:11:36 -> 00:11:39] from CS here, there is some interesting things
+[00:11:39 -> 00:11:41] that you can do to try to provide
+[00:11:41 -> 00:11:46] locality among thread blocks or potentially threads
+[00:11:46 -> 00:11:47] from different kernels that may
+[00:11:47 -> 00:11:50] have some actual frequent communication with each other
+[00:11:50 -> 00:11:54] and try to co-locate them on the same SMs.
+[00:11:54 -> 00:11:56] OK.
+[00:11:56 -> 00:11:59] So then each SM will then try to launch
+[00:11:59 -> 00:12:01] warps of these threads.
+[00:12:01 -> 00:12:03] And as we talked about before, effectively you're
+[00:12:03 -> 00:12:08] just time multiplexing them, whoever is ready to run,
+[00:12:08 -> 00:12:11] and we have fine-grained multi-threading available
+[00:12:11 -> 00:12:13] within each of the SMs.
+[00:12:13 -> 00:12:16] And then after everything is complete,
+[00:12:16 -> 00:12:19] then all the resources are effectively free,
+[00:12:19 -> 00:12:24] and then we could redistribute the next kernel if available.
+[00:12:24 -> 00:12:25] OK.
+[00:12:25 -> 00:12:28] So as I talked about, the granularity for assignment
+[00:12:28 -> 00:12:30] to SMs are thread blocks.
+[00:12:30 -> 00:12:34] And the granularity for execution in lockstep
+[00:12:34 -> 00:12:38] are the thread warps themselves.
+[00:12:38 -> 00:12:40] And then the idea is that the SM
+[00:12:40 -> 00:12:43] is able to maintain the thread ID
+[00:12:43 -> 00:12:46] and will be able to dedicate a specific set
+[00:12:46 -> 00:12:51] of the available GPU resources to track this thread ID's
+[00:12:51 -> 00:12:53] register files and the program counter values.
+[00:12:53 -> 00:12:58] So it knows exactly where it is at any moment in time.
+[00:12:58 -> 00:13:01] And then the warp, kind of analogous to the cache line,
+[00:13:01 -> 00:13:05] again, is a hardware decision.
+[00:13:05 -> 00:13:08] So it's not something that the software programmer is
+[00:13:08 -> 00:13:10] deciding on.
+[00:13:10 -> 00:13:13] And a lot of times for the challenge for portability
+[00:13:13 -> 00:13:16] is it's not something that may not be standard size as well.
+[00:13:16 -> 00:13:18] And you may not know.
+[00:13:18 -> 00:13:20] Your compiler would know because it has an idea of what
+[00:13:20 -> 00:13:21] back end you plan to run on.
+[00:13:21 -> 00:13:23] But you as the programmer may not
+[00:13:23 -> 00:13:25] know if you're trying to build a portable program.
+[00:13:25 -> 00:13:28] In the same way, when you write a CPU program,
+[00:13:28 -> 00:13:30] you can't always guarantee that your cache block is
+[00:13:30 -> 00:13:32] going to be 64 bytes in size.
+[00:13:32 -> 00:13:35] It could be 128 bytes, but you're still
+[00:13:35 -> 00:13:37] going to run and compile this binary
+[00:13:37 -> 00:13:40] and expect it to run on any of these machines.
+[00:13:40 -> 00:13:44] So it should run correctly regardless,
+[00:13:44 -> 00:13:47] but the performance you'll get will depend
+[00:13:47 -> 00:13:49] and can potentially vary.
+[00:13:49 -> 00:13:51] So if you try to heavily optimize for a 64 byte cache
+[00:13:51 -> 00:13:55] line, your performance could be a very, very different thing
+[00:13:55 -> 00:13:58] when you get it on a different cache block size.
+[00:13:58 -> 00:13:59] So for the warps, it's the same thing.
+[00:13:59 -> 00:14:01] That's an invisible piece, though we could usually
+[00:14:01 -> 00:14:03] try to optimize it because it's generally
+[00:14:03 -> 00:14:07] well known that your warps will be around 32 threads
+[00:14:07 -> 00:14:08] in size.
+[00:14:08 -> 00:14:11] The thread blocks, though, is what you have defined.
+[00:14:11 -> 00:14:13] And there will be some flexibility.
+[00:14:13 -> 00:14:14] As a software programmer, you will
+[00:14:14 -> 00:14:18] be able to choose from a range of sizes for your thread
+[00:14:18 -> 00:14:20] blocks.
+[00:14:20 -> 00:14:23] So that, semantically, is just you deciding how things
+[00:14:23 -> 00:14:25] are going to be scheduled in the same way
+[00:14:25 -> 00:14:29] that I can schedule and allocate threads to run on.
+[00:14:29 -> 00:14:32] If I have a many threaded CPU program,
+[00:14:32 -> 00:14:35] but I only have two cores of CPUs available,
+[00:14:35 -> 00:14:37] then I can choose which ones will go on the left
+[00:14:37 -> 00:14:39] and which ones will go on the right.
+[00:14:39 -> 00:14:41] That's what you're basically and effectively doing
+[00:14:41 -> 00:14:44] the thread blocks as well.
+[00:14:44 -> 00:14:46] So the warps, then, are the scheduling units
+[00:14:46 -> 00:14:50] that happen within each of these SMs.
+[00:14:50 -> 00:14:54] So effectively, we'll have a multi-threaded warp scheduler.
+[00:14:54 -> 00:14:58] This is just like any other sort of out of order
+[00:14:58 -> 00:15:02] processor scheduler, except a pipeline tends to be in order.
+[00:15:02 -> 00:15:05] The only decision making it really needs to do
+[00:15:05 -> 00:15:09] is recognize when the current warp is
+[00:15:09 -> 00:15:13] hitting a potential stall, is getting some form of delay,
+[00:15:13 -> 00:15:16] and then issuing another warp to run in its stead
+[00:15:16 -> 00:15:18] if such a stall exists, because you
+[00:15:18 -> 00:15:21] want to minimize the underutilization or any idle
+[00:15:21 -> 00:15:23] cycles in your GPU.
+[00:15:26 -> 00:15:29] So the way it works will look something like this.
+[00:15:29 -> 00:15:32] That is just a very high level view of the architecture.
+[00:15:32 -> 00:15:35] But a lot of the concepts are very similar to what
+[00:15:35 -> 00:15:37] they were before.
+[00:15:37 -> 00:15:39] And the idea is we just need some initial logic
+[00:15:39 -> 00:15:41] to know which threads and which thread
+[00:15:41 -> 00:15:43] contexts within the GPU resources
+[00:15:43 -> 00:15:48] are actually active and able to run in some respect.
+[00:15:48 -> 00:15:50] And then we have a fetch and decode
+[00:15:50 -> 00:15:54] based on the common PC of the threads in a single warp.
+[00:15:54 -> 00:16:00] We can fetch that instruction once, decode it once,
+[00:16:00 -> 00:16:02] and then allocate registers for it.
+[00:16:02 -> 00:16:04] Usually, the pipelines, even though it's in order
+[00:16:04 -> 00:16:09] within the GPU, you want a relatively deep pipeline.
+[00:16:09 -> 00:16:12] So you still have to do some form of scoreboarding, which
+[00:16:12 -> 00:16:15] just means hazard resolution.
+[00:16:15 -> 00:16:20] So that means things like, if I send off this instruction
+[00:16:20 -> 00:16:24] and it's going to produce and write to register R1,
+[00:16:24 -> 00:16:26] and then right after it is another instruction
+[00:16:26 -> 00:16:29] that needs to read R1, because our pipelines will
+[00:16:29 -> 00:16:33] tend to be deep, the execution of that producer
+[00:16:33 -> 00:16:36] instruction could take a while and multiple cycles
+[00:16:36 -> 00:16:39] until it will actually produce R1.
+[00:16:39 -> 00:16:41] So yes, it's in order, but there is still a hazard,
+[00:16:41 -> 00:16:44] because you can't have the consuming instruction
+[00:16:44 -> 00:16:48] immediately after it, because R1 won't be ready for a while.
+[00:16:48 -> 00:16:52] So if you recall, well, not from 552,
+[00:16:52 -> 00:16:55] but if any of you took 752 or other advanced
+[00:16:55 -> 00:16:57] microarchitecture courses, you
+[00:16:57 -> 00:17:00] need to do some basic resolution in order
+[00:17:00 -> 00:17:05] to stall an instruction if there are any dependencies.
+[00:17:05 -> 00:17:07] And then modern GPUs will also tend
+[00:17:07 -> 00:17:10] to use some level of register renaming,
+[00:17:10 -> 00:17:12] so that it doesn't have to deal with this for
+[00:17:12 -> 00:17:17] anti-dependencies, so wars and right after rights as well.
+[00:17:17 -> 00:17:21] So what it will look like will be something like this.
+[00:17:21 -> 00:17:22] So at any moment in time, it
+[00:17:22 -> 00:17:26] could pick among any potentially executing
+[00:17:26 -> 00:17:29] warps at any moment, whether they be in the same thread
+[00:17:29 -> 00:17:32] block or completely different thread blocks.
+[00:17:32 -> 00:17:35] Usually, the scheduling policy will try to be fair.
+[00:17:35 -> 00:17:38] So if we have multiple thread blocks available, thread block
+[00:17:38 -> 00:17:41] one, two, and three available,
+[00:17:41 -> 00:17:44] we will try to run warps for each of them
+[00:17:44 -> 00:17:47] and distribute it whenever we can in a round-robin policy,
+[00:17:47 -> 00:17:49] so that it's fair and no thread block itself
+[00:17:49 -> 00:17:52] is particularly getting starved.
+[00:17:52 -> 00:17:54] At the end of the day, it's questionable how much
+[00:17:54 -> 00:17:57] of an impact this has if these are all
+[00:17:57 -> 00:18:01] part of the same kernel, because at the end of the day,
+[00:18:01 -> 00:18:03] you are waiting for the last thread to finish.
+[00:18:03 -> 00:18:08] But as long as, if you've ideally filled all the cycles
+[00:18:08 -> 00:18:09] with some useful work, it doesn't matter
+[00:18:09 -> 00:18:11] if you did thread block one entirely first,
+[00:18:11 -> 00:18:13] thread block two, thread block three,
+[00:18:13 -> 00:18:15] you're going to finish the same time
+[00:18:15 -> 00:18:17] as interleaving them perfectly one after another
+[00:18:17 -> 00:18:19] as well in a round-robin fashion.
+[00:18:21 -> 00:18:23] So technically speaking, if you are able
+[00:18:23 -> 00:18:27] to get maximum utilization of your GPU,
+[00:18:27 -> 00:18:30] it honestly doesn't matter how you schedule things,
+[00:18:30 -> 00:18:32] but that fairness does matter if these thread blocks
+[00:18:32 -> 00:18:35] that are being scheduled come from different kernels,
+[00:18:35 -> 00:18:37] which is possible on some GPUs.
+[00:18:37 -> 00:18:38] You could have two different kernels running
+[00:18:38 -> 00:18:41] at the same time, and then you may have
+[00:18:41 -> 00:18:43] some level of unfairness going on there.
+[00:18:44 -> 00:18:46] So you could have a single warp.
+[00:18:46 -> 00:18:48] For example, warp one here is able
+[00:18:48 -> 00:18:50] to run six instructions until it finally
+[00:18:50 -> 00:18:52] hits some form of stall, and that could be
+[00:18:52 -> 00:18:55] some level of memory access, whatever it may be.
+[00:18:55 -> 00:18:58] It could even be sort of a very deep register hazard
+[00:18:59 -> 00:19:01] from a deep pipeline, whatever that might be,
+[00:19:01 -> 00:19:04] like a floating-point operation could take a long time,
+[00:19:04 -> 00:19:06] and you have a raw dependence immediately
+[00:19:06 -> 00:19:09] after the floating-point operation, so you gotta wait.
+[00:19:09 -> 00:19:12] So when that happens, the scheduler has
+[00:19:12 -> 00:19:15] to recognize this and will then pick the next warp.
+[00:19:15 -> 00:19:17] In this case, it's picking fairly.
+[00:19:17 -> 00:19:18] We'll pick from thread block two,
+[00:19:18 -> 00:19:21] and we'll pick the first warp from there.
+[00:19:21 -> 00:19:23] And then once that hits a stall,
+[00:19:23 -> 00:19:26] we will then move to thread block three, et cetera.
+[00:19:26 -> 00:19:30] At some point, when these dependencies are resolved,
+[00:19:30 -> 00:19:32] like for example, memory provides data
+[00:19:32 -> 00:19:36] if you have a memory stall, then the system
+[00:19:36 -> 00:19:39] also needs to be able to update sort of
+[00:19:39 -> 00:19:41] who is active and who is ready to go
+[00:19:41 -> 00:19:43] in order to do that scheduling properly.
+[00:19:44 -> 00:19:48] So it has a gigantic bitmask or bit vector available
+[00:19:48 -> 00:19:50] that tracks which of the warps
+[00:19:50 -> 00:19:52] are ready to go at any moment in time.
+[00:19:53 -> 00:19:56] And so the key is scheduling has to have this,
+[00:19:56 -> 00:19:57] and the bitmask will have to scale
+[00:19:57 -> 00:19:59] with the warp, not the thread block,
+[00:19:59 -> 00:20:00] because as we talked about,
+[00:20:00 -> 00:20:03] even warps within the same thread block
+[00:20:03 -> 00:20:06] can be at different times of the program at any moment.
+[00:20:07 -> 00:20:09] You could try to lockstep entire large chunks
+[00:20:09 -> 00:20:12] of thread blocks, but then chances are
+[00:20:12 -> 00:20:14] that may not be super fruitful for you,
+[00:20:15 -> 00:20:16] and it might not make sense,
+[00:20:16 -> 00:20:20] because the only reason why we're running these 32 threads
+[00:20:20 -> 00:20:21] all of the same instruction right now
+[00:20:21 -> 00:20:27] is because we have 32 lanes available in our SM.
+[00:20:27 -> 00:20:28] Okay.
+[00:20:29 -> 00:20:31] So we'll see a little bit more of the architecture
+[00:20:31 -> 00:20:36] in the context of memory.
+[00:20:36 -> 00:20:39] So now, the way the GPU memory architecture is
+[00:20:39 -> 00:20:40] looks a little bit different
+[00:20:40 -> 00:20:42] than what we'll see in a typical CPU.
+[00:20:43 -> 00:20:46] So first of all, we have dedicated memory available
+[00:20:46 -> 00:20:49] for registers, these are meant to be fast,
+[00:20:49 -> 00:20:51] and these are still meant to be large,
+[00:20:51 -> 00:20:53] much bigger than a typical register file,
+[00:20:53 -> 00:20:54] because as I talked about before,
+[00:20:54 -> 00:20:57] we need to support many, many, many threads
+[00:20:57 -> 00:20:58] within the system.
+[00:20:59 -> 00:21:01] So logically, it's drawn like this,
+[00:21:03 -> 00:21:06] sort of among the threads in different thread blocks,
+[00:21:06 -> 00:21:07] but within the same SM,
+[00:21:07 -> 00:21:09] this register file will actually be a big pool
+[00:21:09 -> 00:21:12] of physical registers that you will then
+[00:21:12 -> 00:21:15] dynamically partition based on the number of thread blocks
+[00:21:15 -> 00:21:16] that you've allocated on this SM.
+[00:21:18 -> 00:21:22] There will also be local memory that's available.
+[00:21:22 -> 00:21:24] So this is typically any form of private,
+[00:21:24 -> 00:21:27] thread private data that needs to be accounted for.
+[00:21:27 -> 00:21:30] So common use cases are if you spill,
+[00:21:30 -> 00:21:33] you need more registers than are actually available
+[00:21:33 -> 00:21:34] in the ISA.
+[00:21:34 -> 00:21:35] Just like how we do in a CPU,
+[00:21:35 -> 00:21:37] we typically use the stack.
+[00:21:37 -> 00:21:39] That's what local memory is for.
+[00:21:39 -> 00:21:41] We have shared memory,
+[00:21:41 -> 00:21:42] which is just a common shared memory
+[00:21:42 -> 00:21:45] within each machine, within each SM,
+[00:21:45 -> 00:21:48] and then a global memory, which is global to everybody,
+[00:21:48 -> 00:21:51] and read-only constant memory and texture memory.
+[00:21:51 -> 00:21:54] So we'll get into what each of these are.
+[00:21:54 -> 00:21:56] The key piece is that the latter three
+[00:21:56 -> 00:21:58] are what the CPU has access to,
+[00:21:59 -> 00:22:01] and that's how any form of communication
+[00:22:01 -> 00:22:04] between the accelerator and its host works
+[00:22:04 -> 00:22:05] through that global memory.
+[00:22:06 -> 00:22:09] Okay, so the global memory is the key piece,
+[00:22:09 -> 00:22:13] and the contents for this is visible across all threads.
+[00:22:13 -> 00:22:14] That said, if you are two threads
+[00:22:14 -> 00:22:15] in two different thread blocks
+[00:22:15 -> 00:22:17] and you want to access this global memory,
+[00:22:17 -> 00:22:19] just be ready because any races
+[00:22:19 -> 00:22:21] will not be handled properly
+[00:22:21 -> 00:22:23] because you can't guarantee any synchronization
+[00:22:23 -> 00:22:26] among threads across different thread blocks.
+[00:22:26 -> 00:22:28] So chances are you are writing your program
+[00:22:28 -> 00:22:31] to minimize any level of that sharing anyway
+[00:22:31 -> 00:22:33] because GPUs were built
+[00:22:33 -> 00:22:36] for massively parallel processing to begin with.
+[00:22:37 -> 00:22:40] Constant memory is effectively
+[00:22:40 -> 00:22:41] some level of read-only memory
+[00:22:42 -> 00:22:44] that'll be more optimized
+[00:22:44 -> 00:22:45] because it doesn't need to maintain
+[00:22:45 -> 00:22:47] any level of coherence
+[00:22:47 -> 00:22:50] and any notion of writes and modifications.
+[00:22:50 -> 00:22:52] So read-only memory and constant memory
+[00:22:52 -> 00:22:55] is typically just things that, for example,
+[00:22:55 -> 00:22:57] like the texture that needs to be mapped out
+[00:22:58 -> 00:23:00] or other such constants
+[00:23:00 -> 00:23:03] that are going to be available in your application.
+[00:23:03 -> 00:23:05] And if you want the specific capabilities
+[00:23:05 -> 00:23:08] that I talked about with the texture memory,
+[00:23:08 -> 00:23:10] then there will be a dedicated space for that.
+[00:23:10 -> 00:23:11] So as I mentioned before,
+[00:23:11 -> 00:23:14] there's actual hardware in there
+[00:23:14 -> 00:23:16] within the caches themselves
+[00:23:16 -> 00:23:18] that lets you do floating point conversion
+[00:23:18 -> 00:23:20] and actual interpolation.
+[00:23:20 -> 00:23:21] We actually did a project on this
+[00:23:21 -> 00:23:22] back when I was a grad student
+[00:23:22 -> 00:23:23] that actually leveraged on this
+[00:23:23 -> 00:23:25] because it was cool.
+[00:23:25 -> 00:23:29] So the caches, the texture cache,
+[00:23:29 -> 00:23:33] in a way, could be indexed by value effectively.
+[00:23:34 -> 00:23:36] So what that means is,
+[00:23:37 -> 00:23:38] say I will map out,
+[00:23:38 -> 00:23:40] instead of your addresses,
+[00:23:40 -> 00:23:42] you could think of your address space
+[00:23:42 -> 00:23:45] as like floating point values
+[00:23:45 -> 00:23:47] and I want to get like address 4.5.
+[00:23:48 -> 00:23:50] And what it'll do is the hardware
+[00:23:50 -> 00:23:53] will naturally interpolate what's at address 4
+[00:23:53 -> 00:23:55] and what's at address 5
+[00:23:56 -> 00:23:57] in order to get you something.
+[00:23:57 -> 00:23:59] Because the way it works is when you have,
+[00:23:59 -> 00:24:02] when you're doing this texture mapping,
+[00:24:02 -> 00:24:05] you have a surface of a 3D model
+[00:24:05 -> 00:24:06] and you want to take like,
+[00:24:06 -> 00:24:08] oh, okay, this is my ball.
+[00:24:08 -> 00:24:10] And then I have this 2D image
+[00:24:10 -> 00:24:12] of what the surface of the ball is going to be
+[00:24:12 -> 00:24:14] and I want to map it on.
+[00:24:14 -> 00:24:16] Some places will stretch more than you expect
+[00:24:16 -> 00:24:18] and some places will compress more.
+[00:24:18 -> 00:24:20] When you stretch,
+[00:24:20 -> 00:24:22] you may not have a value to represent that
+[00:24:22 -> 00:24:24] within the pixel space of the texture
+[00:24:24 -> 00:24:26] that you're trying to map in.
+[00:24:26 -> 00:24:29] So it'll interpolate it.
+[00:24:29 -> 00:24:31] So if your texture is not high resolution,
+[00:24:31 -> 00:24:33] you will see this stretch
+[00:24:33 -> 00:24:35] in the same way that if you see that,
+[00:24:35 -> 00:24:37] if you watch a movie with poor graphics
+[00:24:37 -> 00:24:38] or if you play a game
+[00:24:38 -> 00:24:41] that has sort of very dynamic graphics,
+[00:24:41 -> 00:24:43] every now and then when there's this kind of activity,
+[00:24:43 -> 00:24:46] you will see this visible stretch that happens.
+[00:24:47 -> 00:24:49] So the hardware does that for free.
+[00:24:49 -> 00:24:50] So your software doesn't have to do that,
+[00:24:50 -> 00:24:52] which is kind of cool.
+[00:24:52 -> 00:24:55] So we were using it for random approximate computing
+[00:24:55 -> 00:24:56] like we always like to do.
+[00:24:56 -> 00:24:58] And we were populating the texture cache
+[00:24:58 -> 00:25:00] with like little predictors and things
+[00:25:00 -> 00:25:03] and having it do free interpolation
+[00:25:03 -> 00:25:04] and prediction for us.
+[00:25:04 -> 00:25:07] So there's a lot of cool things that can be done.
+[00:25:07 -> 00:25:08] That said, they do some weird innovations here
+[00:25:08 -> 00:25:10] that are not very well documented.
+[00:25:10 -> 00:25:11] So you first have to figure out
+[00:25:11 -> 00:25:12] what exactly they're trying to do
+[00:25:12 -> 00:25:14] with the texture memory units.
+[00:25:14 -> 00:25:18] But if you can and leverage it, that'll be really cool.
+[00:25:18 -> 00:25:19] Yeah, we were always trying to interest it
+[00:25:19 -> 00:25:21] to see if there were more general purpose uses for this
+[00:25:21 -> 00:25:26] and not just specific to graphics.
+[00:25:26 -> 00:25:27] Okay.
+[00:25:27 -> 00:25:28] So other things, there's the local memory
+[00:25:28 -> 00:25:30] as I talked about before,
+[00:25:30 -> 00:25:33] any variables that are statically defined per thread
+[00:25:33 -> 00:25:38] or anything that are just register spilling.
+[00:25:38 -> 00:25:41] So if I only have 16 architectural registers available,
+[00:25:41 -> 00:25:43] naturally I might write a program
+[00:25:43 -> 00:25:44] that needs more than that.
+[00:25:44 -> 00:25:47] I just need to hold more temporary information.
+[00:25:47 -> 00:25:50] So you'll have to spill like you would in a stack
+[00:25:50 -> 00:25:51] into that.
+[00:25:52 -> 00:25:53] There's a shared memory.
+[00:25:53 -> 00:25:58] This is what allows inter-thread communication to happen,
+[00:25:58 -> 00:26:01] but you can only guarantee it within a thread block
+[00:26:01 -> 00:26:02] because as we talked about before,
+[00:26:02 -> 00:26:05] a thread block is the scheduling granularity
+[00:26:05 -> 00:26:06] where you can guarantee
+[00:26:06 -> 00:26:08] that you will always be in the same SM.
+[00:26:09 -> 00:26:13] Now you can't, if you're in the same warp,
+[00:26:13 -> 00:26:16] yes, you can also guarantee you'll be in the same SM,
+[00:26:16 -> 00:26:18] but as we talked about before,
+[00:26:18 -> 00:26:19] the warp is a hardware definition.
+[00:26:19 -> 00:26:22] So you may not, if you're writing a portable GPU program,
+[00:26:22 -> 00:26:25] you may not know exactly how big each warp
+[00:26:25 -> 00:26:26] is going to be.
+[00:26:26 -> 00:26:28] You just have to have a general notion
+[00:26:28 -> 00:26:32] like with cache blocks that putting threads together
+[00:26:32 -> 00:26:35] and defining their IDs to be next to each other
+[00:26:35 -> 00:26:38] increases the likelihood that they'll be on the same warp.
+[00:26:38 -> 00:26:41] So putting your data together in your random program
+[00:26:41 -> 00:26:42] will increase the likelihood
+[00:26:42 -> 00:26:45] that they'll be on the same cache line.
+[00:26:45 -> 00:26:47] That's all we can operate on.
+[00:26:49 -> 00:26:52] And as we'll get to a little bit,
+[00:26:52 -> 00:26:53] it gets a little bit more complex
+[00:26:53 -> 00:26:55] depending on the consistency model
+[00:26:55 -> 00:26:57] and coherence protocol that's in place with the GPU
+[00:26:57 -> 00:26:59] because a lot of times now
+[00:26:59 -> 00:27:02] in order to support data race freedom,
+[00:27:02 -> 00:27:05] the data race free model, if people recall that,
+[00:27:06 -> 00:27:08] that guarantees consistency
+[00:27:08 -> 00:27:11] and operates at the word granularity,
+[00:27:11 -> 00:27:14] the granularity of any load or store.
+[00:27:14 -> 00:27:16] So it doesn't operate at the block granularity,
+[00:27:16 -> 00:27:19] which means it gets a little bit tricky
+[00:27:19 -> 00:27:20] in dealing with that
+[00:27:20 -> 00:27:23] because we don't actually get much cache locality anymore,
+[00:27:23 -> 00:27:26] but we'll see what the GPU does
+[00:27:26 -> 00:27:28] that takes care of these kinds of things.
+[00:27:29 -> 00:27:32] And finally, the global memory is shared by all threads
+[00:27:32 -> 00:27:35] and then any inter-grid communication.
+[00:27:35 -> 00:27:38] So within thread blocks is something
+[00:27:38 -> 00:27:43] that is often not supported explicitly in the architecture.
+[00:27:43 -> 00:27:46] And if you want to guarantee it on any arbitrary GPU,
+[00:27:46 -> 00:27:48] you would have to do any level
+[00:27:48 -> 00:27:50] of inter-grid communication across kernels
+[00:27:51 -> 00:27:54] because the kernel boundaries is the only place
+[00:27:54 -> 00:27:58] where you have explicit synchronization all the time.
+[00:27:58 -> 00:28:01] So the register file, as I mentioned before,
+[00:28:01 -> 00:28:03] it's not something that's individual
+[00:28:03 -> 00:28:05] for all of your thread contexts.
+[00:28:05 -> 00:28:07] At any moment in time in an SM,
+[00:28:07 -> 00:28:08] you may not actually know exactly
+[00:28:08 -> 00:28:11] how many threads that are going to be there.
+[00:28:11 -> 00:28:12] So that's dynamic.
+[00:28:12 -> 00:28:14] It depends on the thread block sizes
+[00:28:14 -> 00:28:16] that the programmers have chosen
+[00:28:16 -> 00:28:18] and how many of those get assigned to this SM.
+[00:28:18 -> 00:28:20] So instead of the physical registers,
+[00:28:20 -> 00:28:23] you'll typically just have like a couple orders
+[00:28:23 -> 00:28:26] of magnitude of kilobytes of physical registers
+[00:28:26 -> 00:28:28] available in a single SM.
+[00:28:28 -> 00:28:31] And these will then be dynamically partitioned
+[00:28:31 -> 00:28:32] across all the thread blocks
+[00:28:32 -> 00:28:34] that are scheduled to run on the SM.
+[00:28:35 -> 00:28:37] So this is a little bit of a game
+[00:28:37 -> 00:28:40] because you can allocate more physical registers
+[00:28:40 -> 00:28:43] to a thread block if it comes in.
+[00:28:43 -> 00:28:45] But then once you've assigned it to that thread block,
+[00:28:45 -> 00:28:46] it's locked in.
+[00:28:46 -> 00:28:48] You can't take away physical registers for it
+[00:28:48 -> 00:28:51] until that thread block is done executing.
+[00:28:52 -> 00:28:56] So then if you've assigned too many physical registers,
+[00:28:56 -> 00:28:57] then you can't schedule a new thread block in
+[00:28:57 -> 00:28:58] that needs those.
+[00:28:59 -> 00:29:01] And what that means is now you may have
+[00:29:01 -> 00:29:04] potential fragmentation of resources in your GPU
+[00:29:04 -> 00:29:07] because you can't put more thread blocks in
+[00:29:07 -> 00:29:10] just because you're aggressive.
+[00:29:10 -> 00:29:11] So it's a bit of a tricky game.
+[00:29:11 -> 00:29:13] The more physical registers you have,
+[00:29:13 -> 00:29:17] the more flexibility you have in dealing with renaming
+[00:29:17 -> 00:29:20] and anti-dependencies that will exist
+[00:29:20 -> 00:29:21] in your program code.
+[00:29:22 -> 00:29:24] Because if you run out of physical registers
+[00:29:24 -> 00:29:28] and then you have award dependence,
+[00:29:28 -> 00:29:30] so some instruction is gonna end up
+[00:29:31 -> 00:29:33] overriding a register
+[00:29:33 -> 00:29:35] that the instruction immediately before it
+[00:29:35 -> 00:29:39] is still reading, you're gonna have to stall now.
+[00:29:39 -> 00:29:41] Usually you could rename that and not have to worry,
+[00:29:41 -> 00:29:42] but if you're out of physical registers,
+[00:29:42 -> 00:29:43] you're gonna have to wait
+[00:29:43 -> 00:29:45] because you can't let that instruction run
+[00:29:45 -> 00:29:47] and overwrite what this instruction
+[00:29:47 -> 00:29:48] in front of it is reading
+[00:29:48 -> 00:29:49] because with a deep pipeline,
+[00:29:49 -> 00:29:52] it's not finished reading that data.
+[00:29:55 -> 00:29:58] So then the register bank itself
+[00:29:58 -> 00:30:00] is broken up into multiple banks
+[00:30:01 -> 00:30:03] because the whole point is that we want
+[00:30:03 -> 00:30:08] to be able to run an entire 32 lanes of threads
+[00:30:08 -> 00:30:11] within our warp at any moment in time.
+[00:30:11 -> 00:30:12] So when they all get to an instruction
+[00:30:12 -> 00:30:14] that needs to read a register,
+[00:30:14 -> 00:30:16] they all need to read a register.
+[00:30:17 -> 00:30:20] So you need to adequately provide enough banks
+[00:30:20 -> 00:30:22] within your register memory
+[00:30:23 -> 00:30:27] and then we have sort of a complex operand collector
+[00:30:27 -> 00:30:31] that's able to look at all of the reads
+[00:30:31 -> 00:30:32] and what needs to be collected
+[00:30:32 -> 00:30:34] from all of the pending instructions.
+[00:30:34 -> 00:30:37] Within the warp, it's all going to be the same register,
+[00:30:37 -> 00:30:38] which is nice.
+[00:30:38 -> 00:30:41] So all of us are running this instruction
+[00:30:41 -> 00:30:43] which accesses R1.
+[00:30:43 -> 00:30:45] It's a different R1
+[00:30:45 -> 00:30:47] because we're all on different threads,
+[00:30:47 -> 00:30:49] but at least the ID is R1.
+[00:30:49 -> 00:30:51] So we just need to go to each bank
+[00:30:51 -> 00:30:54] and find the R1 associated with each of our threads.
+[00:30:55 -> 00:30:57] Usually this is nice and clean.
+[00:30:57 -> 00:30:59] We can allocate all the threads within a warp
+[00:30:59 -> 00:31:03] to be on different banks and get maximum performance.
+[00:31:03 -> 00:31:04] And if we have less banks,
+[00:31:04 -> 00:31:07] then a register read will simply take multiple cycles
+[00:31:07 -> 00:31:09] in order to complete.
+[00:31:09 -> 00:31:12] So even though things are in order,
+[00:31:12 -> 00:31:13] as we're starting to see,
+[00:31:13 -> 00:31:16] operations themselves can take multiple cycles
+[00:31:16 -> 00:31:19] just because it's physically hard to scale up
+[00:31:19 -> 00:31:22] and have a lot of ports, for example,
+[00:31:22 -> 00:31:23] in your register file
+[00:31:23 -> 00:31:26] and just have a lot of parallelism for the warps.
+[00:31:26 -> 00:31:27] So when you'll see GPUs,
+[00:31:27 -> 00:31:29] they will scale up in the number of threads
+[00:31:30 -> 00:31:31] that they can support,
+[00:31:31 -> 00:31:32] but you could expect the warp size
+[00:31:32 -> 00:31:34] to not really scale up.
+[00:31:34 -> 00:31:36] And that's probably just gonna be the way it is
+[00:31:36 -> 00:31:37] from now on.
+[00:31:37 -> 00:31:39] We're gonna be stuck with sort of
+[00:31:39 -> 00:31:40] a couple of dozen of threads
+[00:31:40 -> 00:31:42] running in lockstep in any machine,
+[00:31:42 -> 00:31:44] but we're gonna have many of these machines
+[00:31:44 -> 00:31:45] available to us.
+[00:31:47 -> 00:31:48] So the fundamental difference
+[00:31:48 -> 00:31:50] between the GPU memory hierarchy
+[00:31:50 -> 00:31:53] compared to a typical chip multiprocessor
+[00:31:53 -> 00:31:55] CPU memory hierarchy
+[00:31:55 -> 00:31:58] is that the programmer dictates effectively
+[00:31:58 -> 00:32:02] where data will go within all of these elements.
+[00:32:02 -> 00:32:03] So I am going to choose,
+[00:32:03 -> 00:32:04] as the programmer,
+[00:32:04 -> 00:32:06] I choose whether I want things to go
+[00:32:06 -> 00:32:07] into a shared memory
+[00:32:07 -> 00:32:09] because I expect threads
+[00:32:09 -> 00:32:12] in the same thread block to access them.
+[00:32:12 -> 00:32:13] I will choose
+[00:32:13 -> 00:32:16] whether they should all go into global memory.
+[00:32:16 -> 00:32:18] There are caches that are not explicitly mentioned.
+[00:32:18 -> 00:32:22] They follow similar processes as with the CPU,
+[00:32:22 -> 00:32:25] and those are invisible to the programmer.
+[00:32:25 -> 00:32:27] But these kinds of things,
+[00:32:27 -> 00:32:28] there's more options and flexibility,
+[00:32:28 -> 00:32:29] yes, to the programmer,
+[00:32:29 -> 00:32:32] but it's an easy way for programmers
+[00:32:32 -> 00:32:33] to get confused on what they're supposed to do
+[00:32:33 -> 00:32:34] and what they can do.
+[00:32:36 -> 00:32:37] So a lot of times,
+[00:32:37 -> 00:32:38] new programmers and GPUs
+[00:32:38 -> 00:32:40] won't necessarily know
+[00:32:40 -> 00:32:42] that there's available shared memory
+[00:32:42 -> 00:32:44] and may not view it
+[00:32:44 -> 00:32:46] and may not deem it in any special way.
+[00:32:46 -> 00:32:48] And if you have no sharing in your program,
+[00:32:48 -> 00:32:49] then you're gonna be like,
+[00:32:49 -> 00:32:51] how do I use this?
+[00:32:51 -> 00:32:53] I know it's faster than my global memory.
+[00:32:54 -> 00:32:56] How do I decide to allocate some of it
+[00:32:56 -> 00:32:58] that I would expect to run faster?
+[00:32:58 -> 00:32:59] So then you have this extra thinking
+[00:32:59 -> 00:33:01] just because you don't want to waste this
+[00:33:01 -> 00:33:04] a little bit faster shared memory available to you.
+[00:33:04 -> 00:33:06] The easy way is to just write your program
+[00:33:06 -> 00:33:08] and everything gets mapped to your global memory
+[00:33:08 -> 00:33:09] as it should,
+[00:33:09 -> 00:33:11] but then now all of a sudden somebody says,
+[00:33:11 -> 00:33:13] hey, if you put things here,
+[00:33:13 -> 00:33:15] it's a little bit faster.
+[00:33:15 -> 00:33:18] Now figure out what you're gonna put there.
+[00:33:18 -> 00:33:20] And so it's a bit of a double-edged sword,
+[00:33:20 -> 00:33:21] if you will,
+[00:33:21 -> 00:33:22] that comes with programming
+[00:33:22 -> 00:33:25] for the memory hierarchy in a GPU.
+[00:33:26 -> 00:33:30] Now what's interesting about running threads in warps
+[00:33:31 -> 00:33:34] is now how you end up doing loads and stores.
+[00:33:36 -> 00:33:37] Because when you do loads and stores,
+[00:33:37 -> 00:33:39] if one of us in the warp does a load,
+[00:33:39 -> 00:33:41] we're all doing a load, right?
+[00:33:43 -> 00:33:46] So you can imagine in the worst case scenario,
+[00:33:46 -> 00:33:51] we could potentially be doing 32 cache requests
+[00:33:51 -> 00:33:52] and cache lookups
+[00:33:52 -> 00:33:55] and try to do that in a single cycle.
+[00:33:56 -> 00:33:57] And that's crazy.
+[00:33:57 -> 00:33:59] Yes, we can bank up our register file
+[00:33:59 -> 00:34:01] to give us more ports,
+[00:34:01 -> 00:34:04] but having us ability to do 32 lookups in the cache
+[00:34:04 -> 00:34:06] is going to be a little bit unreasonable.
+[00:34:06 -> 00:34:09] And then 32 requests into memory in the worst case.
+[00:34:10 -> 00:34:13] So what we do is we hope that you write your program
+[00:34:13 -> 00:34:15] such that there is locality
+[00:34:16 -> 00:34:18] and then the memory unit and the cache unit
+[00:34:18 -> 00:34:22] will provide automatic coalescing of your requests.
+[00:34:22 -> 00:34:26] So that is if you are accessing the same memory block,
+[00:34:26 -> 00:34:27] the same cache block,
+[00:34:27 -> 00:34:31] we will convert that into one request or one lookup.
+[00:34:33 -> 00:34:35] So best case scenario,
+[00:34:35 -> 00:34:38] all 32 threads in the warp
+[00:34:38 -> 00:34:42] are accessing the exact same cache line or cache block.
+[00:34:43 -> 00:34:47] Then all of that becomes and coalesce into one access.
+[00:34:48 -> 00:34:50] Anything less regular will have to break up
+[00:34:50 -> 00:34:52] into multiple requests.
+[00:34:52 -> 00:35:32] Yes, okay, right.
+[00:35:32 -> 00:35:35] You're right, that is a very racy topic.
+[00:35:35 -> 00:35:36] We'll get to that in a moment
+[00:35:36 -> 00:35:40] when we get to the GPU coherence piece of it too.
+[00:35:40 -> 00:35:42] Because how those are handled is different
+[00:35:42 -> 00:35:44] and it depends on what level of consistency
+[00:35:44 -> 00:35:47] you want to provide for your memory system.
+[00:35:47 -> 00:35:48] That's a good question though.
+[00:35:49 -> 00:35:52] So effectively, you now have to recognize
+[00:35:52 -> 00:35:54] that the threads that you're going to allocate,
+[00:35:54 -> 00:35:57] you actually want them in a way
+[00:35:57 -> 00:35:59] to access the same thread line
+[00:35:59 -> 00:36:00] because you want this coalescing to happen.
+[00:36:00 -> 00:36:03] Otherwise, any breaking apart of this
+[00:36:04 -> 00:36:06] will cause them to all be serialized
+[00:36:06 -> 00:36:08] and that one load instruction that you hit
+[00:36:08 -> 00:36:12] will then end up taking many, many, many cycles
+[00:36:12 -> 00:36:15] in the sense that you do multiple lookups serialized
+[00:36:15 -> 00:36:16] but also that you increase the likelihood
+[00:36:16 -> 00:36:21] of one of these lookups missing in your cache now.
+[00:36:21 -> 00:36:23] So let's revisit a little bit
+[00:36:23 -> 00:36:26] of how we would parallelize our programs.
+[00:36:27 -> 00:36:30] So before, when we had a CPU,
+[00:36:31 -> 00:36:33] remember our general assumption was that
+[00:36:33 -> 00:36:34] if you have data allocated in memory,
+[00:36:34 -> 00:36:37] it's in row major order.
+[00:36:37 -> 00:36:39] So data within the same cache line like this,
+[00:36:41 -> 00:36:42] data across a row like that
+[00:36:42 -> 00:36:44] will likely be in the same cache line.
+[00:36:45 -> 00:36:50] Would we have preferred to parallelize on the CPU before
+[00:36:50 -> 00:36:54] in terms of rows or columns?
+[00:36:54 -> 00:36:59] As in, do you want each thread to process a row
+[00:37:00 -> 00:37:03] or do you want each thread to process its own column?
+[00:37:04 -> 00:37:12] What was the ideal way that we wanted on a CPU?
+[00:37:12 -> 00:37:14] Let me quickly do the poll just to see how people are.
+[00:37:14 -> 00:37:16] Remember, row major order.
+[00:37:16 -> 00:37:19] On the CPU, you have the option now,
+[00:37:19 -> 00:37:20] I'm gonna give you eight threads.
+[00:37:21 -> 00:37:23] Would you prefer to allocate such that
+[00:37:23 -> 00:37:28] each of the threads processes along a row, along a column?
+[00:37:35 -> 00:37:37] Okay, so I just wanna make sure here
+[00:37:37 -> 00:37:38] that we're clear on what that is.
+[00:37:38 -> 00:37:41] So a row basically means this thread
+[00:37:41 -> 00:37:45] is going to take this whole thing on a CPU.
+[00:37:45 -> 00:37:46] So the way you would draw it out
+[00:37:46 -> 00:37:49] would look something like this.
+[00:37:49 -> 00:37:52] And on a CPU, this is the case that you do want
+[00:37:52 -> 00:37:54] because what that means is you provide locality.
+[00:37:54 -> 00:37:56] For this thread, if it ends up on a different core,
+[00:37:56 -> 00:37:59] it will bring in this cache block
+[00:37:59 -> 00:38:01] and it will now appreciate the spatial locality available
+[00:38:01 -> 00:38:04] because when it moves on to the next iteration,
+[00:38:04 -> 00:38:07] it will access data that it already brought in.
+[00:38:07 -> 00:38:09] So it effectively prefetched for itself
+[00:38:09 -> 00:38:10] by going along the row.
+[00:38:12 -> 00:38:19] On a GPU, how do you wanna access the threads
+[00:38:19 -> 00:38:22] knowing that there's memory coalescing?
+[00:38:22 -> 00:38:24] This is, hopefully it's clear that
+[00:38:24 -> 00:38:26] we're looking for a different answer from the CPU,
+[00:38:26 -> 00:38:29] but you are gonna wanna go this way now
+[00:38:29 -> 00:38:32] because if you went the way this way here,
+[00:38:32 -> 00:38:34] these threads could be all in the same warp.
+[00:38:35 -> 00:38:38] What you're gonna do when they hit this load instruction,
+[00:38:38 -> 00:38:42] we're gonna access eight different cache lines
+[00:38:42 -> 00:38:43] and wanna do eight lookups
+[00:38:43 -> 00:38:44] and potentially have to handle
+[00:38:44 -> 00:38:46] eight cache misses at the same time.
+[00:38:47 -> 00:38:49] So here we actually want to, in a way,
+[00:38:49 -> 00:38:53] induce false sharing so that the threads
+[00:38:53 -> 00:38:56] that are likely to be in the same warp
+[00:38:56 -> 00:38:58] are going to coalesce nicely
+[00:38:58 -> 00:39:00] and minimize the number of actual lookups
+[00:39:00 -> 00:39:03] and requests that we have to the memory system.
+[00:39:03 -> 00:39:06] That said, if we're not likely to be in the same warp,
+[00:39:06 -> 00:39:09] absolutely do not have false sharing.
+[00:39:09 -> 00:39:11] You do not want any of that
+[00:39:11 -> 00:39:12] because then you're gonna have to deal with
+[00:39:12 -> 00:39:15] coherence or lack of that's available in your program.
+[00:39:17 -> 00:39:19] So that's where things get a little bit tricky.
+[00:39:20 -> 00:39:22] So yes, it is good and nice to know
+[00:39:22 -> 00:39:24] the size of a warp, but for portability,
+[00:39:24 -> 00:39:26] you can't always write your GPU program
+[00:39:26 -> 00:39:29] knowing what that is going to be.
+[00:39:29 -> 00:39:32] So just like with cache locality,
+[00:39:32 -> 00:39:36] you write your program by putting things close together
+[00:39:36 -> 00:39:38] in a certain pattern just like this
+[00:39:38 -> 00:39:40] and then you just pray and you hope
+[00:39:40 -> 00:39:42] that it's likely to be exploited
+[00:39:42 -> 00:39:46] and will run nicely on the arbitrary GPU you run on.
+[00:39:47 -> 00:39:48] Okay?
+[00:39:49 -> 00:39:51] So then that leads us now to a little bit
+[00:39:51 -> 00:39:53] of the coherence discussion.
+[00:39:53 -> 00:39:54] This is the simplified version of this
+[00:39:54 -> 00:39:57] because this is a bit of a complex topic
+[00:39:57 -> 00:40:00] that even some of the coherence folks
+[00:40:00 -> 00:40:04] have trouble understanding what each other was proposing.
+[00:40:04 -> 00:40:05] So we get weird solutions coming up,
+[00:40:05 -> 00:40:09] but here's my understanding of how things work, okay?
+[00:40:09 -> 00:40:12] So the key takeaway is that GPU applications
+[00:40:12 -> 00:40:14] are expected to have very minimal sharing.
+[00:40:14 -> 00:40:15] The whole point is you're trying
+[00:40:15 -> 00:40:19] to maximize processing cycles on this machine
+[00:40:19 -> 00:40:22] and just have lots of threads.
+[00:40:22 -> 00:40:25] So because of that, the typical CPU coherence protocols
+[00:40:25 -> 00:40:27] we've been using and talking about
+[00:40:27 -> 00:40:28] are going to have more overhead and complexity
+[00:40:28 -> 00:40:30] than you really need.
+[00:40:30 -> 00:40:33] They're going to have invalidation traffic
+[00:40:33 -> 00:40:36] that might happen for things that are not actually racy.
+[00:40:36 -> 00:40:38] You're going to have share tracking,
+[00:40:38 -> 00:40:40] which you could imagine if I'm telling you
+[00:40:40 -> 00:40:43] that you're putting in hundreds of thousands of threads,
+[00:40:43 -> 00:40:45] right, some read-only data
+[00:40:45 -> 00:40:47] or data that you didn't know was read-only
+[00:40:47 -> 00:40:48] but ends up being read-only
+[00:40:48 -> 00:40:52] now needs hundreds of thousands of share tracking
+[00:40:52 -> 00:40:54] for no absolute reason
+[00:40:54 -> 00:40:55] because you're never going to invalidate
+[00:40:55 -> 00:40:57] a single one of them.
+[00:40:57 -> 00:40:59] And then transient states.
+[00:40:59 -> 00:41:01] Transient states always add complexity
+[00:41:01 -> 00:41:03] to the FSM logic and incurs additional delay
+[00:41:03 -> 00:41:05] and potential exponential complexity
+[00:41:05 -> 00:41:09] when it comes to having to handle directory lookups.
+[00:41:10 -> 00:41:12] So the baseline GPU caches,
+[00:41:12 -> 00:41:14] when they were first proposed,
+[00:41:14 -> 00:41:16] tended to follow this pattern
+[00:41:16 -> 00:41:17] where they were right through
+[00:41:18 -> 00:41:21] with a capability to do that coalescing I just discussed.
+[00:41:21 -> 00:41:23] So right through, if you recall,
+[00:41:23 -> 00:41:25] simply means when I have a store operation
+[00:41:25 -> 00:41:28] to a four byte word, for example,
+[00:41:28 -> 00:41:31] it'll go straight through past my private cache
+[00:41:31 -> 00:41:35] and into the next level so that it's immediately there
+[00:41:35 -> 00:41:37] to minimize any of this complexity.
+[00:41:37 -> 00:41:38] That's what allowed us to use
+[00:41:38 -> 00:41:41] the very first coherence protocol I taught in this class,
+[00:41:41 -> 00:41:43] which is the valid-invalid protocol.
+[00:41:44 -> 00:41:46] So simply, a block is valid
+[00:41:46 -> 00:41:49] if it's present in your cache.
+[00:41:49 -> 00:41:51] You have read and write access to it.
+[00:41:52 -> 00:41:56] And then if it's not present as a cache, it's invalid.
+[00:41:56 -> 00:41:58] You cannot read it, but you can still write.
+[00:41:58 -> 00:42:00] So the point is you can always write
+[00:42:00 -> 00:42:02] because you are right through.
+[00:42:03 -> 00:42:04] And at any point that you write,
+[00:42:04 -> 00:42:07] all your only duty is to invalidate any other cache,
+[00:42:07 -> 00:42:10] private cache, that has a copy of the block.
+[00:42:10 -> 00:42:12] So you can write at any time you want,
+[00:42:12 -> 00:42:14] whether it's in your cache or not.
+[00:42:14 -> 00:42:15] And then when it is in your cache,
+[00:42:15 -> 00:42:18] it's only the only time when you could read it.
+[00:42:19 -> 00:42:23] And initial GPUs support basic release consistency.
+[00:42:23 -> 00:42:24] If you recall what that was,
+[00:42:24 -> 00:42:27] it means we don't guarantee any ordering
+[00:42:27 -> 00:42:29] of your memory accesses in your programs
+[00:42:29 -> 00:42:33] except for the fact that when you have a lock acquire,
+[00:42:34 -> 00:42:38] everything after it needs to come after the acquire.
+[00:42:39 -> 00:42:41] And when you have a lock release,
+[00:42:41 -> 00:42:44] everything before it needs to become before the release.
+[00:42:45 -> 00:42:48] That way we maintain a level of causality
+[00:42:49 -> 00:42:54] when you acquire a lock and then release it to me
+[00:42:54 -> 00:42:57] who then acquires the lock after you.
+[00:42:57 -> 00:43:00] There is a causality because now everything you have done
+[00:43:00 -> 00:43:03] prior to that critical section
+[00:43:03 -> 00:43:06] is now viewed as the past
+[00:43:06 -> 00:43:10] to everything I will do after my critical section.
+[00:43:11 -> 00:43:13] So that if we have explicit signaling
+[00:43:13 -> 00:43:17] and I wait on your signal and then you signal me,
+[00:43:17 -> 00:43:19] everything you did before signaling me
+[00:43:19 -> 00:43:22] is now viewed and for sure have happened.
+[00:43:22 -> 00:43:24] That way we have proper communication.
+[00:43:24 -> 00:43:25] So that's where release consistency provides.
+[00:43:25 -> 00:43:27] Everything else outside of that,
+[00:43:27 -> 00:43:28] if you're not synchronizing,
+[00:43:28 -> 00:43:30] is going to be undefined behavior.
+[00:43:32 -> 00:43:34] And so the first coherence protocol
+[00:43:34 -> 00:43:36] and one of the first interesting ones
+[00:43:36 -> 00:43:39] to try to break this paradigm was temporal coherence.
+[00:43:40 -> 00:43:42] And the idea was that invalidation traffic
+[00:43:42 -> 00:43:46] and all that logic was unnecessary for GPUs.
+[00:43:46 -> 00:43:48] So why don't we introduce this concept
+[00:43:48 -> 00:43:50] of self-invalidation?
+[00:43:50 -> 00:43:53] Basically any block that you bring into your private cache
+[00:43:53 -> 00:43:55] give itself an expiry date.
+[00:43:56 -> 00:44:00] So we leverage sort of a global clock
+[00:44:00 -> 00:44:04] that's available across all of the SMs in your GPU.
+[00:44:04 -> 00:44:05] And when I grab a block,
+[00:44:05 -> 00:44:08] I will do, they talk about a very, very basic prediction
+[00:44:08 -> 00:44:10] but it doesn't have to be too accurate.
+[00:44:10 -> 00:44:12] It still works correctly with anything.
+[00:44:12 -> 00:44:14] It's more of just a performance concern.
+[00:44:14 -> 00:44:15] But you will basically say,
+[00:44:15 -> 00:44:18] hey, after 45 cycles,
+[00:44:18 -> 00:44:20] after I bring this block in,
+[00:44:20 -> 00:44:23] it is going to automatically evict itself from my cache.
+[00:44:24 -> 00:44:26] So temporary release, if you will.
+[00:44:27 -> 00:44:31] So what that means then is you just have a directory
+[00:44:31 -> 00:44:36] that tracks what is the maximum expiry for any block.
+[00:44:36 -> 00:44:38] It doesn't need to track who the shares are.
+[00:44:38 -> 00:44:40] It just needs to know among all of the shares,
+[00:44:40 -> 00:44:41] what is the latest
+[00:44:41 -> 00:44:43] that this is going to be in anyone's cache?
+[00:44:44 -> 00:44:48] Such that when you write, if you are a writer,
+[00:44:50 -> 00:44:52] then you will look at this
+[00:44:52 -> 00:44:54] and you will know when it's safe to write.
+[00:44:54 -> 00:44:56] If you want it to maintain sequential consistency,
+[00:44:56 -> 00:45:01] then you will not write until all of them have expired.
+[00:45:01 -> 00:45:03] So you will send the write to the directory.
+[00:45:03 -> 00:45:06] The directory will respond to you and say,
+[00:45:06 -> 00:45:07] hold your write for a second.
+[00:45:07 -> 00:45:08] There is still some share.
+[00:45:08 -> 00:45:13] I don't know who that wants this until April 28th.
+[00:45:14 -> 00:45:18] So on April 28th, you may go ahead and write.
+[00:45:18 -> 00:45:20] That's if you want a sequential consistency.
+[00:45:20 -> 00:45:22] If you're okay with release consistency,
+[00:45:22 -> 00:45:24] the weaker model,
+[00:45:24 -> 00:45:25] you don't need to
+[00:45:25 -> 00:45:28] and you're willing to violate store atomicity,
+[00:45:28 -> 00:45:32] then that writer can do the writes as much as they want.
+[00:45:32 -> 00:45:35] It's only until they encounter a fence
+[00:45:35 -> 00:45:38] or a synchronization operation or an atomic
+[00:45:39 -> 00:45:42] that they're now going to have to follow that rule.
+[00:45:42 -> 00:45:44] So let's look at this very quick example here.
+[00:45:44 -> 00:45:47] We have two threads, T1 and T2.
+[00:45:48 -> 00:45:52] So effectively, when T2 comes in,
+[00:45:52 -> 00:45:53] so in the beginning of time,
+[00:45:53 -> 00:45:58] the directory right now stores the maximum expiry date
+[00:45:58 -> 00:46:01] for any of the memory locations that's shared.
+[00:46:02 -> 00:46:03] So there could be more threads than this,
+[00:46:03 -> 00:46:07] but let's say that T1 currently has flag X and Y
+[00:46:07 -> 00:46:08] in its private cache.
+[00:46:09 -> 00:46:10] And these are the expiry dates given.
+[00:46:10 -> 00:46:14] Flag is at 45, X is at 30, and Y is at 50.
+[00:46:15 -> 00:46:17] So T2 will come in and will do a write.
+[00:46:17 -> 00:46:20] This is a write through operation.
+[00:46:20 -> 00:46:25] So it'll just go ahead and write directly to memory.
+[00:46:25 -> 00:46:27] And then when it goes to the memory,
+[00:46:27 -> 00:46:29] the directory will also respond.
+[00:46:29 -> 00:46:31] And what the directory would say is,
+[00:46:31 -> 00:46:33] hey, you wrote to X.
+[00:46:33 -> 00:46:36] Note that there is still a share
+[00:46:36 -> 00:46:38] that wants this to expire at 30.
+[00:46:39 -> 00:46:41] You can go ahead and write to X, though.
+[00:46:41 -> 00:46:42] We're reduced consistency.
+[00:46:42 -> 00:46:44] But just note that somebody else
+[00:46:45 -> 00:46:48] still hasn't entered cache until time 30.
+[00:46:49 -> 00:46:50] So T2's gonna be like, okay, that's fine.
+[00:46:50 -> 00:46:52] I'm gonna proceed.
+[00:46:52 -> 00:46:54] I'm not gonna block on that.
+[00:46:54 -> 00:46:56] I'm gonna now write to Y.
+[00:46:56 -> 00:46:58] Write that straight into memory, write through cache.
+[00:46:58 -> 00:47:00] And again, the directory will respond and say,
+[00:47:00 -> 00:47:03] hey, that's needed until 15.
+[00:47:03 -> 00:47:07] Somebody still has the old value in their cache at time 15.
+[00:47:08 -> 00:47:11] So someone is still reading the old value.
+[00:47:11 -> 00:47:13] T2 doesn't care until it hits
+[00:47:13 -> 00:47:16] a synchronization operation like a fence.
+[00:47:16 -> 00:47:17] The point of a fence is to say,
+[00:47:17 -> 00:47:21] hey, these writes are supposed to be done
+[00:47:22 -> 00:47:24] and visible and performed
+[00:47:24 -> 00:47:26] in the perspective of everyone else in the world
+[00:47:27 -> 00:47:29] before moving on to this flag.
+[00:47:30 -> 00:47:34] So then what that means is I will have stored
+[00:47:34 -> 00:47:38] the 30 for X and the 15 for Y that the directory gave me
+[00:47:38 -> 00:47:40] and I will wait until time 30
+[00:47:42 -> 00:47:43] because I hit the fence.
+[00:47:43 -> 00:47:44] The writes didn't have to block,
+[00:47:44 -> 00:47:47] but because I wanted to synchronize and I have a fence,
+[00:47:47 -> 00:47:48] I will now have to wait here.
+[00:47:50 -> 00:47:52] And then at time 30,
+[00:47:52 -> 00:47:54] X and Y would have self-invalidated
+[00:47:54 -> 00:47:59] in the other people's caches
+[00:47:59 -> 00:48:03] so that now by the time T2 can move on after the fence,
+[00:48:03 -> 00:48:07] it does this write to flag.
+[00:48:07 -> 00:48:10] If T1 were to see flag to be one,
+[00:48:10 -> 00:48:13] it is guaranteed that T1 will see the coherent
+[00:48:13 -> 00:48:16] and new values of X and Y
+[00:48:16 -> 00:48:19] because it self-invalidated
+[00:48:19 -> 00:48:22] and T2 waited for it to self-invalidate.
+[00:48:23 -> 00:48:25] So things that are allowed to move on
+[00:48:25 -> 00:48:26] and you're allowed to do writes,
+[00:48:26 -> 00:48:28] expecting that sharing is minimal,
+[00:48:28 -> 00:48:30] but if you decide to write your program
+[00:48:30 -> 00:48:33] that you introduced a fence and want to synchronize,
+[00:48:33 -> 00:48:36] only then do you need to wait until it expires
+[00:48:36 -> 00:48:38] from people's caches.
+[00:48:38 -> 00:48:39] And once it has,
+[00:48:39 -> 00:48:42] you can guarantee that everyone will miss in their cache
+[00:48:42 -> 00:48:46] and have to go to memory and will see what you wrote
+[00:48:46 -> 00:48:48] and are guaranteed to see what you wrote.
+[00:48:48 -> 00:49:22] Question, yes.
+[00:49:22 -> 00:49:26] Yeah.
+[00:49:26 -> 00:49:27] That's a subtle question
+[00:49:27 -> 00:49:30] because it's unclear what a break point will actually do,
+[00:49:30 -> 00:49:32] but technically speaking,
+[00:49:32 -> 00:49:34] you will not move on to the next instruction
+[00:49:34 -> 00:49:36] until you have gotten the acknowledgement
+[00:49:36 -> 00:49:37] from the directory.
+[00:49:37 -> 00:49:39] The write will happen.
+[00:49:41 -> 00:49:42] It will go into the memory.
+[00:49:42 -> 00:49:44] There is now no longer store atomicity.
+[00:49:44 -> 00:49:47] This is a good exam question to explain me why.
+[00:49:47 -> 00:49:48] There is no store atomicity
+[00:49:48 -> 00:49:50] because I'm writing directly to memory.
+[00:49:50 -> 00:49:52] If some random other thread decides to read it,
+[00:49:52 -> 00:49:54] they will see this value before anyone else.
+[00:49:56 -> 00:49:58] So I will put it into memory right away.
+[00:49:58 -> 00:50:02] That said, I will not move on to the next instruction
+[00:50:02 -> 00:50:04] until I've received the acknowledgement.
+[00:50:06 -> 00:50:07] So then I will have the expiry date
+[00:50:07 -> 00:50:11] prior to entering the fence, prior to going to the fence.
+[00:50:11 -> 00:50:14] And that's where then at least the values are guaranteed
+[00:50:14 -> 00:50:15] to all be in memory now.
+[00:50:15 -> 00:50:16] But when I do the fence,
+[00:50:16 -> 00:50:19] I now have all the expiry date information
+[00:50:19 -> 00:50:40] to know how long I should wait.
+[00:50:40 -> 00:50:46] Yeah.
+[00:50:46 -> 00:50:49] It will overwrite the value in memory.
+[00:50:49 -> 00:50:51] And if you have a fence in there in place,
+[00:50:51 -> 00:50:55] then it will also wait there separately.
+[00:50:55 -> 00:50:56] If you don't want this to happen,
+[00:50:56 -> 00:50:58] effectively what you've described is a write race,
+[00:50:58 -> 00:51:00] right?
+[00:51:00 -> 00:51:02] Two threads are writing at the same time.
+[00:51:02 -> 00:51:04] If you don't want this to happen,
+[00:51:04 -> 00:51:07] you should have adequately synchronized.
+[00:51:07 -> 00:51:09] So the other thread that was going to write
+[00:51:09 -> 00:51:12] should have been waiting for some signal from you,
+[00:51:13 -> 00:51:15] which would have been wrapped in fences too.
+[00:51:15 -> 00:51:27] So it's basically data race free.
+[00:51:27 -> 00:51:28] This is part of the...
+[00:51:29 -> 00:51:34] So yeah, each thread in the SM for this design
+[00:51:34 -> 00:51:37] needs to introduce a way to track the expiry
+[00:51:37 -> 00:51:45] that was received from the directory.
+[00:51:45 -> 00:51:46] Yes.
+[00:51:47 -> 00:51:54] Yeah.
+[00:51:54 -> 00:51:55] Right, yeah.
+[00:51:55 -> 00:51:56] So for correctness purposes,
+[00:51:56 -> 00:51:58] it could be whatever you want.
+[00:51:58 -> 00:52:05] Finite, though.
+[00:52:05 -> 00:52:09] Yeah.
+[00:52:09 -> 00:52:11] So in the paper, if you're interested in it,
+[00:52:11 -> 00:52:14] I think it's a good paper to read.
+[00:52:14 -> 00:52:17] There it's actually completely software agnostic.
+[00:52:17 -> 00:52:18] The programmer does nothing.
+[00:52:18 -> 00:52:20] It's the hardware that learns it,
+[00:52:20 -> 00:52:21] and it learns it per thread.
+[00:52:21 -> 00:52:23] It decides that it's not necessary
+[00:52:23 -> 00:52:24] to go into the detail
+[00:52:24 -> 00:52:26] of which instruction is doing it.
+[00:52:26 -> 00:52:28] I just want to learn the general behavior of each thread
+[00:52:28 -> 00:52:30] or of each warp.
+[00:52:30 -> 00:52:34] And it's a simple matter of you set an initial time
+[00:52:35 -> 00:52:37] for this block.
+[00:52:37 -> 00:52:41] You observe then, is this block evicted before this time?
+[00:52:41 -> 00:52:43] Yes, decrement the time.
+[00:52:43 -> 00:52:45] If the block is...
+[00:52:45 -> 00:52:48] If I evict something and then I have a cache miss later,
+[00:52:48 -> 00:52:49] then increase it.
+[00:52:49 -> 00:52:52] So it's a very, very basic mechanism
+[00:52:52 -> 00:52:56] that just moves ups and down.
+[00:52:56 -> 00:53:01] Yeah.
+[00:53:01 -> 00:53:02] It's purely heuristic.
+[00:53:02 -> 00:53:05] There's nothing more than just to take an initial guess
+[00:53:05 -> 00:53:08] because it's always correct.
+[00:53:08 -> 00:53:10] So you can view the trade-offs of it
+[00:53:10 -> 00:53:12] being too short or too much, right?
+[00:53:12 -> 00:53:13] If you set it to zero,
+[00:53:13 -> 00:53:16] you're effectively saying this is no allocate.
+[00:53:16 -> 00:53:17] Don't put it in your cache,
+[00:53:17 -> 00:53:18] but you can still...
+[00:53:18 -> 00:53:19] Here's the data.
+[00:53:19 -> 00:53:24] And so that's the one extreme case.
+[00:53:24 -> 00:53:26] Okay, these are all good questions.
+[00:53:26 -> 00:53:28] I'm going to pause here.
